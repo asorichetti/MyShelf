@@ -78,12 +78,13 @@ Given an ISBN or a title/author query, fetch book metadata from Open Library and
 - **Acceptance:** table-driven cases (≥ 40) from real fixture subjects pass.
 - **Tests:** `src/domain/__tests__/genreNormaliser.test.ts`.
 
-### P02-08 Series extraction
+### P02-08 Series extraction — done
 
 - **Description:** `extractSeries(candidate)` combines hints: Open Library `series[]` strings (`"Discworld ; 5"`, `"Harry Potter -- 1"`, `"Discworld novel, 5"`, `"The Expanse #3"`), title patterns (`"Title (Series Name, #3)"`, `"Series Name Book 3: Title"`, `"Title: A Series Name Novel"` without position), and Google Books `bookDisplayNumber`. Returns `{ name, position | null, confidence }` or null. Strips publisher imprint series (e.g. "Penguin Classics", "Everyman's Library", "Oxford World's Classics") via a deny-list.
 - **Files:** `src/domain/seriesParser.ts`.
 - **Acceptance:** ≥ 30 table cases including decimals ("2.5"), roman numerals ("Book IV" → 4), and imprint deny-list.
 - **Tests:** `src/domain/__tests__/seriesParser.test.ts`.
+- **Delivered:** `extractSeries({ title, subtitle, seriesHints })` returns `{ name, position, confidence }` with confidence `high` (a provider series with a position), `medium` (a series without a position, a title pattern with one, or a position filled in from Google Books) or `low` (a title pattern without a position), matching what P04-03 expects. Also exported: `parseSeriesString`, `parseSeriesFromTitle`, `parsePosition` (decimals, roman numerals up to LX, number words), `isImprintSeries` and `cleanSeriesName`. The table covers every series string in the recorded Open Library fixtures (e.g. `"Discworld, Book 1"`, `"Harry Potter, #1"`, `"Dune chronicles -- bk. 1"`, `"Świat Dysku, Part I"`); 90 cases in all. It uses `src/domain/text.ts` from P02-06, which landed in the same commit.
 
 ### P02-09 Response cache and cover download
 

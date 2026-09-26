@@ -7,3 +7,5 @@ export * from './isbn';
 export * from './loan';
 export * from './series';
 export * from './settings';
+export * from './seriesParser';
+export * from './text';
