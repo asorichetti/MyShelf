@@ -10,15 +10,15 @@ On `main`: the scaffold (P00-01 to P00-07), the design system, Booky, tabs, data
 |---|---|---|
 | [Phase 00](docs/plan/phase-00-foundation.md) | Foundation | 29 / 30 |
 | [Phase 01](docs/plan/phase-01-library-core.md) | Library core: CRUD and book detail | 12 / 12 |
-| [Phase 02](docs/plan/phase-02-metadata-providers.md) | Metadata providers | 10 / 13 |
-| [Phase 03](docs/plan/phase-03-scanning.md) | Scanning: barcode, OCR and edition picker | 0 / 13 |
+| [Phase 02](docs/plan/phase-02-metadata-providers.md) | Metadata providers | 13 / 16 |
+| [Phase 03](docs/plan/phase-03-scanning.md) | Scanning: barcode, OCR and edition picker | 0 / 14 |
 | [Phase 04](docs/plan/phase-04-series.md) | Series | 1 / 8 |
 | [Phase 05](docs/plan/phase-05-lending.md) | Lending | 1 / 10 |
 | [Phase 06](docs/plan/phase-06-grouping-and-shelf-views.md) | Grouping and shelf views | 0 / 11 |
 | [Phase 07](docs/plan/phase-07-booky-assistant.md) | Booky assistant | 0 / 9 |
 | [Phase 08](docs/plan/phase-08-settings-backup.md) | Settings, backup, export and import | 0 / 10 |
 | [Phase 09](docs/plan/phase-09-polish-a11y-release.md) | Polish, accessibility and release | 0 / 12 |
-| **Total** | | **53 / 128** |
+| **Total** | | **56 / 132** |
 
 ## Phase 00 — Foundation
 
@@ -89,6 +89,9 @@ On `main`: the scaffold (P00-01 to P00-07), the design system, Booky, tabs, data
 - [ ] P02-11 "Look up by ISBN" and "Search online" in the add flow
 - [ ] P02-12 Refresh details for an existing book
 - [ ] P02-13 Auto test suite API mocking and recorded fixtures
+- [x] P02-14 Cover resolution chain
+- [x] P02-15 Store the best cover when saving from a lookup
+- [x] P02-16 Cover backfill with backoff
 
 ## Phase 03 — Scanning: barcode, OCR and edition picker
 
@@ -107,6 +110,7 @@ On `main`: the scaffold (P00-01 to P00-07), the design system, Booky, tabs, data
 - [ ] P03-11 Manual fallback with prefill
 - [ ] P03-12 Continuous scanning mode
 - [ ] P03-13 Scan screen polish and help
+- [ ] P03-14 Use the cover photo when no online cover exists
 
 ## Phase 04 — Series
 

@@ -84,7 +84,7 @@ The headline feature: point the phone at a book and get it onto the shelf with t
 
 ### P03-09 Save from candidate
 
-- **Description:** `booksRepo.createBookFromCandidate(db, candidate, overrides)` in one transaction: book row (`source`, `source_id`), authors (reuse by name), genres via normaliser (`user_edited = 0`), series via `extractSeries` (find or create by case-insensitive name) and position, cover download (after commit; failure does not roll back the book). Then navigate to book detail with Booky *excited* "Shelved! That's N books." An optional "Review before saving" toggle routes through `BookForm` instead.
+- **Description:** `booksRepo.createBookFromCandidate(db, candidate, overrides)` in one transaction: book row (`source`, `source_id`), authors (reuse by name), genres via normaliser (`user_edited = 0`), series via `extractSeries` (find or create by case-insensitive name) and position, cover download after commit with `attachCoverFromCandidate` (P02-15; failure does not roll back the book). Then navigate to book detail with Booky *excited* "Shelved! That's N books." An optional "Review before saving" toggle routes through `BookForm` instead.
 - **Files:** `src/db/repositories/books.ts`, `src/features/scan/useSaveCandidate.ts`.
 - **Acceptance:** all related rows created once; re-using existing author/series rows; cover failure leaves book saved with generated cover.
 - **Tests:** `src/db/repositories/__tests__/books.fromCandidate.test.ts`, `src/features/scan/__tests__/useSaveCandidate.test.tsx`.
@@ -116,6 +116,13 @@ The headline feature: point the phone at a book and get it onto the shelf with t
 - **Files:** `src/features/scan/ScanScreen.tsx`, `src/components/scan/ScanModeSwitch.tsx`, `src/components/scan/ScanHelp.tsx`.
 - **Acceptance:** mode persists for the session; help sheet accessible and dismissible.
 - **Tests:** `src/__tests__/scan.modes.test.tsx`.
+
+### P03-14 Use the cover photo when no online cover exists
+
+- **Description:** Real art first (PLAN §6 "Covers: real art first"): when a book found through cover capture (P03-05) is saved and the cover chain finds no online cover (`attachCoverFromCandidate` returns `none`), offer the photo the user took as the book's cover: show it in the 2:3 cover frame with "Use my photo" / "No thanks" (Booky *happy*). On confirm, keep the photo instead of deleting it after recognition, store it with `storeCoverFile(bookId, uri)` and set `cover_uri`; on decline, delete it as P03-05 does. An online cover always wins when one exists, and a confirmed photo is never replaced by the backfill (it only looks at books without a cover). The photo is the one taken for recognition, so no second shot is needed.
+- **Files:** `src/components/scan/CoverCapture.tsx`, `src/features/scan/useSaveCandidate.ts`, `src/components/scan/UsePhotoAsCover.tsx`.
+- **Acceptance:** no online cover → the prompt shows the photo → confirm stores it as the cover; decline (or an online cover found) deletes the photo; the photo is kept only until the save finishes.
+- **Tests:** `src/features/scan/__tests__/useSaveCandidate.cover.test.tsx`, `src/components/scan/__tests__/UsePhotoAsCover.test.tsx`.
 
 ---
 

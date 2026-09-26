@@ -318,7 +318,7 @@ erDiagram
 - **`book_genres.user_edited = 1`** marks genres the user added or kept deliberately; a metadata refresh never removes those.
 - **Dates**: timestamps are ISO-8601 UTC strings; calendar dates (loans) are local `YYYY-MM-DD` strings so "due today" never shifts across timezones.
 - **`settings.value`** is JSON-encoded; typed access via a settings repository with defaults in code.
-- **Later additions** (each via a new migration, never by editing an old one): `api_cache(url, body, fetched_at)` (`0002_api_cache`, P02-09) caches provider responses and is left out of backups; `pending_lookups(isbn13, requested_at, attempts, last_error)` (`0003_pending_lookups`, P02-10) queues ISBNs looked up while offline. Planned: `books_fts` full-text index (P09-03).
+- **Later additions** (each via a new migration, never by editing an old one): `api_cache(url, body, fetched_at)` (`0002_api_cache`, P02-09) caches provider responses and is left out of backups; `pending_lookups(isbn13, requested_at, attempts, last_error)` (`0003_pending_lookups`, P02-10) queues ISBNs looked up while offline; `cover_attempts(book_id, attempts, last_attempt_at, retry_after, last_result, last_error)` (`0004_cover_attempts`, P02-16) records cover searches that found nothing, so the cover backfill backs off, and like `api_cache` is derived data left out of backups. Planned: `books_fts` full-text index (P09-03).
 
 ---
 
@@ -335,7 +335,7 @@ Both providers are free and called from the device at low volume. Open Library n
 | Back off | On `429` or `5xx`: exponential backoff (1 s, 2 s, 4 s; max 3 retries) honouring `Retry-After`. Then give up and report "try again later". |
 | Time out | 10 s per request; cancelled when the user leaves the screen (`AbortController`). |
 | Cache | Successful JSON responses are cached in `api_cache` (P02-09) for 30 days keyed by URL; covers are downloaded once to the app's document directory. |
-| No bulk | Never crawl or prefetch. Only fetch what the user is looking at or has asked to add. |
+| No bulk | Never crawl or prefetch. Only fetch what the user is looking at or has asked to add. The one background job, the cover backfill (below), only looks for covers of books the user owns, a few books per run, one request at a time through the same queue, and backs off for days after an empty search. |
 | Attribute | The About screen credits Open Library (Internet Archive) and Google Books, and cover images link back to their source (P08-08). |
 
 ### Open Library
@@ -373,12 +373,31 @@ For an ISBN lookup both providers are queried (Open Library first). Fields are m
 
 **Brief summary:** first paragraph of the description, HTML stripped, whitespace collapsed, cut at a sentence boundary at or below 600 characters. The user can edit it.
 
+### Covers: real art first
+
+A book should show its real cover. The fallback order is: **a real cover found online → the user's own photo of the cover → the generated cover** (P01-10). A photo the user chose or took is never replaced automatically.
+
+**The chain** (`src/services/covers`, P02-14). Each lookup candidate keeps every provider's cover pointers (`coverRefs`: Open Library edition and work cover ids, Google Books volume id and thumbnail), and `coverCandidates()` tries them best first:
+
+1. Open Library **edition** cover id (`/b/id/{id}-L.jpg`); for a stored book with no ids, its edition id (`/b/olid/{OLID}-L.jpg?default=false`).
+2. Open Library **work** cover id: the cover Open Library shows for the book as a whole.
+3. Open Library by **ISBN-13**, then **ISBN-10** (`/b/isbn/{isbn}-L.jpg?default=false`). These are rate-limited per IP, so they come after the ids. Without `default=false` a missing cover is a 200 with a 1×1 GIF.
+4. **Google Books**, when enabled: the `imageLinks` URL (or one built from the volume id) over HTTPS with `edge=curl` dropped and `zoom=1&fife=w800`. Tested against the live image server (September 2026): `fife=w800` returns the same cover up to 800 px wide (128×200 → 800×1247) and never beyond the scan's size; `zoom=0` is not used, because it returned a cropped detail of the art for one volume, a 575×92 strip for another and an "image not available" PNG for a third. Looking a cover up by ISBN (`books/content?vid=ISBN…`) is not used either: for an unknown ISBN it returned some other book's cover.
+
+`resolveCover()` downloads each image through the HTTP client (User-Agent, 1 request/second per host) and validates it: HTTP 404, a non-image content type, bytes that are not a JPEG/PNG/GIF/WebP (the size is read from the header bytes), a 1×1 placeholder, an image under 150 px tall or an absurd shape (e.g. a strip) is rejected, as is a Google image that ignored the width asked for (Google's grey "no cover" thumbnail does that). It stops at the first good cover (portrait, 2:3-ish, ≥ 400 px tall; Open Library's large covers are 500 px); otherwise it looks at up to four images and keeps the best: portrait over square (some Open Library scans are covers padded to a 300×300 square) over odd, then taller. The result names its source and size, and keeps the downloaded bytes so saving needs no second request. On web, Google's image server sends no CORS headers, so only Open Library covers can be checked there.
+
+**Saving** (P02-15). After a book is saved from a lookup, `attachCoverFromCandidate(db, bookId, candidate)` (`src/features/covers`) runs the chain and stores the winner with `downloadCover` (a file under `covers/` on the device; the remote URL on web). A failure never loses the book: it keeps its generated cover.
+
+**Backfill** (P02-16). Books without a cover (typed in by hand, or saved when nothing was found) are revisited by `backfillCoversNow(db)`, which the pending-lookup retry (P02-10) starts on start-up and on returning to the foreground: up to five due books per run, one at a time, each enriched by an ISBN lookup (cached) or a title + author search that must match the first author, then the chain. An empty search waits 1, 7, 30, then every 90 days; a failed one 1 h, 6 h, 1 day, then 7 days (`cover_attempts`); being offline records nothing.
+
+**The user's photo** (P03-14). When no online cover exists, the photo taken to read the cover (P03-05) becomes the book's cover once the user confirms it.
+
 ### Offline behaviour
 
 - The app is fully usable offline for everything except fetching new metadata and covers.
 - A scan while offline stores the ISBN in `pending_lookups` (P02-10) and shows "Saved — I'll look this up when you're back online" (Booky, *sleepy*). Lookups retry when the app returns to the foreground and a request succeeds.
 - Manual entry always works offline.
-- Covers already downloaded are local files; missing covers fall back to a generated spine/cover in the theme colours.
+- Covers already downloaded are local files; missing covers are looked for again by the cover backfill when online, and meanwhile fall back to a generated spine/cover in the theme colours.
 
 ---
 
@@ -625,8 +644,8 @@ Each phase has a document in `docs/plan/` with task cards (`PNN-MM`). Phases are
 |---|---|---|---|---|
 | [00](docs/plan/phase-00-foundation.md) | Foundation | Scaffold, theme, Booky, tabs, database, auto test suite, Maestro, CI | — | 30 |
 | [01](docs/plan/phase-01-library-core.md) | Library core | Shelf list, add/edit/delete books manually, book detail | 00 | 12 |
-| [02](docs/plan/phase-02-metadata-providers.md) | Metadata providers | Open Library + Google Books lookup/search, merge, cache, offline queue | 01 | 13 |
-| [03](docs/plan/phase-03-scanning.md) | Scanning | Barcode + OCR recognition, edition picker, save from candidate | 02 | 13 |
+| [02](docs/plan/phase-02-metadata-providers.md) | Metadata providers | Open Library + Google Books lookup/search, merge, cache, offline queue, real covers | 01 | 16 |
+| [03](docs/plan/phase-03-scanning.md) | Scanning | Barcode + OCR recognition, edition picker, save from candidate | 02 | 14 |
 | [04](docs/plan/phase-04-series.md) | Series | Series membership, positions, gaps, progress | 01, 02 | 8 |
 | [05](docs/plan/phase-05-lending.md) | Lending | Lend/return, borrowers, Loans tab, overdue, reminders | 01 | 10 |
 | [06](docs/plan/phase-06-grouping-and-shelf-views.md) | Grouping & shelf views | Group by genre/series/author, user groups, spines/grid views, filters | 01, 04 | 11 |
@@ -634,7 +653,7 @@ Each phase has a document in `docs/plan/` with task cards (`PNN-MM`). Phases are
 | [08](docs/plan/phase-08-settings-backup.md) | Settings, backup & import | Preferences, JSON backup/restore, CSV export/import, About | 01–06 | 10 |
 | [09](docs/plan/phase-09-polish-a11y-release.md) | Polish, a11y & release | Accessibility audit, dark theme, performance, release pipeline | all | 12 |
 
-Total: **128 task cards**. Progress is tracked in [`STATUS.md`](STATUS.md).
+Total: **132 task cards**. Progress is tracked in [`STATUS.md`](STATUS.md).
 
 ---
 
