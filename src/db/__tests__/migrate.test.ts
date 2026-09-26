@@ -16,6 +16,7 @@ const EXPECTED_TABLES = [
   'book_genres',
   'books',
   'borrowers',
+  'cover_attempts',
   'genres',
   'group_books',
   'groups',

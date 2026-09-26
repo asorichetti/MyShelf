@@ -2,6 +2,7 @@ export * from './author';
 export * from './book';
 export * from './bookDraft';
 export * from './callNumber';
+export * from './coverBackoff';
 export * from './dates';
 export * from './genre';
 export * from './genreNormaliser';
