@@ -154,6 +154,28 @@ describe('SnackbarProvider and SnackbarHost', () => {
     expect(screen.queryByTestId(Testids.snackbar.root)).toBeNull();
   });
 
+  it('tells the owner why it went away, once', () => {
+    const onHide = jest.fn();
+    const { rerender } = renderHost({ message: 'Removed', action: { label: 'Undo', onPress: () => {} }, onHide });
+    fireEvent.press(screen.getByRole('button', { name: 'show' }));
+    fireEvent.press(screen.getByTestId(Testids.snackbar.action));
+    expect(onHide).toHaveBeenCalledWith('action');
+    fireEvent.press(screen.getByRole('button', { name: 'show' }));
+    act(() => jest.advanceTimersByTime(SNACKBAR_ACTION_DURATION));
+    expect(onHide).toHaveBeenLastCalledWith('timeout');
+    fireEvent.press(screen.getByRole('button', { name: 'show' }));
+    rerender(<></>);
+    expect(onHide).toHaveBeenCalledTimes(2);
+  });
+
+  it('reports a snackbar replaced by another', () => {
+    const onHide = jest.fn();
+    renderHost({ message: 'First', onHide });
+    fireEvent.press(screen.getByRole('button', { name: 'show' }));
+    fireEvent.press(screen.getByRole('button', { name: 'show' }));
+    expect(onHide).toHaveBeenCalledWith('replaced');
+  });
+
   it('throws a helpful error outside the provider', () => {
     const spy = jest.spyOn(console, 'error').mockImplementation(() => {});
     expect(() => render(<Trigger options={{ message: 'x' }} />)).toThrow(/SnackbarProvider/);

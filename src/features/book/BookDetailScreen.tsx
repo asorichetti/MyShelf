@@ -1,16 +1,18 @@
 import { router, useLocalSearchParams } from 'expo-router';
+import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { BookHeader } from '@/components/book/BookHeader';
 import { GenreChips } from '@/components/book/GenreChips';
 import { SummaryText } from '@/components/book/SummaryText';
 import { Booky } from '@/components/booky';
-import { EmptyState, Heading, IconButton, Screen, Stamp, Text } from '@/components/ui';
+import { ConfirmDialog, EmptyState, Heading, IconButton, Menu, Screen, Stamp, Text, useSnackbar } from '@/components/ui';
 import { daysBetween, formatDate, formatSeriesPosition, isOverdue, today, type BookDetail } from '@/domain';
 import { Testids } from '@/testing/testids.gen';
 import { useTheme } from '@/theme';
 
 import { parseBookId, useBook } from './useBook';
+import { useDeleteBook } from './useDeleteBook';
 
 const EDGES = ['top', 'bottom', 'left', 'right'] as const;
 
@@ -54,6 +56,26 @@ function LoanStatus({ loan }: { loan: NonNullable<BookDetail['openLoan']> }) {
 
 function BookDetailContent({ book }: { book: BookDetail }) {
   const { spacing } = useTheme();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [confirming, setConfirming] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const deleteBook = useDeleteBook();
+  const { show } = useSnackbar();
+
+  const confirmDelete = async () => {
+    setDeleting(true);
+    try {
+      await deleteBook({ id: book.id, title: book.title });
+      setConfirming(false);
+      goBackOrShelf();
+    } catch (e) {
+      console.error('Could not delete the book', e);
+      setDeleting(false);
+      setConfirming(false);
+      show({ message: 'Sorry, I couldn’t remove that book. Please try again.' });
+    }
+  };
+
   return (
     <Screen testID={Testids.bookDetail.root} edges={[...EDGES]}>
       <View style={[styles.bar, { gap: spacing.xs, marginTop: -spacing.sm, marginHorizontal: -spacing.sm }]}>
@@ -66,7 +88,40 @@ function BookDetailContent({ book }: { book: BookDetail }) {
           onPress={() => router.navigate({ pathname: '/book/[id]/edit', params: { id: String(book.id) } })}
           testID={Testids.bookDetail.edit}
         />
+        <IconButton
+          icon="dots-vertical"
+          accessibilityLabel="More actions"
+          expanded={menuOpen}
+          onPress={() => setMenuOpen(true)}
+          testID={Testids.bookDetail.more}
+        />
       </View>
+      <Menu
+        visible={menuOpen}
+        onClose={() => setMenuOpen(false)}
+        accessibilityLabel={`More actions for ${book.title}`}
+        testID={Testids.menu.root}
+        items={[{ label: 'Delete book', icon: 'trash-can-outline', destructive: true, onPress: () => setConfirming(true), testID: Testids.bookDetail.delete }]}
+      />
+      <ConfirmDialog
+        visible={confirming}
+        illustration={<Booky expression="concerned" size={72} animated={false} />}
+        title="Remove this book?"
+        message={`Remove “${book.title}” from your shelf? Loan history for it will be removed too.`}
+        confirmLabel="Remove"
+        cancelLabel="Keep it"
+        destructive
+        busy={deleting}
+        onConfirm={confirmDelete}
+        onCancel={() => setConfirming(false)}
+      >
+        {book.openLoan ? (
+          <View style={[styles.warning, { gap: spacing.sm }]}>
+            <Stamp label="On loan" tone="warn" rotate={-3} />
+            <Text style={styles.flex}>{`It’s on loan to ${book.openLoan.borrowerName} right now, and that loan will be forgotten too.`}</Text>
+          </View>
+        ) : null}
+      </ConfirmDialog>
       <BookHeader book={book} />
       {book.summary ? (
         <Section title="Summary">
@@ -136,4 +191,5 @@ const styles = StyleSheet.create({
   bar: { flexDirection: 'row', alignItems: 'center' },
   flex: { flex: 1 },
   loan: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap' },
+  warning: { flexDirection: 'row', alignItems: 'center' },
 });

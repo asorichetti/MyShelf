@@ -19,7 +19,11 @@ let db: Db;
 beforeEach(async () => {
   db = await createTestDb();
 });
-afterEach(() => db.close());
+afterEach(async () => {
+  // Let late list renders land before the tree goes away.
+  await act(async () => new Promise((resolve) => setTimeout(resolve, 100)));
+  await db.close();
+});
 
 function renderScreen(Component: ComponentType) {
   return renderWithTheme(
@@ -37,6 +41,8 @@ const settle = async () => {
   await waitFor(() => expect(screen.getAllByRole('heading').length).toBeGreaterThan(0));
   // The Shelf reads its sort, then its books: let both queries land.
   for (let i = 0; i < 3; i++) await act(async () => new Promise((resolve) => setTimeout(resolve, 0)));
+  // ...and FlatList its render batch.
+  await act(async () => new Promise((resolve) => setTimeout(resolve, 100)));
 };
 
 const h1s = () => screen.getAllByRole('heading').filter((h) => h.props['aria-level'] === 1);

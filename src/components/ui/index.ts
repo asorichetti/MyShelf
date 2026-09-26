@@ -17,6 +17,7 @@ export {
   SnackbarProvider,
   useSnackbar,
   type SnackbarAction,
+  type SnackbarHideReason,
   type SnackbarOptions,
   type SnackbarProps,
 } from './Snackbar';

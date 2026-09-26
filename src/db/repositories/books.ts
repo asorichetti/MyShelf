@@ -15,7 +15,7 @@ import { findOrCreateGenre, listGenresForBook, setBookGenres } from './genres';
 import { findOrCreateSeries, getSeries } from './series';
 import { BOOK_COLUMNS, NOW_SQL, sqlValue, toBook, type BookRow } from './shared';
 
-import type { Db } from '../types';
+import type { Db, SqlValue } from '../types';
 
 /** Domain field -> column. Order defines INSERT column order. */
 const FIELDS = {
@@ -326,5 +326,122 @@ export async function saveBookDraft(db: Db, draft: ValidBookDraft, id?: number):
 
     await deleteOrphanAuthors(tx);
     return bookId;
+  });
+}
+
+// ---- Delete with undo ----
+
+type Row = Record<string, SqlValue>;
+
+/**
+ * Everything a book's deletion removes or orphans, captured as raw rows so
+ * `restoreBook` can put it back with the same ids.
+ */
+export interface BookSnapshot {
+  book: Row;
+  authors: Row[];
+  bookAuthors: Row[];
+  genres: Row[];
+  bookGenres: Row[];
+  series: Row | null;
+  groups: Row[];
+  groupBooks: Row[];
+  borrowers: Row[];
+  loans: Row[];
+}
+
+/** Captures a book and everything linked to it; null if there is no such book. */
+export async function snapshotBook(db: Db, id: number): Promise<BookSnapshot | null> {
+  const book = await db.get<Row>('SELECT * FROM books WHERE id = ?', [id]);
+  if (!book) return null;
+  return {
+    book,
+    authors: await db.all<Row>('SELECT a.* FROM authors a JOIN book_authors ba ON ba.author_id = a.id WHERE ba.book_id = ?', [id]),
+    bookAuthors: await db.all<Row>('SELECT * FROM book_authors WHERE book_id = ? ORDER BY position', [id]),
+    genres: await db.all<Row>('SELECT g.* FROM genres g JOIN book_genres bg ON bg.genre_id = g.id WHERE bg.book_id = ?', [id]),
+    bookGenres: await db.all<Row>('SELECT * FROM book_genres WHERE book_id = ?', [id]),
+    series: book.series_id == null ? null : await db.get<Row>('SELECT * FROM series WHERE id = ?', [book.series_id]),
+    groups: await db.all<Row>('SELECT g.* FROM groups g JOIN group_books gb ON gb.group_id = g.id WHERE gb.book_id = ?', [id]),
+    groupBooks: await db.all<Row>('SELECT * FROM group_books WHERE book_id = ?', [id]),
+    borrowers: await db.all<Row>('SELECT DISTINCT p.* FROM borrowers p JOIN loans l ON l.borrower_id = p.id WHERE l.book_id = ?', [id]),
+    loans: await db.all<Row>('SELECT * FROM loans WHERE book_id = ? ORDER BY id', [id]),
+  };
+}
+
+/**
+ * Deletes a book in one transaction: its author, genre and group links and
+ * its loan history go with it, and authors left without books are removed.
+ * Returns the snapshot `restoreBook` needs to undo it (null if not found).
+ */
+export async function removeBook(db: Db, id: number): Promise<BookSnapshot | null> {
+  return db.transaction(async (tx) => {
+    const snapshot = await snapshotBook(tx, id);
+    if (!snapshot) return null;
+    await tx.run('DELETE FROM books WHERE id = ?', [id]);
+    await deleteOrphanAuthors(tx);
+    return snapshot;
+  });
+}
+
+async function insertRow(db: Db, table: string, row: Row): Promise<void> {
+  const cols = Object.keys(row);
+  await db.run(
+    `INSERT INTO ${table} (${cols.join(', ')}) VALUES (${cols.map(() => '?').join(', ')})`,
+    cols.map((c) => row[c]),
+  );
+}
+
+/**
+ * Puts a row back with its old id when that id is free, reuses it when it
+ * still holds the same entity (same `key` column), and otherwise inserts a
+ * copy with a new id. Returns the id to link to.
+ */
+async function restoreEntity(db: Db, table: string, row: Row, key: string): Promise<number> {
+  const existing = await db.get<Row>(`SELECT * FROM ${table} WHERE id = ?`, [row.id]);
+  if (!existing) {
+    await insertRow(db, table, row);
+    return row.id as number;
+  }
+  if (existing[key] === row[key]) return row.id as number;
+  const { id: _old, ...rest } = row;
+  await insertRow(db, table, rest);
+  return (await db.get<{ id: number }>('SELECT last_insert_rowid() AS id'))!.id;
+}
+
+/**
+ * Undoes `removeBook`: re-inserts the book with the same id and every link
+ * and loan, restoring authors, series, groups and borrowers that went
+ * missing in the meantime. All or nothing.
+ */
+export async function restoreBook(db: Db, snapshot: BookSnapshot): Promise<void> {
+  await db.transaction(async (tx) => {
+    const series = snapshot.series ? await restoreEntity(tx, 'series', snapshot.series, 'name') : null;
+    await insertRow(tx, 'books', { ...snapshot.book, series_id: series });
+    const bookId = snapshot.book.id as number;
+
+    const authorIds = new Map<SqlValue, number>();
+    for (const a of snapshot.authors) authorIds.set(a.id, await restoreEntity(tx, 'authors', a, 'name'));
+    for (const link of snapshot.bookAuthors) {
+      await insertRow(tx, 'book_authors', { ...link, book_id: bookId, author_id: authorIds.get(link.author_id) ?? link.author_id });
+    }
+
+    // Genre names are unique, so a genre is found again by name.
+    const genreIds = new Map<SqlValue, number>();
+    for (const g of snapshot.genres) genreIds.set(g.id, (await findOrCreateGenre(tx, String(g.name))).id);
+    for (const link of snapshot.bookGenres) {
+      await insertRow(tx, 'book_genres', { ...link, book_id: bookId, genre_id: genreIds.get(link.genre_id) ?? link.genre_id });
+    }
+
+    const groupIds = new Map<SqlValue, number>();
+    for (const g of snapshot.groups) groupIds.set(g.id, await restoreEntity(tx, 'groups', g, 'name'));
+    for (const link of snapshot.groupBooks) {
+      await insertRow(tx, 'group_books', { ...link, book_id: bookId, group_id: groupIds.get(link.group_id) ?? link.group_id });
+    }
+
+    const borrowerIds = new Map<SqlValue, number>();
+    for (const b of snapshot.borrowers) borrowerIds.set(b.id, await restoreEntity(tx, 'borrowers', b, 'name'));
+    for (const loan of snapshot.loans) {
+      await insertRow(tx, 'loans', { ...loan, book_id: bookId, borrower_id: borrowerIds.get(loan.borrower_id) ?? loan.borrower_id });
+    }
   });
 }

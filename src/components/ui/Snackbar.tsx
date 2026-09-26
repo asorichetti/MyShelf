@@ -81,7 +81,15 @@ export interface SnackbarOptions {
   action?: SnackbarAction;
   /** Auto-hide delay in ms. Defaults to 4 s, or 6 s when there is an action. */
   duration?: number;
+  /**
+   * Called once when this snackbar goes away: `action` (its action ran),
+   * `timeout`, `replaced` (another snackbar took its place) or `dismissed`.
+   * Use it to finish work the action could still have undone.
+   */
+  onHide?: (reason: SnackbarHideReason) => void;
 }
+
+export type SnackbarHideReason = 'action' | 'timeout' | 'replaced' | 'dismissed';
 
 interface ShownSnack extends SnackbarOptions {
   id: number;
@@ -90,7 +98,7 @@ interface ShownSnack extends SnackbarOptions {
 interface SnackbarContextValue {
   snack: ShownSnack | null;
   show: (options: SnackbarOptions) => void;
-  dismiss: () => void;
+  dismiss: (reason?: SnackbarHideReason) => void;
 }
 
 const SnackbarContext = createContext<SnackbarContextValue | null>(null);
@@ -102,8 +110,15 @@ export const SNACKBAR_ACTION_DURATION = 6000;
 export function SnackbarProvider({ children }: { children: ReactNode }) {
   const [snack, setSnack] = useState<ShownSnack | null>(null);
   const nextId = useRef(1);
-  const show = useCallback((options: SnackbarOptions) => setSnack({ ...options, id: nextId.current++ }), []);
-  const dismiss = useCallback(() => setSnack(null), []);
+  const current = useRef<ShownSnack | null>(null);
+  const replace = useCallback((next: ShownSnack | null, reason: SnackbarHideReason) => {
+    const previous = current.current;
+    current.current = next;
+    setSnack(next);
+    previous?.onHide?.(reason);
+  }, []);
+  const show = useCallback((options: SnackbarOptions) => replace({ ...options, id: nextId.current++ }, 'replaced'), [replace]);
+  const dismiss = useCallback((reason: SnackbarHideReason = 'dismissed') => replace(null, reason), [replace]);
   const value = useMemo(() => ({ snack, show, dismiss }), [snack, show, dismiss]);
   return <SnackbarContext.Provider value={value}>{children}</SnackbarContext.Provider>;
 }
@@ -128,7 +143,7 @@ export function SnackbarHost({ style }: { style?: StyleProp<ViewStyle> }) {
   useEffect(() => {
     if (!snack || paused) return;
     const ms = snack.duration ?? (snack.action ? SNACKBAR_ACTION_DURATION : SNACKBAR_DURATION);
-    const timer = setTimeout(dismiss, ms);
+    const timer = setTimeout(() => dismiss('timeout'), ms);
     return () => clearTimeout(timer);
   }, [snack, paused, dismiss]);
 
@@ -136,7 +151,7 @@ export function SnackbarHost({ style }: { style?: StyleProp<ViewStyle> }) {
   const action = snack.action && {
     label: snack.action.label,
     onPress: () => {
-      dismiss();
+      dismiss('action');
       snack.action!.onPress();
     },
   };

@@ -108,19 +108,21 @@ A usable, offline catalogue: the user can add a book by hand, see it on the Shel
 - **Tests:** `src/components/book/__tests__/CoverImage.test.tsx`, `src/domain/__tests__/hashColour.test.ts`.
 - **Delivered:** built before P01-03, which uses it. `GeneratedCover` is a cloth-coloured `View` with an SVG layer for the spine hinge and brass rules, and the title and author as wrapping `Text` in Lora (SVG text cannot wrap); a thumbnail shows the title's initial. Bindings come from `coverPalette` and sizes from `coverSizes` in `src/theme/tokens.ts` (`theme.covers`, `theme.coverSizes`); every binding's ink is checked for AA. `hashColour(title, count)` is FNV-1a over the trimmed, lower-cased title. The generated cover sits under the image as its placeholder; on error the image is removed (no broken `<img>` left for the render gate), and a decorative image gets `alt=""`.
 
-### P01-11 Delete book with confirmation and undo
+### P01-11 Delete book with confirmation and undo — done
 
 - **Description:** "Delete book" in detail overflow → `ConfirmDialog` (Booky *concerned*: "Remove 'Dune' from your shelf? Loan history for it will be removed too."). Delete runs in a transaction; a snackbar offers "Undo" for 6 s, which re-inserts the captured book graph (book, authors links, genres, group memberships, loans) with the same id.
 - **Files:** `src/features/book/useDeleteBook.ts`, `src/db/repositories/books.ts` (`snapshot`, `restore`), `src/app/book/[id].tsx`.
 - **Acceptance:** delete removes all dependent rows; undo restores them exactly; open-loan books show an extra warning.
 - **Tests:** `src/db/repositories/__tests__/books.deleteRestore.test.ts`, `src/features/book/__tests__/useDeleteBook.test.tsx`.
+- **Delivered:** the repository functions are `booksRepo.removeBook(db, id)` (snapshot, delete and orphaned-author cleanup in one transaction; returns the snapshot) and `booksRepo.restoreBook(db, snapshot)` (all or nothing; puts back the book with its id, links and loans, and re-creates any author, series, group or borrower that went missing in the meantime); `snapshotBook` is exported too. The route file is unchanged: the menu and dialog live in `BookDetailScreen`. The dialog's confirm is "Remove", its cancel "Keep it"; an open loan adds an "On loan" stamp and a sentence naming the borrower. The snackbar reads "Removed “Dune” from your shelf" with Undo for 6 s, then "“Dune” is back on your shelf". A downloaded cover file (Phase 02's `deleteCover`) is deleted only when the snackbar goes without Undo, through a new `onHide(reason)` on snackbar options.
 
-### P01-12 Library change events and screen refresh
+### P01-12 Library change events and screen refresh — done
 
 - **Description:** Tiny typed event emitter (`library-changed`, `loans-changed`, `groups-changed`, `settings-changed`) so feature hooks refresh after writes without a global store. Hooks subscribe on mount and on screen focus.
 - **Files:** `src/features/events.ts`, feature hooks.
 - **Acceptance:** adding/editing/deleting a book updates the Shelf without manual refresh.
 - **Tests:** `src/features/__tests__/events.test.ts`, integration in `src/__tests__/shelf.test.tsx`.
+- **Delivered:** built before P01-03, which uses it. `subscribe(event, fn)` returns an unsubscribe function, `emit(event)` notifies a copy of the listener list (a throwing listener is logged and the rest still run), and `useLibraryEvent(events, fn)` subscribes for the component's lifetime with the latest callback. `useShelf` and `useBook` reload on `library-changed` (the book also on `loans-changed`); the form emits `library-changed`, the delete and its Undo emit `library-changed`, `loans-changed` and `groups-changed`, and the sort emits `settings-changed`. There is no separate focus subscription: tab screens (and the Shelf under a pushed book page) are unmounted when unfocused, so they reload on every return.
 
 ---
 
