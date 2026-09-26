@@ -135,4 +135,56 @@ describe('createRateLimiter', () => {
     await second;
     expect(starts).toEqual([50_000, 51_000]);
   });
+
+  describe('queues with a rule of their own', () => {
+    const rules = { 'covers/id': { minIntervalMs: 334, maxConcurrent: 3 }, 'covers/isbn': { minIntervalMs: 3000 } };
+
+    it('paces a ruled queue at its own interval, with its own number in flight', async () => {
+      const limiter = createRateLimiter({ rules });
+      const log: string[] = [];
+      const tasks = ['a', 'b', 'c', 'd'].map((l) => deferredTask(log, l));
+      const done = tasks.map((t) => limiter.schedule('covers/id', t.task));
+      await jest.advanceTimersByTimeAsync(0);
+      expect(log).toEqual(['a@0']);
+      await jest.advanceTimersByTimeAsync(334);
+      expect(log).toEqual(['a@0', 'b@334']);
+      await jest.advanceTimersByTimeAsync(334);
+      // Three in flight: the fourth waits for one to finish even though its interval has passed.
+      await jest.advanceTimersByTimeAsync(2000);
+      expect(log).toEqual(['a@0', 'b@334', 'c@668']);
+      expect(limiter.active).toBe(3);
+      tasks[0].finish();
+      await jest.advanceTimersByTimeAsync(0);
+      expect(log).toEqual(['a@0', 'b@334', 'c@668', 'd@2668']);
+      tasks.slice(1).forEach((t) => t.finish());
+      await Promise.all(done);
+      expect(limiter.active).toBe(0);
+    });
+
+    it('does not take places from the shared pool, and the shared pool keeps its cap of 2', async () => {
+      const limiter = createRateLimiter({ rules });
+      const log: string[] = [];
+      const hosts = ['one.example', 'two.example', 'three.example'].map((h) => ({ h, t: deferredTask(log, h) }));
+      const covers = ['c1', 'c2'].map((l) => deferredTask(log, l));
+      const all = [...hosts.map(({ h, t }) => limiter.schedule(h, t.task)), ...covers.map((t) => limiter.schedule('covers/id', t.task))];
+      await jest.advanceTimersByTimeAsync(400);
+      // Two shared requests in flight (the third host waits); the covers queue runs alongside.
+      expect(log).toEqual(['one.example@0', 'two.example@0', 'c1@0', 'c2@334']);
+      hosts[0].t.finish();
+      await jest.advanceTimersByTimeAsync(0);
+      expect(log).toContain('three.example@400');
+      [...hosts.slice(1).map((x) => x.t), ...covers].forEach((t) => t.finish());
+      await Promise.all(all);
+    });
+
+    it('spaces a ruled queue without a pool of its own at its interval, sharing the pool', async () => {
+      const limiter = createRateLimiter({ rules, minIntervalMs: 0 });
+      const starts: number[] = [];
+      const run = () => limiter.schedule('covers/isbn', async () => void starts.push(Date.now()));
+      const all = Promise.all([run(), run(), run()]);
+      await jest.advanceTimersByTimeAsync(6000);
+      await all;
+      expect(starts).toEqual([0, 3000, 6000]);
+    });
+  });
 });

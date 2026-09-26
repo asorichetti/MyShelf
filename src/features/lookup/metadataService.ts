@@ -1,12 +1,12 @@
 import { useMemo } from 'react';
 
 import { apiCacheRepo, settingsRepo, useDatabase, type Db } from '@/db';
-import { createHttpClient, createRateLimiter, createResponseCache, type HttpClient } from '@/services/http';
+import { APP_RATE_RULES, createHttpClient, createRateLimiter, createResponseCache, type HttpClient } from '@/services/http';
 import { userAgent } from '@/services/http/userAgent';
 import { createDefaultMetadataService, type MetadataService } from '@/services/metadata';
 
-/** One queue for the whole app, so the per-host etiquette holds across every client. */
-const limiter = createRateLimiter();
+/** One queue for the whole app, so the per-host etiquette (PLAN §6) holds across every client. */
+const limiter = createRateLimiter({ rules: APP_RATE_RULES });
 
 interface Wired {
   http: HttpClient;

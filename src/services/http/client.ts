@@ -1,6 +1,7 @@
 import { type ResponseCache } from './cache';
 import { systemClock, type Clock } from './clock';
 import { abortError, HttpError, isAbortError, NotFoundError, OfflineError, RateLimitedError, TimeoutError } from './errors';
+import { rateKeyOf } from './etiquette';
 import { createRateLimiter, type RateLimiter } from './rateLimiter';
 
 export type FetchLike = (url: string, init: { headers: Record<string, string>; signal: AbortSignal }) => Promise<Response>;
@@ -68,11 +69,6 @@ export function parseRetryAfter(value: string | null, now: number): number | nul
   return Number.isNaN(at) ? null : Math.max(0, at - now);
 }
 
-function hostOf(url: string): string {
-  const match = /^[a-z]+:\/\/([^/?#]+)/i.exec(url);
-  return match ? match[1].toLowerCase() : url;
-}
-
 function sleep(ms: number, clock: Clock, signal?: AbortSignal): Promise<void> {
   return new Promise((resolve, reject) => {
     if (signal?.aborted) return reject(abortError(signal.reason));
@@ -106,7 +102,7 @@ export function createHttpClient(options: HttpClientOptions = {}): HttpClient {
   /** One attempt, run inside the limiter slot. Resolves with the response or rejects with a typed error. */
   function attempt(url: string, signal: AbortSignal | undefined, accept: string): Promise<Response> {
     return limiter.schedule(
-      hostOf(url),
+      rateKeyOf(url),
       async () => {
         if (signal?.aborted) throw abortError(signal.reason);
         const controller = new AbortController();
