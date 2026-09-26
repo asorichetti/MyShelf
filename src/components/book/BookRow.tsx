@@ -1,4 +1,5 @@
-import { memo } from 'react';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { memo, type ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { CatalogueCard, Stamp, Text } from '@/components/ui';
@@ -20,6 +21,12 @@ export function bookRowLabel(item: Pick<BookListItem, 'title' | 'authors' | 'pub
 export interface BookRowProps {
   item: BookListItem;
   onPress: (id: number) => void;
+  /** Long press, e.g. to start selecting books. */
+  onLongPress?: (id: number) => void;
+  /** Set while the Shelf is selecting: the row becomes a checkbox, checked or not. */
+  selected?: boolean;
+  /** Extra badges shown with the year and series (e.g. a loan badge). */
+  badges?: ReactNode;
 }
 
 /**
@@ -27,8 +34,8 @@ export interface BookRowProps {
  * in Lora, author and year typed in Courier Prime, a series badge and an
  * "On loan" stamp.
  */
-export const BookRow = memo(function BookRow({ item, onPress }: BookRowProps) {
-  const { colors, spacing, radii } = useTheme();
+export const BookRow = memo(function BookRow({ item, onPress, onLongPress, selected, badges }: BookRowProps) {
+  const { colors, spacing, radii, sizes } = useTheme();
   const author = joinNames(item.authors);
   const series = item.seriesName ? formatSeriesLabel(item.seriesName, item.seriesPosition) : null;
   return (
@@ -36,12 +43,26 @@ export const BookRow = memo(function BookRow({ item, onPress }: BookRowProps) {
       testID={Testids.home.row}
       title={item.title}
       authors={author || null}
-      cover={<CoverImage uri={item.coverUri} title={item.title} author={author} size="thumb" />}
+      cover={
+        <View>
+          <CoverImage uri={item.coverUri} title={item.title} author={author} size="thumb" />
+          {selected !== undefined ? (
+            <View
+              testID={Testids.selection.checkbox}
+              style={[styles.check, { top: -spacing.xs, left: -spacing.xs, backgroundColor: selected ? colors.primary : colors.surface, borderColor: colors.primary, borderRadius: radii.pill }]}
+            >
+              <MaterialCommunityIcons name={selected ? 'check' : 'checkbox-blank-circle-outline'} size={sizes.icon} color={selected ? colors.onPrimary : colors.primary} />
+            </View>
+          ) : null}
+        </View>
+      }
       aside={item.onLoan ? <Stamp label="On loan" tone="accent" rotate={-6} /> : undefined}
       onPress={() => onPress(item.id)}
+      onLongPress={onLongPress ? () => onLongPress(item.id) : undefined}
+      checked={selected}
       accessibilityLabel={bookRowLabel(item)}
       meta={
-        item.publicationYear != null || series ? (
+        item.publicationYear != null || series || badges ? (
           <View style={[styles.meta, { gap: spacing.sm, marginTop: spacing.xxs }]}>
             {item.publicationYear != null ? (
               <Text variant="mono" color="inkMuted">
@@ -55,6 +76,7 @@ export const BookRow = memo(function BookRow({ item, onPress }: BookRowProps) {
                 </Text>
               </View>
             ) : null}
+            {badges}
           </View>
         ) : null
       }
@@ -65,4 +87,5 @@ export const BookRow = memo(function BookRow({ item, onPress }: BookRowProps) {
 const styles = StyleSheet.create({
   meta: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap' },
   badge: { flexShrink: 1 },
+  check: { position: 'absolute', borderWidth: 1.5, padding: 1 },
 });
