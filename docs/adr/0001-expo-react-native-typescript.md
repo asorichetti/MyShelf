@@ -16,7 +16,7 @@ Use **Expo (SDK 57) with React Native 0.86 and TypeScript in strict mode**, **Ex
 ## Consequences
 
 - One TypeScript codebase for Android, the web test target and (later, if wanted) iOS.
-- `react-native-web` gives a real browser build for the auto-test-suite at almost no cost.
+- `react-native-web` gives a real browser build for the auto test suite at almost no cost.
 - ML Kit OCR is a third-party native module, so the app needs a **development build** (`expo-dev-client`), not Expo Go, from Phase 03 on.
 - Expo changes APIs between SDKs; contributors must read the versioned docs for SDK 57 rather than rely on memory (spelled out in `AGENTS.md`).
 - SDK upgrades are deliberate tasks with their own commits, run with `npx expo install --fix` and `npx expo-doctor`.

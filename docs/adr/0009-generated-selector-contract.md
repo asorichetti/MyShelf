@@ -5,7 +5,7 @@
 
 ## Context
 
-The same element is found by Jest (TypeScript), the auto-test-suite (Go, CSS selectors) and Maestro (YAML, Android resource ids). Hand-written id strings in three languages drift apart and break tests silently.
+The same element is found by Jest (TypeScript), the auto test suite (Go, CSS selectors) and Maestro (YAML, Android resource ids). Hand-written id strings in three languages drift apart and break tests silently.
 
 ## Decision
 
@@ -13,7 +13,7 @@ The same element is found by Jest (TypeScript), the auto-test-suite (Go, CSS sel
 - `scripts/gen-selectors.mjs` (`npm run selectors:gen`) generates `src/testing/testids.gen.ts` (`Testids.group.key` → id) and `tools/auto-test-suite/internal/selectors/selectors.gen.go` (`selectors.Group.Key` → `[data-testid="id"]`). Both generated files are committed.
 - `npm run selectors:check` (part of `npm run check`) fails if the generated files are stale.
 - Maestro flows use the ids from `selectors.json` directly (`id: "shelf-add-button"`).
-- Special group `pageState` (`page-content`, `page-error`, and `page-loading` from P00-11) marks screen state for the auto-test-suite `pagestate` gate.
+- Special group `pageState` (`page-content`, `page-error`, and `page-loading` from P00-11) marks screen state for the auto test suite's `pagestate` gate.
 
 ## Consequences
 

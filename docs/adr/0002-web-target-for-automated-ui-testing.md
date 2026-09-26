@@ -10,7 +10,7 @@ UI tests on Android emulators are slow, flaky and hard to run on free CI. Screen
 ## Decision
 
 - Keep a **web build** (`react-native-web`, `npm run web`, `npm run export:web`) whose purpose is automated testing, not end users.
-- Build a **auto-test-suite** in Go (`tools/auto-test-suite`, Cobra + playwright-go) that drives the web build in headless Chromium. Commands: `navigate`, `screenshot`, `interact`, `journey`, `smoke`. Every command writes an evidence bundle (screenshot, DOM, console, network, gate results) and prints JSON to stdout. UX gates (`pagestate`, `render`, `console`, `network`, `a11y`) run alongside assertions. Journeys self-register and each runs in a fresh browser.
+- Build an **auto test suite** in Go (`tools/auto-test-suite`, Cobra + playwright-go) that drives the web build in Chromium (headless in CI). Commands: `navigate`, `screenshot`, `interact`, `journey`, `smoke`. Every command writes an evidence bundle (screenshot, rendered DOM, console, failed network requests, gate results) and prints one JSON document to stdout. UX gates (`pagestate`, `render`, `console`, `network`, `a11y`) run alongside assertions. Journeys self-register and each runs in a fresh browser.
 - Use **Maestro** YAML flows (`.maestro/`) on an emulator or device for features that need native modules: camera, barcode scanning, ML Kit OCR, sharing, notifications, Android back behaviour.
 - Native-only services have web stubs (typed ISBN / typed cover text) so the rest of each flow is still testable on web.
 

@@ -20,4 +20,4 @@ The owner wants a cute, extremely user-friendly app with a purple colour scheme 
 - A distinctive, consistent look that is cheap to adjust (change tokens, not components).
 - Dark theme (Phase 09) is a second token set, not a rewrite.
 - Booky needs careful copywriting and a small amount of state (seen/muted tips in `settings`).
-- The auto-test-suite `a11y` gate enforces contrast and naming continuously, so the palette cannot quietly regress.
+- Contrast is enforced by unit tests over the token pairs (P00-08), and the auto test suite's `render` and `a11y` gates check on every run that the tokens are applied and that controls are named, so the palette cannot quietly regress.
