@@ -61,6 +61,7 @@ export const helpContent: Record<HelpScreen, HelpContent> = {
     title: 'A book’s card',
     sections: [
       { heading: 'Editing details', body: 'Tap the pencil to change anything: title, authors, genres, series or your own notes.' },
+      { heading: 'Your rating', body: 'Tap a star to rate the book, from 1 to 5. Tap the same star again, or Clear rating, to take it away. It’s only yours: looking up the book’s details never changes it.' },
       { heading: 'What is an edition?', body: 'The same book printed by a different publisher, in a different year or format. Each edition has its own ISBN.' },
       { heading: 'Lending', body: 'Lend the book from here, and mark it returned when it comes home.' },
     ],

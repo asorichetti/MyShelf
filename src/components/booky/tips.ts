@@ -334,7 +334,7 @@ export const tips: readonly TipDef[] = [
   help('loans', 'Books you’ve lent out live here. Tap “Mark returned” when one comes home.'),
   help('groups', 'Groups are your own shelves: favourites, a book club, anything you like.'),
   help('settings', 'Choose how chatty I am, and set up reminders for books you’ve lent.'),
-  help('book', 'Everything about this book. Lend it, add it to a group or edit its details from here.'),
+  help('book', 'Everything about this book. Rate it, lend it, add it to a group or edit its details from here.'),
   help('editions', 'Pick the edition that matches your copy: check the cover, the publisher and the year.'),
   help('series', 'The whole series in order. Dashed spines are the books you don’t have yet.'),
 ];
