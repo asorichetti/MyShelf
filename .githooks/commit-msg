@@ -1,0 +1,7 @@
+#!/bin/sh
+# Rejects commit messages that attribute the work to an AI tool or assistant.
+# Enable once per clone with: git config core.hooksPath .githooks
+if grep -Eiq '(co-authored-by:.*(claude|anthropic|openai|copilot|gpt|gemini|noreply@anthropic))|generated (with|by) .*(claude|ai|llm|gpt|copilot)|\b(claude|anthropic|chatgpt|copilot)\b' "$1"; then
+  echo "commit-msg: AI/tool attribution is not allowed in commit messages." >&2
+  exit 1
+fi
