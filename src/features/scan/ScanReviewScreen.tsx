@@ -121,6 +121,7 @@ export function ScanReviewScreen() {
         ) : (
           <View testID={Testids.scanReview.empty}>
             <EmptyState
+              testID={Testids.emptyState.root}
               illustration={<Booky expression="sleepy" size={96} />}
               title="The tray is empty"
               message="Turn on “Scan several” on the Scan tab and every book you scan waits here."

@@ -56,7 +56,13 @@ export function AuthorsScreen() {
         <Text color="inkMuted">{authors.length === 1 ? '1 author' : `${authors.length} authors`}, filed by surname.</Text>
       </View>
       {authors.length === 0 ? (
-        <EmptyState illustration={<Booky expression="sleepy" size={112} />} title="No authors yet" message="Authors appear here as you add books." />
+        <EmptyState
+          testID={Testids.emptyState.root}
+          illustration={<Booky expression="sleepy" size={112} />}
+          title="No authors yet"
+          message="Authors appear here as you add books."
+          action={{ label: 'Add a book', onPress: () => router.navigate('/book/new'), variant: 'secondary' }}
+        />
       ) : (
         <>
           <LetterIndex letters={sections.map((s) => s.letter)} current={current} onSelect={jump} testID={Testids.authors.letter} />

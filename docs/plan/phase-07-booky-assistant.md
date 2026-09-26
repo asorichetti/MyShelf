@@ -49,12 +49,13 @@ Turn Booky from a component (P00-10) into a genuinely helpful, never-annoying as
 - **Tests:** `src/__tests__/onboarding.test.tsx`.
 - **Delivered:** `/onboarding` (`src/app/onboarding.tsx` → `src/features/onboarding/OnboardingScreen.tsx`) shows four `OnboardingCard`s (`src/components/booky/OnboardingCard.tsx`): Booky *happy*, *thinking*, *happy*, *sleepy*, the card title as the screen's one h1, and "Page 2 of 4" in a polite live region (the dots are hidden from assistive tech). Next and Back move between cards; Skip (cards 1–3), "Let’s fill your shelf" (→ Scan) and "Look around first" (→ Shelf) all set `onboarding.done` to true and emit `settings-changed`. The redirect is `OnboardingGate` in the root layout rather than in `_layout.tsx` itself: it reads `onboarding.done` on each route change (never on `/e2e`) until it is true. `onboarding.done` is `null` on a fresh install; `needsOnboarding(done, e2e)` (`src/domain/onboarding.ts`) shows it for null or false, but in E2E builds (every web build) only for an explicit false, which only the new `first-run` fixture sets (`Fixture.onboarding`), so no existing journey meets it. Booky's welcome tips (empty shelf, first Scan visit) wait until the onboarding is done (`welcomeTipsOn`). Revisiting it from Settings is the "Show the welcome tour" button in the Booky settings section (P07-06).
 
-### P07-04 Empty states audit
+### P07-04 Empty states audit — done
 
 - **Description:** Every list or screen that can be empty uses `EmptyState` with an appropriate Booky expression and a single clear action: Shelf, search no-matches, Loans (out / history), Groups, group detail, Series list, Genres, Authors, Scan review tray, Pending lookups. Add a `first-run` fixture.
 - **Files:** screens listed; `src/testing/fixtures/firstRun.ts`.
 - **Acceptance:** checklist in the PR with an auto test suite screenshot of each empty state (the `empty-states-gallery` journey).
 - **Tests:** one component test per empty state (`src/__tests__/emptyStates.test.tsx`).
+- **Delivered:** checklist (the `empty-states-gallery` journey screenshots each as `empty-<name>.png`): Shelf (*happy*, Scan a book, with Add manually as the quieter second), search with no matches (*thinking*, Clear search; filters: Clear filters), Loans out (*sleepy*, now "Go to your shelf"; one borrower: "Show everyone"), Loans history (*sleepy*, now "See what’s out"), Groups (*happy*, New group), a group with no books (*happy*, Add books), Series (*sleepy*, now "Add a book"), Genres and Authors (*sleepy*, now "Add a book"), the scan review tray (*sleepy*, Back to scanning). Pending lookups have no screen of their own: the Shelf's banner only appears while something is queued, so there is nothing to show empty. Genres, Authors, a group and the tray now carry `emptyState.root`. The `first-run` fixture came with P07-03.
 
 ### P07-05 Contextual help
 

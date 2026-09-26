@@ -79,6 +79,7 @@ export function SeriesListScreen() {
           illustration={<Booky expression="sleepy" size={96} />}
           title="No series yet"
           message="When a book is part of a series, add the series on its card and it lines up here, in order, with any gaps showing."
+          action={{ label: 'Add a book', onPress: () => router.navigate('/book/new'), variant: 'secondary' }}
         />
       )}
     </Screen>

@@ -87,13 +87,15 @@ export function LoansScreen() {
           illustration={<Booky expression="sleepy" size={96} />}
           title={`${who} has nothing out`}
           message="Everything they borrowed is back on your shelf."
+          action={{ label: 'Show everyone', onPress: () => setBorrowerId(''), variant: 'secondary' }}
         />
       ) : (
         <EmptyState
           testID={Testids.emptyState.root}
           illustration={<Booky expression="sleepy" size={112} />}
           title="Every book is home. Lovely."
-          message="When you lend a book I’ll stamp the due date here, and give you a gentle nudge if it’s late."
+          message="When you lend a book I’ll stamp the due date here, and give you a gentle nudge if it’s late. Lend one from its page on your shelf."
+          action={{ label: 'Go to your shelf', onPress: () => router.navigate('/'), variant: 'secondary' }}
         />
       )
     ) : (
@@ -102,6 +104,7 @@ export function LoansScreen() {
         illustration={<Booky expression="sleepy" size={96} />}
         title={who ? `Nothing back from ${who} yet` : 'Nothing has come back yet'}
         message="Returned loans are kept here, newest first."
+        action={{ label: 'See what’s out', onPress: () => setSection('out'), variant: 'secondary' }}
       />
     );
 

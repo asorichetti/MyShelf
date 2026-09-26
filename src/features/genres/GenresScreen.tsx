@@ -104,9 +104,11 @@ export function GenresScreen() {
       </View>
       {genres.length === 0 ? (
         <EmptyState
+          testID={Testids.emptyState.root}
           illustration={<Booky expression="sleepy" size={112} />}
           title="No genres yet"
           message="Genres appear here as you add books. Lookups fill them in for you."
+          action={{ label: 'Add a book', onPress: () => router.navigate('/book/new'), variant: 'secondary' }}
         />
       ) : (
         <View role="list" aria-label="Genres" style={{ gap: spacing.sm }}>

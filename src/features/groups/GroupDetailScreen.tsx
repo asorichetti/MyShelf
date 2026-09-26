@@ -118,6 +118,7 @@ export function GroupDetailScreen() {
       ) : null}
       {items.length === 0 ? (
         <EmptyState
+          testID={Testids.emptyState.root}
           illustration={<Booky expression="happy" size={96} />}
           title="No books here yet"
           message="Pick some from your shelf and they’ll line up here in any order you like."
