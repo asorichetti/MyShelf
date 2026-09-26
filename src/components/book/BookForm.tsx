@@ -2,7 +2,7 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useImperativeHandle, useRef, type Ref } from 'react';
 import { ScrollView, StyleSheet, View, type TextInput } from 'react-native';
 
-import { Button, Chip, Heading, SelectField, Text, TextField } from '@/components/ui';
+import { Button, Chip, Heading, SelectField, StarRating, Text, TextField } from '@/components/ui';
 import { bookFormats, languages, type BookDraft, type BookDraftErrors, type BookDraftField, type BookFormat } from '@/domain';
 import { Testids } from '@/testing/testids.gen';
 import { useTheme } from '@/theme';
@@ -325,6 +325,15 @@ export function BookForm({
             nameRef={seriesNameRef}
             positionRef={seriesPositionRef}
           />
+        </Section>
+
+        <Section title="Your rating">
+          <View testID={Testids.bookForm.rating} style={{ gap: spacing.xs }}>
+            <StarRating value={draft.rating} onChange={(r) => onChange('rating', r)} />
+            <Text variant="caption" color="inkMuted">
+              Just for you. Looking up the book’s details never changes it.
+            </Text>
+          </View>
         </Section>
 
         <Section title="Summary and notes">

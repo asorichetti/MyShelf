@@ -61,6 +61,17 @@ describe('Adding a book by hand', () => {
     expect(screen.getAllByTestId(Testids.home.row)).toHaveLength(1);
   });
 
+  it('saves the rating chosen in the form', async () => {
+    await openAddForm();
+    fireEvent.changeText(screen.getByTestId(Testids.bookForm.title), 'Circe');
+    const stars = () => screen.getAllByTestId(Testids.rating.star, { includeHiddenElements: true });
+    await act(async () => fireEvent.press(stars()[3]));
+    expect(screen.getByTestId(Testids.rating.control).props['aria-valuetext']).toBe('4 out of 5 stars');
+    await press(Testids.bookForm.save);
+    const [book] = await booksRepo.listBooks(db);
+    expect(book).toMatchObject({ title: 'Circe', rating: 4 });
+  });
+
   it('keeps an invalid ISBN from saving and says why', async () => {
     const r = await openAddForm();
     fireEvent.changeText(screen.getByTestId(Testids.bookForm.title), 'Mystery');
@@ -134,6 +145,20 @@ describe('Editing a book', () => {
     expect(r.getPathname()).toBe(`/book/${mort.id}`);
     expect(screen.getByTestId(Testids.bookDetail.callNumber)).toHaveTextContent('FIC PRA 1988');
     expect(screen.getByTestId(Testids.snackbar.root)).toHaveTextContent('Saved your changes');
+  });
+
+  it('shows the book’s rating, and clearing it counts as a change to save', async () => {
+    await loadFixture(db, 'demo');
+    const [mort] = await booksRepo.findBooksByIsbn(db, '9780552131063');
+    renderApp(db, `/book/${mort.id}/edit`, routes);
+    await advance(0);
+    expect(screen.getByTestId(Testids.rating.control).props['aria-valuetext']).toBe('5 out of 5 stars');
+    await act(async () => fireEvent.press(screen.getByRole('button', { name: 'Clear rating' })));
+    await press(Testids.bookForm.cancel);
+    expect(screen.getByText('Discard your changes?')).toBeOnTheScreen();
+    await press(Testids.dialog.cancel);
+    await press(Testids.bookForm.save);
+    expect((await booksRepo.getBook(db, mort.id))!.rating).toBeNull();
   });
 
   it('shows the missing-book state for an unknown id', async () => {
