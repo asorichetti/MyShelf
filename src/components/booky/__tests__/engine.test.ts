@@ -175,6 +175,19 @@ describe('mute, welcome tips and reset', () => {
   });
 });
 
+describe('backup reminder (P08-06 on the engine)', () => {
+  it('shows in Helpful and Quiet with "Back up" and "Later", not when off or muted', () => {
+    const backup: BookyEvent = { type: 'backup-due' };
+    expect(selectTip(state({ mode: 'quiet' }), backup, 0)).toMatchObject({
+      title: 'A little safety net',
+      action: { label: 'Back up', href: '/settings/backup' },
+      secondary: { label: 'Later', id: 'backup-later' },
+    });
+    expect(selectTip(state({ mode: 'off' }), backup, 0)).toBeNull();
+    expect(selectTip(state({ muted: ['backup-due'] }), backup, 0)).toBeNull();
+  });
+});
+
 describe('selectFirst', () => {
   it('takes the first alternative with something to say', () => {
     const s = state({ seen: ['loan-overdue:1@2026-06-15'] });
