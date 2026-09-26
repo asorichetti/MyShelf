@@ -376,6 +376,10 @@ is covered:
   the `network` gate under the rule `unmocked`, naming the URL. So a journey
   that would have reached the real network fails instead.
 - Same-origin traffic (the bundle, assets) is never intercepted.
+- Covers are routed on their own pattern (`COVERS_URL_PATTERN`, plus
+  `books.google.com/**`), separately from the API handler, so a journey that
+  wants the real covers can still `unroute(COVERS_URL_PATTERN)` (the `live`
+  suite does) and those requests then go to the network.
 
 `index.json` is `{ "routes": [ ... ] }`; each entry is:
 

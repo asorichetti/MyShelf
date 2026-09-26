@@ -5,7 +5,7 @@
 // leaves the tested origin is aborted and remembered, so the network gate can
 // report it as `unmocked`.
 import { classify, matchRoute, type MockIndex } from './index.ts';
-import { coverResponse } from '../browser/covers.ts';
+import { COVERS_URL_PATTERN, coverResponse } from '../browser/covers.ts';
 
 import type { BrowserContext, Route } from 'playwright';
 
@@ -44,35 +44,50 @@ export function activeMockApi(): { index: MockIndex; baseOrigin: string } | null
 
 const corsHeaders = { 'Access-Control-Allow-Origin': '*', 'Cross-Origin-Resource-Policy': 'cross-origin' };
 
+/** Google Books thumbnails in lookup results, answered like covers. */
+export const GOOGLE_THUMBNAILS_PATTERN = 'https://books.google.com/**';
+
 /**
  * Routes every request that leaves `baseOrigin` in `ctx`: mocked hosts from
- * the index, covers from the index or the test JPEGs, and everything else
- * aborted as unmocked. Same-origin requests are never intercepted.
+ * the index, anything else aborted as unmocked, and the cover hosts from the
+ * index or the test JPEGs. Covers get their own routes on the usual pattern
+ * (`COVERS_URL_PATTERN`), so a journey that wants the real ones (the `live`
+ * suite) can `unroute` them as before. Same-origin requests are never
+ * intercepted.
  */
 export async function installMockApi(ctx: BrowserContext, index: MockIndex, baseOrigin: string): Promise<void> {
   const state = mockStateFor(ctx);
-  const handler = async (route: Route) => {
+  const corsPreflight = async (route: Route) =>
+    route.fulfill({ status: 204, headers: { ...corsHeaders, 'Access-Control-Allow-Headers': '*', 'Access-Control-Allow-Methods': 'GET, HEAD' } });
+
+  const api = async (route: Route) => {
     const req = route.request();
     const url = req.url();
-    const kind = classify(url, baseOrigin);
-    if (req.method() === 'OPTIONS') {
-      await route.fulfill({ status: 204, headers: { ...corsHeaders, 'Access-Control-Allow-Headers': '*', 'Access-Control-Allow-Methods': 'GET, HEAD' } });
-      return;
-    }
-    const hit = kind === 'mocked-host' || kind === 'covers' ? matchRoute(index, url) : undefined;
+    if (req.method() === 'OPTIONS') return corsPreflight(route);
+    const hit = classify(url, baseOrigin) === 'mocked-host' ? matchRoute(index, url) : undefined;
     if (hit) {
       if (hit.expected) state.expected.add(url);
       await route.fulfill({ status: hit.status, contentType: hit.contentType, body: hit.body, headers: corsHeaders });
       return;
     }
-    if (kind === 'covers') {
-      const r = coverResponse(url);
-      await route.fulfill({ status: r.status, contentType: r.contentType, body: r.body, headers: corsHeaders });
-      return;
-    }
     state.unmocked.add(url);
     await route.abort('blockedbyclient');
   };
+
+  const covers = async (route: Route) => {
+    const url = route.request().url();
+    if (route.request().method() === 'OPTIONS') return corsPreflight(route);
+    const hit = matchRoute(index, url);
+    if (hit?.expected) state.expected.add(url);
+    const r = hit ? { status: hit.status, contentType: hit.contentType, body: hit.body } : coverResponse(url);
+    await route.fulfill({ status: r.status, contentType: r.contentType, body: r.body, headers: corsHeaders });
+  };
+
   // A predicate rather than a glob, so same-origin traffic (the bundle, assets) is never intercepted.
-  await ctx.route((u) => classify(u.href, baseOrigin) !== 'same-origin', handler);
+  await ctx.route((u) => {
+    const kind = classify(u.href, baseOrigin);
+    return kind === 'mocked-host' || kind === 'external';
+  }, api);
+  await ctx.route(COVERS_URL_PATTERN, covers);
+  await ctx.route(GOOGLE_THUMBNAILS_PATTERN, covers);
 }
