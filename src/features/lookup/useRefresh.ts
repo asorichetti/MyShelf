@@ -1,0 +1,135 @@
+import { useCallback, useEffect, useState } from 'react';
+
+import { booksRepo, genresRepo, useDatabase } from '@/db';
+import {
+  applyChanges,
+  bookMatchKey,
+  candidateToDraft,
+  diffDrafts,
+  draftFromDetail,
+  validateBookDraft,
+  type BookDetail,
+  type BookDraft,
+  type CurrentBook,
+  type FieldChange,
+  type RefreshField,
+} from '@/domain';
+import { attachCoverFromCandidate } from '@/features/covers';
+import { emit } from '@/features/events';
+import { isAbortError, OfflineError } from '@/services/http';
+import type { BookCandidate, MetadataService } from '@/services/metadata';
+
+import { useMetadataService } from './metadataService';
+
+export type RefreshState =
+  | { status: 'loading' }
+  | { status: 'missing' }
+  /** Neither catalogue knows the book (or a search found only other books). */
+  | { status: 'not-found'; book: BookDetail }
+  | { status: 'error'; book: BookDetail | null; message: string }
+  | { status: 'ready'; book: BookDetail; candidate: BookCandidate; proposed: BookDraft; changes: FieldChange[] };
+
+export interface Refresh {
+  state: RefreshState;
+  ticked: ReadonlySet<RefreshField>;
+  toggle: (field: RefreshField) => void;
+  applying: boolean;
+  /** Saves the ticked changes; resolves with how many fields changed (0 when nothing was ticked). */
+  apply: () => Promise<number>;
+}
+
+/** The candidate describing this book: by ISBN, else a title + first author search that must match. */
+async function findCandidate(book: BookDetail, service: MetadataService, signal: AbortSignal): Promise<BookCandidate | null> {
+  const isbn = book.isbn13 ?? book.isbn10;
+  if (isbn) return (await service.lookupIsbn(isbn, { signal })).candidates[0] ?? null;
+  const author = book.authors[0]?.name;
+  const { candidates } = await service.search(author ? { title: book.title, author } : { title: book.title }, { signal });
+  const key = bookMatchKey(book.title, author);
+  return candidates.find((c) => bookMatchKey(c.title, c.authors[0]) === key) ?? null;
+}
+
+function currentOf(book: BookDetail): CurrentBook {
+  return { draft: draftFromDetail(book), userGenres: book.genres.filter((g) => g.userEdited).map((g) => g.name) };
+}
+
+/**
+ * "Refresh details" for an existing book (P02-12): looks the book up again
+ * and lists what the catalogues would change, field by field. Additions are
+ * ticked, replacements are not; the user's own genres are never removed.
+ */
+export function useRefresh(bookId: number | null, { service: injected }: { service?: MetadataService } = {}): Refresh {
+  const db = useDatabase();
+  const appService = useMetadataService();
+  const service = injected ?? appService;
+  const [state, setState] = useState<RefreshState>(bookId == null ? { status: 'missing' } : { status: 'loading' });
+  const [ticked, setTicked] = useState<ReadonlySet<RefreshField>>(new Set());
+  const [applying, setApplying] = useState(false);
+
+  useEffect(() => {
+    if (bookId == null) return;
+    const abort = new AbortController();
+    (async () => {
+      const book = await booksRepo.getBookDetail(db, bookId);
+      if (!book) return setState({ status: 'missing' });
+      try {
+        const candidate = await findCandidate(book, service, abort.signal);
+        if (abort.signal.aborted) return;
+        if (!candidate) return setState({ status: 'not-found', book });
+        const existingGenres = (await genresRepo.listGenres(db)).map((g) => g.name);
+        const proposed = candidateToDraft(candidate, { existingGenres });
+        const proposedCover = Boolean(candidate.coverUrl || candidate.coverRefs?.olEditionCoverIds.length || candidate.coverRefs?.olWorkCoverIds.length);
+        const changes = diffDrafts(currentOf(book), proposed, { hasCover: Boolean(book.coverUri), proposedCover });
+        setTicked(new Set(changes.filter((c) => c.suggested).map((c) => c.field)));
+        setState({ status: 'ready', book, candidate, proposed, changes });
+      } catch (error) {
+        if (abort.signal.aborted || isAbortError(error)) return;
+        setState({
+          status: 'error',
+          book,
+          message:
+            error instanceof OfflineError
+              ? 'I can’t reach the library catalogues right now. Try again when you’re online.'
+              : 'Something went wrong while I was looking. Please try again.',
+        });
+      }
+    })().catch((error) => {
+      console.error('Could not load the book to refresh', error);
+      setState({ status: 'missing' });
+    });
+    return () => abort.abort();
+  }, [db, bookId, service]);
+
+  const toggle = useCallback((field: RefreshField) => {
+    setTicked((current) => {
+      const next = new Set(current);
+      if (next.has(field)) next.delete(field);
+      else next.add(field);
+      return next;
+    });
+  }, []);
+
+  const apply = useCallback(async () => {
+    if (state.status !== 'ready' || !ticked.size) return 0;
+    const { book, candidate, proposed } = state;
+    setApplying(true);
+    try {
+      const current = currentOf(book);
+      const next = applyChanges(current, proposed, ticked);
+      const valid = validateBookDraft(next);
+      if (!valid.ok) throw new Error(`Refreshed details did not validate: ${Object.keys(valid.errors).join(', ')}`);
+      await booksRepo.refreshBook(db, book.id, valid.value, { userGenres: current.userGenres });
+      emit('library-changed');
+      if (ticked.has('cover')) {
+        // Stores the best real cover in the background; the book is already saved.
+        void attachCoverFromCandidate(db, book.id, candidate)
+          .then((r) => r.status === 'attached' && emit('library-changed'))
+          .catch(() => undefined);
+      }
+      return ticked.size;
+    } finally {
+      setApplying(false);
+    }
+  }, [db, state, ticked]);
+
+  return { state, ticked, toggle, applying, apply };
+}

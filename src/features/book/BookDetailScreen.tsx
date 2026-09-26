@@ -82,7 +82,10 @@ function BookDetailContent({ book }: { book: BookDetail }) {
         onClose={() => setMenuOpen(false)}
         accessibilityLabel={`More actions for ${book.title}`}
         testID={Testids.menu.root}
-        items={[{ label: 'Delete book', icon: 'trash-can-outline', destructive: true, onPress: () => setConfirming(true), testID: Testids.bookDetail.delete }]}
+        items={[
+          { label: 'Refresh details', icon: 'refresh', onPress: () => router.navigate({ pathname: '/book/[id]/refresh', params: { id: String(book.id) } }), testID: Testids.refresh.open },
+          { label: 'Delete book', icon: 'trash-can-outline', destructive: true, onPress: () => setConfirming(true), testID: Testids.bookDetail.delete },
+        ]}
       />
       <ConfirmDialog
         visible={confirming}

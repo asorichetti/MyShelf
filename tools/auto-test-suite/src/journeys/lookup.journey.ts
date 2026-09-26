@@ -183,3 +183,44 @@ register({
     expect(state.images === 0 && state.fallbacks === 1, `/: expected The Farthest Shore to keep its generated cover, found ${q(state)}`);
   },
 });
+
+register({
+  name: 'book-refresh-diff',
+  suite: 'p02',
+  desc: 'Fixture "demo": The Farthest Shore (no summary) -> More -> Refresh details -> field-by-field changes as checkboxes -> keep only the summary ticked -> Update 1 detail -> the detail page shows the summary, nothing else changed',
+  async run(c) {
+    await openFixture(c, 'demo', '/');
+    await waitForCount(c, tid(Testids.home.row), 12, '/');
+    await c.page.locator(`${tid(Testids.home.row)}[aria-label^="The Farthest Shore,"]`).click();
+    const path = await waitForPath(c, /^\/book\/\d+$/, '/ -> The Farthest Shore');
+    await waitVisible(c, tid(d.title), path);
+    expect((await c.page.locator(tid(d.summary)).count()) === 0, `${path}: expected no summary before the refresh`);
+    const factsBefore = await textOf(c, tid(d.facts));
+    await c.page.locator(tid(d.more)).click();
+    await c.page.locator(tid(Testids.refresh.open)).click();
+    await waitForPath(c, `${path}/refresh`, `${path} -> Refresh details`);
+    await waitVisible(c, tid(Testids.refresh.fieldToggle), `${path}/refresh`);
+    const rows = c.page.locator(tid(Testids.refresh.fieldToggle));
+    const labels = await rows.evaluateAll((els) => els.map((e) => `${e.getAttribute('aria-label')}|${e.getAttribute('aria-checked')}`));
+    expect(labels.some((x) => x.startsWith('Summary: add') && x.endsWith('|true')), `${path}/refresh: expected "Summary: add" ticked, found ${q(labels)}`);
+    expect(labels.some((x) => x.startsWith('Pages: 223 → 214') && x.endsWith('|false')), `${path}/refresh: expected "Pages: 223 → 214" unticked, found ${q(labels)}`);
+    await c.checkGates(`${path}/refresh`);
+    await c.snap('refresh-diff');
+
+    for (let i = 0; i < (await rows.count()); i++) {
+      const row = rows.nth(i);
+      const label = (await row.getAttribute('aria-label')) ?? '';
+      if ((await row.getAttribute('aria-checked')) === 'true' && !label.startsWith('Summary')) await row.click();
+    }
+    const apply = await textOf(c, tid(Testids.refresh.apply));
+    expect(apply === 'Update 1 detail', `${path}/refresh: expected the button to say ${q('Update 1 detail')}, found ${q(apply)}`);
+    await c.page.locator(tid(Testids.refresh.apply)).click();
+    await waitForPath(c, path, `${path}/refresh -> apply`);
+    const summary = await waitForText(c, tid(d.summary), (t) => t.startsWith('A young prince joins forces'), path);
+    expect(summary.length > 40, `${path}: expected the new summary, found ${q(summary)}`);
+    const factsAfter = await textOf(c, tid(d.facts));
+    expect(factsAfter === factsBefore, `${path}: expected the other facts unchanged, found ${q(factsAfter)} (was ${q(factsBefore)})`);
+    await c.checkGates(`${path} (refreshed)`);
+    await c.snap('refresh-applied');
+  },
+});
