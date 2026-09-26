@@ -12,13 +12,16 @@ import {
   type SortDirection,
   type ValidBookDraft,
   RECENTLY_ADDED_DAYS,
+  stripDiacritics,
 } from '@/domain';
+
 
 import { deleteOrphanAuthors, findOrCreateAuthor, listAuthorsForBook, setBookAuthors, updateAuthor } from './authors';
 import { findOrCreateGenre, listGenresForBook, setBookGenres } from './genres';
 import { findOrCreateSeries, getSeries } from './series';
 import { BOOK_COLUMNS, NOW_SQL, sqlValue, toBook, type BookRow } from './shared';
 
+import type { SearchIndexKind } from '../migrations/0006_book_search';
 import type { Db, SqlValue } from '../types';
 
 export { createBookFromCandidate, refreshBook, type CandidateOverrides } from './bookLookups';
@@ -160,7 +163,7 @@ const OPEN_LOAN_BORROWER = `(SELECT p.name FROM loans l JOIN borrowers p ON p.id
 const OPEN_LOAN_DUE = '(SELECT l.due_on FROM loans l WHERE l.book_id = b.id AND l.returned_on IS NULL)';
 
 export interface ListBookItemsOptions {
-  /** Matches title, subtitle, author names, series name and (normalised) ISBN, case-insensitively. */
+  /** Full-text search: every word must match the title, subtitle, authors, series, genres, notes or ISBN (see `searchClause`). */
   query?: string;
   sort?: ShelfSortKey;
   direction?: SortDirection;
@@ -245,6 +248,122 @@ function isbnFragment(query: string): string | null {
   return n && n.replace(/X$/, '').length >= 4 ? n : null;
 }
 
+/** At most this many words of a search are used. */
+const MAX_SEARCH_TERMS = 8;
+
+/**
+ * The words of a search, as the index sees them: accents dropped, lower
+ * case, split at anything that is not a letter or a digit ("Cien años" →
+ * `cien`, `anos`; "O'Brien" → `o`, `brien`).
+ */
+export function searchTerms(query: string): string[] {
+  return stripDiacritics(query).toLowerCase().split(/[^\p{L}\p{N}]+/u).filter(Boolean).slice(0, MAX_SEARCH_TERMS);
+}
+
+const searchIndexes = new WeakMap<Db, Promise<SearchIndexKind | null>>();
+
+/**
+ * Which search index this database has (migration 0006): `fts5` where SQLite
+ * has FTS5 (Android), `plain` elsewhere (web, Node), null before 0006.
+ * Remembered per database handle once found.
+ */
+export function searchIndexKind(db: Db): Promise<SearchIndexKind | null> {
+  let kind = searchIndexes.get(db);
+  if (!kind) {
+    kind = db
+      .all<{ name: string }>("SELECT name FROM sqlite_master WHERE name IN ('books_fts', 'books_search')")
+      .then((rows) => (rows.some((r) => r.name === 'books_fts') ? 'fts5' : rows.length ? 'plain' : null));
+    // Only a found index is remembered: a database may still be migrated to one.
+    kind.then((k) => k ?? searchIndexes.delete(db), () => searchIndexes.delete(db));
+    searchIndexes.set(db, kind);
+  }
+  return kind;
+}
+
+let letterClasses: Map<string, string> | undefined;
+
+/**
+ * GLOB character classes that match a letter with any accent and in either
+ * case (`a` → `[aAàáâãäå…]`), built from `stripDiacritics` over Latin-1 and
+ * Latin Extended-A/B so the plain index folds accents the way FTS5 does.
+ */
+function letterClass(ch: string): string {
+  if (!letterClasses) {
+    const sets = new Map<string, Set<string>>();
+    for (let cp = 0x41; cp <= 0x24f; cp++) {
+      const c = String.fromCodePoint(cp);
+      const base = stripDiacritics(c).toLowerCase();
+      if (!/^[a-z]$/.test(base)) continue;
+      if (!sets.has(base)) sets.set(base, new Set());
+      sets.get(base)!.add(c);
+    }
+    letterClasses = new Map([...sets].map(([base, chars]) => [base, `[${[...chars].join('')}]`]));
+  }
+  const known = letterClasses.get(ch);
+  if (known) return known;
+  const upper = ch.toUpperCase();
+  if (upper !== ch && upper.length === 1) return `[${ch}${upper}]`;
+  return /[*?[\]]/.test(ch) ? `[${ch}]` : ch;
+}
+
+/**
+ * A GLOB pattern that finds a word starting with `term` in the plain index's
+ * text (where every word follows a space: migration 0006), ignoring case and
+ * accents.
+ */
+export function searchGlob(term: string): string {
+  return `* ${[...term].map(letterClass).join('')}*`;
+}
+
+/**
+ * The search condition over `books b` for the Shelf and every list built on
+ * `listBookItems`. Every word must match (in any field, in any order):
+ *
+ * - With FTS5 (`books_fts`), each word matches the start of a word in the
+ *   title, subtitle, authors, series, genres, notes or ISBNs ("prat" finds
+ *   Pratchett, "cien anos" finds "Cien años").
+ * - With the plain index (`books_search`; web and Node have no FTS5), the
+ *   same: each word matches the start of a word in that same text, with case
+ *   and accents folded by the GLOB pattern. The two agree except for letters
+ *   that fold to two ("ß" → "ss"), which neither folds the same way, and for
+ *   words longer than FTS5 indexes.
+ * - Without either (a database from before migration 0006), the old `LIKE`
+ *   over title, subtitle, series and author names.
+ *
+ * A digit-ish query ("978-0-441") is one word, its ISBN digits, and also
+ * matches the ISBN columns anywhere. Returns null for a blank query.
+ */
+export async function searchClause(db: Db, query: string): Promise<SqlClause | null> {
+  const text = query.trim();
+  if (!text) return null;
+  const isbn = isbnFragment(text);
+  const terms = isbn ? [isbn.toLowerCase()] : searchTerms(text);
+  const kind = terms.length ? await searchIndexKind(db) : null;
+  const alternatives: string[] = [];
+  const params: (string | number)[] = [];
+  if (kind === 'fts5') {
+    alternatives.push('b.id IN (SELECT rowid FROM books_fts WHERE books_fts MATCH ?)');
+    params.push(terms.map((t) => `"${t}"*`).join(' '));
+  } else if (kind === 'plain') {
+    alternatives.push(`b.id IN (SELECT book_id FROM books_search WHERE ${terms.map(() => 'body GLOB ?').join(' AND ')})`);
+    params.push(...terms.map(searchGlob));
+  } else {
+    const like = `%${likeEscape(text)}%`;
+    alternatives.push(
+      "b.title LIKE ? ESCAPE '\\'",
+      "b.subtitle LIKE ? ESCAPE '\\'",
+      "b.series_id IN (SELECT id FROM series WHERE name LIKE ? ESCAPE '\\')",
+      "EXISTS (SELECT 1 FROM book_authors ba JOIN authors a ON a.id = ba.author_id WHERE ba.book_id = b.id AND a.name LIKE ? ESCAPE '\\')",
+    );
+    params.push(like, like, like, like);
+  }
+  if (isbn) {
+    alternatives.push('b.isbn13 LIKE ?', 'b.isbn10 LIKE ?');
+    params.push(`%${isbn}%`, `%${isbn}%`);
+  }
+  return { sql: `(${alternatives.join(' OR ')})`, params };
+}
+
 /**
  * The Shelf list: one query for the rows (sorted and filtered in SQL) plus
  * one for their authors, whatever the number of books.
@@ -272,21 +391,10 @@ export async function listBookItems(db: Db, options: ListBookItemsOptions = {}):
     where.push(filter.sql);
     params.push(...filter.params);
   }
-  if (query) {
-    const like = `%${likeEscape(query)}%`;
-    const alternatives = [
-      "b.title LIKE ? ESCAPE '\\'",
-      "b.subtitle LIKE ? ESCAPE '\\'",
-      "s.name LIKE ? ESCAPE '\\'",
-      "EXISTS (SELECT 1 FROM book_authors ba JOIN authors a ON a.id = ba.author_id WHERE ba.book_id = b.id AND a.name LIKE ? ESCAPE '\\')",
-    ];
-    params.push(like, like, like, like);
-    const isbn = isbnFragment(query);
-    if (isbn) {
-      alternatives.push('b.isbn13 LIKE ?', 'b.isbn10 LIKE ?');
-      params.push(`%${isbn}%`, `%${isbn}%`);
-    }
-    where.push(`(${alternatives.join(' OR ')})`);
+  const search = await searchClause(db, query);
+  if (search) {
+    where.push(search.sql);
+    params.push(...search.params);
   }
   const order = scope.groupId != null && options.groupOrder ? `gb.position, ${SORT_TITLE}, b.id` : orderBy(sort, direction);
   const rows = await db.all<ListRow & { author_sort: string | null }>(
