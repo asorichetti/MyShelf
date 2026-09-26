@@ -1,7 +1,8 @@
 # auto-test-suite
 
 Browser automation for the MyShelf web build (Expo Router + React Native Web),
-written in Go with Cobra and playwright-go.
+written in TypeScript with the Playwright library and Commander, run with
+`tsx` (no build step).
 
 It is an **evidence generator that also fails**. Every browser command leaves a
 bundle behind — screenshot, rendered DOM, console log, failed network requests
@@ -11,26 +12,32 @@ bundle is the product.
 
 ```
 tools/auto-test-suite/
-├── main.go
-├── go.mod                       module github.com/asorichetti/MyShelf/tools/auto-test-suite
-└── internal/
-    ├── cmd/                     root flags, navigate, journey, smoke, screenshot, interact
+├── package.json                 {"type": "module"} for the tool's sources
+├── tsconfig.json                strict; typechecked by npm run autotest:check
+└── src/
+    ├── cli.ts                   entry point: global flags, error JSON, exit code
+    ├── selectors.ts             Testids (generated) + tid() -> [data-testid="..."]
+    ├── errors.ts
+    ├── commands/                root helpers, navigate, journey, smoke, screenshot, interact
     ├── browser/                 Chromium lifecycle, listeners, run bundle
-    ├── uxgates/                 pagestate, render, console, network, a11y
-    │   ├── gates.config.json    render/a11y configuration (embedded)
+    ├── uxgates/                 pagestate, render, console, network, a11y, recorder
+    │   ├── gates.config.json    render/a11y configuration
     │   └── console_allowlist.json
-    ├── selectors/               selectors.gen.go (generated, do not edit)
-    └── journeys/                registry + one file per area
+    └── journeys/                registry.ts + one *.journey.ts file per area
 ```
+
+Unit tests (`*.test.ts`) sit beside the code and run on Node's built-in test
+runner.
 
 ## Setup
 
-Requirements: Go (version in `go.mod`), Node + npm (for the app).
+Requirements: Node (the version CI uses is in `.github/workflows/ci.yml`) and
+npm. Playwright, Commander and tsx are pinned dev dependencies of the app, so
+`npm ci` installs everything.
 
 ```bash
-npm ci                          # app dependencies
-npm run autotest:install-browser      # one time: Playwright driver + Chromium
-npm run autotest:build                # -> tools/auto-test-suite/bin/auto-test-suite
+npm ci                               # app + tool dependencies
+npm run autotest:install-browser     # one time: Playwright's Chromium
 ```
 
 Start the app's web server in another terminal:
@@ -41,7 +48,9 @@ CI=1 npx expo start --web --port 8081
 
 `CI=1` turns off Metro's file watcher. **After adding or renaming a route,
 restart the server**; otherwise the new route renders the not-found screen and
-the pagestate gate (correctly) fails.
+the pagestate gate (correctly) fails. The dev server also sets the COOP/COEP
+headers that expo-sqlite needs on web (`metro.config.js`); a server without
+them cannot open the database and the Shelf never leaves its loading state.
 
 Then:
 
@@ -49,14 +58,13 @@ Then:
 npm run -s autotest:smoke                          # core suite, gates=fail, headless
 npm run -s autotest:journeys                       # every journey (gates=warn unless you pass --ux-gates)
 npm run -s autotest:journeys -- --ux-gates fail    # extra flags go after --
-npm run autotest:check                             # gofmt, go vet, go test
+npm run -s autotest -- journey --list              # any command: npm run -s autotest -- <command> [flags]
+npm run autotest:check                             # typecheck the tool + unit tests
 ```
 
 Use `npm run -s` when you want to parse stdout: without `-s`, npm prints its
-own banner lines on stdout before the JSON.
-
-All Go commands run with `GOWORK=off` in scripts and CI, so a `go.work` added
-above the repo later cannot change the build.
+own banner lines on stdout before the JSON. In the examples below,
+`auto-test-suite` stands for `npm run -s autotest --`.
 
 ## The bundle
 
@@ -71,17 +79,20 @@ Each browser command (and each journey) creates
 | `network.json` | Only failed traffic: status >= 400, or no response (status 0 + failure text) |
 | `uxgates.json` | Mode, waivers and every gate result with findings and evidence |
 
-Some journeys add named screenshots (e.g. `home-mobile.png`). The bundle is
-written through a `defer`, and `Close()` writes it as a last resort if nothing
-else did, so failed runs — the ones you need evidence for — always have one.
-Run directories are timestamped and never overwritten. `/screenshots/` and
-`/tools/auto-test-suite/screenshots/` are gitignored.
+Some journeys add named screenshots (e.g. `home-mobile.png`, `tab-loans.png`).
+The bundle is written from a `finally` block, and `RunBundle.close()` writes it
+as a last resort if nothing else managed to, so failed runs — the ones you need
+evidence for — always have one. If Chromium itself cannot start, the run
+directory still gets `page.html`, `console.json`, `network.json` and
+`uxgates.json` explaining why. Run directories are timestamped and never
+overwritten. `/screenshots/` and `/tools/auto-test-suite/screenshots/` are
+gitignored.
 
 ## Output contract
 
 - **stdout** is exactly one JSON document per invocation, including on errors
-  (`{"command": ..., "ok": false, "error": ...}` for bad flags or an unknown
-  journey).
+  (`{"command": ..., "ok": false, "error": ...}` for bad flags, a missing
+  command or an unknown journey). `--help` prints usage instead.
 - **stderr** carries human progress.
 - **exit code** is 0 on success, 1 on any assertion failure, gate failure in
   `fail` mode, or usage error.
@@ -96,13 +107,14 @@ Example (`auto-test-suite smoke`, trimmed):
   "gatesMode": "fail",
   "viewport": "mobile",
   "baseUrl": "http://localhost:8081",
-  "total": 2, "passed": 2, "failed": 0,
+  "total": 3, "passed": 3, "failed": 0,
+  "durationMs": 2398,
   "results": [
     {
-      "name": "home-loads", "suite": "core", "ok": true, "durationMs": 1243,
+      "name": "home-loads", "suite": "core", "ok": true, "durationMs": 704,
       "gates": {"mode": "fail", "failed": false, "results": 6, "findings": 0, "findingsByGate": {}},
       "artifacts": {
-        "runDir": ".../screenshots/journey-home-loads-1790384924802",
+        "runDir": ".../screenshots/journey-home-loads-1790387219928",
         "screenshot": ".../screenshot.png", "html": ".../page.html",
         "console": ".../console.json", "network": ".../network.json", "uxgates": ".../uxgates.json"
       }
@@ -114,24 +126,27 @@ Example (`auto-test-suite smoke`, trimmed):
 A failing assertion reads without opening the source, e.g.
 `"error": "/: expected h1 \"MyShelves\", found \"MyShelf\""`, and failing gate
 findings are flattened into `gateFailures`, e.g.
-`"render/overflow [/broken @mobile]: content overflows sideways at 390px: div[data-testid=\"too-wide\"] (right=3000px)"`.
+`"render/overflow [/broken @mobile]: content overflows sideways at 390px: div[data-testid=\"too-wide\"] (right=3008px)"`.
 
 ## Global flags
+
+Global flags may come before or after the command name.
 
 | Flag | Default | Notes |
 |---|---|---|
 | `--env` | `local` | `local` = `http://localhost:8081`. There is no preview environment yet |
 | `--base-url` | | Overrides `--env` (e.g. a server on another port) |
-| `--headless` | computed | `true` when `CI` is set; `false` when `DISPLAY`/`WAYLAND_DISPLAY` is set; otherwise `false` on macOS and `true` elsewhere (containers have no display) |
+| `--headless` | computed | `true` when `CI` is set; `false` when `DISPLAY`/`WAYLAND_DISPLAY` is set; otherwise `false` on macOS and `true` elsewhere (containers have no display). `--headless` alone means true; `--headless=false` shows the window |
 | `--screenshot-dir` | `./screenshots` | Parent directory for run bundles, relative to the current directory |
 | `--ux-gates` | `warn` | `off` (skip gates), `warn` (record findings, do not fail), `fail` |
 | `--viewport` | `mobile` | `mobile` 390x844, `tablet` 820x1180, `desktop` 1280x900. `AUTOTEST_VIEWPORT_HEIGHT` overrides the height |
 | `--color-scheme` | browser default | `light`, `dark`, `no-preference` |
-| `--gates-config` | embedded | Path to an alternative `gates.config.json` |
-| `--console-allowlist` | embedded | Path to an alternative `console_allowlist.json` |
+| `--gates-config` | shipped file | Path to an alternative `gates.config.json` |
+| `--console-allowlist` | shipped file | Path to an alternative `console_allowlist.json` |
 
-The default viewport is `mobile` because MyShelf is a phone app rendered on the
-web; `desktop` exists to exercise layout from the other side.
+All of them are validated before a browser starts. The default viewport is
+`mobile` because MyShelf is a phone app rendered on the web; `desktop` exists
+to exercise layout from the other side.
 
 ## Commands
 
@@ -142,7 +157,7 @@ Open a page, wait for the content marker, run all gates, capture a bundle.
 ```bash
 auto-test-suite navigate --url /
 auto-test-suite navigate --url / --wait 2000 --ux-gates fail
-auto-test-suite navigate --url /somewhere --marker '[data-testid="expo-router-unmatched"]'
+auto-test-suite navigate --url /somewhere --marker '[data-testid="not-found-root"]'
 ```
 
 | Flag | Default | Notes |
@@ -157,7 +172,7 @@ auto-test-suite navigate --url /somewhere --marker '[data-testid="expo-router-un
 auto-test-suite journey --list                 # every journey with suite and description (JSON + stderr table)
 auto-test-suite journey home-loads not-found   # by name
 auto-test-suite journey --suite core
-auto-test-suite journey --grep home            # regexp over name and description
+auto-test-suite journey --grep home            # JavaScript regexp over name and description
 auto-test-suite journey --all
 ```
 
@@ -166,9 +181,8 @@ runs in a **fresh browser, page and run directory**.
 
 ### `smoke`
 
-`journey --suite core` with `--ux-gates fail` and `--headless=true`. Either
-default is only applied when you did not pass that flag yourself. This is what
-CI runs.
+`journey --suite core` with `--ux-gates fail` and `--headless`. Either default
+is only applied when you did not pass that flag yourself. This is what CI runs.
 
 ### `screenshot`
 
@@ -186,7 +200,9 @@ auto-test-suite screenshot --url / --viewports mobile,tablet,desktop --schemes l
 | `--schemes` | `light,dark` |
 | `--marker`, `--wait` | as for `navigate` |
 
-The render gate runs at each combination's own viewport.
+The render gate runs at each combination's own viewport. (The app only has a
+light theme today, so the dark captures look the same; the emulated
+`prefers-color-scheme` does reach the page.)
 
 ### `interact`
 
@@ -194,7 +210,7 @@ One action, for poking at a page. Anything worth checking twice becomes a
 journey.
 
 ```bash
-auto-test-suite interact click --url / --testid home-title
+auto-test-suite interact click --url / --testid tab-loans
 auto-test-suite interact fill  --url /search --selector 'input[name=q]' --value dune
 auto-test-suite interact press --url / --key Tab                 # page-level key press
 auto-test-suite interact focus --url / --testid home-title
@@ -210,7 +226,8 @@ auto-test-suite interact focus --url / --testid home-title
 | `--marker` | As for `navigate` |
 
 The output's `after.focus` reports the focused element and its ARIA state
-(`aria-selected`, `aria-expanded`, `aria-current`, ...).
+(`aria-selected`, `aria-expanded`, `aria-current`, ...), and `finalUrl` where
+the action led.
 
 ## Gates
 
@@ -232,6 +249,13 @@ explain the blank page.
 | `console` | A console error or uncaught exception that is not allowlisted |
 | `network` | Any response >= 400 or request that got no response |
 | `a11y` | Structural accessibility regressions (rules below) |
+
+The render and a11y audits are typed functions (`renderAudit`, `a11yAudit`)
+passed to `page.evaluate`, which serializes their source into the page. Keep
+them self-contained: nothing they close over reaches the page. `tsx` wraps
+named inner functions in a `__name(...)` helper; `Browser.newPage` defines that
+helper as the identity function in every page, so journeys can pass functions
+to `page.evaluate` too. Without it every audit reports an `evaluate` finding.
 
 ### Render rules
 
@@ -274,39 +298,34 @@ screens mounted.
 The gate does not judge whether alt text is useful or focus order is sensible;
 that needs a human.
 
-### Configuration: `internal/uxgates/gates.config.json`
+### Configuration: `src/uxgates/gates.config.json`
 
 ```json
 {
-  "render": { "requiredTokens": [], "landmarks": ["main"], "disabled": { "<rule>": "<reason>" } },
+  "render": { "requiredTokens": ["--ms-..."], "landmarks": ["main"], "disabled": { "<rule>": "<reason>" } },
   "a11y":   { "disabled": { "<rule>": "<reason>" } }
 }
 ```
 
-The file is embedded in the binary; `--gates-config` points at another copy.
-Unknown rule ids and disabled rules without a reason are rejected at startup.
-Disabled rules are listed under `skipped` in every result in `uxgates.json`.
+`--gates-config` points at another copy. Unknown rule ids, unknown fields,
+tokens that are not custom properties, and disabled rules without a reason are
+rejected before any browser starts. Disabled rules are listed under `skipped`
+in every result in `uxgates.json`.
 
 Current decisions for this app:
 
-| Rule | State | Why |
+| Setting | State | Why |
 |---|---|---|
 | a11y `skip-link` | off | MyShelf is a mobile app rendered with react-native-web: there is no repeated header/nav block before the content, and a skip link has no native iOS/Android equivalent |
 | render `landmarks` | `main` only | Header and footer landmarks are optional in a mobile app shell |
-| render `requiredTokens` | empty | The `--ms-*` design tokens on `:root` are being added; list them here once they exist |
-| render `body-background` | off, **temporary** | The placeholder app has no web document shell: `<body>` keeps a transparent background. Re-enable when the app shell sets it |
-| render `body-font` | off, **temporary** | Same cause: `<body>` computes to Times because only react-native-web Text gets the system font stack. `text-font` still checks real text in `main` |
-| render `fonts-loaded` | off, **temporary** | The app uses the platform system font stack and declares no web font, so `document.fonts` is empty by design. `fonts-error` still runs |
+| render `requiredTokens` | core `--ms-*` tokens | Primary, paper, surface, ink and muted-ink colours, the heading and body fonts, one spacing and one radius step. The theme writes them onto `:root` at runtime; if it stops, the gate fails |
 
-The three temporary exemptions were found by the render gate on the first run
-against the placeholder home screen. They are expected to be fixed by the app
-shell work (body background and font from the design tokens, a web font via
-expo-font if one is chosen); remove the entries then.
+Every other render and a11y rule is on.
 
-### Console allowlist: `internal/uxgates/console_allowlist.json`
+### Console allowlist: `src/uxgates/console_allowlist.json`
 
 ```json
-[{ "pattern": "<Go regexp>", "reason": "<why this error is acceptable>" }]
+[{ "pattern": "<JavaScript regexp>", "reason": "<why this error is acceptable>" }]
 ```
 
 Both fields are required. Keep patterns narrow: one broad pattern added to fix
@@ -315,21 +334,23 @@ one journey buries the next real bug. It is currently empty.
 ### Deliberately missing URLs
 
 A journey that tests the not-found screen requests a missing route on purpose.
-Do **not** allowlist 404s for it. Put `uxgates.ExpectedMissingMarker`
-(`__expected-404`) in the URL instead; the console and network gates both skip
-URLs and messages containing it, and nothing else.
+Do **not** allowlist 404s for it. Put `ExpectedMissingMarker`
+(`__expected-404`, in `src/uxgates/expected.ts`) in the URL instead; the
+console and network gates both skip URLs and messages containing it, and
+nothing else.
 
 ### Waivers
 
 A journey can downgrade one rule for itself only:
 
-```go
-c.Gates.Waive("a11y", "one-main", "Expo Router's built-in not-found screen has no main landmark")
+```ts
+c.gates.waive('a11y', 'one-main', 'a third-party screen the app does not own has no main landmark');
 ```
 
 The finding is still recorded in `uxgates.json`, as a warning prefixed with the
 reason, and the waiver is listed at the top of the file. Use it for screens the
-app does not own; fix the app instead where you can.
+app does not own; fix the app instead where you can. No journey needs one
+today.
 
 ### Dev-server caveats
 
@@ -337,56 +358,58 @@ app does not own; fix the app instead where you can.
   SPA shell). A missing static file therefore never shows up as a 404 in
   `network.json`; a missing `<img>` is caught by the render gate's `images`
   rule instead, and any link-checking journey must check the content type as
-  well as the status.
-- Unknown routes render Expo Router's built-in not-found screen with HTTP 200.
+  well as the status. `/assets/?unstable_path=.%2Fmissing.png` is a path that
+  really 404s.
+- Unknown routes render the app's not-found screen with HTTP 200.
 
 ## Journeys
 
 | Name | Suite | Checks |
 |---|---|---|
 | `home-loads` | core | `home-title` is an `<h1>` "MyShelf" inside the single main landmark, computed `font-weight: 700`, not the default serif; document title |
-| `not-found` | core | `/missing-shelf__expected-404` renders the not-found screen (h1 "Unmatched Route") and stays on that URL |
+| `not-found` | core | `/missing-shelf__expected-404` renders the app's not-found screen: its title is the `<h1>` "Page not found" inside `main`, and the URL does not change |
+| `tabs-navigate` | core | Clicking each tab (`Testids.tabs.*`) lands on its route with exactly one visible h1 naming the screen; `aria-selected="true"` on the active tab only (the web tab bar sets no `aria-current`); the page gates run on every tab screen; Booky is visible in the empty Shelf; one screenshot per tab |
 | `home-responsive` | responsive | Viewport meta has `width=device-width, initial-scale=1`; at mobile, tablet and desktop the title is fully on screen and the page does not scroll sideways; one screenshot per width |
 
 ### Adding a journey
 
 1. Add any new `data-testid` to `src/testing/selectors.json` and run
-   `npm run selectors:gen`. Use `Testids.group.key` in the app and
-   `selectors.Group.Key` in Go — never type a testid string twice.
+   `npm run selectors:gen`. The app uses `Testids.group.key`; journeys import
+   the same `Testids` from `src/selectors.ts` and build the CSS selector with
+   `tid(Testids.group.key)` — never type a testid string twice.
    `npm run selectors:check` (part of `npm run check` and CI) fails on drift.
-2. Create or extend a file in `internal/journeys/` (one file per area):
+2. Create or extend a `src/journeys/<area>.journey.ts` file. Every
+   `*.journey.ts` file is imported at startup, so there is no list to update:
 
-   ```go
-   func init() {
-       register(Journey{
-           Name:  "shelf-add-book",
-           Suite: "core",
-           Desc:  "Adding a book shows it on the shelf with aria-selected on the Shelf tab",
-           Run: func(c *Context) error {
-               if err := c.Goto("/shelf"); err != nil { // pagestate + render + a11y
-                   return err
-               }
-               // ... interact via selectors.X.Y ...
-               got, err := c.Page.Locator(selectors.Shelf.Title).InnerText()
-               if err != nil {
-                   return err
-               }
-               return expect(got == "Dune", "/shelf: expected first book %q, found %q", "Dune", got)
-           },
-       })
-   }
+   ```ts
+   import { Testids, tid } from '../selectors.ts';
+   import { expect, q, register } from './registry.ts';
+
+   register({
+     name: 'shelf-add-book',
+     suite: 'core',
+     desc: 'Adding a book shows it on the shelf with aria-selected on the Shelf tab',
+     async run(c) {
+       await c.goto('/shelf'); // pagestate + render + a11y
+       // ... interact via tid(Testids.x.y) ...
+       const got = await c.page.locator(tid(Testids.shelf.firstTitle)).innerText();
+       expect(got === 'Dune', `/shelf: expected first book ${q('Dune')}, found ${q(got)}`);
+     },
+   });
    ```
 
-   - Names are unique; a duplicate panics at startup.
-   - `expect` messages must say what was expected and what was found.
-   - Wait on conditions (`Locator.WaitFor`, `expect` on state), not clocks.
-   - Use `c.Snap("name")` for extra screenshots in the run directory.
+   - Names are unique; a duplicate throws at startup.
+   - `expect` messages must say what was expected and what was found; `q()`
+     quotes a value.
+   - Wait on conditions (`locator.waitFor`, `expect` on state), not clocks.
+   - `c.checkGates('/where')` runs the page gates on a screen reached by a
+     click rather than by `c.goto`.
+   - Use `c.snap('name')` for extra screenshots in the run directory.
    - Console and network gates run automatically at the end.
    - Prefer checks that a screenshot cannot show: keyboard contracts, ARIA
      state matching visual state, persistence across reload, responsive
      behaviour, links that resolve.
-3. `npm run autotest:build && tools/auto-test-suite/bin/auto-test-suite journey --list`, then run it
-   with `--ux-gates fail`.
+3. `npm run -s autotest -- journey --list`, then run it with `--ux-gates fail`.
 4. Put fast, essential journeys in `core` (run by `smoke` in CI).
 
 ## CI
@@ -395,25 +418,34 @@ app does not own; fix the app instead where you can.
 
 - **App checks**: `npm ci`, `npm run check` (selector drift check, typecheck,
   Jest).
-- **auto-test-suite smoke**: gofmt, `go vet`, `go test`, `go build`, install Chromium
-  with system dependencies, start the Expo web server on 8081, run `smoke` and
-  the `responsive` suite with `--ux-gates fail`, and upload `screenshots/` plus
-  the Expo log as an artifact when anything fails.
+- **auto-test-suite smoke**: `npm ci`, install Chromium with its system
+  dependencies (the browser download is cached per Playwright version),
+  `npm run autotest:check`, start the Expo web server on 8081, run
+  `npm run typecheck` again (now strict about route links, because the server
+  has generated Expo Router's route types), run `smoke` and the `responsive`
+  suite with `--ux-gates fail`, and upload `screenshots/` plus the Expo log as
+  an artifact when anything fails.
 
 ## Proving the gates fire
 
 A gate that has never failed is decoration. When changing a gate, or before
 trusting a new one:
 
-1. Add a temporary route (never commit it) with a valid content marker and
-   enough text in `main`, plus: two h1s, a heading skip, an `<img>` without alt
-   pointing at a missing file, an unnamed `role="button"`, an unlabelled
-   navigation, a 3000px-wide element, a `console.error`, and a `fetch` to a URL
-   that really 404s (on the dev server: `/assets/?unstable_path=.%2Fmissing.png`)
-   and one that never connects.
+1. Add a temporary route (never commit it) that renders the `page-content`
+   testid and a `main` with enough text, plus: two h1s, a heading skip, an
+   `<img>` without alt pointing at a missing file, an unnamed `role="button"`,
+   an unlabelled `nav`, a 3000px-wide element, a `console.error`, a `fetch` to
+   a URL that really 404s (`/assets/?unstable_path=.%2Fmissing.png`) and one
+   that never connects (e.g. `http://127.0.0.1:65533/`). To break the render
+   rules that the app satisfies, override the body with `!important` styles
+   (margin, transparent background, serif font), remove the `lang` attribute,
+   drop the `@font-face` styles and `document.fonts.clear()`, add a `FontFace`
+   with a missing URL, and pass a `--gates-config` that requires a missing
+   token and a `header` landmark.
 2. Restart the Expo server (watch mode is off), then
    `auto-test-suite navigate --url /that-route --wait 2000 --ux-gates warn`.
-3. For pagestate, run the same route with `--marker '[data-testid="never-rendered"]'`
-   (and a variant with under 10 characters of text in `main`).
-4. Confirm findings from all five gates, delete the route and the run
-   directories, and re-run the real suite with `--ux-gates fail`.
+3. For pagestate, run the same route with `--marker '[data-testid="never-rendered"]'`,
+   and a second route whose `main` has under 10 characters of text.
+4. Confirm findings from all five gates, delete the routes and the run
+   directories, restart the server and re-run the real suite with
+   `--ux-gates fail`.
