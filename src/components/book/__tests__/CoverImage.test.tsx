@@ -1,4 +1,4 @@
-import { act, screen } from '@testing-library/react-native';
+import { act, screen, within } from '@testing-library/react-native';
 import { Image } from 'expo-image';
 
 import { COVER_FADE_MS, CoverImage } from '@/components/book/CoverImage';
@@ -59,9 +59,40 @@ describe('CoverImage', () => {
     expect(image.props.alt).toBe('');
     expect(screen.getByTestId(Testids.cover.placeholder, q)).toBeTruthy();
     expect(screen.queryByTestId(Testids.cover.fallback, q)).toBeNull();
-    act(() => image.props.onLoad({}));
+    act(() => image.props.onLoad({ source: { width: 320, height: 500 } }));
+    // The stand-in stays under the cover until its fade-in has finished.
+    expect(screen.getByTestId(Testids.cover.placeholder, q)).toBeTruthy();
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, COVER_FADE_MS + 20));
+    });
     expect(screen.queryByTestId(Testids.cover.placeholder, q)).toBeNull();
     expect(screen.UNSAFE_getByType(Image)).toBeTruthy();
+  });
+
+  it('shows the generated cover as the loading stand-in, not a blank tile', async () => {
+    renderWithTheme(<CoverImage title="Dune" author="Frank Herbert" uri="https://covers.example/dune.jpg" size="medium" />);
+    await settle();
+    const placeholder = screen.getByTestId(Testids.cover.placeholder, q);
+    expect(within(placeholder).UNSAFE_getByType(GeneratedCover).props).toMatchObject({ title: 'Dune', author: 'Frank Herbert' });
+  });
+
+  it.each([
+    ['a 1x1 "no cover" GIF', { width: 1, height: 1 }],
+    ['a 9px sliver', { width: 300, height: 9 }],
+  ])('treats %s that loads as a missing cover and shows the generated cover', async (_, source) => {
+    renderWithTheme(<CoverImage title="Dune" uri="https://covers.openlibrary.org/b/id/0-L.jpg" />);
+    await settle();
+    act(() => screen.UNSAFE_getByType(Image).props.onLoad({ source }));
+    expect(screen.queryByTestId(Testids.cover.image, q)).toBeNull();
+    expect(screen.getByTestId(Testids.cover.fallback, q)).toBeTruthy();
+  });
+
+  it('keeps a real cover when the load event carries no size', async () => {
+    renderWithTheme(<CoverImage title="Dune" uri="https://covers.example/dune.jpg" />);
+    await settle();
+    act(() => screen.UNSAFE_getByType(Image).props.onLoad({}));
+    expect(screen.getByTestId(Testids.cover.image, q)).toBeTruthy();
+    expect(screen.queryByTestId(Testids.cover.fallback, q)).toBeNull();
   });
 
   it('fades the cover in, unless reduce motion is on', async () => {
