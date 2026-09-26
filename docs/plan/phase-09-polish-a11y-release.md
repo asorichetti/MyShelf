@@ -29,7 +29,7 @@ Ship v1.0: an accessible, fast, robust app with a dark theme, a free and repeata
 
 - **Description:** Walk every screen with TalkBack on a device and with the auto test suite's `a11y` gate on web. Check: every control has a role and name; headings mark sections; focus order logical; state changes announced; 48 dp targets; layouts at 200 % font scale and display size "Largest"; no information by colour alone. File and fix issues; record the audit in `docs/accessibility.md`.
 - **Files:** components/screens as needed; `docs/accessibility.md`.
-- **Acceptance:** every journey passes with `--ux-gates fail` and no new `a11y` waivers or disabled rules (including the P00-28 `target-size` rule); TalkBack walkthrough of the core flows (scan → save, lend → return, group) succeeds without sighted help.
+- **Acceptance:** every journey passes with `--ux-gates fail` and no new `a11y` waivers or disabled rules (including the P00-27 `target-size` rule); TalkBack walkthrough of the core flows (scan → save, lend → return, group) succeeds without sighted help.
 - **Tests:** new journey `a11y-large-text` (web zoom 200 %); component tests for any fixed labels.
 
 ### P09-02 Dark theme
@@ -76,7 +76,7 @@ Ship v1.0: an accessible, fast, robust app with a dark theme, a free and repeata
 
 ### P09-08 Screenshots and README media
 
-- **Description:** Use `auto-test-suite screenshot --viewports mobile --schemes light,dark --url '/e2e?fixture=demo&next=<route>'` (fixture loader from P01-01) for Shelf (each view mode), book detail, edition picker, Loans, Groups, series detail, Booky onboarding; plus device screenshots from Maestro for the camera screens. Save curated images in `docs/media/` and embed in `README.md`.
+- **Description:** Use `npm run -s autotest -- screenshot --viewports mobile --schemes light,dark --url '/e2e?fixture=demo&next=<route>'` (fixture loader from P01-01) for Shelf (each view mode), book detail, edition picker, Loans, Groups, series detail, Booky onboarding; plus device screenshots from Maestro for the camera screens. Save curated images in `docs/media/` and embed in `README.md`.
 - **Files:** `docs/media/*.png`, `README.md`.
 - **Acceptance:** README shows current UI; images < 300 KB each.
 - **Tests:** none beyond the journeys used to capture.
@@ -123,7 +123,7 @@ Ship v1.0: an accessible, fast, robust app with a dark theme, a free and repeata
 
 ## Auto test suite journeys
 
-Each journey is added by the card that builds its screen. Suite `core` journeys run in `smoke` (CI and the regression gate); the rest use suite `p09` (`auto-test-suite journey --suite p09`).
+Each journey is added by the card that builds its screen. Suite `core` journeys run in `smoke` (CI and the regression gate); the rest use suite `p09` (`npm run -s autotest -- journey --suite p09`).
 
 | Journey | Suite | Steps |
 |---|---|---|
@@ -156,7 +156,7 @@ Before any card in this phase is ticked, and before the phase is closed, both mu
 
 ```bash
 npm run check                    # selectors:check + typecheck + Jest (+ lint once P00-20 lands)
-npm run -s autotest:smoke        # builds the auto test suite and runs `smoke` (core suite, gates fail)
+npm run -s autotest:smoke        # the auto test suite's `smoke`: core journeys, gates set to fail
 ```
 
 `autotest:smoke` needs the web server running (`CI=1 npx expo start --web --port 8081`). Phase close also requires every journey, including this phase's, to pass with gates enforced (`npm run -s autotest:journeys -- --ux-gates fail`) and the Maestro flows above to have been run on an emulator or device, with the result noted in the pull request.

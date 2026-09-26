@@ -113,10 +113,10 @@ Given an ISBN or a title/author query, fetch book metadata from Open Library and
 
 ### P02-13 Auto test suite API mocking and recorded fixtures
 
-- **Description:** Add API mocking to the existing auto test suite (`tools/auto-test-suite`). A new global flag `--mock-api <dir>` (declared with the other global flags in `internal/cmd/root.go`, passed through `journeys.Options` and the `navigate`/`screenshot`/`interact` code paths) points at a fixture directory with a URL → file index (`index.json`: URL pattern, status, content type, body file, optional `expected: true` for deliberate error responses). Journeys use `src/services/metadata/__fixtures__` by default, so `smoke` needs no extra flag; `--mock-api off` disables it. It plugs in where the browser context is created: `browser.NewPage` in `internal/browser` registers a `BrowserContext.Route` handler (a new `internal/mockapi` package) before the page is opened, so it covers the first request of every command and journey. Requests to `openlibrary.org`, `covers.openlibrary.org` and `www.googleapis.com` are fulfilled from the index; any other request that leaves the base URL's origin, and any unindexed URL on those hosts, is aborted and reported by the `network` gate under a new rule `unmocked` with the URL, so real external calls fail journeys. Fixture responses marked `expected` (404 for an unknown ISBN, 500 for the partial-failure journey) are exempt from the `network` and `console` gates in the same way as `uxgates.ExpectedMissingMarker` URLs today; every other status ≥ 400 still fails. Add `scripts/record-fixture.mjs <url>` to record a new fixture (run manually, respects the API etiquette, strips nothing personal because nothing personal is sent). Document the flag in the tool README.
-- **Files:** `tools/auto-test-suite/internal/mockapi/*.go` (new), `internal/browser/browser.go`, `internal/cmd/root.go`, `internal/journeys/journeys.go`, `internal/uxgates/network.go`, `internal/uxgates/console.go`, `tools/auto-test-suite/README.md`; `src/services/metadata/__fixtures__/index.json`; `scripts/record-fixture.mjs`.
+- **Description:** Add API mocking to the existing auto test suite (`tools/auto-test-suite`). A new global flag `--mock-api <dir>` (declared with the other global flags in `tools/auto-test-suite/src/cli.ts` and passed to every command and journey run) points at a fixture directory with a URL → file index (`index.json`: URL pattern, status, content type, body file, optional `expected: true` for deliberate error responses). Journeys use `src/services/metadata/__fixtures__` by default, so `smoke` needs no extra flag; `--mock-api off` disables it. It plugs in where the browser context is created in `tools/auto-test-suite/src/browser/`: a `context.route()` handler (new `tools/auto-test-suite/src/mockapi/` module) is registered before the page is opened, so it covers the first request of every command and journey. Requests to `openlibrary.org`, `covers.openlibrary.org` and `www.googleapis.com` are fulfilled from the index; any other request that leaves the base URL's origin, and any unindexed URL on those hosts, is aborted and reported by the `network` gate under a new rule `unmocked` with the URL, so real external calls fail journeys. Fixture responses marked `expected` (404 for an unknown ISBN, 500 for the partial-failure journey) are exempt from the `network` and `console` gates in the same way as URLs carrying the `__expected-404` marker today; every other status ≥ 400 still fails. Add `scripts/record-fixture.mjs <url>` to record a new fixture (run manually, respects the API etiquette, strips nothing personal because nothing personal is sent). Document the flag in the tool README.
+- **Files:** `tools/auto-test-suite/src/mockapi/` (new), `tools/auto-test-suite/src/browser/`, `tools/auto-test-suite/src/cli.ts`, the network and console gates in `tools/auto-test-suite/src/uxgates/`, `tools/auto-test-suite/README.md`; `src/services/metadata/__fixtures__/index.json`; `scripts/record-fixture.mjs`.
 - **Acceptance:** P02 journeys pass with no external network (verified by running them offline); an unindexed URL fails the run with a `network`/`unmocked` finding that names it; a deliberate fixture 404 does not.
-- **Tests:** Go unit tests for the index loader and URL matcher (`internal/mockapi/*_test.go`); the journeys below.
+- **Tests:** unit tests for the index loader and URL matcher (run by `npm run autotest:check`); the journeys below.
 
 ---
 
@@ -140,7 +140,7 @@ Given an ISBN or a title/author query, fetch book metadata from Open Library and
 
 ## Auto test suite journeys
 
-Each journey is added by the card that builds its screen. Suite `core` journeys run in `smoke` (CI and the regression gate); the rest use suite `p02` (`auto-test-suite journey --suite p02`).
+Each journey is added by the card that builds its screen. Suite `core` journeys run in `smoke` (CI and the regression gate); the rest use suite `p02` (`npm run -s autotest -- journey --suite p02`).
 
 | Journey | Suite | Steps |
 |---|---|---|
@@ -173,7 +173,7 @@ Before any card in this phase is ticked, and before the phase is closed, both mu
 
 ```bash
 npm run check                    # selectors:check + typecheck + Jest (+ lint once P00-20 lands)
-npm run -s autotest:smoke        # builds the auto test suite and runs `smoke` (core suite, gates fail)
+npm run -s autotest:smoke        # the auto test suite's `smoke`: core journeys, gates set to fail
 ```
 
 `autotest:smoke` needs the web server running (`CI=1 npx expo start --web --port 8081`). Phase close also requires every journey, including this phase's, to pass with gates enforced (`npm run -s autotest:journeys -- --ux-gates fail`) and the Maestro flows above to have been run on an emulator or device, with the result noted in the pull request.

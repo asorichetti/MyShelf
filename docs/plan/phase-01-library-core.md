@@ -148,7 +148,7 @@ Repeated elements (rows, chips) share one id; tests pick by index or by containe
 
 ## Auto test suite journeys
 
-Each journey is added by the card that builds its screen. Suite `core` journeys run in `smoke` (CI and the regression gate); the rest use suite `p01` (`auto-test-suite journey --suite p01`).
+Each journey is added by the card that builds its screen. Suite `core` journeys run in `smoke` (CI and the regression gate); the rest use suite `p01` (`npm run -s autotest -- journey --suite p01`).
 
 | Journey | Suite | Steps |
 |---|---|---|
@@ -159,7 +159,7 @@ Each journey is added by the card that builds its screen. Suite `core` journeys 
 | `book-add-invalid-isbn` | `p01` | fill ISBN `9780000000000` → save → `bookForm.error` visible, still on form |
 | `book-edit` | `p01` | fixture `demo`; open first row → edit → change year → save → detail updated |
 | `book-delete-undo` | `p01` | fixture `demo`; delete → confirm → 11 rows → undo → 12 rows |
-| `book-detail-missing` | `p01` | open `/book/99999`; expect `pageState.error`; the journey waives `pagestate`/`error-marker` with a reason (`c.Gates.Waive`), so render and a11y are skipped for that page |
+| `book-detail-missing` | `p01` | open `/book/99999`; expect `pageState.error`; the journey waives `pagestate`/`error-marker` with a reason, so render and a11y are skipped for that page |
 
 ## Maestro flows
 
@@ -182,7 +182,7 @@ Before any card in this phase is ticked, and before the phase is closed, both mu
 
 ```bash
 npm run check                    # selectors:check + typecheck + Jest (+ lint once P00-20 lands)
-npm run -s autotest:smoke        # builds the auto test suite and runs `smoke` (core suite, gates fail)
+npm run -s autotest:smoke        # the auto test suite's `smoke`: core journeys, gates set to fail
 ```
 
 `autotest:smoke` needs the web server running (`CI=1 npx expo start --web --port 8081`). Phase close also requires every journey, including this phase's, to pass with gates enforced (`npm run -s autotest:journeys -- --ux-gates fail`) and the Maestro flows above to have been run on an emulator or device, with the result noted in the pull request.

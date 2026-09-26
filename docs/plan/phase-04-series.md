@@ -103,7 +103,7 @@ Books know which series they belong to and where they sit in it. The user can se
 
 ## Auto test suite journeys
 
-Each journey is added by the card that builds its screen. Suite `core` journeys run in `smoke` (CI and the regression gate); the rest use suite `p04` (`auto-test-suite journey --suite p04`).
+Each journey is added by the card that builds its screen. Suite `core` journeys run in `smoke` (CI and the regression gate); the rest use suite `p04` (`npm run -s autotest -- journey --suite p04`).
 
 | Journey | Suite | Steps |
 |---|---|---|
@@ -133,7 +133,7 @@ Before any card in this phase is ticked, and before the phase is closed, both mu
 
 ```bash
 npm run check                    # selectors:check + typecheck + Jest (+ lint once P00-20 lands)
-npm run -s autotest:smoke        # builds the auto test suite and runs `smoke` (core suite, gates fail)
+npm run -s autotest:smoke        # the auto test suite's `smoke`: core journeys, gates set to fail
 ```
 
 `autotest:smoke` needs the web server running (`CI=1 npx expo start --web --port 8081`). Phase close also requires every journey, including this phase's, to pass with gates enforced (`npm run -s autotest:journeys -- --ux-gates fail`) and the Maestro flows above to have been run on an emulator or device, with the result noted in the pull request.
