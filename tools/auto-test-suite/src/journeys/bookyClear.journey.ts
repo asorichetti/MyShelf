@@ -176,9 +176,16 @@ register({
       await c.page.locator(vis(tid(Testids.bookForm.save))).first().click();
       const path = await waitForPath(c, /^\/book\/\d+$/, `/book/new ${at} -> save`);
       await waitVisible(c, tid(Testids.seriesTip.root), `${path} ${at} (gap tip)`);
-      // (The "Saved" snackbar covers Lend for a few seconds; the tip is lifted above the snackbar.)
+      // With the "Saved" snackbar up the tip is lifted above it; the snackbar hides what is under itself.
+      await expectTipCoversNothing(c, `${path} ${at} (gap tip, snackbar up)`);
+      // Once the snackbar has gone, the tip docks again and the whole page is reachable.
+      try {
+        await c.page.locator(tid(Testids.snackbar.root)).waitFor({ state: 'detached', timeout: 15_000 });
+      } catch {
+        expect(false, `${path} ${at}: the "Saved" snackbar did not go away`);
+      }
       const report = await expectTipCoversNothing(c, `${path} ${at} (gap tip)`);
-      expectReached(report.checked, [Testids.groups.bookAdd], `${path} ${at} (gap tip)`);
+      expectReached(report.checked, [Testids.groups.bookAdd, Testids.lend.open], `${path} ${at} (gap tip)`);
       await c.snap(`clear-series-gap-${scale * 100}-${scheme}`);
     }
 
