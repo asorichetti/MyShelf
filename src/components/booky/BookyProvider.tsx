@@ -46,6 +46,8 @@ export interface BookyContextValue {
   /** The tip floating over the app (inline tips are drawn by their screens). */
   tip: ShownTip | null;
   mode: BookyMode;
+  /** Counts reloads of Booky's memory; effects that emit may depend on it to try again with fresh settings. */
+  memoryVersion: number;
   /** Sends an event (or alternatives) to the engine; resolves to the tip shown, if any. */
   emit: (emission: BookyEmission) => Promise<ShownTip | null>;
   dismissTip: () => void;
@@ -79,6 +81,7 @@ export function BookyProvider({ children, store, reloadKey = 0, now = Date.now, 
   const [tip, setTip] = useState<ShownTip | null>(null);
   const [mode, setModeState] = useState<BookyMode>('helpful');
   const [help, setHelp] = useState<HelpRequest | null>(null);
+  const [memoryVersion, setMemoryVersion] = useState(0);
   const nextShowId = useRef(1);
   const loaded = useRef<Promise<void>>(Promise.resolve());
   // Saves run one after another, and a reload waits for them, so it never reads stale memory.
@@ -97,6 +100,7 @@ export function BookyProvider({ children, store, reloadKey = 0, now = Date.now, 
         if (!active) return;
         engine.current = { ...engine.current, mode: data.mode, muted: data.muted, seen: data.seen, welcome: data.welcome };
         setModeState(data.mode);
+        setMemoryVersion((v) => v + 1);
       })
       .catch((e) => console.warn('Booky could not read its settings', e));
     return () => {
@@ -188,8 +192,8 @@ export function BookyProvider({ children, store, reloadKey = 0, now = Date.now, 
   );
 
   const value = useMemo(
-    () => ({ tip, mode, emit, dismissTip, muteTip, setMode, resetTips, runAction, help, openHelp, closeHelp }),
-    [tip, mode, emit, dismissTip, muteTip, setMode, resetTips, runAction, help, openHelp, closeHelp],
+    () => ({ tip, mode, memoryVersion, emit, dismissTip, muteTip, setMode, resetTips, runAction, help, openHelp, closeHelp }),
+    [tip, mode, memoryVersion, emit, dismissTip, muteTip, setMode, resetTips, runAction, help, openHelp, closeHelp],
   );
   return <BookyContext.Provider value={value}>{children}</BookyContext.Provider>;
 }

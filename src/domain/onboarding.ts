@@ -14,7 +14,10 @@ export function needsOnboarding(done: boolean | null, e2e: boolean): boolean {
   return e2e ? done === false : done !== true;
 }
 
-/** Whether Booky's welcome tips may show. */
-export function welcomeTipsOn(done: boolean | null, e2e: boolean): boolean {
-  return e2e ? done !== null : true;
+/**
+ * Whether Booky's welcome tips may show: only after the onboarding, so they
+ * never come before it (or, in E2E builds, to a fixture that did not ask).
+ */
+export function welcomeTipsOn(done: boolean | null): boolean {
+  return done === true;
 }

@@ -3,7 +3,6 @@ import { AppState } from 'react-native';
 
 import { BookyProvider, emitBooky } from '@/components/booky';
 import { useDatabase } from '@/db';
-import { isE2eEnabled } from '@/features/e2e/e2eFlag';
 import { useLibraryEvent } from '@/features/events';
 
 import { settingsBookyStore } from './bookyStore';
@@ -16,7 +15,7 @@ import { settingsBookyStore } from './bookyStore';
  */
 export function BookyRoot({ children }: { children: ReactNode }) {
   const db = useDatabase();
-  const store = useMemo(() => settingsBookyStore(db, isE2eEnabled()), [db]);
+  const store = useMemo(() => settingsBookyStore(db), [db]);
   const [reloadKey, setReloadKey] = useState(0);
   useLibraryEvent('settings-changed', () => setReloadKey((k) => k + 1));
 

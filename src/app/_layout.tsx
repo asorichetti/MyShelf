@@ -14,6 +14,7 @@ import { LoanWatchers } from '@/features/loans/LoanWatchers';
 import { AppSnackbarHost } from '@/features/navigation/AppSnackbarHost';
 import { DatabaseErrorScreen } from '@/features/navigation/DatabaseErrorScreen';
 import { LoadingScreen } from '@/features/navigation/LoadingScreen';
+import { OnboardingGate } from '@/features/onboarding/OnboardingGate';
 import { SettingsWatchers } from '@/features/settings/SettingsWatchers';
 import { ThemeProvider, useTheme } from '@/theme';
 import { appFonts } from '@/theme/fonts';
@@ -39,6 +40,7 @@ function RootStack() {
         </View>
         <LoanWatchers />
         <SettingsWatchers />
+        <OnboardingGate />
       </SnackbarProvider>
     </BookyRoot>
   );

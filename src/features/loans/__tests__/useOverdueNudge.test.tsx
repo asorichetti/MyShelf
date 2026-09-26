@@ -45,7 +45,7 @@ function start(url: string) {
       wrapper: ({ children }) => (
         <AppTestProviders>
           <StaticDatabaseProvider db={db}>
-            <BookyProvider store={settingsBookyStore(db, false)}>{children}</BookyProvider>
+            <BookyProvider store={settingsBookyStore(db)}>{children}</BookyProvider>
           </StaticDatabaseProvider>
         </AppTestProviders>
       ),

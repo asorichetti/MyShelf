@@ -24,7 +24,7 @@ import type { ComponentType, ReactNode } from 'react';
  * the test sets `onboarding.done`.
  */
 export function appWrapper(db: Db) {
-  const store = settingsBookyStore(db, true);
+  const store = settingsBookyStore(db);
   return function Wrapper({ children }: { children: ReactNode }) {
     return (
       <AppTestProviders>

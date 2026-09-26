@@ -81,7 +81,7 @@ function toRowSections(sections: ShelfSection[], perRow: number): RowSection[] {
 export function ShelfScreen() {
   const theme = useTheme();
   const { spacing, sizes, colors } = theme;
-  const { emit } = useBooky();
+  const { emit, memoryVersion } = useBooky();
   const { snack, show } = useSnackbar();
   const shelf = useShelf();
   const { sections, items, total, activeQuery, groupBy, viewMode, filters } = shelf;
@@ -99,10 +99,11 @@ export function ShelfScreen() {
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const isEmpty = total === 0;
-  // Booky's empty-shelf tip (a welcome tip: at most once a session, never over the onboarding).
+  // Booky's empty-shelf tip: a welcome tip, once a session, only after the onboarding
+  // (asked again when Booky's memory reloads, e.g. just after the onboarding finished).
   useEffect(() => {
     if (isEmpty) void emit({ type: 'shelf-empty' });
-  }, [isEmpty, emit]);
+  }, [isEmpty, emit, memoryVersion]);
   const filterCount = activeFilterCount(filters);
   const genreNames = useMemo(() => new Map(shelf.filterOptions?.genres.map((g) => [g.id, g.name]) ?? []), [shelf.filterOptions]);
   const chips = filterChips(filters, (id) => genreNames.get(id), languageName);

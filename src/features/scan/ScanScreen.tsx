@@ -41,12 +41,14 @@ export function ScanScreen() {
   const [trayNotice, setTrayNotice] = useState<ScanNotice | null>(null);
   const tray = useTray();
   const permission = usePermission();
-  const emit = useOptionalBooky()?.emit;
+  const booky = useOptionalBooky();
+  const emit = booky?.emit;
+  const memoryVersion = booky?.memoryVersion;
 
-  // Booky's first-visit tip ("Point me at the barcode on the back cover."), once ever.
+  // Booky's first-visit tip ("Point me at the barcode on the back cover."), once ever, after the onboarding.
   useEffect(() => {
     void emit?.({ type: 'scan-opened' });
-  }, [emit]);
+  }, [emit, memoryVersion]);
 
   const setMode = useCallback((m: ScanMode) => {
     remembered.mode = m;

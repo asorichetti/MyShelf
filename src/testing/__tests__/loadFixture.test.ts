@@ -18,11 +18,19 @@ afterEach(async () => {
 });
 
 describe('loadFixture', () => {
-  it('knows the empty, demo, large and series fixtures', () => {
-    expect(fixtureNames).toEqual(['empty', 'demo', 'large', 'series']);
+  it('knows the empty, first-run, demo, large and series fixtures', () => {
+    expect(fixtureNames).toEqual(['empty', 'first-run', 'demo', 'large', 'series']);
     expect(isFixtureName('demo')).toBe(true);
     expect(isFixtureName('toString')).toBe(false);
     expect(isFixtureName('nope')).toBe(false);
+  });
+
+  it('first-run: no books, and the onboarding still to come; other fixtures skip it', async () => {
+    await loadFixture(db, 'first-run');
+    expect(await booksRepo.countBooks(db)).toBe(0);
+    expect(await settingsRepo.getSetting(db, 'onboarding.done')).toBe(false);
+    await loadFixture(db, 'demo');
+    expect(await settingsRepo.getSetting(db, 'onboarding.done')).toBeNull();
   });
 
   it('empty: nothing in any table', async () => {
