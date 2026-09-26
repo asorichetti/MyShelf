@@ -43,28 +43,37 @@ describe('useShelfPrefs', () => {
     expect(await loadShelfPrefs(db)).toEqual(defaultShelfPrefs);
   });
 
-  it('writes a change once, after a short pause', async () => {
+  it('saves a sort, grouping or mode at once', async () => {
+    const { result } = await renderPrefs();
+    act(() => result.current.setViewMode('covers'));
+    act(() => result.current.setSort({ sort: 'year', direction: 'desc' }));
+    expect(result.current.prefs?.viewMode).toBe('covers');
+    await waitFor(async () => expect(await settingsRepo.getSetting(db, 'shelfViewMode')).toBe('covers'));
+    await waitFor(async () => expect(await settingsRepo.getSetting(db, 'shelfSort')).toEqual({ sort: 'year', direction: 'desc' }));
+  });
+
+  it('writes filters once, after a short pause (debounced)', async () => {
     const { result } = await renderPrefs();
     jest.useFakeTimers();
     const spy = jest.spyOn(settingsRepo, 'setSetting');
-    act(() => result.current.setViewMode('covers'));
-    act(() => result.current.setViewMode('spines'));
-    expect(result.current.prefs?.viewMode).toBe('spines');
+    act(() => result.current.setFilters({ ...noFilters, genreIds: [1] }));
+    act(() => result.current.setFilters({ ...noFilters, genreIds: [1, 2] }));
+    expect(result.current.prefs?.filters.genreIds).toEqual([1, 2]);
     expect(spy).not.toHaveBeenCalled();
     await act(async () => jest.advanceTimersByTime(PREFS_DEBOUNCE_MS));
     expect(spy).toHaveBeenCalledTimes(1);
-    expect(spy).toHaveBeenCalledWith(db, 'shelfViewMode', 'spines');
+    expect(spy).toHaveBeenCalledWith(db, 'shelfFilters', { ...noFilters, genreIds: [1, 2] });
     jest.useRealTimers();
-    await waitFor(async () => expect(await settingsRepo.getSetting(db, 'shelfViewMode')).toBe('spines'));
+    await waitFor(async () => expect((await settingsRepo.getSetting(db, 'shelfFilters')).genreIds).toEqual([1, 2]));
     spy.mockRestore();
   });
 
   it('saves a pending change at once when the Shelf goes away', async () => {
     const { result, unmount } = await renderPrefs();
     jest.useFakeTimers();
-    act(() => result.current.setGroupBy('author'));
+    act(() => result.current.setFilters({ ...noFilters, loan: 'atHome' }));
     unmount();
     jest.useRealTimers();
-    await waitFor(async () => expect(await settingsRepo.getSetting(db, 'shelfGroupBy')).toBe('author'));
+    await waitFor(async () => expect((await settingsRepo.getSetting(db, 'shelfFilters')).loan).toBe('atHome'));
   });
 });

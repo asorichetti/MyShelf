@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { AppState } from 'react-native';
 
 import { settingsRepo, useDatabase, type Db } from '@/db';
 import {
@@ -14,7 +15,7 @@ import {
 } from '@/domain';
 import { emit } from '@/features/events';
 
-/** How long a preference must stay put before it is written. */
+/** How long the filters must stay put before they are written. */
 export const PREFS_DEBOUNCE_MS = 300;
 
 export interface ShelfPrefs {
@@ -62,9 +63,10 @@ export interface ShelfPrefsState {
 
 /**
  * The Shelf's sort, grouping, display mode and filters, read from settings on
- * load and written back on change: each key a short pause after its last
- * change (so tapping through filters writes once), and at once when the Shelf
- * goes away with a write still pending.
+ * load and written back on change. A sort, grouping or mode is one tap and is
+ * saved at once; filters change tap by tap in the sheet, so they are saved a
+ * short pause after the last change (debounced), and straight away when the
+ * Shelf goes away or the app goes to the background with a write pending.
  */
 export function useShelfPrefs(): ShelfPrefsState {
   const db = useDatabase();
@@ -95,14 +97,19 @@ export function useShelfPrefs(): ShelfPrefsState {
     [db],
   );
 
-  // Flush whatever is still waiting when the Shelf unmounts.
+  // Flush whatever is still waiting when the app goes to the background or the Shelf unmounts.
   useEffect(() => {
     const waiting = pending.current;
-    return () => {
+    const flush = () => {
       for (const [key, { value, timer }] of waiting) {
         clearTimeout(timer);
         write(key, value);
       }
+    };
+    const sub = AppState.addEventListener('change', (state) => state !== 'active' && flush());
+    return () => {
+      sub.remove();
+      flush();
     };
   }, [write]);
 
@@ -111,6 +118,11 @@ export function useShelfPrefs(): ShelfPrefsState {
       setPrefs((current) => ({ ...(current ?? defaultShelfPrefs), [key]: value }));
       const previous = pending.current.get(key);
       if (previous) clearTimeout(previous.timer);
+      if (key !== 'filters') {
+        pending.current.delete(key);
+        write(key, value);
+        return;
+      }
       pending.current.set(key, { value, timer: setTimeout(() => write(key, value), PREFS_DEBOUNCE_MS) });
     },
     [write],
