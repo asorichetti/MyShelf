@@ -266,12 +266,13 @@ Decisions made while building the foundation, all described in `PLAN.md`:
 - **Acceptance:** `npm run -s autotest -- journey --list` shows `booky-empty-shelf` in `core` and `theme-tokens` in `p00`; both pass with `--ux-gates fail`; CI runs `theme-tokens` (via P00-23, or an extra step until then).
 - **Tests:** the journeys themselves.
 
-### P00-30 Remaining UI primitives
+### P00-30 Remaining UI primitives — done
 
 - **Description:** The primitives from the original P00-09 list that are not built yet, needed from Phase 01: `IconButton` (icon only, required `accessibilityLabel`, 48 dp target), `CatalogueCard` (builds on `Card`: faint ruled lines, cover slot, title in Lora, authors and ISBN in Courier Prime), `Chip` (selectable and removable, for authors, genres and filters), `Stamp` (rotated rubber-stamp label in the `stamp` type style with `tone: 'warn' | 'danger' | 'success' | 'accent'`), `ConfirmDialog` (title, message, confirm and cancel, destructive variant, focus trapped while open) and `Snackbar` (message with an optional action such as Undo, auto-hide, announced politely). Add the `dialog` and `snackbar` test id groups (below).
 - **Files:** `src/components/ui/{IconButton,CatalogueCard,Chip,Stamp,ConfirmDialog,Snackbar}.tsx`, `src/components/ui/index.ts`, `src/testing/selectors.json` (+ generated file).
 - **Acceptance:** tokens only; touch targets ≥ 48 dp; every interactive part has a role and a label; `Stamp` text meets contrast in every tone; the dialog returns focus to its trigger when closed.
 - **Tests:** `src/components/ui/__tests__/*.test.tsx` — variants, labels, disabled states, dialog confirm/cancel, snackbar action and timeout.
+- **Delivered:** tests in `catalogue.test.tsx` (IconButton, CatalogueCard, Chip, Stamp) and `feedback.test.tsx` (ConfirmDialog, Snackbar). `Snackbar.tsx` also exports `SnackbarProvider`, `useSnackbar()` and `SnackbarHost`, so a snackbar survives navigation (Undo after leaving a deleted book); the host pauses its timer while the action has focus. `ConfirmDialog` is an `alertdialog` on React Native's `Modal` (the web Modal traps focus and returns it to the trigger); Cancel comes first so it is the default focus, and Android back, Escape and the backdrop cancel. `Chip` is a 36 dp pill whose buttons overhang it to reach 48 × 44; it can be plain, a toggle button, a radio or a checkbox, and removable. `EmptyState` gained an optional `secondaryAction`, and `Heading` a `nativeID`. New colour roles in `tokens.ts`: `cardLine`, `scrim`, `inverseSurface` / `onInverseSurface` / `inversePrimary` (both text pairs checked) and `brass`.
 
 ---
 

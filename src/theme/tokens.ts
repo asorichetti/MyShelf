@@ -45,6 +45,9 @@ export const palette = {
   rose700: '#B3261E',
   rose900: '#7A1A14',
 
+  brass300: '#D9B97A',
+  brass500: '#B08D57',
+
   white: '#FFFFFF',
   cheek: '#F4A6C6',
 } as const;
@@ -86,6 +89,17 @@ export interface ColorTokens {
   outline: string;
   /** Ruled line across catalogue cards. */
   cardRule: string;
+  /** Faint ruled lines printed on catalogue card stock (decorative). */
+  cardLine: string;
+  /** Dimmed backdrop behind dialogs and menus. */
+  scrim: string;
+  /** Dark surface for transient messages (snackbars). */
+  inverseSurface: string;
+  onInverseSurface: string;
+  /** Action text on the inverse surface (e.g. a snackbar's Undo). */
+  inversePrimary: string;
+  /** Brass trim (library shelf fittings, generated cover rules). Decorative. */
+  brass: string;
   /** Booky's own colours. */
   bookyBody: string;
   bookyShade: string;
@@ -124,6 +138,12 @@ export const lightColors: ColorTokens = {
   border: palette.paper300,
   outline: palette.ink500,
   cardRule: palette.berry600,
+  cardLine: palette.plum100,
+  scrim: 'rgba(39, 29, 56, 0.45)',
+  inverseSurface: palette.plum800,
+  onInverseSurface: palette.white,
+  inversePrimary: palette.plum200,
+  brass: palette.brass300,
   bookyBody: palette.plum500,
   bookyShade: palette.plum700,
   bookyStitch: palette.plum200,
@@ -163,6 +183,8 @@ export const textPairs: readonly (readonly [fg: ColorRole, bg: ColorRole])[] = [
   ['danger', 'surface'],
   ['onDanger', 'danger'],
   ['onDangerContainer', 'dangerContainer'],
+  ['onInverseSurface', 'inverseSurface'],
+  ['inversePrimary', 'inverseSurface'],
 ];
 
 /** Non-text UI pairs (outlines, icons) that must reach 3:1 (WCAG 1.4.11). */

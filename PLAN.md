@@ -506,6 +506,11 @@ A cosy-library palette: warm paper grounds, deep ink text, a plum primary and a 
 | `border` | `#E6D8C3` | hairlines, card borders — decorative only | — |
 | `outline` | `#6E6380` | input outlines, focus rings (UI, 3:1 rule) | 5.19:1 on paper |
 | `cardRule` | `#A8336B` | catalogue-card header rule — decorative | — |
+| `cardLine` | `#ECE2F8` | faint ruled lines on catalogue cards — decorative | — |
+| `scrim` | `rgba(39, 29, 56, 0.45)` | backdrop behind dialogs and menus | — |
+| `inverseSurface` / `onInverseSurface` | `#3D2363` / `#FFFFFF` | snackbars | 12.97:1 |
+| `inversePrimary` | `#D9C7F0` | action text on `inverseSurface` (Undo) | 8.26:1 |
+| `brass` | `#D9B97A` | brass trim: shelf fittings, generated-cover rules — decorative | — |
 | `bookyBody`, `bookyShade`, `bookyStitch`, `bookyCheek`, `bookyEye`, `bookyPupil` | `#7B4FB8`, `#512F82`, `#D9C7F0`, `#F4A6C6`, `#FFFFFF`, `#2A1846` | Booky's artwork only | `bookyShade` 9.38:1 on paper |
 
 **Dark theme** (P09-02): a second `ColorTokens` set registered in `src/theme/themes.ts` (today the dark scheme falls back to light). Intended values: `paper #1B1226`, `surface #241A33`, `ink #EDE4F7` (14.68:1 on paper), `inkMuted #A89BBF` (6.38:1 on surface), `primary #B79EDD` (7.71:1 on paper; text on it `#1B1226`), `danger #E8A8A2`, `success #8FD1A8`, `warn #F0C674` (all ≥ 8:1 on surface).

@@ -24,10 +24,12 @@ export interface EmptyStateProps {
   headingLevel?: HeadingLevel;
   titleTestID?: string;
   action?: EmptyStateAction;
+  /** A second, quieter action shown next to the first. */
+  secondaryAction?: EmptyStateAction;
   testID?: string;
 }
 
-export function EmptyState({ title, message, illustration, headingLevel = 2, titleTestID, action, testID }: EmptyStateProps) {
+export function EmptyState({ title, message, illustration, headingLevel = 2, titleTestID, action, secondaryAction, testID }: EmptyStateProps) {
   const theme = useTheme();
   return (
     <View testID={testID} style={[styles.root, { gap: theme.spacing.md, padding: theme.spacing.xl }]}>
@@ -40,14 +42,20 @@ export function EmptyState({ title, message, illustration, headingLevel = 2, tit
           {message}
         </Text>
       ) : null}
-      {action ? (
-        <Button
-          label={action.label}
-          onPress={action.onPress}
-          testID={action.testID}
-          variant={action.variant ?? 'primary'}
-          style={{ marginTop: theme.spacing.sm, alignSelf: 'center' }}
-        />
+      {action || secondaryAction ? (
+        <View style={[styles.actions, { gap: theme.spacing.sm, marginTop: theme.spacing.sm }]}>
+          {action ? (
+            <Button label={action.label} onPress={action.onPress} testID={action.testID} variant={action.variant ?? 'primary'} />
+          ) : null}
+          {secondaryAction ? (
+            <Button
+              label={secondaryAction.label}
+              onPress={secondaryAction.onPress}
+              testID={secondaryAction.testID}
+              variant={secondaryAction.variant ?? 'secondary'}
+            />
+          ) : null}
+        </View>
       ) : null}
     </View>
   );
@@ -56,4 +64,5 @@ export function EmptyState({ title, message, illustration, headingLevel = 2, tit
 const styles = StyleSheet.create({
   root: { alignItems: 'center', justifyContent: 'center' },
   message: { maxWidth: 360 },
+  actions: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center' },
 });

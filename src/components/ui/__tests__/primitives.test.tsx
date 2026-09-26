@@ -175,6 +175,20 @@ describe('EmptyState', () => {
     renderWithTheme(<EmptyState title="Loans" headingLevel={1} titleTestID="title" />);
     expect(screen.getByTestId('title').props['aria-level']).toBe(1);
   });
+
+  it('offers a second, quieter action', () => {
+    const onAdd = jest.fn();
+    renderWithTheme(
+      <EmptyState
+        title="Your shelf is empty"
+        action={{ label: 'Scan a book', onPress: () => {} }}
+        secondaryAction={{ label: 'Add manually', onPress: onAdd }}
+      />,
+    );
+    fireEvent.press(screen.getByRole('button', { name: 'Add manually' }));
+    expect(onAdd).toHaveBeenCalled();
+    expect(screen.getByRole('button', { name: 'Scan a book' })).toBeOnTheScreen();
+  });
 });
 
 describe('TextField', () => {

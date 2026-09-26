@@ -62,4 +62,13 @@ export const Testids = {
     action: 'booky-action',
     tipHost: 'booky-tip-host',
   },
+  dialog: {
+    root: 'dialog-root',
+    confirm: 'dialog-confirm',
+    cancel: 'dialog-cancel',
+  },
+  snackbar: {
+    root: 'snackbar-root',
+    action: 'snackbar-action',
+  },
 } as const;
