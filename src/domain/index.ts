@@ -8,6 +8,7 @@ export * from './genre';
 export * from './genreNormaliser';
 export * from './genres';
 export * from './group';
+export * from './groupIcons';
 export * from './hashColour';
 export * from './isbn';
 export * from './languages';
