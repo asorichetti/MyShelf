@@ -1,7 +1,8 @@
-import type { Listeners } from '../browser/listeners.ts';
 import { getAllowlist, type AllowRule } from './config.ts';
 import { isExpectedMissing } from './expected.ts';
 import { newResult, truncate, type RawFinding, type Result } from './gate.ts';
+
+import type { Listeners } from '../browser/listeners.ts';
 
 // consoleGate fails on any console error or uncaught page error that is
 // neither allowlisted (pattern + reason) nor about a deliberately missing URL.

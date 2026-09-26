@@ -3,8 +3,8 @@
 // startup; --gates-config and --console-allowlist point at other copies.
 import { readFileSync } from 'node:fs';
 
-import defaultConfigJSON from './gates.config.json' with { type: 'json' };
 import defaultAllowlistJSON from './console_allowlist.json' with { type: 'json' };
+import defaultConfigJSON from './gates.config.json' with { type: 'json' };
 
 /**
  * Tunes the render and a11y gates for this app. Every disabled rule must carry

@@ -1,7 +1,8 @@
 import { normalizeIsbn, type Book, type BookPatch, type NewBook } from '@/domain';
 
-import type { Db } from '../types';
 import { BOOK_COLUMNS, NOW_SQL, sqlValue, toBook, type BookRow } from './shared';
+
+import type { Db } from '../types';
 
 /** Domain field -> column. Order defines INSERT column order. */
 const FIELDS = {

@@ -1,8 +1,9 @@
-import type { Page } from 'playwright';
 
 import { errorMessage } from '../errors.ts';
 import { getConfig, skippedList } from './config.ts';
 import { newResult, type RawFinding, type Result, type Severity } from './gate.ts';
+
+import type { Page } from 'playwright';
 
 export interface A11yAuditFinding {
   rule: string;

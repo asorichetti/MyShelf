@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { Animated, Easing, type StyleProp, type ViewStyle } from 'react-native';
 import Svg, { Circle, Ellipse, G, Path } from 'react-native-svg';
 
@@ -29,7 +29,7 @@ const EYE_R = { x: 74, y: 60 };
 export function Booky({ expression = 'happy', size = 120, animated = true, accessibilityLabel, testID, style }: BookyProps) {
   const { colors } = useTheme();
   const reduceMotion = useReducedMotion();
-  const bob = useRef(new Animated.Value(0)).current;
+  const [bob] = useState(() => new Animated.Value(0));
   const shouldAnimate = animated && !reduceMotion;
 
   useEffect(() => {

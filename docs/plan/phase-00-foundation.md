@@ -189,12 +189,13 @@ Decisions made while building the foundation, all described in `PLAN.md`:
 - **Acceptance:** both jobs run on every push to `main` and every pull request, and both passed on `main`; a gate failure or failing journey makes the command exit 1, which fails the step and triggers the evidence upload; the same steps pass locally (`npm run check`, `npm run autotest:check`, `npm run -s autotest:smoke`).
 - **Tests:** CI itself. Follow-ups: checking pushed commit messages (P00-22), running every journey rather than named suites (P00-23), and running against the exported build with `--serve` (P00-21).
 
-### P00-20 Linting
+### P00-20 Linting — done
 
-- **Description:** ESLint via `npx expo lint` (creates the Expo config), plus rules: no raw colour literals outside `src/theme` (today a Jest test, `src/theme/__tests__/no-hardcoded-colours.test.ts`, which the rule may replace), import order, `react-hooks`. Prettier-compatible formatting. Add the `lint` script (there is none yet) and include it in `check`.
+- **Delivered:** `eslint.config.js` extends `eslint-config-expo/flat` (TypeScript, React, `react-hooks` including the React Compiler rules) and adds `import/order` (builtin/external, then the `@/` alias, then relative, blank line between groups, alphabetised) and `react-hooks/exhaustive-deps` as errors. `npm run lint` runs `eslint .` over the app and `tools/`; `npm run check` runs it after `selectors:check`. Adopting it fixed two real hook issues: `Booky` read a ref during render (now `useState` for the animated value) and `DatabaseProvider` set state synchronously inside an effect (the reset moved to the retry handler).
+- **Not adopted:** a lint rule for raw colour literals. `src/theme/__tests__/no-hardcoded-colours.test.ts` keeps enforcing that. No Prettier: the Expo config has no formatting rules that would conflict with it, so it can be added later without churn.
 - **Files:** `eslint.config.js`, `package.json`.
-- **Acceptance:** `npm run lint` clean; `npm run check` runs lint.
-- **Tests:** CI.
+- **Acceptance (met):** `npm run lint` clean; `npm run check` runs lint.
+- **Tests:** CI app job (via `npm run check`).
 
 ### P00-21 `--serve <dir>` for the exported web build
 
@@ -343,7 +344,7 @@ Run one with `npm run -s autotest -- journey <name>`, or all at once with `npm r
 Before any card in this phase is ticked, and before the phase is closed, both must be green locally and in CI (the web server must be running: `CI=1 npx expo start --web --port 8081`):
 
 ```bash
-npm run check                    # selectors:check + typecheck + Jest (+ lint once P00-20 lands)
+npm run check                    # selectors:check + lint + typecheck + Jest
 npm run -s autotest:smoke        # the auto test suite's `smoke`: core journeys, gates set to fail
 ```
 

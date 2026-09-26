@@ -1,6 +1,7 @@
-import type { Listeners } from '../browser/listeners.ts';
 import { isExpectedMissing } from './expected.ts';
 import { newResult, type RawFinding, type Result } from './gate.ts';
+
+import type { Listeners } from '../browser/listeners.ts';
 
 // networkGate fails on any request that got status >= 400 or no response at
 // all, except URLs carrying ExpectedMissingMarker.

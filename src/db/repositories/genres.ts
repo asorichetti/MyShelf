@@ -1,7 +1,8 @@
 import type { Book, BookGenre, BookGroup, Genre } from '@/domain';
 
-import type { Db } from '../types';
 import { BOOK_COLUMNS, foldBookGroups, toBook, type BookRow } from './shared';
+
+import type { Db } from '../types';
 
 export async function createGenre(db: Db, name: string): Promise<Genre> {
   const clean = name.trim();

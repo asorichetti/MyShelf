@@ -1,7 +1,8 @@
-import type { ReactNode } from 'react';
 import { Text as RNText, type StyleProp, type TextProps as RNTextProps, type TextStyle } from 'react-native';
 
 import { useTheme, type ColorRole, type TypographyVariant } from '@/theme';
+
+import type { ReactNode } from 'react';
 
 export interface TextProps extends Omit<RNTextProps, 'style'> {
   children?: ReactNode;

@@ -1,9 +1,10 @@
-import type { ReactNode } from 'react';
 import { ScrollView, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 import { SafeAreaView, type Edge } from 'react-native-safe-area-context';
 
 import { Testids } from '@/testing/testids.gen';
 import { useTheme } from '@/theme';
+
+import type { ReactNode } from 'react';
 
 export interface ScreenProps {
   children: ReactNode;

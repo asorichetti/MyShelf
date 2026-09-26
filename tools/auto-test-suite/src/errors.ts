@@ -11,7 +11,7 @@ export function errorMessage(err: unknown): string {
  * nothing to report, so `const err = joinErrors(errs); if (err) ...` reads
  * like Go's errors.Join.
  */
-export function joinErrors(errs: ReadonlyArray<unknown>): Error | undefined {
+export function joinErrors(errs: readonly unknown[]): Error | undefined {
   const real = errs.filter((e) => e !== undefined && e !== null);
   if (real.length === 0) return undefined;
   if (real.length === 1 && real[0] instanceof Error) return real[0];

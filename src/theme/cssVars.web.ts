@@ -1,4 +1,5 @@
 import { applyCssVariables } from './cssVariables';
+
 import type { Theme } from './themes';
 
 /**

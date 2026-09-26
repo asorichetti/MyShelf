@@ -1,4 +1,5 @@
 import { init } from './0001_init';
+
 import type { Migration } from './types';
 
 export type { Migration } from './types';

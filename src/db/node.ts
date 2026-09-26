@@ -3,6 +3,7 @@
  * only tests import it. Uses Node's built-in SQLite (no native build).
  */
 import { createDb } from './createDb';
+
 import type { Db, SqlParams } from './types';
 
 interface StatementSync {

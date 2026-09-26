@@ -1,5 +1,5 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react-native';
-import type { ComponentType } from 'react';
+
 
 import { BookyProvider, BookyTipHost } from '@/components/booky';
 import { booksRepo, StaticDatabaseProvider, type Db } from '@/db';
@@ -12,6 +12,8 @@ import { ShelfScreen } from '@/features/shelf/ShelfScreen';
 import { createTestDb } from '@/testing/createTestDb';
 import { renderWithTheme } from '@/testing/render';
 import { Testids } from '@/testing/testids.gen';
+
+import type { ComponentType } from 'react';
 
 let db: Db;
 beforeEach(async () => {

@@ -5,6 +5,7 @@
 import { join } from 'node:path';
 
 import { writeJSONFile } from '../browser/listeners.ts';
+
 import type { GatesWriter } from '../browser/run.ts';
 
 /** Controls whether gate failures fail the run. */
@@ -52,7 +53,7 @@ export interface Result {
 }
 
 /** Builds a Result: findings default to error severity; any error finding fails it. */
-export function newResult(gate: string, target: string, startMs: number, raw: ReadonlyArray<RawFinding>, skipped?: string[]): Result {
+export function newResult(gate: string, target: string, startMs: number, raw: readonly RawFinding[], skipped?: string[]): Result {
   // Key order matches the documented JSON: gate, rule, severity, message, evidence.
   const findings: Finding[] = raw.map((f) => ({
     gate,

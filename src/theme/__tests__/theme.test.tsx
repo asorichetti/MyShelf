@@ -1,8 +1,6 @@
 import { render } from '@testing-library/react-native';
 import { Text } from 'react-native';
 
-import { platformTypography as nativeTypography } from '@/theme/platformTypography';
-import { platformTypography as webTypography } from '@/theme/platformTypography.web';
 import {
   contrastRatio,
   lightTheme,
@@ -14,6 +12,8 @@ import {
   uiPairs,
   useTheme,
 } from '@/theme';
+import { platformTypography as nativeTypography } from '@/theme/platformTypography';
+import { platformTypography as webTypography } from '@/theme/platformTypography.web';
 
 describe('contrastRatio', () => {
   it('matches known WCAG reference values', () => {

@@ -1,6 +1,6 @@
 import { Testids, tid } from '../selectors.ts';
-import { ExpectedMissingMarker } from '../uxgates/expected.ts';
 import { expect, q, register } from './registry.ts';
+import { ExpectedMissingMarker } from '../uxgates/expected.ts';
 
 const root = tid(Testids.notFound.root);
 const title = tid(Testids.notFound.title);

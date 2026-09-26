@@ -1,5 +1,6 @@
-import type { Theme } from './themes';
 import { typography } from './tokens';
+
+import type { Theme } from './themes';
 
 const kebab = (s: string) => s.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`);
 

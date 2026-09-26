@@ -3,9 +3,9 @@ import { Argument, Command } from 'commander';
 import { RunBundle, RunStartError, emptyArtifacts, type Artifacts } from '../browser/run.ts';
 import { errorMessage, joinErrors } from '../errors.ts';
 import { tid } from '../selectors.ts';
+import { currentBaseURL, emit, g, gateMode, parseIntFlag, resolveURL, viewport } from './root.ts';
 import { checkPage, checkTraffic } from '../uxgates/check.ts';
 import { Recorder, type Summary } from '../uxgates/gate.ts';
-import { currentBaseURL, emit, g, gateMode, parseIntFlag, resolveURL, viewport } from './root.ts';
 
 const actions = ['click', 'fill', 'press', 'focus'] as const;
 type Action = (typeof actions)[number];

@@ -8,9 +8,9 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import vm from 'node:vm';
 
-import { EVALUATE_SHIM } from '../browser/browser.ts';
 import { a11yAudit } from './a11y.ts';
 import { renderAudit } from './render.ts';
+import { EVALUATE_SHIM } from '../browser/browser.ts';
 
 test('the evaluate shim makes __name the identity function', () => {
   const ctx = vm.createContext({});

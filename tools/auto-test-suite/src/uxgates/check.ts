@@ -1,14 +1,15 @@
-import type { Page } from 'playwright';
 
 import { viewportName, type Size } from '../browser/browser.ts';
-import type { Listeners } from '../browser/listeners.ts';
 import { errorMessage, joinErrors } from '../errors.ts';
 import { a11yGate } from './a11y.ts';
 import { consoleGate } from './console.ts';
-import type { Recorder } from './gate.ts';
 import { networkGate } from './network.ts';
 import { pageStateGate, type PageStateOptions } from './pagestate.ts';
 import { renderGate } from './render.ts';
+
+import type { Recorder } from './gate.ts';
+import type { Listeners } from '../browser/listeners.ts';
+import type { Page } from 'playwright';
 
 /** Waits for layout, not a clock: two animation frames. */
 export async function twoFrames(page: Page): Promise<void> {
@@ -29,7 +30,7 @@ export async function checkPage(
   rec: Recorder,
   target: string,
   ps: PageStateOptions,
-  renderAt: ReadonlyArray<Size>,
+  renderAt: readonly Size[],
 ): Promise<Error | undefined> {
   if (!rec.enabled()) return undefined;
   const state = await pageStateGate(page, target, ps);

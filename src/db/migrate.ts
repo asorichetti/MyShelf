@@ -1,4 +1,5 @@
 import { migrations as allMigrations, type Migration } from './migrations';
+
 import type { Db } from './types';
 
 export interface MigrationResult {

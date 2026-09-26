@@ -5,15 +5,17 @@
 import { readdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import type { Page } from 'playwright';
+
 
 import { screenshot, type Size } from '../browser/browser.ts';
-import type { Listeners } from '../browser/listeners.ts';
 import { RunBundle, RunStartError, emptyArtifacts, type Artifacts } from '../browser/run.ts';
 import { errorMessage, joinErrors } from '../errors.ts';
 import { Testids, tid } from '../selectors.ts';
 import { checkPage, checkTraffic } from '../uxgates/check.ts';
 import { Recorder, type Mode, type Summary } from '../uxgates/gate.ts';
+
+import type { Listeners } from '../browser/listeners.ts';
+import type { Page } from 'playwright';
 
 /** One scripted user path with assertions. run throws (usually via expect) to fail. */
 export interface Journey {

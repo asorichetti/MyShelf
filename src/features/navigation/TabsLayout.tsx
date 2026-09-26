@@ -1,12 +1,13 @@
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { Tabs, useIsFocused } from 'expo-router';
-import type { ComponentProps, ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { BookyTipHost } from '@/components/booky';
 import { Testids } from '@/testing/testids.gen';
 import { useTheme } from '@/theme';
+
+import type { ComponentProps, ReactNode } from 'react';
 
 type IconName = ComponentProps<typeof MaterialCommunityIcons>['name'];
 

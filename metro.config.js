@@ -1,5 +1,6 @@
 // Learn more https://docs.expo.dev/guides/customizing-metro
 const { ServerResponse } = require('node:http');
+
 const { getDefaultConfig } = require('expo/metro-config');
 
 const config = getDefaultConfig(__dirname);

@@ -1,8 +1,9 @@
-import type { Page } from 'playwright';
 
 import { errorMessage } from '../errors.ts';
 import { Testids, tid } from '../selectors.ts';
 import { newResult, truncate, type RawFinding, type Result } from './gate.ts';
+
+import type { Page } from 'playwright';
 
 export interface PageStateOptions {
   /** The selector that means "content rendered". Defaults to the shared page-content testid. */

@@ -1,10 +1,11 @@
-import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { useTheme } from '@/theme';
 
 import { Heading, type HeadingLevel } from './Heading';
 import { Text } from './Text';
+
+import type { ReactNode } from 'react';
 
 export interface CardProps {
   children?: ReactNode;

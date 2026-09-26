@@ -183,7 +183,7 @@ Each journey is added by the card that builds its screen. Suite `core` journeys 
 Before any card in this phase is ticked, and before the phase is closed, both must be green locally and in CI:
 
 ```bash
-npm run check                    # selectors:check + typecheck + Jest (+ lint once P00-20 lands)
+npm run check                    # selectors:check + lint + typecheck + Jest
 npm run -s autotest:smoke        # the auto test suite's `smoke`: core journeys, gates set to fail
 ```
 

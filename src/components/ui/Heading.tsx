@@ -1,7 +1,8 @@
-import type { ReactNode } from 'react';
 import { Text as RNText, type StyleProp, type TextStyle } from 'react-native';
 
 import { useTheme, type ColorRole } from '@/theme';
+
+import type { ReactNode } from 'react';
 
 export type HeadingLevel = 1 | 2 | 3;
 

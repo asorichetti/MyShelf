@@ -2,6 +2,7 @@
 // screenshots and a close that is safe in a finally block.
 import { mkdir } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
+
 import { chromium, type Browser as PWBrowser, type BrowserContext, type Page } from 'playwright';
 
 import { errorMessage } from '../errors.ts';

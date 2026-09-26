@@ -601,7 +601,7 @@ YAML flows in `.maestro/` for what only a real Android build can prove: camera p
 A task or phase is not done until both of these are green locally and in CI:
 
 ```bash
-npm run check                       # selectors:check + typecheck + Jest (+ lint from P00-20)
+npm run check                       # selectors:check + lint + typecheck + Jest
 npm run -s autotest:smoke           # the auto test suite's `smoke`: core journeys, gates set to fail
 ```
 

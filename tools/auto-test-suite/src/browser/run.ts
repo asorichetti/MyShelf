@@ -2,11 +2,13 @@
 // fresh run directory that always ends up holding five files.
 import { mkdir, writeFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
-import type { Page } from 'playwright';
+
 
 import { errorMessage, joinErrors } from '../errors.ts';
 import { Browser, screenshot, type Size } from './browser.ts';
 import { Listeners, writeJSONFile } from './listeners.ts';
+
+import type { Page } from 'playwright';
 
 /** The five files every browser command leaves behind. */
 export interface Artifacts {

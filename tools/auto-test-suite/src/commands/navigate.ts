@@ -3,9 +3,9 @@ import { Command } from 'commander';
 import { viewportName, type Size } from '../browser/browser.ts';
 import { RunBundle, RunStartError, emptyArtifacts, type Artifacts } from '../browser/run.ts';
 import { errorMessage, joinErrors } from '../errors.ts';
+import { currentBaseURL, emit, g, gateMode, logf, parseIntFlag, renderViewports, resolveURL, viewport } from './root.ts';
 import { checkPage, checkTraffic } from '../uxgates/check.ts';
 import { Recorder, type Summary } from '../uxgates/gate.ts';
-import { currentBaseURL, emit, g, gateMode, logf, parseIntFlag, renderViewports, resolveURL, viewport } from './root.ts';
 
 export interface NavigateResult {
   command: string;

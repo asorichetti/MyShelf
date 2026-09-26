@@ -31,6 +31,8 @@
     "@types/node": "^26.6.3",
     "@types/react": "~19.2.2",
     "commander": "15.0.0",
+    "eslint": "^9.0.0",
+    "eslint-config-expo": "~57.0.2",
     "jest": "~29.7.0",
     "jest-expo": "~57.0.0",
     "playwright": "1.63.0",
@@ -48,12 +50,13 @@
     "test": "jest",
     "selectors:gen": "node scripts/gen-selectors.mjs",
     "selectors:check": "node scripts/gen-selectors.mjs --check",
-    "check": "npm run selectors:check && npm run typecheck && npm test -- --ci",
+    "check": "npm run selectors:check && npm run lint && npm run typecheck && npm test -- --ci",
     "autotest": "tsx tools/auto-test-suite/src/cli.ts",
     "autotest:check": "tsc -p tools/auto-test-suite && node --import tsx --test 'tools/auto-test-suite/src/**/*.test.ts'",
     "autotest:install-browser": "playwright install chromium",
     "autotest:smoke": "tsx tools/auto-test-suite/src/cli.ts smoke",
-    "autotest:journeys": "tsx tools/auto-test-suite/src/cli.ts journey --all"
+    "autotest:journeys": "tsx tools/auto-test-suite/src/cli.ts journey --all",
+    "lint": "eslint ."
   },
   "private": true,
   "jest": {

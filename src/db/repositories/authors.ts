@@ -1,7 +1,8 @@
 import { toSortName, type Author, type AuthorRole, type Book, type BookAuthor, type BookAuthorLink, type BookGroup } from '@/domain';
 
-import type { Db } from '../types';
 import { BOOK_COLUMNS, foldBookGroups, toBook, type BookRow } from './shared';
+
+import type { Db } from '../types';
 
 interface AuthorRow {
   id: number;

@@ -1,7 +1,8 @@
 import type { Book, BookGroup, Series } from '@/domain';
 
-import type { Db } from '../types';
 import { BOOK_COLUMNS, foldBookGroups, toBook, type BookRow } from './shared';
+
+import type { Db } from '../types';
 
 interface SeriesRow {
   id: number;

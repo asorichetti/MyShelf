@@ -1,9 +1,10 @@
-import type { ReactNode } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { useTheme, type ColorRole } from '@/theme';
 
 import { Text } from './Text';
+
+import type { ReactNode } from 'react';
 
 export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger';
 

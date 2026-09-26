@@ -2,6 +2,7 @@ import { openDatabaseAsync, type SQLiteBindParams } from 'expo-sqlite';
 
 import { createDb } from './createDb';
 import { CONNECTION_PRAGMAS } from './pragmas';
+
 import type { Db, SqlParams } from './types';
 
 export const APP_DATABASE_NAME = 'myshelf.db';

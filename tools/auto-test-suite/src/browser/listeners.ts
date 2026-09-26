@@ -2,9 +2,11 @@
 // traffic for the bundle and for the console/network gates.
 import { writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import type { Page } from 'playwright';
 
 import { errorMessage } from '../errors.ts';
+
+import type { Page } from 'playwright';
+
 
 /** One console message or uncaught page error. */
 export interface ConsoleEntry {

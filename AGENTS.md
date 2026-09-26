@@ -29,8 +29,8 @@ Use `npx`, not `bunx` (this project uses npm; there is no `bun.lock`).
 | `npm test` | Jest | available |
 | `npm run selectors:gen` | regenerate test ids from `src/testing/selectors.json` | available |
 | `npm run selectors:check` | fail if the generated test id file is stale | available |
-| `npm run check` | `selectors:check` + `typecheck` + `test --ci` | available (lint added in P00-20) |
-| `npm run lint` / `npx expo lint` | ESLint | to be added in P00-20 |
+| `npm run check` | `selectors:check` + `lint` + `typecheck` + `test --ci` | available |
+| `npm run lint` | ESLint (Expo config + import order + hooks rules) | available |
 | `npm run autotest:install-browser` | one time: Chromium for the auto test suite | available |
 | `npm run -s autotest -- <command> [flags]` | run any auto test suite command (`navigate`, `journey`, `smoke`, `screenshot`, `interact`); see [its README](tools/auto-test-suite/README.md) | available |
 | `npm run -s autotest:smoke` | `smoke`: core journeys, gates set to fail; needs the web server on 8081 | available |

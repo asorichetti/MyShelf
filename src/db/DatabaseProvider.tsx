@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 
 import { migrate } from './migrate';
+
 import type { Db } from './types';
 
 export type DatabaseStatus =
@@ -28,7 +29,6 @@ export function DatabaseProvider({ open, children, fallback = null, renderError,
 
   useEffect(() => {
     let cancelled = false;
-    setStatus({ state: 'loading' });
     (async () => {
       try {
         const db = await open();
@@ -49,8 +49,13 @@ export function DatabaseProvider({ open, children, fallback = null, renderError,
     onStatusChange?.(status.state);
   }, [status.state, onStatusChange]);
 
+  const retry = () => {
+    setStatus({ state: 'loading' });
+    setAttempt((n) => n + 1);
+  };
+
   if (status.state === 'loading') return <>{fallback}</>;
-  if (status.state === 'error') return <>{renderError?.(status.error, () => setAttempt((n) => n + 1)) ?? null}</>;
+  if (status.state === 'error') return <>{renderError?.(status.error, retry) ?? null}</>;
   return <DatabaseContext.Provider value={status.db}>{children}</DatabaseContext.Provider>;
 }
 

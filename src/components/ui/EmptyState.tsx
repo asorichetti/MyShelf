@@ -1,4 +1,3 @@
-import type { ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { useTheme } from '@/theme';
@@ -6,6 +5,8 @@ import { useTheme } from '@/theme';
 import { Button, type ButtonVariant } from './Button';
 import { Heading, type HeadingLevel } from './Heading';
 import { Text } from './Text';
+
+import type { ReactNode } from 'react';
 
 export interface EmptyStateAction {
   label: string;

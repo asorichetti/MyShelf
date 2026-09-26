@@ -1,8 +1,9 @@
 import { render, type RenderOptions } from '@testing-library/react-native';
-import type { ReactElement, ReactNode } from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { ThemeProvider } from '@/theme';
+
+import type { ReactElement, ReactNode } from 'react';
 
 const metrics = {
   frame: { x: 0, y: 0, width: 390, height: 844 },
