@@ -1,3 +1,5 @@
+import { formatDay, t } from '@/i18n';
+
 import { daysBetween, parseIsoDate, type IsoDate } from './dates';
 import { daysOverdue, loanStatus, type LoanStatus } from './loans';
 
@@ -20,8 +22,6 @@ export interface LoanStampInfo {
   description: string;
 }
 
-const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-
 /** "12 Oct", or "12 Oct 2027" when the date is not in `today`'s year; a value that is not a date as it is. */
 export function formatShortDate(value: IsoDate, today?: IsoDate): string {
   let d: Date;
@@ -30,12 +30,11 @@ export function formatShortDate(value: IsoDate, today?: IsoDate): string {
   } catch {
     return String(value);
   }
-  const short = `${d.getDate()} ${MONTHS[d.getMonth()]}`;
-  return today != null && today.slice(0, 4) === value.slice(0, 4) ? short : `${short} ${d.getFullYear()}`;
+  return formatDay(d, { year: !(today != null && today.slice(0, 4) === value.slice(0, 4)) });
 }
 
 /** "1 day", "3 days". */
-export const dayCount = (n: number) => (n === 1 ? '1 day' : `${n} days`);
+export const dayCount = (n: number) => t('common.days', { count: n });
 
 type StampLoan = Pick<Loan, 'dueOn' | 'returnedOn'>;
 
@@ -51,23 +50,34 @@ export function loanStamp(loan: StampLoan, today: IsoDate): LoanStampInfo {
     case 'returned':
       return {
         status,
-        label: `Returned ${formatShortDate(loan.returnedOn!, today)}`,
+        label: t('loanStamp.returned', { date: formatShortDate(loan.returnedOn!, today) }),
         tone: 'success',
-        description: `Returned on ${long(loan.returnedOn!)}`,
+        description: t('loanStamp.returnedDescription', { date: long(loan.returnedOn!) }),
       };
     case 'overdue': {
-      const days = dayCount(daysOverdue(loan, today));
-      return { status, label: `Overdue · ${days}`, tone: 'danger', description: `Overdue by ${days}, it was due back on ${long(loan.dueOn!)}` };
+      const count = daysOverdue(loan, today);
+      return {
+        status,
+        label: t('loanStamp.overdue', { count }),
+        tone: 'danger',
+        description: t('loanStamp.overdueDescription', { count, date: long(loan.dueOn!) }),
+      };
     }
     case 'due-soon': {
       const left = daysBetween(today, loan.dueOn!);
-      const label = left === 0 ? 'Due today' : left === 1 ? 'Due tomorrow' : `Due ${formatShortDate(loan.dueOn!, today)}`;
-      const when = left === 0 ? 'today' : left === 1 ? 'tomorrow' : `in ${dayCount(left)}`;
-      return { status, label, tone: 'warn', description: `Due back ${when}, on ${long(loan.dueOn!)}` };
+      const date = long(loan.dueOn!);
+      if (left === 0) return { status, label: t('loanStamp.dueToday'), tone: 'warn', description: t('loanStamp.dueTodayDescription', { date }) };
+      if (left === 1) return { status, label: t('loanStamp.dueTomorrow'), tone: 'warn', description: t('loanStamp.dueTomorrowDescription', { date }) };
+      return {
+        status,
+        label: t('loanStamp.due', { date: formatShortDate(loan.dueOn!, today) }),
+        tone: 'warn',
+        description: t('loanStamp.dueSoonDescription', { count: left, date }),
+      };
     }
     case 'on-loan':
       return loan.dueOn
-        ? { status, label: `Due ${formatShortDate(loan.dueOn, today)}`, tone: 'accent', description: `Due back on ${long(loan.dueOn)}` }
-        : { status, label: 'On loan', tone: 'accent', description: 'On loan, no due date' };
+        ? { status, label: t('loanStamp.due', { date: formatShortDate(loan.dueOn, today) }), tone: 'accent', description: t('loanStamp.dueDescription', { date: long(loan.dueOn) }) }
+        : { status, label: t('loanStamp.onLoan'), tone: 'accent', description: t('loanStamp.onLoanDescription') };
   }
 }

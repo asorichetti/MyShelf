@@ -1,14 +1,14 @@
+import { formatDay, type MessageKey } from '@/i18n';
+
 import { parseIsoDate, toIsoDate, type IsoDate } from './dates';
 
 import type { DateFormat } from './settings';
 
-const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-
-/** What each date format looks like, for the Settings choice (P08-07). */
-export const dateFormatLabels: Record<DateFormat, string> = {
-  locale: 'Your phone’s style',
-  medium: 'Day month year (12 Oct 2026)',
-  iso: 'Year-month-day (2026-10-12)',
+/** The catalogue key naming each date format, for the Settings choice (P08-07). */
+export const dateFormatLabels: Record<DateFormat, MessageKey> = {
+  locale: 'dates.formats.locale',
+  medium: 'dates.formats.medium',
+  iso: 'dates.formats.iso',
 };
 
 let current: DateFormat = 'medium';
@@ -28,7 +28,7 @@ export function getDateFormat(): DateFormat {
 
 /**
  * A calendar date in the given format:
- * - `medium`: "12 Oct 2026" (British order, short month; the default)
+ * - `medium`: "12 Oct 2026" (the catalogue's style, see `formatDay`; the default)
  * - `iso`: "2026-10-12"
  * - `locale`: the phone's own medium style through `Intl.DateTimeFormat`
  *   ("Oct 12, 2026" in the US), falling back to `medium` without Intl.
@@ -43,7 +43,7 @@ export function formatDateAs(value: IsoDate, format: DateFormat, locale?: string
       // An unknown locale tag: fall through to the app's own style.
     }
   }
-  return `${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+  return formatDay(d);
 }
 
 /**

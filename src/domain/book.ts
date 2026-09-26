@@ -1,3 +1,6 @@
+import { t } from '@/i18n';
+
+
 import type { BookAuthor } from './author';
 import type { BookGenre } from './genre';
 import type { Loan } from './loan';
@@ -98,5 +101,7 @@ export function sortableTitle(title: string): string {
 /** "Terry Pratchett", "Terry Pratchett and Neil Gaiman", "A, B and C". */
 export function joinNames(names: readonly string[]): string {
   if (names.length <= 1) return names[0] ?? '';
-  return `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`;
+  const last = names[names.length - 1];
+  if (names.length === 2) return t('common.list.pair', { first: names[0], last });
+  return t('common.list.many', { rest: names.slice(0, -1).join(t('common.list.separator')), last });
 }

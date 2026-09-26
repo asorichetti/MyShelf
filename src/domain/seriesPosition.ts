@@ -1,3 +1,6 @@
+import { t } from '@/i18n';
+
+
 import { parsePosition, POSITION_KEYWORD } from './seriesParser';
 
 /**
@@ -41,5 +44,5 @@ export function formatSeriesPosition(value: number | null | undefined): string {
 /** "Discworld #5", or just "Discworld" without a position. */
 export function formatSeriesLabel(name: string, position: number | null | undefined): string {
   const pos = formatSeriesPosition(position);
-  return pos ? `${name} #${pos}` : name;
+  return pos ? t('common.seriesLabel', { name, position: pos }) : name;
 }
