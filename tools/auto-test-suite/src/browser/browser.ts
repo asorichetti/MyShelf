@@ -7,6 +7,7 @@ import { chromium, type Browser as PWBrowser, type BrowserContext, type Page } f
 
 import { errorMessage } from '../errors.ts';
 import { routeCovers } from './covers.ts';
+import { activeMockApi, installMockApi } from '../mockapi/route.ts';
 
 export interface Size {
   width: number;
@@ -121,8 +122,12 @@ export class Browser {
     });
     this.contexts.push(ctx);
     await ctx.addInitScript({ content: EVALUATE_SHIM });
-    // Book covers come from ./fixtures, never from the internet (covers.ts).
-    await routeCovers(ctx);
+    // API responses come from recorded fixtures and book covers from ./fixtures,
+    // never from the internet (mockapi/, covers.ts). Without --mock-api only
+    // covers are routed.
+    const mock = activeMockApi();
+    if (mock) await installMockApi(ctx, mock.index, mock.baseOrigin);
+    else await routeCovers(ctx);
     return ctx.newPage();
   }
 

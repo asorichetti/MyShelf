@@ -11,9 +11,11 @@ import author_OL23919A from './openlibrary/author-OL23919A.json';
 import author_OL25712A from './openlibrary/author-OL25712A.json';
 import author_OL26320A from './openlibrary/author-OL26320A.json';
 import author_OL27363A from './openlibrary/author-OL27363A.json';
+import author_OL31353A from './openlibrary/author-OL31353A.json';
 import author_OL31901A from './openlibrary/author-OL31901A.json';
 import author_OL7234434A from './openlibrary/author-OL7234434A.json';
 import author_OL79034A from './openlibrary/author-OL79034A.json';
+import edition_OL17852114M from './openlibrary/edition-OL17852114M.json';
 import edition_OL18986719M from './openlibrary/edition-OL18986719M.json';
 import edition_OL22597282M from './openlibrary/edition-OL22597282M.json';
 import edition_OL25726767M from './openlibrary/edition-OL25726767M.json';
@@ -25,8 +27,10 @@ import edition_OL47313596M from './openlibrary/edition-OL47313596M.json';
 import edition_OL7814893M from './openlibrary/edition-OL7814893M.json';
 import edition_OL9567312M from './openlibrary/edition-OL9567312M.json';
 import editions_OL453657W from './openlibrary/editions-OL453657W.json';
+import search_q_colour_of_magic_pratchett from './openlibrary/search-colour-of-magic-pratchett.json';
 import search_colour_of_magic from './openlibrary/search-colour-of-magic.json';
 import search_q_dune from './openlibrary/search-q-dune.json';
+import search_q_the_colour_of_magic_terry_pratchett from './openlibrary/search-the-colour-of-magic-terry-pratchett.json';
 import work_OL10263W from './openlibrary/work-OL10263W.json';
 import work_OL17091839W from './openlibrary/work-OL17091839W.json';
 import work_OL274505W from './openlibrary/work-OL274505W.json';
@@ -34,6 +38,7 @@ import work_OL27513W from './openlibrary/work-OL27513W.json';
 import work_OL34952014W from './openlibrary/work-OL34952014W.json';
 import work_OL453657W from './openlibrary/work-OL453657W.json';
 import work_OL453749W from './openlibrary/work-OL453749W.json';
+import work_OL59855W from './openlibrary/work-OL59855W.json';
 import work_OL66554W from './openlibrary/work-OL66554W.json';
 import work_OL82563W from './openlibrary/work-OL82563W.json';
 import work_OL893414W from './openlibrary/work-OL893414W.json';
@@ -53,6 +58,7 @@ export const OL_BOOKS = {
   dune: '9780441172719', // Ace 1987 (ISBN-10 0441172717); two isbn_10s, "pagination" but no format
   movingPictures: '9780552134637', // Corgi (ISBN-10 0552134635); series "Discworld, part 10"; edition subjects
   noDescription: '9780000000002', // real junk record: no authors, no work description, no subjects
+  farthestShore: '9780140306941', // Puffin 1974 (recorded later, for Refresh details); no cover; imprint series "Puffin books"
   unknown: '9791099999993', // valid checksum, unknown to Open Library: 404 with an HTML body
 } as const;
 
@@ -78,6 +84,9 @@ export const openLibraryRoutes: FixtureRoutes = {
   [`${OL}/works/OL34952014W.json`]: json(work_OL34952014W),
   [`${OL}/works/OL453657W.json`]: json(work_OL453657W),
   [`${OL}/works/OL453749W.json`]: json(work_OL453749W),
+  [`${OL}/isbn/${OL_BOOKS.farthestShore}.json`]: json(edition_OL17852114M),
+  [`${OL}/works/OL59855W.json`]: json(work_OL59855W),
+  [`${OL}/authors/OL31353A.json`]: json(author_OL31353A),
   [`${OL}/works/OL66554W.json`]: json(work_OL66554W),
   [`${OL}/works/OL82563W.json`]: json(work_OL82563W),
   [`${OL}/works/OL893414W.json`]: json(work_OL893414W),
@@ -94,6 +103,10 @@ export const openLibraryRoutes: FixtureRoutes = {
   [withQuery(`${OL}/search.json`, { title: 'the colour of magic', author: 'pratchett', fields: SEARCH_FIELDS, limit: 10 })]:
     json(search_colour_of_magic),
   [withQuery(`${OL}/search.json`, { q: 'dune frank herbert', fields: SEARCH_FIELDS, limit: 10 })]: json(search_q_dune),
+  // Free-text searches as the lookup field and the typed cover text send them.
+  [withQuery(`${OL}/search.json`, { q: 'colour of magic pratchett', fields: SEARCH_FIELDS, limit: 10 })]: json(search_q_colour_of_magic_pratchett),
+  [withQuery(`${OL}/search.json`, { q: 'the colour of magic terry pratchett', fields: SEARCH_FIELDS, limit: 10 })]:
+    json(search_q_the_colour_of_magic_terry_pratchett),
   [`${OL}/works/OL453657W/editions.json?limit=50`]: json(editions_OL453657W),
 };
 

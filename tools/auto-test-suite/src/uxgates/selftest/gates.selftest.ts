@@ -17,9 +17,11 @@ import { fileURLToPath } from 'node:url';
 
 import { chromium } from 'playwright';
 
-import { FontPath, fixtures, selfTestConfig } from './fixtures.ts';
+import { FontPath, MockFiles, MockIndexRoutes, fixtures, selfTestConfig } from './fixtures.ts';
 import { Browser, Viewports } from '../../browser/browser.ts';
 import { Listeners } from '../../browser/listeners.ts';
+import { loadMockIndex, type MockIndex } from '../../mockapi/index.ts';
+import { setMockApi } from '../../mockapi/route.ts';
 import { startStaticServer, type StaticServer } from '../../server/static.ts';
 import { checkPage, checkTraffic } from '../check.ts';
 import { A11yRules, RenderRules, loadAllowlist, loadConfig } from '../config.ts';
@@ -46,6 +48,7 @@ const allRules = [
   'console/pageerror',
   'network/http-status',
   'network/request-failed',
+  'network/unmocked',
 ];
 
 test('every gate rule has a fixture that fires it', () => {
@@ -60,6 +63,7 @@ describe('gate self-tests', { skip }, () => {
   let dir: string;
   let srv: StaticServer;
   let browser: Browser;
+  let mockIndex: MockIndex;
 
   before(async () => {
     dir = mkdtempSync(join(tmpdir(), 'autotest-gate-fixtures-'));
@@ -70,19 +74,27 @@ describe('gate self-tests', { skip }, () => {
     writeFileSync(cfg, JSON.stringify(selfTestConfig));
     loadConfig(cfg);
     loadAllowlist('');
+    const mockDir = join(dir, 'mock');
+    mkdirSync(mockDir);
+    writeFileSync(join(mockDir, 'index.json'), JSON.stringify({ routes: MockIndexRoutes }));
+    for (const [name, body] of Object.entries(MockFiles)) writeFileSync(join(mockDir, name), body);
+    mockIndex = loadMockIndex(mockDir);
     srv = await startStaticServer(dir, { fallback: 'clean.html' });
     browser = await Browser.launch(true);
   });
 
   after(async () => {
+    setMockApi(null);
     await browser?.close();
     await srv?.close();
     loadConfig('');
   });
 
   // Loads one fixture and runs every gate over it, as a journey's goto would.
-  async function gatesFor(name: string): Promise<Result[]> {
+  async function gatesFor(name: string, mock = false): Promise<Result[]> {
+    setMockApi(mock ? mockIndex : null, srv.url);
     const page = await browser.newPage(Viewports.mobile!, '');
+    setMockApi(null);
     const listeners = Listeners.attach(page);
     const rec = new Recorder('warn');
     await page.goto(`${srv.url}/${name}.html`, { waitUntil: 'load' });
@@ -95,7 +107,7 @@ describe('gate self-tests', { skip }, () => {
 
   for (const f of fixtures) {
     test(`${f.name}: ${f.fires.length ? f.fires.join(' + ') : 'no findings'} (${f.why})`, async () => {
-      const results = await gatesFor(f.name);
+      const results = await gatesFor(f.name, f.mock);
       const errors = results.flatMap((r) => r.findings.filter((x) => x.severity === SeverityError));
       const fired = [...new Set(errors.map((x) => `${x.gate}/${x.rule ?? ''}`))].sort();
       const detail = errors.map((x) => `\n  ${x.gate}/${x.rule}: ${x.message}`).join('');

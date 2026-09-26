@@ -25,7 +25,22 @@ export interface Fixture {
   /** What the page does wrong, for the test name and the reader. */
   why: string;
   html: string;
+  /** Load the page with API mocking on (MockIndexRoutes), as journeys do. */
+  mock?: boolean;
 }
+
+/**
+ * The fixture index the mocked pages run with: one deliberate 404 (marked
+ * expected) and one ordinary answer. The runner writes it next to the pages.
+ */
+export const MockIndexRoutes = [
+  { url: 'https://openlibrary.org/isbn/9791099999993.json', status: 404, body: 'not-found.html', expected: true },
+  { url: 'https://openlibrary.org/isbn/9780552166591.json', body: 'edition.json' },
+];
+export const MockFiles: Record<string, string> = {
+  'not-found.html': '<!doctype html><title>Page not found</title>',
+  'edition.json': '{"title":"The Colour of Magic"}',
+};
 
 // A valid 1x1 PNG and a byte string no decoder accepts.
 const PNG = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
@@ -109,6 +124,16 @@ export const fixtures: Fixture[] = [
     fires: [],
     why: 'requests a URL carrying the expected-missing marker, which the console and network gates skip',
     html: page({ scripts: "track(fetch('/gone__expected-404.json'));" }),
+  },
+  {
+    name: 'clean-mock-expected',
+    fires: [],
+    why: 'with API mocking on, gets a fixture answer and a fixture 404 marked expected, which the console and network gates skip',
+    mock: true,
+    html: page({
+      scripts:
+        "track(fetch('https://openlibrary.org/isbn/9780552166591.json').then((r) => r.json())); track(fetch('https://openlibrary.org/isbn/9791099999993.json'));",
+    }),
   },
 
   // pagestate
@@ -263,6 +288,13 @@ export const fixtures: Fixture[] = [
     fires: ['network/http-status', 'console/error'],
     why: 'requests a missing file, which the static server answers with a real 404',
     html: page({ scripts: "track(fetch('/missing.json'));" }),
+  },
+  {
+    name: 'network-unmocked',
+    fires: ['network/unmocked', 'console/error'],
+    why: 'with API mocking on, requests a Google Books URL that no fixture answers, which the mock aborts',
+    mock: true,
+    html: page({ scripts: "track(fetch('https://www.googleapis.com/books/v1/volumes?q=isbn%3A9780000000002'));" }),
   },
   {
     name: 'network-request-failed',

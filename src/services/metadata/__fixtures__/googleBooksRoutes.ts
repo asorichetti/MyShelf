@@ -18,6 +18,7 @@ import prideAndPrejudice from './googlebooks/synthetic-isbn-9780141439518.json';
 import colourOfMagic from './googlebooks/synthetic-isbn-9780552166591.json';
 import theMartian from './googlebooks/synthetic-isbn-9780553418026.json';
 import petitPrince from './googlebooks/synthetic-isbn-9782070612758.json';
+import noItems from './googlebooks/synthetic-no-items.json';
 import searchColourOfMagic from './googlebooks/synthetic-search-colour-of-magic.json';
 
 const GB = 'https://www.googleapis.com/books/v1/volumes';
@@ -36,8 +37,12 @@ export const googleBooksRoutes: FixtureRoutes = {
   [gbIsbnUrl('9788497592208')]: { body: empty },
   [gbIsbnUrl('9780000000002')]: { body: empty },
   [gbIsbnUrl('9791099999993')]: { body: empty },
-  [gbIsbnUrl('9780345339706')]: { body: {} },
+  [gbIsbnUrl('9780345339706')]: { body: noItems },
+  [gbIsbnUrl('9780140306941')]: { body: empty },
   [gbSearchUrl('intitle:"the colour of magic" inauthor:"pratchett"')]: { body: searchColourOfMagic },
+  // The same synthetic volumes for the free-text searches the lookup field and typed cover text send.
+  [gbSearchUrl('colour of magic pratchett')]: { body: searchColourOfMagic },
+  [gbSearchUrl('the colour of magic terry pratchett')]: { body: searchColourOfMagic },
 };
 
 /** The real keyless response: a daily-quota 429. */

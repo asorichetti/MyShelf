@@ -11,6 +11,8 @@ import { screenshotCommand } from './commands/screenshot.ts';
 import { smokeCommand } from './commands/smoke.ts';
 import { errorMessage } from './errors.ts';
 import { loadJourneys } from './journeys/registry.ts';
+import { resolveMockApiFlag } from './mockapi/index.ts';
+import { setMockApi } from './mockapi/route.ts';
 import { startStaticServer, type StaticServer } from './server/static.ts';
 import { loadAllowlist, loadConfig } from './uxgates/config.ts';
 import { parseMode } from './uxgates/gate.ts';
@@ -34,6 +36,7 @@ interface RawGlobals {
   gatesConfig: string;
   consoleAllowlist: string;
   serve: string;
+  mockApi: string;
 }
 
 function buildProgram(): Command {
@@ -59,6 +62,13 @@ function buildProgram(): Command {
     .option('--viewport <preset>', `viewport preset: ${viewportNames().join(', ')}`, 'mobile')
     .addOption(
       new Option('--color-scheme <scheme>', 'emulated color scheme: light, dark or no-preference').default('', 'browser default'),
+    )
+    .addOption(
+      new Option(
+        '--mock-api <dir>',
+        'answer Open Library, Google Books and covers requests from the fixture index in <dir> (index.json); "off" disables it. ' +
+          'Any other request leaving the app fails the network gate as unmocked',
+      ).default('', 'src/services/metadata/__fixtures__'),
     )
     .addOption(new Option('--gates-config <path>', 'path to a gates config JSON').default('', 'the shipped gates.config.json'))
     .addOption(
@@ -94,7 +104,9 @@ function buildProgram(): Command {
       g.baseUrl = served.url;
       logf(`serving ${serve} at ${served.url}`);
     }
-    baseURL(g.env, g.baseUrl);
+    const mock = resolveMockApiFlag(g.mockApi);
+    setMockApi(mock, baseURL(g.env, g.baseUrl));
+    logf(mock ? `mock API: ${mock.routes.length} fixtures from ${mock.dir}` : 'mock API: off (real network)');
   });
   return program;
 }

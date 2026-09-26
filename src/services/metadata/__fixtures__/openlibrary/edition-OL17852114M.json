@@ -1,0 +1,75 @@
+{
+  "notes": {
+    "type": "/type/text",
+    "value": "Originally published, New York , Atheneum, 1972 London , Gollancz, 1973."
+  },
+  "identifiers": {
+    "goodreads": [
+      "1118440"
+    ],
+    "librarything": [
+      "50094"
+    ]
+  },
+  "title": "The  farthest shore",
+  "authors": [
+    {
+      "key": "/authors/OL31353A"
+    }
+  ],
+  "publish_date": "1974",
+  "publishers": [
+    "Puffin Books"
+  ],
+  "isbn_10": [
+    "0140306943"
+  ],
+  "series": [
+    "Puffin books"
+  ],
+  "publish_places": [
+    "Harmondsworth"
+  ],
+  "pagination": "214p. :",
+  "source_records": [
+    "marc:talis_openlibrary_contribution/talis-openlibrary-contribution.mrc:1643393501:746",
+    "bwb:9780140306941",
+    "promise:bwb_daily_pallets_2021-02-03"
+  ],
+  "dewey_decimal_class": [
+    "823/.9/1J"
+  ],
+  "languages": [
+    {
+      "key": "/languages/eng"
+    }
+  ],
+  "subjects": [
+    "Children's stories"
+  ],
+  "publish_country": "xxk",
+  "by_statement": "(by) Ursula Le Guin.",
+  "type": {
+    "key": "/type/edition"
+  },
+  "local_id": [
+    "urn:bwbsku:KO-674-796"
+  ],
+  "key": "/books/OL17852114M",
+  "number_of_pages": 214,
+  "works": [
+    {
+      "key": "/works/OL59855W"
+    }
+  ],
+  "latest_revision": 9,
+  "revision": 9,
+  "created": {
+    "type": "/type/datetime",
+    "value": "2008-10-06T13:50:46.565122"
+  },
+  "last_modified": {
+    "type": "/type/datetime",
+    "value": "2024-01-19T06:47:16.802882"
+  }
+}

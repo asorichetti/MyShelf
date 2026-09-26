@@ -5,7 +5,8 @@ import { newResult, truncate, type RawFinding, type Result } from './gate.ts';
 import type { Listeners } from '../browser/listeners.ts';
 
 // consoleGate fails on any console error or uncaught page error that is
-// neither allowlisted (pattern + reason) nor about a deliberately missing URL.
+// neither allowlisted (pattern + reason) nor about a deliberately missing URL
+// (the expected-missing marker, or a mock fixture marked `expected`).
 export function consoleGate(l: Listeners, target: string): Result {
   const start = Date.now();
   const findings: RawFinding[] = [];
@@ -13,6 +14,7 @@ export function consoleGate(l: Listeners, target: string): Result {
   for (const e of l.snapshot().console) {
     if (!e.isError) continue;
     if (isExpectedMissing(e.text) || isExpectedMissing(e.location)) continue;
+    if (l.mentionsExpectedMock(e.location) || l.mentionsExpectedMock(e.text)) continue;
     if (matchAllowlist(e.text)) {
       allowed++;
       continue;

@@ -4,6 +4,7 @@ import { writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import { errorMessage } from '../errors.ts';
+import { mockStateFor, type MockState } from '../mockapi/route.ts';
 
 import type { Page } from 'playwright';
 
@@ -38,11 +39,13 @@ export interface NetworkEntry {
 export class Listeners {
   private console: ConsoleEntry[] = [];
   private network: NetworkEntry[] = [];
+  private mock: MockState = { expected: new Set(), unmocked: new Set() };
 
   // attach wires the listeners onto a page. Call it before navigating; anything
   // that fires before attach returns is lost.
   static attach(page: Page): Listeners {
     const l = new Listeners();
+    l.mock = mockStateFor(page.context());
     page.on('console', (m) => {
       const e: ConsoleEntry = { time: now(), type: m.type(), text: m.text(), isError: m.type() === 'error' };
       const loc = m.location();
@@ -76,6 +79,23 @@ export class Listeners {
       });
     });
     return l;
+  }
+
+  /** URLs a mock fixture answered with a deliberate error (`expected` in the index). */
+  isExpectedMock(url: string): boolean {
+    return this.mock.expected.has(url);
+  }
+
+  /** Whether text (a console message or its location) refers to a deliberate mock error response. */
+  mentionsExpectedMock(text: string | undefined): boolean {
+    if (!text) return false;
+    for (const url of this.mock.expected) if (text.includes(url)) return true;
+    return false;
+  }
+
+  /** URLs the mock aborted because no fixture answers them. */
+  isUnmocked(url: string): boolean {
+    return this.mock.unmocked.has(url);
   }
 
   /** Copies, so gates can read without draining what the JSON dump will later write. */

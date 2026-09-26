@@ -19,6 +19,8 @@ export interface GlobalOpts {
   colorScheme: string;
   gatesConfig: string;
   consoleAllowlist: string;
+  /** --mock-api: fixture directory, '' for the default, or 'off'. */
+  mockApi: string;
 }
 
 export const g: GlobalOpts = {
@@ -31,6 +33,7 @@ export const g: GlobalOpts = {
   colorScheme: '',
   gatesConfig: '',
   consoleAllowlist: '',
+  mockApi: '',
 };
 
 let emitted = false;

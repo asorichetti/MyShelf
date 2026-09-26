@@ -156,6 +156,7 @@ Global flags may come before or after the command name.
 | `--color-scheme` | browser default | `light`, `dark`, `no-preference` |
 | `--gates-config` | shipped file | Path to an alternative `gates.config.json` |
 | `--console-allowlist` | shipped file | Path to an alternative `console_allowlist.json` |
+| `--mock-api` | `src/services/metadata/__fixtures__` | Fixture directory with an `index.json` that answers Open Library, Google Books and covers requests; `off` disables mocking (covers are still answered by the test JPEGs). See [API mocking](#api-mocking) |
 
 All of them are validated before a browser starts. The default viewport is
 `mobile` because MyShelf is a phone app rendered on the web; `desktop` exists
@@ -261,7 +262,7 @@ explain the blank page.
 | `pagestate` | No visible content marker (`page-content` testid, or `--marker`) within 15 s; a visible `page-error` testid; or the visible `main` has fewer than 10 characters of text. Only visible markers count, because a stack keeps the screens underneath in the DOM, hidden, with their own markers |
 | `render` | The page rendered but is not styled (rules below) |
 | `console` | A console error or uncaught exception that is not allowlisted |
-| `network` | Any response >= 400 or request that got no response |
+| `network` | Any response >= 400 or request that got no response (rules `http-status`, `request-failed`); a request that left the app with no mock fixture (rule `unmocked`, see [API mocking](#api-mocking)) |
 | `a11y` | Structural accessibility regressions (rules below) |
 
 The render and a11y audits are typed functions (`renderAudit`, `a11yAudit`)
@@ -356,10 +357,53 @@ console and network gates both skip URLs and messages containing it, the
 render gate's `images` rule skips images whose URL contains it, and nothing
 else. The demo fixture's deliberately broken cover uses it too.
 
+### API mocking
+
+Journeys never touch the real book APIs. Every page the suite opens (every
+command, every journey) gets a Playwright route handler before it navigates
+(`src/mockapi/`, registered in `Browser.newPage`), so even the first request
+is covered:
+
+- Requests to `openlibrary.org` and `www.googleapis.com` are answered from the
+  fixture index given by `--mock-api <dir>` (default
+  `src/services/metadata/__fixtures__`, so `smoke` needs no flag).
+- Requests to `covers.openlibrary.org` are answered from the index when it has
+  an entry, and otherwise by the generated test JPEGs (see
+  [Book covers](#book-covers)).
+- Any other request that leaves the origin under test, and any URL on the
+  mocked hosts that the index does not list, is **aborted** and reported by
+  the `network` gate under the rule `unmocked`, naming the URL. So a journey
+  that would have reached the real network fails instead.
+- Same-origin traffic (the bundle, assets) is never intercepted.
+
+`index.json` is `{ "routes": [ ... ] }`; each entry is:
+
+| Field | Required | Meaning |
+|---|---|---|
+| `url` | yes | The https URL. Query parameters match in any order; `*` matches any characters (exact entries win over patterns) |
+| `body` | no | Body file, relative to the index |
+| `status` | no | Default 200 |
+| `contentType` | no | Default from the body file's extension (`.json`, `.html`, `.txt`, `.jpg`, `.png`) |
+| `expected` | for status ≥ 400 | A deliberate error response (the 404 for an unknown ISBN, the 500 in the partial-failure journey). The network and console gates skip it, the way they skip `__expected-404` URLs; any other status ≥ 400 still fails them |
+| `note` | no | What the fixture is, for the reader |
+
+The index is validated before a browser starts: unknown fields, hosts that are
+not mocked, missing or invalid body files, duplicate URLs and an error status
+without `expected` are rejected. The Jest fixture tables
+(`openLibraryRoutes.ts`, `googleBooksRoutes.ts`) serve the same files, and a
+Jest test (`mockIndex.test.ts`) keeps every Jest route in the index with the
+same status and body.
+
+Record a new fixture by hand (never in CI) with
+`node scripts/record-fixture.mjs <url> [<url> ...] [--name <file>] [--expected]`:
+it sends the app's User-Agent, one request at a time at most once a second,
+follows redirects, writes the body under the fixture directory and adds the
+entry to `index.json`. `--dry-run` prints the entry without writing.
+
 ### Book covers
 
-Every page the suite opens routes `https://covers.openlibrary.org/**` to two
-synthetic JPEGs in `src/browser/fixtures/` (`src/browser/covers.ts`): a 2:3
+Every page the suite opens routes `https://covers.openlibrary.org/**` (unless
+the mock index has an entry for the URL) to two synthetic JPEGs in `src/browser/fixtures/` (`src/browser/covers.ts`): a 2:3
 test cover, and a white-padded square for the ids in `PADDED_COVER_IDS` (some
 Open Library scans are padded like that). A URL with the expected-missing
 marker gets what Open Library really sends for a cover it does not have:

@@ -1,0 +1,221 @@
+{
+  "description": "Recorded API responses for the auto test suite (--mock-api, P02-13): URL -> status, body file, expected. Open Library bodies are real (September 2026); Google Books bodies are synthetic (see googleBooksRoutes.ts). Add entries with scripts/record-fixture.mjs.",
+  "routes": [
+    {
+      "url": "https://openlibrary.org/isbn/9780552166591.json",
+      "body": "openlibrary/edition-OL28477029M.json"
+    },
+    {
+      "url": "https://openlibrary.org/isbn/9780747532699.json",
+      "body": "openlibrary/edition-OL25726767M.json"
+    },
+    {
+      "url": "https://openlibrary.org/isbn/9780141439518.json",
+      "body": "openlibrary/edition-OL37076991M.json"
+    },
+    {
+      "url": "https://openlibrary.org/isbn/9780553418026.json",
+      "body": "openlibrary/edition-OL26420821M.json"
+    },
+    {
+      "url": "https://openlibrary.org/isbn/9782070612758.json",
+      "body": "openlibrary/edition-OL9567312M.json"
+    },
+    {
+      "url": "https://openlibrary.org/isbn/9780345339706.json",
+      "body": "openlibrary/edition-OL45506127M.json"
+    },
+    {
+      "url": "https://openlibrary.org/isbn/9788497592208.json",
+      "body": "openlibrary/edition-OL18986719M.json"
+    },
+    {
+      "url": "https://openlibrary.org/isbn/9780441172719.json",
+      "body": "openlibrary/edition-OL22597282M.json"
+    },
+    {
+      "url": "https://openlibrary.org/isbn/9780552134637.json",
+      "body": "openlibrary/edition-OL7814893M.json"
+    },
+    {
+      "url": "https://openlibrary.org/isbn/9780000000002.json",
+      "body": "openlibrary/edition-OL47313596M.json"
+    },
+    {
+      "url": "https://openlibrary.org/isbn/9791099999993.json",
+      "status": 404,
+      "body": "openlibrary/not-found.html",
+      "expected": true,
+      "note": "Open Library answers an unknown ISBN with an HTML 404"
+    },
+    {
+      "url": "https://openlibrary.org/works/OL10263W.json",
+      "body": "openlibrary/work-OL10263W.json"
+    },
+    {
+      "url": "https://openlibrary.org/works/OL17091839W.json",
+      "body": "openlibrary/work-OL17091839W.json"
+    },
+    {
+      "url": "https://openlibrary.org/works/OL274505W.json",
+      "body": "openlibrary/work-OL274505W.json"
+    },
+    {
+      "url": "https://openlibrary.org/works/OL27513W.json",
+      "body": "openlibrary/work-OL27513W.json"
+    },
+    {
+      "url": "https://openlibrary.org/works/OL34952014W.json",
+      "body": "openlibrary/work-OL34952014W.json"
+    },
+    {
+      "url": "https://openlibrary.org/works/OL453657W.json",
+      "body": "openlibrary/work-OL453657W.json"
+    },
+    {
+      "url": "https://openlibrary.org/works/OL453749W.json",
+      "body": "openlibrary/work-OL453749W.json"
+    },
+    {
+      "url": "https://openlibrary.org/works/OL66554W.json",
+      "body": "openlibrary/work-OL66554W.json"
+    },
+    {
+      "url": "https://openlibrary.org/works/OL82563W.json",
+      "body": "openlibrary/work-OL82563W.json"
+    },
+    {
+      "url": "https://openlibrary.org/works/OL893414W.json",
+      "body": "openlibrary/work-OL893414W.json"
+    },
+    {
+      "url": "https://openlibrary.org/authors/OL21594A.json",
+      "body": "openlibrary/author-OL21594A.json"
+    },
+    {
+      "url": "https://openlibrary.org/authors/OL23919A.json",
+      "body": "openlibrary/author-OL23919A.json"
+    },
+    {
+      "url": "https://openlibrary.org/authors/OL25712A.json",
+      "body": "openlibrary/author-OL25712A.json"
+    },
+    {
+      "url": "https://openlibrary.org/authors/OL26320A.json",
+      "body": "openlibrary/author-OL26320A.json"
+    },
+    {
+      "url": "https://openlibrary.org/authors/OL27363A.json",
+      "body": "openlibrary/author-OL27363A.json"
+    },
+    {
+      "url": "https://openlibrary.org/authors/OL31901A.json",
+      "body": "openlibrary/author-OL31901A.json"
+    },
+    {
+      "url": "https://openlibrary.org/authors/OL7234434A.json",
+      "body": "openlibrary/author-OL7234434A.json"
+    },
+    {
+      "url": "https://openlibrary.org/authors/OL79034A.json",
+      "body": "openlibrary/author-OL79034A.json"
+    },
+    {
+      "url": "https://openlibrary.org/search.json?title=the%20colour%20of%20magic&author=pratchett&fields=key%2Ctitle%2Cauthor_name%2Cfirst_publish_year%2Cedition_count%2Cisbn%2Ccover_i%2Csubject%2Clanguage&limit=10",
+      "body": "openlibrary/search-colour-of-magic.json"
+    },
+    {
+      "url": "https://openlibrary.org/search.json?q=dune%20frank%20herbert&fields=key%2Ctitle%2Cauthor_name%2Cfirst_publish_year%2Cedition_count%2Cisbn%2Ccover_i%2Csubject%2Clanguage&limit=10",
+      "body": "openlibrary/search-q-dune.json"
+    },
+    {
+      "url": "https://openlibrary.org/works/OL453657W/editions.json?limit=50",
+      "body": "openlibrary/editions-OL453657W.json"
+    },
+    {
+      "url": "https://www.googleapis.com/books/v1/volumes?q=isbn%3A9780552166591&maxResults=5&printType=books&fields=totalItems%2Citems(id%2CvolumeInfo(title%2Csubtitle%2Cauthors%2Cpublisher%2CpublishedDate%2Cdescription%2CindustryIdentifiers%2CpageCount%2Ccategories%2CimageLinks%2Clanguage%2CseriesInfo))",
+      "body": "googlebooks/synthetic-isbn-9780552166591.json"
+    },
+    {
+      "url": "https://www.googleapis.com/books/v1/volumes?q=isbn%3A9780553418026&maxResults=5&printType=books&fields=totalItems%2Citems(id%2CvolumeInfo(title%2Csubtitle%2Cauthors%2Cpublisher%2CpublishedDate%2Cdescription%2CindustryIdentifiers%2CpageCount%2Ccategories%2CimageLinks%2Clanguage%2CseriesInfo))",
+      "body": "googlebooks/synthetic-isbn-9780553418026.json"
+    },
+    {
+      "url": "https://www.googleapis.com/books/v1/volumes?q=isbn%3A9782070612758&maxResults=5&printType=books&fields=totalItems%2Citems(id%2CvolumeInfo(title%2Csubtitle%2Cauthors%2Cpublisher%2CpublishedDate%2Cdescription%2CindustryIdentifiers%2CpageCount%2Ccategories%2CimageLinks%2Clanguage%2CseriesInfo))",
+      "body": "googlebooks/synthetic-isbn-9782070612758.json"
+    },
+    {
+      "url": "https://www.googleapis.com/books/v1/volumes?q=isbn%3A9780141439518&maxResults=5&printType=books&fields=totalItems%2Citems(id%2CvolumeInfo(title%2Csubtitle%2Cauthors%2Cpublisher%2CpublishedDate%2Cdescription%2CindustryIdentifiers%2CpageCount%2Ccategories%2CimageLinks%2Clanguage%2CseriesInfo))",
+      "body": "googlebooks/synthetic-isbn-9780141439518.json"
+    },
+    {
+      "url": "https://www.googleapis.com/books/v1/volumes?q=isbn%3A9788497592208&maxResults=5&printType=books&fields=totalItems%2Citems(id%2CvolumeInfo(title%2Csubtitle%2Cauthors%2Cpublisher%2CpublishedDate%2Cdescription%2CindustryIdentifiers%2CpageCount%2Ccategories%2CimageLinks%2Clanguage%2CseriesInfo))",
+      "body": "googlebooks/synthetic-empty.json"
+    },
+    {
+      "url": "https://www.googleapis.com/books/v1/volumes?q=isbn%3A9780000000002&maxResults=5&printType=books&fields=totalItems%2Citems(id%2CvolumeInfo(title%2Csubtitle%2Cauthors%2Cpublisher%2CpublishedDate%2Cdescription%2CindustryIdentifiers%2CpageCount%2Ccategories%2CimageLinks%2Clanguage%2CseriesInfo))",
+      "body": "googlebooks/synthetic-empty.json"
+    },
+    {
+      "url": "https://www.googleapis.com/books/v1/volumes?q=isbn%3A9791099999993&maxResults=5&printType=books&fields=totalItems%2Citems(id%2CvolumeInfo(title%2Csubtitle%2Cauthors%2Cpublisher%2CpublishedDate%2Cdescription%2CindustryIdentifiers%2CpageCount%2Ccategories%2CimageLinks%2Clanguage%2CseriesInfo))",
+      "body": "googlebooks/synthetic-empty.json"
+    },
+    {
+      "url": "https://www.googleapis.com/books/v1/volumes?q=isbn%3A9780345339706&maxResults=5&printType=books&fields=totalItems%2Citems(id%2CvolumeInfo(title%2Csubtitle%2Cauthors%2Cpublisher%2CpublishedDate%2Cdescription%2CindustryIdentifiers%2CpageCount%2Ccategories%2CimageLinks%2Clanguage%2CseriesInfo))",
+      "body": "googlebooks/synthetic-no-items.json"
+    },
+    {
+      "url": "https://www.googleapis.com/books/v1/volumes?q=intitle%3A%22the%20colour%20of%20magic%22%20inauthor%3A%22pratchett%22&maxResults=10&printType=books&fields=totalItems%2Citems(id%2CvolumeInfo(title%2Csubtitle%2Cauthors%2Cpublisher%2CpublishedDate%2Cdescription%2CindustryIdentifiers%2CpageCount%2Ccategories%2CimageLinks%2Clanguage%2CseriesInfo))",
+      "body": "googlebooks/synthetic-search-colour-of-magic.json"
+    },
+    {
+      "url": "https://www.googleapis.com/books/v1/volumes?q=isbn%3A9780747532699&maxResults=5&printType=books&fields=totalItems%2Citems(id%2CvolumeInfo(title%2Csubtitle%2Cauthors%2Cpublisher%2CpublishedDate%2Cdescription%2CindustryIdentifiers%2CpageCount%2Ccategories%2CimageLinks%2Clanguage%2CseriesInfo))",
+      "body": "googlebooks/synthetic-empty.json"
+    },
+    {
+      "url": "https://www.googleapis.com/books/v1/volumes?q=isbn%3A9780441172719&maxResults=5&printType=books&fields=totalItems%2Citems(id%2CvolumeInfo(title%2Csubtitle%2Cauthors%2Cpublisher%2CpublishedDate%2Cdescription%2CindustryIdentifiers%2CpageCount%2Ccategories%2CimageLinks%2Clanguage%2CseriesInfo))",
+      "body": "googlebooks/synthetic-empty.json"
+    },
+    {
+      "url": "https://www.googleapis.com/books/v1/volumes?q=isbn%3A9780552134637&maxResults=5&printType=books&fields=totalItems%2Citems(id%2CvolumeInfo(title%2Csubtitle%2Cauthors%2Cpublisher%2CpublishedDate%2Cdescription%2CindustryIdentifiers%2CpageCount%2Ccategories%2CimageLinks%2Clanguage%2CseriesInfo))",
+      "status": 500,
+      "body": "googlebooks/synthetic-server-error-500.json",
+      "expected": true,
+      "note": "the partial-failure journey: Google Books fails, Open Library still answers"
+    },
+    {
+      "url": "https://openlibrary.org/isbn/9780140306941.json",
+      "body": "openlibrary/edition-OL17852114M.json"
+    },
+    {
+      "url": "https://openlibrary.org/search.json?q=colour%20of%20magic%20pratchett&fields=key%2Ctitle%2Cauthor_name%2Cfirst_publish_year%2Cedition_count%2Cisbn%2Ccover_i%2Csubject%2Clanguage&limit=10",
+      "body": "openlibrary/search-colour-of-magic-pratchett.json"
+    },
+    {
+      "url": "https://openlibrary.org/search.json?q=the%20colour%20of%20magic%20terry%20pratchett&fields=key%2Ctitle%2Cauthor_name%2Cfirst_publish_year%2Cedition_count%2Cisbn%2Ccover_i%2Csubject%2Clanguage&limit=10",
+      "body": "openlibrary/search-the-colour-of-magic-terry-pratchett.json"
+    },
+    {
+      "url": "https://openlibrary.org/works/OL59855W.json",
+      "body": "openlibrary/work-OL59855W.json"
+    },
+    {
+      "url": "https://openlibrary.org/authors/OL31353A.json",
+      "body": "openlibrary/author-OL31353A.json"
+    },
+    {
+      "url": "https://www.googleapis.com/books/v1/volumes?q=isbn%3A9780140306941&maxResults=5&printType=books&fields=totalItems%2Citems(id%2CvolumeInfo(title%2Csubtitle%2Cauthors%2Cpublisher%2CpublishedDate%2Cdescription%2CindustryIdentifiers%2CpageCount%2Ccategories%2CimageLinks%2Clanguage%2CseriesInfo))",
+      "body": "googlebooks/synthetic-empty.json"
+    },
+    {
+      "url": "https://www.googleapis.com/books/v1/volumes?q=colour%20of%20magic%20pratchett&maxResults=10&printType=books&fields=totalItems%2Citems(id%2CvolumeInfo(title%2Csubtitle%2Cauthors%2Cpublisher%2CpublishedDate%2Cdescription%2CindustryIdentifiers%2CpageCount%2Ccategories%2CimageLinks%2Clanguage%2CseriesInfo))",
+      "body": "googlebooks/synthetic-search-colour-of-magic.json",
+      "note": "the synthetic title/author search, reused for the free-text query"
+    },
+    {
+      "url": "https://www.googleapis.com/books/v1/volumes?q=the%20colour%20of%20magic%20terry%20pratchett&maxResults=10&printType=books&fields=totalItems%2Citems(id%2CvolumeInfo(title%2Csubtitle%2Cauthors%2Cpublisher%2CpublishedDate%2Cdescription%2CindustryIdentifiers%2CpageCount%2Ccategories%2CimageLinks%2Clanguage%2CseriesInfo))",
+      "body": "googlebooks/synthetic-search-colour-of-magic.json",
+      "note": "the synthetic title/author search, reused for the free-text query"
+    }
+  ]
+}

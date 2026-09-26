@@ -1,0 +1,169 @@
+{
+  "personal_name": "Ursula K. Le Guin",
+  "remote_ids": {
+    "wikidata": "Q181659",
+    "viaf": "101734435",
+    "isni": "0000000121457729",
+    "inventaire": "wd:Q181659",
+    "goodreads": "874602",
+    "imdb": "nm0494372",
+    "librarything": "guinursulakle",
+    "musicbrainz": "bbdadb51-0e9c-4cc4-b545-968b9375b416",
+    "bookbrainz": "e66704df-2386-4af9-9b02-a3440a1bc828",
+    "amazon": "B000AQ2M2S",
+    "lc_naf": "n78095474",
+    "opac_sbn": "CFIV006470"
+  },
+  "alternate_names": [
+    "Le Guin Ursula",
+    "U Le Guin",
+    "U. K. Le Guin",
+    "U. K. LeGuin",
+    "Ursula K. Le Guinová",
+    "Ursula K. LeGuin",
+    "Ursula K. Leguin",
+    "Ursula K. Legvin",
+    "Ursula Kroeber Le Guin",
+    "Ursula Kroeber Le Guinová",
+    "Ursula Kroeber LeGuin",
+    "Ursula Le Guin",
+    "Ursula Le'Guin",
+    "Ursula LeGuin",
+    "Ursula Legvin",
+    "U・K・ル・グィン",
+    "Úrsula K. Le Guin",
+    "Урсула К. Ле Гуин",
+    "Урсула Ле Гуин",
+    "Уршула Льогуин",
+    "アーシュラ・K. ル=グウィン",
+    "アーシュラ・K・ル=グウィン",
+    "アーシュラ・K・ル・グィン",
+    "アーシュラ・K・ル・グイン",
+    "厄休拉 勒古恩",
+    "어슐러 K. 르 귄"
+  ],
+  "source_records": [
+    "ia:isbn_9780553101324",
+    "amazon:166442976X",
+    "ia:lacitedesillusio0000legu",
+    "amazon:2841725162",
+    "amazon:0441478042",
+    "amazon:1441701877",
+    "amazon:1680652109",
+    "amazon:1785293419",
+    "bwb:9781473234178",
+    "bwb:9781626812628",
+    "bwb:9781399602419",
+    "amazon:0358726948",
+    "bwb:9786070784415",
+    "amazon:9505470754",
+    "amazon:605096369X",
+    "bwb:9781473202849",
+    "ia:sterrenvangalaxy0000unse",
+    "amazon:9505470746",
+    "promise:bwb_daily_pallets_2022-03-17",
+    "promise:bwb_daily_pallets_2022-08-16",
+    "bwb:9781519047991",
+    "amazon:0553323318",
+    "amazon:2841725006",
+    "amazon:1435262646",
+    "bwb:9780006475958",
+    "promise:bwb_daily_pallets_2021-05-05",
+    "promise:bwb_daily_pallets_2022-11-11:O8-BVS-695",
+    "amazon:8324579192",
+    "amazon:8492559969",
+    "bwb:9780995716278",
+    "amazon:9753420579",
+    "amazon:9756093803",
+    "amazon:2266014080",
+    "bwb:9781399620307",
+    "bwb:9781399620291",
+    "bwb:9781322574776",
+    "promise:bwb_daily_pallets_2024-08-08:W9-AWA-901",
+    "bwb:9781739371722",
+    "bwb:9781838003982",
+    "bwb:9782253123668",
+    "bwb:9786073908467",
+    "promise:bwb_daily_pallets_2024-01-catchup:P3-BIF-443",
+    "bwb:9780063285767",
+    "bwb:9781399624275",
+    "promise:bwb_daily_pallets_2023-03-23:KS-183-848",
+    "amazon:9755392912",
+    "amazon:8417281843",
+    "marc:marc_scms/20220805_ADAM_MARC_records.mrc:53475126:1214",
+    "promise:bwb_daily_pallets_2023-09-18:O9-AZS-078",
+    "promise:bwb_daily_pallets_2024-08-23:W9-ASY-817",
+    "ia:bwb_P8-ABU-976",
+    "ia:bwb_P9-EJW-467",
+    "ia:bwb_W7-CUB-872",
+    "ia:bwb_W9-AUF-155",
+    "ia:daszehntejahr0000unse",
+    "ia:dispossed0000unse",
+    "ia:dispossessed0000ursu",
+    "amazon:8804579404",
+    "bwb:9781837265084",
+    "ia:bwb_P3-BIF-443"
+  ],
+  "bio": "Ursula Kroeber Le Guin (née Kroeber; October 21, 1929 – January 22, 2018) was an American author. She is best known for her works of speculative fiction, including science fiction works set in her Hainish universe, and the Earthsea fantasy series. Her work was first published in 1959, and her literary career spanned nearly sixty years, producing more than twenty novels and more than a hundred short stories, in addition to poetry, literary criticism, translations, and children's books. Frequently described as an author of science fiction, Le Guin has also been called a \"major voice in American Letters\". Le Guin said that she would prefer to be known as an \"American novelist\".\r\nSource: [Wikipedia](https://en.wikipedia.org/wiki/Ursula_K._Le_Guin)",
+  "death_date": "22 January 2018",
+  "links": [
+    {
+      "title": "Official Website",
+      "url": "https://www.ursulakleguin.com",
+      "type": {
+        "key": "/type/link"
+      }
+    },
+    {
+      "title": "Official Blog",
+      "url": "https://www.ursulakleguin.com/blog",
+      "type": {
+        "key": "/type/link"
+      }
+    },
+    {
+      "title": "Fantastic Fiction Author Entry",
+      "url": "https://www.fantasticfiction.com/l/ursula-k-le-guin/",
+      "type": {
+        "key": "/type/link"
+      }
+    },
+    {
+      "title": "ISFDB Author Entry",
+      "url": "https://www.isfdb.org/cgi-bin/ea.cgi?37",
+      "type": {
+        "key": "/type/link"
+      }
+    },
+    {
+      "title": "SFE Author Entry",
+      "url": "https://sf-encyclopedia.com/entry/le_guin_ursula_k",
+      "type": {
+        "key": "/type/link"
+      }
+    }
+  ],
+  "type": {
+    "key": "/type/author"
+  },
+  "birth_date": "21 October 1929",
+  "key": "/authors/OL31353A",
+  "name": "Ursula K. Le Guin",
+  "photos": [
+    15165689,
+    14853829,
+    14853828,
+    6294300,
+    6644102
+  ],
+  "latest_revision": 49,
+  "revision": 49,
+  "created": {
+    "type": "/type/datetime",
+    "value": "2008-04-01T03:28:50.625462"
+  },
+  "last_modified": {
+    "type": "/type/datetime",
+    "value": "2026-08-02T14:34:23.971964"
+  }
+}

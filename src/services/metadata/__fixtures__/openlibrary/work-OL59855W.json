@@ -1,0 +1,81 @@
+{
+  "description": {
+    "type": "/type/text",
+    "value": "A young prince joins forces with a master wizard on a journey to discover a cause and remedy for the loss of magic in Earthsea. Darkness Threatens to overtake Earthsea. As the world and its wizards are losing their magic, Ged -- powerful Archmage, wizard, and dragonlord -- embarks on a sailing journey with highborn young prince, Arren. They travel far beyond the realm of death to discover the cause of these evil disturbances and to restore magic to a land desperately thirsty for it."
+  },
+  "covers": [
+    6498990,
+    1926079,
+    6938505,
+    8418453,
+    8760567,
+    8869575,
+    10197945,
+    10509682,
+    10508403,
+    10838900,
+    4672628,
+    11479900,
+    3234685,
+    12338257,
+    13656468,
+    14119503,
+    14119504,
+    3098618,
+    8763689,
+    15106085
+  ],
+  "key": "/works/OL59855W",
+  "authors": [
+    {
+      "author": {
+        "key": "/authors/OL31353A"
+      },
+      "type": {
+        "key": "/type/author_role"
+      }
+    }
+  ],
+  "title": "The Farthest Shore",
+  "subjects": [
+    "Magic",
+    "Magia",
+    "Fantasy fiction",
+    "Fiction in English",
+    "Fiction",
+    "Fantasy",
+    "Wizards",
+    "Children's stories",
+    "Ficción",
+    "Large type books",
+    "American Science fiction",
+    "Juvenile fiction",
+    "Fiction, fantasy, general",
+    "Ged (fictitious character), fiction",
+    "Children's fiction",
+    "Magic, fiction",
+    "Ged (Fictitious character)",
+    "American Fantasy fiction",
+    "Imaginary places",
+    "Wizards, fiction",
+    "Earthsea (Imaginary place)",
+    "Quests (Expeditions)",
+    "Imaginary Voyages"
+  ],
+  "type": {
+    "key": "/type/work"
+  },
+  "genres": [
+    "/tags/OL169T"
+  ],
+  "latest_revision": 27,
+  "revision": 27,
+  "created": {
+    "type": "/type/datetime",
+    "value": "2009-10-16T00:22:57.847081"
+  },
+  "last_modified": {
+    "type": "/type/datetime",
+    "value": "2026-08-27T13:48:25.887219"
+  }
+}
