@@ -27,12 +27,13 @@ Given an ISBN or a title/author query, fetch book metadata from Open Library and
 
 ## Task cards
 
-### P02-01 HTTP client wrapper
+### P02-01 HTTP client wrapper — done
 
 - **Description:** `httpGetJson(url, { signal, cacheTtl })` and `httpGetBinary` around `fetch`: 10 s timeout, `AbortSignal` support, `User-Agent: MyShelf/<version> (+https://github.com/asorichetti/MyShelf)` on native only (version from `expo-constants`), per-host queue at ≤ 1 request/second and ≤ 2 concurrent overall, retry on 429/5xx with exponential backoff (1 s, 2 s, 4 s; honour `Retry-After`), typed errors (`OfflineError`, `NotFoundError`, `RateLimitedError`, `HttpError`). `fetch` and clock injectable for tests.
-- **Files:** `src/services/http/client.ts`, `src/services/http/rateLimiter.ts`, `src/services/http/errors.ts`, `src/services/http/userAgent.{native,web}.ts`.
+- **Files:** `src/services/http/client.ts`, `src/services/http/rateLimiter.ts`, `src/services/http/errors.ts`, `src/services/http/userAgent.ts` (native) and `userAgent.web.ts`, `src/services/http/clock.ts`.
 - **Acceptance:** limiter spaces calls ≥ 1000 ms per host (fake timers); 3 retries then `RateLimitedError`; abort cancels queued and in-flight requests.
 - **Tests:** `src/services/http/__tests__/client.test.ts`, `rateLimiter.test.ts`.
+- **Delivered:** the client is `createHttpClient({ fetch, userAgent, clock, limiter, timeoutMs, retryDelaysMs })` returning `getJson(url, { signal, giveUp })` and `getBinary(url, …)` (bytes + content type); `cacheTtl` arrived with the cache in P02-09. Following the platform-file convention in the code (`cssVars.ts` / `cssVars.web.ts`), the user agent is `userAgent.ts` (native, reads the version from `expo-constants`) and `userAgent.web.ts` (none), with the shared formatter in `userAgent.shared.ts`; the time source is `clock.ts`. `TimeoutError` extends `OfflineError` (a request that cannot finish is treated as offline for queueing). A `Retry-After` above 30 s fails at once instead of waiting, and a request can pass `giveUp(status, body)` to skip retries for limits that backing off cannot fix (Google Books' daily quota, see P02-05). `index.ts` re-exports the module.
 
 ### P02-02 Provider interface and candidate model
 
