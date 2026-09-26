@@ -1,4 +1,4 @@
-import { NotFoundError, type HttpClient } from '@/services/http';
+import { DEFAULT_CACHE_TTL_MS, NotFoundError, type HttpClient } from '@/services/http';
 import { withQuery } from '@/services/http/url';
 
 import {
@@ -22,6 +22,8 @@ export const SEARCH_FIELDS = 'key,title,author_name,first_publish_year,edition_c
 export interface OpenLibraryOptions {
   http: HttpClient;
   baseUrl?: string;
+  /** How long cached responses stay fresh (when the client has a cache). Default 30 days. */
+  cacheTtlMs?: number;
 }
 
 export interface EditionsOptions {
@@ -53,13 +55,17 @@ async function orNull<T>(promise: Promise<T>): Promise<T | null> {
  * (description, subjects) and authors; search returns works; `editions`
  * lists a work's editions.
  */
-export function createOpenLibrary({ http, baseUrl = OPEN_LIBRARY_BASE }: OpenLibraryOptions): OpenLibraryProvider {
+export function createOpenLibrary({
+  http,
+  baseUrl = OPEN_LIBRARY_BASE,
+  cacheTtlMs: cacheTtl = DEFAULT_CACHE_TTL_MS,
+}: OpenLibraryOptions): OpenLibraryProvider {
   const authorNames = new Map<string, Promise<string | null>>();
 
   function authorName(key: string, signal?: AbortSignal): Promise<string | null> {
     let name = authorNames.get(key);
     if (!name) {
-      name = orNull(http.getJson<OlAuthor>(`${baseUrl}/authors/${key}.json`, { signal })).then(
+      name = orNull(http.getJson<OlAuthor>(`${baseUrl}/authors/${key}.json`, { signal, cacheTtl })).then(
         (a) => cleanText(a?.name) ?? cleanText(a?.personal_name),
       );
       // Only successes stay memoised, so a failed lookup is retried next time.
@@ -83,10 +89,10 @@ export function createOpenLibrary({ http, baseUrl = OPEN_LIBRARY_BASE }: OpenLib
 
     async lookupIsbn(isbn13, signal) {
       // Open Library redirects /isbn/{isbn} to /books/{OLID}; fetch follows it.
-      const edition = await orNull(http.getJson<OlEdition>(`${baseUrl}/isbn/${isbn13}.json`, { signal }));
+      const edition = await orNull(http.getJson<OlEdition>(`${baseUrl}/isbn/${isbn13}.json`, { signal, cacheTtl }));
       if (!edition) return [];
       const workId = olid(edition.works?.[0]?.key);
-      const work = workId ? await orNull(http.getJson<OlWork>(`${baseUrl}/works/${workId}.json`, { signal })) : null;
+      const work = workId ? await orNull(http.getJson<OlWork>(`${baseUrl}/works/${workId}.json`, { signal, cacheTtl })) : null;
       const authors = await authorsFor(authorKeys(edition, work), signal);
       return [mapEdition(edition, { work, authors, requestedIsbn13: isbn13, confidence: 0.95 })];
     },
@@ -98,7 +104,7 @@ export function createOpenLibrary({ http, baseUrl = OPEN_LIBRARY_BASE }: OpenLib
       if (!title && !author && !text) return [];
       const params = title || author ? { title, author } : { q: text };
       const url = withQuery(`${baseUrl}/search.json`, { ...params, fields: SEARCH_FIELDS, limit: 10 });
-      const response = await http.getJson<OlSearchResponse>(url, { signal });
+      const response = await http.getJson<OlSearchResponse>(url, { signal, cacheTtl });
       return (response.docs ?? []).map(mapSearchDoc).filter((c): c is BookCandidate => c !== null);
     },
 
@@ -106,7 +112,7 @@ export function createOpenLibrary({ http, baseUrl = OPEN_LIBRARY_BASE }: OpenLib
       const id = olid(workKey);
       if (!id) return [];
       const url = withQuery(`${baseUrl}/works/${id}/editions.json`, { limit });
-      const response = await orNull(http.getJson<OlEditionsResponse>(url, { signal }));
+      const response = await orNull(http.getJson<OlEditionsResponse>(url, { signal, cacheTtl }));
       return (response?.entries ?? [])
         .filter((e) => cleanText(e.title))
         .map((e) => mapEdition(e, { authors, confidence: 0.5 }));

@@ -1,3 +1,4 @@
+export * as apiCacheRepo from './apiCache';
 export * as authorsRepo from './authors';
 export * as booksRepo from './books';
 export * as genresRepo from './genres';

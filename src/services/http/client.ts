@@ -1,3 +1,4 @@
+import { type ResponseCache } from './cache';
 import { systemClock, type Clock } from './clock';
 import { abortError, HttpError, isAbortError, NotFoundError, OfflineError, RateLimitedError, TimeoutError } from './errors';
 import { createRateLimiter, type RateLimiter } from './rateLimiter';
@@ -18,10 +19,18 @@ export interface HttpClientOptions {
   retryDelaysMs?: readonly number[];
   /** A `Retry-After` longer than this is not waited for: the request fails at once. Default 30 s. */
   maxRetryAfterMs?: number;
+  /** Response cache for `getJson` requests that pass `cacheTtl`. */
+  cache?: ResponseCache;
 }
 
 export interface HttpRequestOptions {
   signal?: AbortSignal;
+  /**
+   * `getJson` only: answer from the cache when an entry is younger than this
+   * many milliseconds (no network at all), and store a successful response.
+   * Needs a client created with a `cache`.
+   */
+  cacheTtl?: number;
   /**
    * Return true to fail a 429/5xx at once instead of retrying, e.g. for a
    * daily quota that backing off for seconds cannot fix. Gets the status and
@@ -139,13 +148,27 @@ export function createHttpClient(options: HttpClientOptions = {}): HttpClient {
 
   return {
     async getJson<T>(url: string, opts: HttpRequestOptions = {}): Promise<T> {
+      const cache = opts.cacheTtl && opts.cacheTtl > 0 ? options.cache : undefined;
+      if (cache) {
+        const cached = await cache.read(url, opts.cacheTtl!);
+        if (cached !== null) {
+          try {
+            return JSON.parse(cached) as T;
+          } catch {
+            // A corrupt entry is refetched and overwritten.
+          }
+        }
+      }
       const response = await request(url, 'application/json', opts);
       const text = await response.text();
+      let parsed: T;
       try {
-        return JSON.parse(text) as T;
+        parsed = JSON.parse(text) as T;
       } catch {
         throw new HttpError(response.status, url, `Invalid JSON from ${url}`);
       }
+      if (cache) await cache.write(url, text);
+      return parsed;
     },
     async getBinary(url: string, opts: HttpRequestOptions = {}): Promise<BinaryResponse> {
       const response = await request(url, 'image/*,*/*', opts);

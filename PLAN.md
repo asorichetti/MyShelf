@@ -136,7 +136,7 @@ Versions below are what is installed on `main` today (from `package-lock.json`).
 | Camera + barcodes | expo-camera | *planned* (P03-03) | `CameraView` barcode scanning (EAN-13) |
 | OCR | @react-native-ml-kit/text-recognition | *planned* (P03-05) | on-device Google ML Kit; needs a development build |
 | Dev builds | expo-dev-client | *planned* (P03-01) | |
-| Files / sharing | expo-file-system, expo-sharing, expo-document-picker | *planned* (P02-09, P08-02) | covers cache, backups |
+| Files / sharing | expo-file-system; expo-sharing, expo-document-picker | 57.0.7 (P02-09); others *planned* (P08-02) | covers cache (`File`/`Directory`/`Paths` API), backups |
 | Notifications | expo-notifications | *planned* (P05-08) | local due-date reminders only |
 | UI test driver | auto test suite: TypeScript, Playwright (library) + Commander, run with tsx | 1.63.0 / 15.0.0 / 4.23.15 | `tools/auto-test-suite` (P00-15..P00-17, [ADR 0013](docs/adr/0013-typescript-auto-test-suite.md)); accessibility checks are its own `a11y` gate, no third-party engine |
 | Device tests | Maestro CLI | *planned* (P00-18) | YAML flows in `.maestro/` |

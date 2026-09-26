@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 
 import { migrate } from './migrate';
+import { prune as pruneApiCache } from './repositories/apiCache';
 
 import type { Db } from './types';
 
@@ -33,6 +34,8 @@ export function DatabaseProvider({ open, children, fallback = null, renderError,
       try {
         const db = await open();
         await migrate(db);
+        // Housekeeping, not on the start-up path: a failure only means a bigger cache.
+        pruneApiCache(db).catch(() => undefined);
         if (!cancelled) setStatus({ state: 'ready', db });
       } catch (e) {
         const error = e instanceof Error ? e : new Error(String(e));

@@ -1,7 +1,7 @@
-import { fireEvent, render, screen } from '@testing-library/react-native';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import { Pressable, Text } from 'react-native';
 
-import { DatabaseProvider, getSchemaVersion, LATEST_VERSION, useDatabase, type Db } from '@/db';
+import { apiCacheRepo, DatabaseProvider, getSchemaVersion, LATEST_VERSION, migrate, useDatabase, type Db } from '@/db';
 import { openNodeDatabase } from '@/db/node';
 
 function UsesDb() {
@@ -32,6 +32,22 @@ describe('DatabaseProvider', () => {
     expect(await screen.findByTestId('has-db')).toHaveTextContent('ready');
     expect(await getSchemaVersion(opened[0])).toBe(LATEST_VERSION);
     expect(states).toEqual(['loading', 'ready']);
+  });
+
+  it('prunes expired API cache entries on start-up', async () => {
+    const db = await openNodeDatabase();
+    opened.push(db);
+    await migrate(db);
+    await apiCacheRepo.putEntry(db, 'https://openlibrary.org/old.json', '{}', '2000-01-01T00:00:00.000Z');
+    await apiCacheRepo.putEntry(db, 'https://openlibrary.org/new.json', '{}');
+    render(
+      <DatabaseProvider open={async () => db}>
+        <UsesDb />
+      </DatabaseProvider>,
+    );
+    expect(await screen.findByTestId('has-db')).toHaveTextContent('ready');
+    await waitFor(async () => expect(await apiCacheRepo.getEntry(db, 'https://openlibrary.org/old.json')).toBeNull());
+    expect(await apiCacheRepo.getEntry(db, 'https://openlibrary.org/new.json')).not.toBeNull();
   });
 
   it('renders the error view when opening fails, and can retry', async () => {

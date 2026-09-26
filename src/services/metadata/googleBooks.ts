@@ -1,5 +1,5 @@
 import { isbn13To10 } from '@/domain';
-import type { HttpClient } from '@/services/http';
+import { DEFAULT_CACHE_TTL_MS, type HttpClient } from '@/services/http';
 import { withQuery } from '@/services/http/url';
 
 import { mapVolume, type GbVolumesResponse } from './googleBooksMap';
@@ -15,6 +15,8 @@ export const VOLUME_FIELDS =
 export interface GoogleBooksOptions {
   http: HttpClient;
   baseUrl?: string;
+  /** How long cached responses stay fresh (when the client has a cache). Default 30 days. */
+  cacheTtlMs?: number;
 }
 
 /**
@@ -33,10 +35,10 @@ function term(operator: string, value: string | undefined): string | null {
 }
 
 /** Google Books, keyless (PLAN §6): ISBN lookup and title/author search. */
-export function createGoogleBooks({ http, baseUrl = GOOGLE_BOOKS_BASE }: GoogleBooksOptions): MetadataProvider {
+export function createGoogleBooks({ http, baseUrl = GOOGLE_BOOKS_BASE, cacheTtlMs = DEFAULT_CACHE_TTL_MS }: GoogleBooksOptions): MetadataProvider {
   async function volumes(q: string, maxResults: number, signal?: AbortSignal): Promise<GbVolumesResponse> {
     const url = withQuery(`${baseUrl}/volumes`, { q, maxResults, printType: 'books', fields: VOLUME_FIELDS });
-    return http.getJson<GbVolumesResponse>(url, { signal, giveUp: isDailyQuotaError });
+    return http.getJson<GbVolumesResponse>(url, { signal, giveUp: isDailyQuotaError, cacheTtl: cacheTtlMs });
   }
 
   return {

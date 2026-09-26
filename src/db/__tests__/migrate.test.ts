@@ -10,6 +10,7 @@ import { getSchemaVersion, LATEST_VERSION, migrate, MigrationError, migrations, 
 import { openNodeDatabase } from '@/db/node';
 
 const EXPECTED_TABLES = [
+  'api_cache',
   'authors',
   'book_authors',
   'book_genres',
