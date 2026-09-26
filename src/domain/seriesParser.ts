@@ -95,7 +95,8 @@ export function isImprintSeries(name: string): boolean {
 }
 
 const POS = String.raw`(\d+(?:[.,]\d+)?|[ivxlcdm]+|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve)`;
-const KEYWORD = String.raw`(?:book|bk\.?|vol\.?|volume|part|pt\.?|tome|t\.|band|bd\.?|livre|libro|tomo|novel|number|no\.?|nr\.?|nº)`;
+/** Words that introduce a position ("Book 3", "vol. 2", "Part II", "T. 4"); shared with `seriesPosition.ts`. */
+export const POSITION_KEYWORD = String.raw`(?:book|bk\.?|vol\.?|volume|part|pt\.?|tome|t\.|band|bd\.?|livre|libro|tomo|novel|number|no\.?|nr\.?|nº)`;
 
 /** Tidies a series name: trims punctuation, drops "A … Novel" and a trailing "series". */
 export function cleanSeriesName(raw: string): string {
@@ -128,13 +129,13 @@ export function parseSeriesString(raw: string | null | undefined): ParsedSeries 
   if (!s) return null;
   const patterns: RegExp[] = [
     // "Discworld, Book 1", "Dune chronicles -- bk. 1", "Discworld Vol. 1", "Świat Dysku, Part I"
-    new RegExp(String.raw`^(.*?)[\s;,:–—-]*\b${KEYWORD}\s*#?\s*${POS}$`, 'iu'),
+    new RegExp(String.raw`^(.*?)[\s;,:–—-]*\b${POSITION_KEYWORD}\s*#?\s*${POS}$`, 'iu'),
     // "Discworld ; 5", "Harry Potter -- 1", "Discworld novel, 5", "Harry Potter, #1"
     new RegExp(String.raw`^(.*?)\s*(?:;|--|–|—|,)\s*#?\s*${POS}$`, 'iu'),
     // "The Expanse #3", "Discworld #1"
     new RegExp(String.raw`^(.*?)\s*#\s*${POS}$`, 'iu'),
     // "Discworld (1)", "Discworld (Book 1)"
-    new RegExp(String.raw`^(.*?)\s*\(\s*(?:${KEYWORD}\s*)?#?\s*${POS}\s*\)$`, 'iu'),
+    new RegExp(String.raw`^(.*?)\s*\(\s*(?:${POSITION_KEYWORD}\s*)?#?\s*${POS}\s*\)$`, 'iu'),
     // "Discworld 5" (digits only: a bare trailing numeral is too ambiguous)
     /^(.*?\p{L}.*?)\s+(\d+(?:\.\d+)?)$/u,
   ];
@@ -154,7 +155,7 @@ export function parseSeriesString(raw: string | null | undefined): ParsedSeries 
  */
 export function parseSeriesFromTitle(title: string, subtitle?: string | null): ParsedSeries | null {
   const t = title.trim();
-  const inParens = new RegExp(String.raw`\(([^()]+?)[\s,;]*(?:#|${KEYWORD})\s*${POS}\)\s*$`, 'iu').exec(t);
+  const inParens = new RegExp(String.raw`\(([^()]+?)[\s,;]*(?:#|${POSITION_KEYWORD})\s*${POS}\)\s*$`, 'iu').exec(t);
   if (inParens) return result(inParens[1], inParens[2]);
   const leading = new RegExp(String.raw`^(.+?)[\s,]+(?:book|vol\.?|volume|part)\s+${POS}\s*[:–—-]\s*\S`, 'iu').exec(t);
   if (leading) return result(leading[1], leading[2]);

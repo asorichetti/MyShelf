@@ -38,6 +38,7 @@ Books know which series they belong to and where they sit in it. The user can se
 - **Files:** `src/components/book/SeriesInput.tsx`, `src/components/book/BookForm.tsx`, `src/domain/seriesPosition.ts` (parse/format; roman numerals).
 - **Acceptance:** positions round-trip (`2.5` shown as "2.5", `5` as "5"); suggestion chip only when a hint exists.
 - **Tests:** `src/components/book/__tests__/SeriesInput.test.tsx`, `src/domain/__tests__/seriesPosition.test.ts`.
+- **Partly delivered:** `src/domain/seriesPosition.ts` is done: `parseSeriesPosition` accepts `3`, `#3`, `3.5`, `3,5`, `2½`, `III`, `Book 3`, `vol. 2`, `Part Two` and `Book 3 of 9`, reusing `parsePosition` and the `POSITION_KEYWORD` list from `seriesParser.ts` (now exported) so the form and the metadata parser agree; `formatSeriesPosition` (`5` → "5", `2.5` → "2.5", float noise rounded to three places; round-trips), `formatSeriesLabel` ("Discworld #5" for the suggestion chip) and `isValidSeriesPosition`. **Remaining:** `SeriesInput.tsx`, its `BookForm` wiring, the suggestion chip, the `seriesInput` test ids and `SeriesInput.test.tsx`.
 
 ### P04-03 Confirm detected series on save
 
