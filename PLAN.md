@@ -545,9 +545,9 @@ Decided in [ADR 0008](docs/adr/0008-three-level-testing-strategy.md). Three leve
 
 - **Runner:** `npm test` (jest-expo preset). CI runs `npm test -- --ci`.
 - **What:** every module in `src/domain`, `src/db`, `src/services`, `src/features` and every component and screen.
-- **Repositories run against real SQLite.** Repository tests use the `@jest-environment node` docblock and a Node adapter of the `Db` interface (built on `node:sqlite`; `better-sqlite3` is the fallback if needed). Each test gets a fresh in-memory database with all migrations applied (`createTestDb()` helper in `src/testing`, P00-12).
+- **Repositories run against real SQLite.** Repository tests use the `@jest-environment node` docblock and the Node adapter of the `Db` interface (`src/db/node.ts`, built on Node's built-in `node:sqlite`, so Node 22.13+ or 23.4+; `better-sqlite3` stays the fallback if that ever breaks). Each test gets a fresh in-memory database with all migrations applied (`createTestDb()` in `src/testing/createTestDb.ts`).
 - **Network is never real.** Metadata providers are tested with recorded JSON fixtures in `src/services/metadata/__fixtures__/` and an injected `fetch`.
-- **Components and screens** use `@testing-library/react-native`, querying by `Testids` from `@/testing/testids.gen` or by accessible role/label.
+- **Components and screens** use `@testing-library/react-native`, querying by `Testids` from `@/testing/testids.gen` or by accessible role/label. `renderWithTheme()` (`src/testing/render.tsx`) wraps a component in the app's theme and safe-area providers; tests in `src/__tests__/` render whole routes through Expo Router.
 - **Coverage target:** 80 % lines for `src/domain`, `src/db`, `src/services`; screens are covered by behaviour, not a number.
 
 ### 10.2 Auto test suite (web, TypeScript + Playwright)
@@ -577,10 +577,10 @@ Every command runs from the repository root as `npm run -s autotest -- <command>
   | `network` | any response ≥ 400 or any request that got no response |
   | `a11y` | structural regressions: not exactly one `h1`, a skipped heading level, `<img>` without `alt`, an unnamed button/link/tab/menuitem/switch/checkbox, not exactly one visible `main`, unlabelled or duplicate-labelled `nav`, `<html>` without `lang` (plus `skip-link`, disabled for this app) |
 
-  Configuration lives in `gates.config.json` next to the gates: `render.requiredTokens`, `render.landmarks` (`main`) and per-gate `disabled` maps where every disabled rule needs a reason. Today `a11y/skip-link` is off by design, and `render/body-background`, `render/body-font` and `render/fonts-loaded` are off **temporarily** until the theme and app shell land (re-enabled in P00-24). A journey can downgrade one rule for itself only, with a written reason; the finding stays in `uxgates.json` as a warning. URLs that are missing on purpose carry the expected-missing marker `__expected-404` instead of an allowlist entry. Contrast is not checked by the gates; it is enforced by the token contrast tests in Jest (P00-08). A touch-target rule is added in P00-27.
+  Configuration lives in `gates.config.json` next to the gates: `render.requiredTokens`, `render.landmarks` (`main`) and per-gate `disabled` maps where every disabled rule needs a reason. Today only `a11y/skip-link` is off (by design: a mobile app has no repeated block to skip); every render rule is on, and `render.requiredTokens` lists the core `--ms-*` tokens (primary, paper, surface, ink and muted-ink colours, heading and body fonts, one spacing and one radius step). A journey can downgrade one rule for itself only, with a written reason; the finding stays in `uxgates.json` as a warning. URLs that are missing on purpose carry the expected-missing marker `__expected-404` instead of an allowlist entry. Contrast is not checked by the gates; it is enforced by the token contrast tests in Jest (P00-08). A touch-target rule is added in P00-27.
 
 - **Journeys self-register.** Each journey lives in a file under `tools/auto-test-suite/src/journeys/` (one file per area) and registers itself with a unique name, a suite, a one-line description and a `run` function. `run` gets the Playwright page plus helpers to navigate with the gates, use a different content marker for screens the app does not own, save extra named screenshots and waive a rule with a reason; assertion messages say what was expected and what was found. Each journey runs in a **fresh browser, page and run directory**. Selectors are built from `Testids` imported from `src/testing/testids.gen.ts`, never from typed id strings. Suites: `core` (fast, essential; run by `smoke` and CI) and any other name for the rest (today `responsive`); phase documents put non-core journeys in a suite named after the phase (`p01`, `p02`, …). From P01-01, journeys start from a known fixture via `/e2e?fixture=<name>&next=<route>`.
-- **Journeys today:** `home-loads` (core), `not-found` (core), `home-responsive` (responsive).
+- **Journeys today:** `home-loads` (core), `not-found` (core; the app's own not-found screen, no waivers), `tabs-navigate` (core; every tab, its URL, one `h1`, `aria-selected`, Booky on the empty Shelf), `home-responsive` (responsive).
 - **API mocking** is not built yet: P02-13 adds `--mock-api <dir>`, which serves recorded Open Library / Google Books responses through Playwright routing so journeys are deterministic and the network gate can reject real external calls.
 
 ### 10.3 Maestro (on device)
@@ -606,6 +606,8 @@ npm run -s autotest:smoke           # the auto test suite's `smoke`: core journe
 ```
 
 `autotest:smoke` needs the web server running (`CI=1 npx expo start --web --port 8081`) and Chromium installed once (`npm run autotest:install-browser`). Closing a phase also requires every journey to pass with gates enforced: `npm run -s autotest:journeys -- --ux-gates fail`.
+
+**Typed routes.** Expo Router's route types (`.expo/types/router.d.ts`, git-ignored) are generated by the dev server (`expo start`); they do not exist in a fresh clone or a CI job that has not started it. Without them `npm run typecheck` treats route strings (`href`, `router.navigate('/scan')`) loosely and cannot catch a link to a route that does not exist. So the App checks job (`npm run check`) is not strict about routes, and the auto test suite CI job runs `npm run typecheck` again after starting the web server (step "Typecheck with generated route types"). Locally, run `npm run typecheck` after the dev server has started to get the same check.
 
 ---
 
