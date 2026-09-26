@@ -3,7 +3,8 @@ import { useImperativeHandle, useRef, type Ref } from 'react';
 import { ScrollView, StyleSheet, View, type TextInput } from 'react-native';
 
 import { Button, Chip, Heading, SelectField, StarRating, Text, TextField } from '@/components/ui';
-import { bookFormats, languages, type BookDraft, type BookDraftErrors, type BookDraftField, type BookFormat } from '@/domain';
+import { bookFormats, joinNames, languages, type BookDraft, type BookDraftErrors, type BookDraftField, type BookFormat } from '@/domain';
+import { t, translate, type MessageKey } from '@/i18n';
 import { Testids } from '@/testing/testids.gen';
 import { useTheme } from '@/theme';
 
@@ -12,44 +13,51 @@ import { CoverImage } from './CoverImage';
 import { GenresInput } from './GenresInput';
 import { SeriesInput, type SeriesOption, type SeriesSuggestion } from './SeriesInput';
 
-export const formatLabels: Record<BookFormat, string> = {
-  hardcover: 'Hardback',
-  paperback: 'Paperback',
-  ebook: 'Ebook',
-  audiobook: 'Audiobook',
-  other: 'Other',
+/** Each format's name, translated when read. */
+export const formatLabels: Readonly<Record<BookFormat, string>> = {
+  get hardcover() {
+    return t('book.formats.hardcover');
+  },
+  get paperback() {
+    return t('book.formats.paperback');
+  },
+  get ebook() {
+    return t('book.formats.ebook');
+  },
+  get audiobook() {
+    return t('book.formats.audiobook');
+  },
+  get other() {
+    return t('book.formats.otherFormat');
+  },
 };
 
-const fieldLabels: Record<BookDraftField, string> = {
-  title: 'Title',
-  subtitle: 'Subtitle',
-  authors: 'Authors',
-  isbn: 'ISBN',
-  publisher: 'Publisher',
-  year: 'Year',
-  edition: 'Edition',
-  format: 'Format',
-  pages: 'Pages',
-  language: 'Language',
-  genres: 'Genres',
-  seriesName: 'Series',
-  seriesPosition: 'Number in series',
-  summary: 'Summary',
-  notes: 'Notes',
-  coverUri: 'Cover',
-  rating: 'Your rating',
+const fieldLabels: Record<BookDraftField, MessageKey> = {
+  title: 'bookFields.title',
+  subtitle: 'bookFields.subtitle',
+  authors: 'bookFields.authors',
+  isbn: 'bookForm.fields.isbn',
+  publisher: 'bookFields.publisher',
+  year: 'bookFields.year',
+  edition: 'bookFields.edition',
+  format: 'bookFields.format',
+  pages: 'bookFields.pages',
+  language: 'bookFields.language',
+  genres: 'bookFields.genres',
+  seriesName: 'bookFields.series',
+  seriesPosition: 'bookForm.fields.seriesPosition',
+  summary: 'bookFields.summary',
+  notes: 'bookForm.fields.notes',
+  coverUri: 'bookFields.cover',
+  rating: 'bookForm.fields.rating',
 };
 
 const NO_SERIES: readonly SeriesOption[] = [];
 
-const languageOptions = languages.map((l) => ({ value: l.code, label: l.name }));
-
 /** "Please check 2 fields: Title and ISBN." */
 export function errorSummary(errors: BookDraftErrors): string {
-  const fields = (Object.keys(errors) as BookDraftField[]).map((f) => fieldLabels[f]);
-  if (fields.length === 1) return `Please check the ${fields[0]} field.`;
-  const list = `${fields.slice(0, -1).join(', ')} and ${fields[fields.length - 1]}`;
-  return `Please check ${fields.length} fields: ${list}.`;
+  const fields = (Object.keys(errors) as BookDraftField[]).map((f) => translate(fieldLabels[f]));
+  return t('bookForm.errorSummary', { count: fields.length, fields: joinNames(fields) });
 }
 
 export interface BookFormHandle {
@@ -170,6 +178,7 @@ export function BookForm({
   }));
 
   const hasErrors = Object.keys(errors).length > 0;
+  const languageOptions = languages.map((l) => ({ value: l.code, label: l.name }));
   return (
     <View style={styles.fill}>
       <ScrollView
@@ -181,10 +190,10 @@ export function BookForm({
       >
         <View style={{ gap: spacing.xs }}>
           <Heading level={1} testID={Testids.bookForm.heading}>
-            {mode === 'add' ? 'Add a book' : 'Edit book'}
+            {mode === 'add' ? t('common.addABook') : t('bookForm.editHeading')}
           </Heading>
           <Text color="inkMuted">
-            {mode === 'add' ? 'Type up a new catalogue card. Only the title is required.' : 'Change anything on the card, then save.'}
+            {mode === 'add' ? t('bookForm.addIntro') : t('bookForm.editIntro')}
           </Text>
         </View>
 
@@ -203,23 +212,23 @@ export function BookForm({
           </View>
         ) : null}
 
-        <Section title="Cover">
+        <Section title={t('bookFields.cover')}>
           <View style={[styles.cover, { gap: spacing.lg }]}>
-            <CoverImage uri={draft.coverUri} title={draft.title.trim() || 'New book'} author={draft.authors[0]?.name} size="medium" />
+            <CoverImage uri={draft.coverUri} title={draft.title.trim() || t('bookForm.cover.untitled')} author={draft.authors[0]?.name} size="medium" />
             <View style={[styles.coverActions, { gap: spacing.sm }]}>
               <Text variant="caption" color="inkMuted">
-                {draft.coverUri ? 'This cover goes on the catalogue card.' : 'No cover yet: your shelf shows a cloth binding until you add one.'}
+                {draft.coverUri ? t('bookForm.cover.hasCover') : t('bookForm.cover.noCover')}
               </Text>
               <Button
                 variant="secondary"
-                label="Choose a photo"
+                label={t('bookForm.cover.choosePhoto')}
                 icon={<MaterialCommunityIcons name="image-outline" size={sizes.icon} color={colors.onPrimaryContainer} />}
                 onPress={() => onPickCover('library')}
                 testID={Testids.bookForm.coverPick}
               />
               <Button
                 variant="secondary"
-                label="Take a photo"
+                label={t('bookForm.cover.takePhoto')}
                 icon={<MaterialCommunityIcons name="camera-outline" size={sizes.icon} color={colors.onPrimaryContainer} />}
                 onPress={() => onPickCover('camera')}
                 testID={Testids.bookForm.coverCamera}
@@ -227,22 +236,22 @@ export function BookForm({
               {onFindCoverOnline ? (
                 <Button
                   variant="secondary"
-                  label="Find a cover online"
+                  label={t('bookForm.cover.findOnline')}
                   icon={<MaterialCommunityIcons name="web" size={sizes.icon} color={colors.onPrimaryContainer} />}
                   onPress={onFindCoverOnline}
                   testID={Testids.lookup.findCover}
                 />
               ) : null}
               {draft.coverUri ? (
-                <Button variant="ghost" label="Remove cover" onPress={() => onChange('coverUri', null)} testID={Testids.bookForm.coverRemove} />
+                <Button variant="ghost" label={t('bookForm.cover.remove')} onPress={() => onChange('coverUri', null)} testID={Testids.bookForm.coverRemove} />
               ) : null}
             </View>
           </View>
         </Section>
 
-        <Section title="The book">
-          <TextField label="Title (required)" ref={titleRef} value={draft.title} onChangeText={(v) => onChange('title', v)} errorText={errors.title} testID={Testids.bookForm.title} autoCapitalize="words" maxLength={400} />
-          <TextField label="Subtitle" ref={subtitleRef} value={draft.subtitle} onChangeText={(v) => onChange('subtitle', v)} errorText={errors.subtitle} testID={Testids.bookForm.subtitle} />
+        <Section title={t('bookForm.sections.theBook')}>
+          <TextField label={t('bookForm.fields.titleRequired')} ref={titleRef} value={draft.title} onChangeText={(v) => onChange('title', v)} errorText={errors.title} testID={Testids.bookForm.title} autoCapitalize="words" maxLength={400} />
+          <TextField label={t('bookFields.subtitle')} ref={subtitleRef} value={draft.subtitle} onChangeText={(v) => onChange('subtitle', v)} errorText={errors.subtitle} testID={Testids.bookForm.subtitle} />
           <AuthorsInput
             authors={draft.authors}
             onChange={(a) => onChange('authors', a)}
@@ -254,30 +263,30 @@ export function BookForm({
           />
         </Section>
 
-        <Section title="Edition">
+        <Section title={t('bookFields.edition')}>
           <TextField
-            label="ISBN"
+            label={t('bookForm.fields.isbn')}
             ref={isbnRef} value={draft.isbn} onChangeText={(v) => onChange('isbn', v)} errorText={errors.isbn}
             testID={Testids.bookForm.isbn}
-            helperText="10 or 13 digits, usually on the back cover above the barcode."
+            helperText={t('bookForm.isbnHelp')}
             autoCapitalize="characters"
             autoCorrect={false}
           />
-          <TextField label="Publisher" ref={publisherRef} value={draft.publisher} onChangeText={(v) => onChange('publisher', v)} errorText={errors.publisher} testID={Testids.bookForm.publisher} autoCapitalize="words" />
+          <TextField label={t('bookFields.publisher')} ref={publisherRef} value={draft.publisher} onChangeText={(v) => onChange('publisher', v)} errorText={errors.publisher} testID={Testids.bookForm.publisher} autoCapitalize="words" />
           <View style={[styles.pair, { gap: spacing.md }]}>
             <View style={styles.half}>
-              <TextField label="Year" ref={yearRef} value={draft.year} onChangeText={(v) => onChange('year', v)} errorText={errors.year} testID={Testids.bookForm.year} keyboardType="number-pad" inputMode="numeric" maxLength={4} />
+              <TextField label={t('bookFields.year')} ref={yearRef} value={draft.year} onChangeText={(v) => onChange('year', v)} errorText={errors.year} testID={Testids.bookForm.year} keyboardType="number-pad" inputMode="numeric" maxLength={4} />
             </View>
             <View style={styles.half}>
-              <TextField label="Pages" ref={pagesRef} value={draft.pages} onChangeText={(v) => onChange('pages', v)} errorText={errors.pages} testID={Testids.bookForm.pages} keyboardType="number-pad" inputMode="numeric" maxLength={6} />
+              <TextField label={t('bookFields.pages')} ref={pagesRef} value={draft.pages} onChangeText={(v) => onChange('pages', v)} errorText={errors.pages} testID={Testids.bookForm.pages} keyboardType="number-pad" inputMode="numeric" maxLength={6} />
             </View>
           </View>
-          <TextField label="Edition" ref={editionRef} value={draft.edition} onChangeText={(v) => onChange('edition', v)} errorText={errors.edition} testID={Testids.bookForm.edition} placeholder="e.g. First edition" />
+          <TextField label={t('bookFields.edition')} ref={editionRef} value={draft.edition} onChangeText={(v) => onChange('edition', v)} errorText={errors.edition} testID={Testids.bookForm.edition} placeholder={t('bookForm.editionPlaceholder')} />
           <View style={{ gap: spacing.xs }}>
             <Text variant="label" color={errors.format ? 'danger' : 'ink'}>
-              Format
+              {t('bookFields.format')}
             </Text>
-            <View role="radiogroup" aria-label="Format" testID={Testids.bookForm.format} style={[styles.wrap, { columnGap: spacing.sm }]}>
+            <View role="radiogroup" aria-label={t('bookFields.format')} testID={Testids.bookForm.format} style={[styles.wrap, { columnGap: spacing.sm }]}>
               {bookFormats.map((f) => (
                 <Chip
                   key={f}
@@ -291,7 +300,7 @@ export function BookForm({
           </View>
           <SelectField
             ref={languageRef}
-            label="Language"
+            label={t('bookFields.language')}
             value={draft.language}
             options={languageOptions}
             onChange={(v) => onChange('language', v)}
@@ -300,7 +309,7 @@ export function BookForm({
           />
         </Section>
 
-        <Section title="Genres">
+        <Section title={t('bookFields.genres')}>
           <GenresInput
             genres={draft.genres}
             onChange={(g) => onChange('genres', g)}
@@ -312,7 +321,7 @@ export function BookForm({
           />
         </Section>
 
-        <Section title="Series">
+        <Section title={t('bookFields.series')}>
           <SeriesInput
             name={draft.seriesName}
             position={draft.seriesPosition}
@@ -327,31 +336,31 @@ export function BookForm({
           />
         </Section>
 
-        <Section title="Your rating">
+        <Section title={t('bookForm.fields.rating')}>
           <View testID={Testids.bookForm.rating} style={{ gap: spacing.xs }}>
             <StarRating value={draft.rating} onChange={(r) => onChange('rating', r)} />
             <Text variant="caption" color="inkMuted">
-              Just for you. Looking up the book’s details never changes it.
+              {t('bookForm.ratingHelp')}
             </Text>
           </View>
         </Section>
 
-        <Section title="Summary and notes">
-          <TextField label="Summary" ref={summaryRef} value={draft.summary} onChangeText={(v) => onChange('summary', v)} errorText={errors.summary} testID={Testids.bookForm.summary} multiline />
+        <Section title={t('bookForm.sections.summaryAndNotes')}>
+          <TextField label={t('bookFields.summary')} ref={summaryRef} value={draft.summary} onChangeText={(v) => onChange('summary', v)} errorText={errors.summary} testID={Testids.bookForm.summary} multiline />
           <TextField
-            label="Notes"
+            label={t('bookForm.fields.notes')}
             ref={notesRef} value={draft.notes} onChangeText={(v) => onChange('notes', v)} errorText={errors.notes}
             testID={Testids.bookForm.notes}
             multiline
-            helperText="Just for you: where you got it, who signed it, what you thought."
+            helperText={t('bookForm.notesHelp')}
           />
         </Section>
       </ScrollView>
 
       <View style={[styles.bar, { borderTopColor: colors.border, backgroundColor: colors.surface, padding: spacing.md, gap: spacing.sm }]}>
-        <Button variant="ghost" label="Cancel" onPress={onCancel} testID={Testids.bookForm.cancel} disabled={saving} />
+        <Button variant="ghost" label={t('common.cancel')} onPress={onCancel} testID={Testids.bookForm.cancel} disabled={saving} />
         <Button
-          label={mode === 'add' ? 'Save to shelf' : 'Save changes'}
+          label={mode === 'add' ? t('bookForm.saveNew') : t('bookForm.saveChanges')}
           onPress={onSave}
           loading={saving}
           testID={Testids.bookForm.save}

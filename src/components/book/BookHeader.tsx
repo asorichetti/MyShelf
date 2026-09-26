@@ -2,38 +2,32 @@ import { StyleSheet, View } from 'react-native';
 
 import { CatalogueCard, Text } from '@/components/ui';
 import { callNumber, joinNames, languageName, type BookDetail } from '@/domain';
+import { t } from '@/i18n';
 import { Testids } from '@/testing/testids.gen';
 import { useFontScale, useTheme } from '@/theme';
 
+import { formatLabels } from './BookForm';
 import { CallNumber } from './CallNumber';
 import { CoverImage } from './CoverImage';
 
 const FACT_WIDTH = 120;
 
-const FORMAT_NAMES: Record<string, string> = {
-  hardcover: 'Hardback',
-  paperback: 'Paperback',
-  ebook: 'Ebook',
-  audiobook: 'Audiobook',
-  other: 'Other',
-};
-
 /** "Terry Pratchett and Neil Gaiman", with non-author roles noted: "Quentin Blake (illustrator)". */
 export function creditLine(authors: BookDetail['authors']): string {
-  return joinNames(authors.map((a) => (a.role === 'author' ? a.name : `${a.name} (${a.role})`)));
+  return joinNames(authors.map((a) => (a.role === 'author' ? a.name : t('book.header.credit', { name: a.name, role: t(`book.header.creditRoles.${a.role}`) }))));
 }
 
 /** The facts on the card, in catalogue order; empty ones are left out. */
 export function bookFacts(book: BookDetail): { label: string; value: string; mono?: boolean }[] {
   const facts: { label: string; value: string | null | undefined; mono?: boolean }[] = [
-    { label: 'Publisher', value: book.publisher },
-    { label: 'Year', value: book.publicationYear?.toString() },
-    { label: 'Edition', value: book.edition },
-    { label: 'Format', value: book.format ? FORMAT_NAMES[book.format] : null },
-    { label: 'Pages', value: book.pageCount?.toString() },
-    { label: 'Language', value: book.language ? languageName(book.language) : null },
-    { label: 'ISBN-13', value: book.isbn13, mono: true },
-    { label: 'ISBN-10', value: book.isbn10, mono: true },
+    { label: t('bookFields.publisher'), value: book.publisher },
+    { label: t('bookFields.year'), value: book.publicationYear?.toString() },
+    { label: t('bookFields.edition'), value: book.edition },
+    { label: t('bookFields.format'), value: book.format ? formatLabels[book.format] : null },
+    { label: t('bookFields.pages'), value: book.pageCount?.toString() },
+    { label: t('bookFields.language'), value: book.language ? languageName(book.language) : null },
+    { label: t('book.header.isbn13'), value: book.isbn13, mono: true },
+    { label: t('book.header.isbn10'), value: book.isbn10, mono: true },
   ];
   return facts.filter((f): f is { label: string; value: string; mono?: boolean } => Boolean(f.value));
 }

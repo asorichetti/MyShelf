@@ -11,6 +11,7 @@ import type { BookDetail } from '@/domain';
 import { BookGroupsSection } from '@/features/groups/BookGroupsSection';
 import { BookLoanSection } from '@/features/loans/BookLoanSection';
 import { BookSeries } from '@/features/series/BookSeries';
+import { t } from '@/i18n';
 import { Testids } from '@/testing/testids.gen';
 import { useTheme } from '@/theme';
 
@@ -54,26 +55,26 @@ function BookDetailContent({ book }: { book: BookDetail }) {
       console.error('Could not delete the book', e);
       setDeleting(false);
       setConfirming(false);
-      show({ message: 'Sorry, I couldn’t remove that book. Please try again.' });
+      show({ message: t('bookDetail.deleteFailed') });
     }
   };
 
   return (
     <Screen testID={Testids.bookDetail.root} edges={[...EDGES]}>
       <View style={[styles.bar, { gap: spacing.xs, marginTop: -spacing.sm, marginHorizontal: -spacing.sm }]}>
-        <IconButton icon="arrow-left" accessibilityLabel="Back" onPress={goBackOrShelf} testID={Testids.bookDetail.back} />
+        <IconButton icon="arrow-left" accessibilityLabel={t('common.back')} onPress={goBackOrShelf} testID={Testids.bookDetail.back} />
         <View style={styles.flex} />
         <HelpButton screen="book" />
         <IconButton
           icon="pencil-outline"
           variant="tonal"
-          accessibilityLabel={`Edit ${book.title}`}
+          accessibilityLabel={t('bookDetail.edit', { title: book.title })}
           onPress={() => router.navigate({ pathname: '/book/[id]/edit', params: { id: String(book.id) } })}
           testID={Testids.bookDetail.edit}
         />
         <IconButton
           icon="dots-vertical"
-          accessibilityLabel="More actions"
+          accessibilityLabel={t('bookDetail.moreActions')}
           expanded={menuOpen}
           onPress={() => setMenuOpen(true)}
           testID={Testids.bookDetail.more}
@@ -82,20 +83,20 @@ function BookDetailContent({ book }: { book: BookDetail }) {
       <Menu
         visible={menuOpen}
         onClose={() => setMenuOpen(false)}
-        accessibilityLabel={`More actions for ${book.title}`}
+        accessibilityLabel={t('bookDetail.moreActionsFor', { title: book.title })}
         testID={Testids.menu.root}
         items={[
-          { label: 'Refresh details', icon: 'refresh', onPress: () => router.navigate({ pathname: '/book/[id]/refresh', params: { id: String(book.id) } }), testID: Testids.refresh.open },
-          { label: 'Delete book', icon: 'trash-can-outline', destructive: true, onPress: () => setConfirming(true), testID: Testids.bookDetail.delete },
+          { label: t('bookDetail.refresh'), icon: 'refresh', onPress: () => router.navigate({ pathname: '/book/[id]/refresh', params: { id: String(book.id) } }), testID: Testids.refresh.open },
+          { label: t('bookDetail.delete'), icon: 'trash-can-outline', destructive: true, onPress: () => setConfirming(true), testID: Testids.bookDetail.delete },
         ]}
       />
       <ConfirmDialog
         visible={confirming}
         illustration={<Booky expression="concerned" size={72} animated={false} />}
-        title="Remove this book?"
-        message={`Remove “${book.title}” from your shelf? Loan history for it will be removed too.`}
-        confirmLabel="Remove"
-        cancelLabel="Keep it"
+        title={t('bookDetail.confirmDelete.title')}
+        message={t('bookDetail.confirmDelete.message', { title: book.title })}
+        confirmLabel={t('common.remove')}
+        cancelLabel={t('bookDetail.confirmDelete.keep')}
         destructive
         busy={deleting}
         onConfirm={confirmDelete}
@@ -103,8 +104,8 @@ function BookDetailContent({ book }: { book: BookDetail }) {
       >
         {book.openLoan ? (
           <View style={[styles.warning, { gap: spacing.sm }]}>
-            <Stamp label="On loan" tone="warn" rotate={-3} />
-            <Text style={styles.flex}>{`It’s on loan to ${book.openLoan.borrowerName} right now, and that loan will be forgotten too.`}</Text>
+            <Stamp label={t('loanStamp.onLoan')} tone="warn" rotate={-3} />
+            <Text style={styles.flex}>{t('bookDetail.confirmDelete.onLoan', { name: book.openLoan.borrowerName })}</Text>
           </View>
         ) : null}
       </ConfirmDialog>
@@ -113,25 +114,25 @@ function BookDetailContent({ book }: { book: BookDetail }) {
         <BookRating bookId={book.id} rating={book.rating} />
       </Section>
       {book.summary ? (
-        <Section title="Summary">
+        <Section title={t('bookFields.summary')}>
           <SummaryText text={book.summary} testID={Testids.bookDetail.summary} readMoreTestID={Testids.bookDetail.readMore} />
         </Section>
       ) : null}
       {book.genres.length ? (
-        <Section title="Genres">
+        <Section title={t('bookFields.genres')}>
           <GenreChips genres={book.genres.map((g) => g.name)} testID={Testids.bookDetail.genres} />
         </Section>
       ) : null}
       <BookSeries book={book} />
       {book.notes ? (
-        <Section title="Notes">
+        <Section title={t('bookDetail.sections.notes')}>
           <Text testID={Testids.bookDetail.notes} selectable>
             {book.notes}
           </Text>
         </Section>
       ) : null}
       <BookGroupsSection bookId={book.id} title={book.title} />
-      <Section title="Loan" testID={Testids.bookDetail.loan}>
+      <Section title={t('bookDetail.sections.loan')} testID={Testids.bookDetail.loan}>
         <BookLoanSection book={book} />
       </Section>
     </Screen>
@@ -145,10 +146,10 @@ export function BookMissing() {
       <EmptyState
         illustration={<Booky expression="concerned" size={120} />}
         headingLevel={1}
-        title="Book not found"
+        title={t('bookDetail.missing.title')}
         titleTestID={Testids.bookMissing.title}
-        message="I looked on every shelf, but that book isn't in your catalogue. It may have been removed."
-        action={{ label: 'Back to shelf', onPress: () => router.replace('/'), testID: Testids.bookMissing.back }}
+        message={t('bookDetail.missing.message')}
+        action={{ label: t('bookDetail.missing.back'), onPress: () => router.replace('/'), testID: Testids.bookMissing.back }}
       />
     </Screen>
   );
@@ -163,7 +164,7 @@ export function BookDetailScreen() {
     return (
       <Screen pageState="loading" centered edges={[...EDGES]}>
         <Text color="inkMuted" align="center">
-          Fetching the card from the drawer…
+          {t('book.loading')}
         </Text>
       </Screen>
     );

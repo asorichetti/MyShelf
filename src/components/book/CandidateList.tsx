@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { View } from 'react-native';
 
 import { Button, Text } from '@/components/ui';
+import { t } from '@/i18n';
 import { Testids } from '@/testing/testids.gen';
 import { useTheme } from '@/theme';
 
@@ -38,7 +39,7 @@ export function CandidateList({ candidates, onChoose, initialCount = 5, label, t
       {candidates.length > shown ? (
         <Button
           variant="ghost"
-          label={`Show ${Math.min(candidates.length - shown, 5)} more`}
+          label={t('candidate.showMore', { count: Math.min(candidates.length - shown, 5) })}
           onPress={() => setShown((n) => n + 5)}
           testID={Testids.lookup.showMore}
         />

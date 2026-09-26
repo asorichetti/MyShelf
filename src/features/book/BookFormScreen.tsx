@@ -8,6 +8,7 @@ import type { BookDraft } from '@/domain';
 import { useAddBookLookup } from '@/features/lookup/useAddBookLookup';
 import { getPrefill, type Prefill } from '@/features/scan/prefill';
 import { useSeriesOptions } from '@/features/series/useSeriesOptions';
+import { t } from '@/i18n';
 
 import { BookMissing, goBackOrShelf } from './BookDetailScreen';
 import { pickCover, type CoverSource } from './pickCover';
@@ -31,7 +32,7 @@ function BookFormScreen({ bookId, prefill, scanned }: { bookId: number | null; p
     return (
       <Screen pageState="loading" centered edges={[...EDGES]}>
         <Text color="inkMuted" align="center">
-          Fetching the card from the drawer…
+          {t('book.loading')}
         </Text>
       </Screen>
     );
@@ -41,10 +42,10 @@ function BookFormScreen({ bookId, prefill, scanned }: { bookId: number | null; p
     try {
       const result = await pickCover(source);
       if (result.status === 'picked') form.setField('coverUri', result.uri);
-      else if (result.status === 'denied') show({ message: 'I need the camera to photograph a cover. You can allow it in your phone’s settings.' });
+      else if (result.status === 'denied') show({ message: t('bookForm.screen.cameraDenied') });
     } catch (e) {
       console.error('Could not pick a cover', e);
-      show({ message: 'Sorry, I couldn’t open the photos. Please try again.' });
+      show({ message: t('bookForm.screen.photosFailed') });
     }
   };
 
@@ -59,14 +60,14 @@ function BookFormScreen({ bookId, prefill, scanned }: { bookId: number | null; p
       lookup.afterSave(result.id);
       if (mode === 'add') {
         router.replace({ pathname: '/book/[id]', params: { id: String(result.id) } });
-        show({ message: `Saved “${result.title}” to your shelf` });
+        show({ message: t('bookForm.screen.savedNew', { title: result.title }) });
       } else {
         goBackOrShelf();
-        show({ message: 'Saved your changes' });
+        show({ message: t('bookForm.screen.savedChanges') });
       }
     } catch (e) {
       console.error('Could not save the book', e);
-      show({ message: 'Sorry, I couldn’t save that. Please try again.' });
+      show({ message: t('common.saveFailed') });
     }
   };
 
@@ -96,10 +97,10 @@ function BookFormScreen({ bookId, prefill, scanned }: { bookId: number | null; p
       <ConfirmDialog
         visible={guard.asking}
         illustration={<Booky expression="concerned" size={64} animated={false} />}
-        title="Discard your changes?"
-        message={mode === 'add' ? 'This book hasn’t been saved to your shelf yet.' : 'Your edits to this card haven’t been saved.'}
-        cancelLabel="Keep editing"
-        confirmLabel="Discard"
+        title={t('bookForm.screen.discardTitle')}
+        message={mode === 'add' ? t('bookForm.screen.discardNew') : t('bookForm.screen.discardEdit')}
+        cancelLabel={t('bookForm.screen.keepEditing')}
+        confirmLabel={t('bookForm.screen.discard')}
         destructive
         onCancel={guard.keepEditing}
         onConfirm={guard.discard}

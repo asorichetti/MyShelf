@@ -182,6 +182,370 @@ export const en = {
     },
   },
 
+  // Books: detail, form and lookups
+  /** Words about a book shared by its card, form and detail page. */
+  book: {
+    /** Shown while a book's details load. */
+    loading: 'Fetching the card from the drawer…',
+    formats: {
+      hardcover: 'Hardback',
+      paperback: 'Paperback',
+      ebook: 'Ebook',
+      audiobook: 'Audiobook',
+      /** Any other format. (Not `other`: an object with an `other` key reads as a plural.) */
+      otherFormat: 'Other',
+    },
+    /** A contributor's role, as a chip in the form's author details. */
+    roles: {
+      author: 'Author',
+      illustrator: 'Illustrator',
+      translator: 'Translator',
+      editor: 'Editor',
+    },
+    /** The detail page's catalogue card. */
+    header: {
+      /** A non-author credit: "Quentin Blake (illustrator)". */
+      credit: '{name} ({role})',
+      /** The role in a credit line, lower case mid-sentence. */
+      creditRoles: {
+        author: 'author',
+        illustrator: 'illustrator',
+        translator: 'translator',
+        editor: 'editor',
+      },
+      isbn13: 'ISBN-13',
+      isbn10: 'ISBN-10',
+    },
+    /** The book's place in its series, on the detail page. */
+    seriesSection: {
+      notNumbered: 'Not numbered in the series',
+      /** "Book 5 of 9". */
+      placeOf: 'Book {position} of {total}',
+      /** "Book 5", when the series length is unknown. */
+      place: 'Book {position}',
+      /** A gap in the series next to this book: "#3 isn’t on your shelf yet". */
+      missing: '#{position} isn’t on your shelf yet',
+      /** A neighbouring book: "The Light Fantastic (#2)". */
+      neighbour: '{title} (#{position})',
+      /** Label before the previous book; the book's title follows. */
+      previous: 'Previous: ',
+      /** Label before the next book; the book's title follows. */
+      next: 'Next: ',
+      previousLink: 'Previous in the series: {book}',
+      nextLink: 'Next in the series: {book}',
+      seriesLink: '{name}: see the whole series',
+      seeSeries: 'See series',
+    },
+  },
+  /** The add/edit form. */
+  bookForm: {
+    ratingHelp: 'Just for you. Looking up the book’s details never changes it.',
+    editHeading: 'Edit book',
+    addIntro: 'Type up a new catalogue card. Only the title is required.',
+    editIntro: 'Change anything on the card, then save.',
+    /** After a failed save: the fields to check. */
+    errorSummary: { one: 'Please check the {fields} field.', other: 'Please check {count} fields: {fields}.' },
+    sections: {
+      theBook: 'The book',
+      summaryAndNotes: 'Summary and notes',
+    },
+    /** Field names the form uses that the change lists don't. */
+    fields: {
+      /** The star rating's section and field name. */
+      rating: 'Your rating',
+      titleRequired: 'Title (required)',
+      isbn: 'ISBN',
+      seriesPosition: 'Number in series',
+      notes: 'Notes',
+    },
+    isbnHelp: '10 or 13 digits, usually on the back cover above the barcode.',
+    editionPlaceholder: 'e.g. First edition',
+    notesHelp: 'Just for you: where you got it, who signed it, what you thought.',
+    saveNew: 'Save to shelf',
+    saveChanges: 'Save changes',
+    /** The small "Add" button next to the author and genre boxes. */
+    add: 'Add',
+    cover: {
+      /** Title on the generated cover before a title is typed. */
+      untitled: 'New book',
+      hasCover: 'This cover goes on the catalogue card.',
+      noCover: 'No cover yet: your shelf shows a cloth binding until you add one.',
+      choosePhoto: 'Choose a photo',
+      takePhoto: 'Take a photo',
+      findOnline: 'Find a cover online',
+      remove: 'Remove cover',
+    },
+    authors: {
+      listOne: 'Author',
+      listMany: 'Authors, in credited order',
+      /** How an author sorts: "Filed as Pratchett, Terry". */
+      filedAs: 'Filed as {name}',
+      moveUp: 'Move {name} up',
+      moveDown: 'Move {name} down',
+      details: 'Details for {name}',
+      remove: 'Remove {name}',
+      role: 'Role',
+      roleOf: 'Role of {name}',
+      filedAsLabel: 'Filed as',
+      filedAsHelp: 'How the name sorts on the shelf. Leave empty to use the suggestion.',
+      inputFirst: 'Author',
+      inputMore: 'Add another author',
+      placeholder: 'e.g. Terry Pratchett',
+      addTyped: 'Add {name} as an author',
+      addEmpty: 'Add author',
+      suggestions: 'Author suggestions',
+      addSuggestion: 'Add {name}, already in your library',
+      /** Beside a suggested author who is already in the catalogue. */
+      inLibrary: 'in your library',
+    },
+    genres: {
+      chosen: 'Chosen genres',
+      remove: 'Remove genre {name}',
+      inputFirst: 'Genre',
+      inputMore: 'Add another genre',
+      placeholder: 'e.g. Fantasy',
+      addTyped: 'Add genre {name}',
+      addEmpty: 'Add genre',
+      matching: 'Matching genres',
+      suggestions: 'Suggestions',
+    },
+    series: {
+      /** A chip with the series a lookup suggested: "Suggested: Discworld #5". */
+      suggested: 'Suggested: {series}',
+      useSuggested: 'Use the suggested series, {series}',
+      namePlaceholder: 'Search or add, e.g. Discworld',
+      /** The book's number in the series. */
+      number: 'Number',
+      numberPlaceholder: 'e.g. 5',
+      numberHelp: '3, 2.5 or III',
+      savesAs: 'Saves as #{position}',
+      numberInvalid: 'Use a number like 3, 2.5 or III',
+      /** "In your library · 4 books". */
+      inLibrary: 'In your library · {books}',
+      newSeries: 'A new series: it’s added when you save.',
+      list: 'Series in your library',
+      /** "Discworld, 4 books in your library". */
+      option: '{name}, {books} in your library',
+      createLabel: 'Start a new series called {name}',
+      create: 'New series “{name}”',
+      clear: 'Not part of a series',
+    },
+    /** The "Find it online" panel at the top of the add form. */
+    lookup: {
+      chosen: 'Filled in from {source}. Check the card below, change anything you like, then save.',
+      searchAgain: 'Look up another book',
+      heading: 'Find it online',
+      intro: 'Look the book up and I’ll fill in the card for you, cover and all.',
+      isbnPlaceholder: 'e.g. 978-0-552-16659-1',
+      lookUp: 'Look up',
+      searchLabel: 'Search online',
+      searchPlaceholder: 'Title and author, e.g. colour of magic pratchett',
+      search: 'Search',
+      lookingUp: 'Looking up {isbn}…',
+      searching: 'Searching the catalogues for “{query}”…',
+      noIsbnMatch: 'No match for that ISBN',
+      noMatches: 'No matches',
+      addByHand: 'Add it by hand',
+      results: { one: '{count} match. Choose yours to fill in the card.', other: '{count} matches. Choose yours to fill in the card.' },
+    },
+    screen: {
+      cameraDenied: 'I need the camera to photograph a cover. You can allow it in your phone’s settings.',
+      photosFailed: 'Sorry, I couldn’t open the photos. Please try again.',
+      savedNew: 'Saved “{title}” to your shelf',
+      savedChanges: 'Saved your changes',
+      discardTitle: 'Discard your changes?',
+      discardNew: 'This book hasn’t been saved to your shelf yet.',
+      discardEdit: 'Your edits to this card haven’t been saved.',
+      keepEditing: 'Keep editing',
+      discard: 'Discard',
+    },
+  },
+  /** A book's page. */
+  bookDetail: {
+    edit: 'Edit {title}',
+    moreActions: 'More actions',
+    moreActionsFor: 'More actions for {title}',
+    refresh: 'Refresh details',
+    delete: 'Delete book',
+    deleteFailed: 'Sorry, I couldn’t remove that book. Please try again.',
+    confirmDelete: {
+      title: 'Remove this book?',
+      message: 'Remove “{title}” from your shelf? Loan history for it will be removed too.',
+      keep: 'Keep it',
+      onLoan: 'It’s on loan to {name} right now, and that loan will be forgotten too.',
+    },
+    /** The snackbar after a delete, with Undo. */
+    undoDelete: {
+      removed: 'Removed “{title}” from your shelf',
+      restored: '“{title}” is back on your shelf',
+      restoreFailed: 'Sorry, I couldn’t bring “{title}” back.',
+    },
+    sections: {
+      notes: 'Notes',
+      loan: 'Loan',
+    },
+    missing: {
+      title: 'Book not found',
+      message: "I looked on every shelf, but that book isn't in your catalogue. It may have been removed.",
+      back: 'Back to shelf',
+    },
+    summary: {
+      readMore: 'Read more',
+      showLess: 'Show less',
+      readMoreLabel: 'Read more of the summary',
+      showLessLabel: 'Show less of the summary',
+    },
+    /** "Is this Discworld #5?": checking a guessed series. */
+    seriesConfirm: {
+      label: 'Check the series',
+      question: 'Is this {series}?',
+      explanation: 'I spotted the series in the book’s details. Is it right?',
+      save: 'Save series',
+      yes: 'Yes',
+      yesLabel: 'Yes, it’s {series}',
+      change: 'Change',
+      no: 'Not a series',
+      nameMissing: 'Type the series name, or choose “Not a series”.',
+    },
+  },
+  /** A lookup result (an edition or a work) as a card. */
+  candidate: {
+    facts: {
+      firstPublished: 'First published {year}',
+      editions: { one: '{count} edition', other: '{count} editions' },
+      pages: { one: '{count} page', other: '{count} pages' },
+    },
+    /** What a screen reader says after the title. */
+    label: {
+      by: 'by {names}',
+      isbn: 'ISBN {isbn}',
+      /** The catalogue it came from: "from Open Library". */
+      source: 'from {source}',
+    },
+    showMore: 'Show {count} more',
+  },
+  /** Language names, by ISO 639-1 code: the book form's picker and the book's page. */
+  languages: {
+    names: {
+      af: 'Afrikaans',
+      sq: 'Albanian',
+      ar: 'Arabic',
+      hy: 'Armenian',
+      eu: 'Basque',
+      be: 'Belarusian',
+      bn: 'Bengali',
+      bs: 'Bosnian',
+      br: 'Breton',
+      bg: 'Bulgarian',
+      ca: 'Catalan',
+      zh: 'Chinese',
+      hr: 'Croatian',
+      cs: 'Czech',
+      da: 'Danish',
+      nl: 'Dutch',
+      en: 'English',
+      eo: 'Esperanto',
+      et: 'Estonian',
+      fo: 'Faroese',
+      fi: 'Finnish',
+      fr: 'French',
+      fy: 'Frisian',
+      gl: 'Galician',
+      ka: 'Georgian',
+      de: 'German',
+      el: 'Greek',
+      gu: 'Gujarati',
+      he: 'Hebrew',
+      hi: 'Hindi',
+      hu: 'Hungarian',
+      is: 'Icelandic',
+      id: 'Indonesian',
+      ga: 'Irish',
+      it: 'Italian',
+      ja: 'Japanese',
+      kk: 'Kazakh',
+      ko: 'Korean',
+      ku: 'Kurdish',
+      la: 'Latin',
+      lv: 'Latvian',
+      lt: 'Lithuanian',
+      lb: 'Luxembourgish',
+      mk: 'Macedonian',
+      ms: 'Malay',
+      ml: 'Malayalam',
+      mt: 'Maltese',
+      mr: 'Marathi',
+      mn: 'Mongolian',
+      mi: 'Māori',
+      ne: 'Nepali',
+      no: 'Norwegian',
+      nb: 'Norwegian Bokmål',
+      nn: 'Norwegian Nynorsk',
+      fa: 'Persian',
+      pl: 'Polish',
+      pt: 'Portuguese',
+      pa: 'Punjabi',
+      ro: 'Romanian',
+      ru: 'Russian',
+      sa: 'Sanskrit',
+      gd: 'Scottish Gaelic',
+      sr: 'Serbian',
+      sk: 'Slovak',
+      sl: 'Slovenian',
+      so: 'Somali',
+      es: 'Spanish',
+      sw: 'Swahili',
+      sv: 'Swedish',
+      tl: 'Tagalog',
+      ta: 'Tamil',
+      te: 'Telugu',
+      th: 'Thai',
+      bo: 'Tibetan',
+      tr: 'Turkish',
+      uk: 'Ukrainian',
+      ur: 'Urdu',
+      uz: 'Uzbek',
+      vi: 'Vietnamese',
+      cy: 'Welsh',
+      yi: 'Yiddish',
+      zu: 'Zulu',
+    },
+  },
+  /** The book form's checks, and the changes "Refresh details" offers. */
+  draft: {
+    /** Shown under a form field. */
+    errors: {
+      titleMissing: 'Every book needs a title.',
+      titleTooLong: 'That title is a little long — keep it under {max} characters.',
+      isbnCharacters: 'An ISBN only has digits (and maybe an X at the end).',
+      isbnChecksum: 'That ISBN doesn’t look right — check the last digit.',
+      /** {count} is how many digits were typed. */
+      isbnLength: 'An ISBN has 10 or 13 digits — this one has {count}.',
+      yearFormat: 'Enter the year as four digits, like 1987.',
+      yearRange: 'Enter a year between {earliest} and {latest}.',
+      pagesFormat: 'Pages should be a whole number, like 320.',
+      pagesTooMany: 'That’s a lot of pages — check the number.',
+      language: 'Pick a language from the list.',
+      format: 'Pick a format from the list.',
+      seriesPosition: 'Use a number like 3, or 2.5 for a novella between books.',
+      seriesNameMissing: 'Add the series name to go with its number.',
+      authorTooLong: 'One of those names is very long — check it.',
+    },
+    /** A proposed change in "Refresh details". */
+    change: {
+      /** What a cover change adds. */
+      realCover: 'The real cover',
+      /** Spoken: "Summary: add A wizard's tale". */
+      addLabel: '{field}: add {value}',
+      /** Spoken: "Pages: 223 → 214". */
+      changeLabel: '{field}: {from} → {to}',
+      add: '{field}: add',
+      update: '{field}: update',
+      now: 'Now: {value}',
+      new: 'New: {value}',
+    },
+  },
+
   // Lending
   /** The Loans tab, a book's loan section, loan rows and the Shelf row's loan words (P05). */
   loans: {

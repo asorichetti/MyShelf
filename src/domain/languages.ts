@@ -1,3 +1,5 @@
+import { t } from '@/i18n';
+
 /**
  * Book languages are stored as ISO 639-1 codes (`en`). Open Library uses
  * MARC 21 codes (`/languages/eng`), which are ISO 639-2/B; Google Books
@@ -29,99 +31,37 @@ export function toIso6391(code: string | null | undefined): string | null {
   return MARC_TO_ISO6391[c] ?? null;
 }
 
-/** A language a book can be catalogued in: ISO 639-1 code and English name. */
+/** A language a book can be catalogued in: ISO 639-1 code and its name in the catalogue's language. */
 export interface Language {
   code: string;
-  name: string;
+  /** Translated when read ("French"). */
+  readonly name: string;
 }
 
-/** The languages offered in the book form, by English name: every code `toIso6391` can produce. */
-export const languages: readonly Language[] = [
-  { code: 'af', name: 'Afrikaans' },
-  { code: 'sq', name: 'Albanian' },
-  { code: 'ar', name: 'Arabic' },
-  { code: 'hy', name: 'Armenian' },
-  { code: 'eu', name: 'Basque' },
-  { code: 'be', name: 'Belarusian' },
-  { code: 'bn', name: 'Bengali' },
-  { code: 'bs', name: 'Bosnian' },
-  { code: 'br', name: 'Breton' },
-  { code: 'bg', name: 'Bulgarian' },
-  { code: 'ca', name: 'Catalan' },
-  { code: 'zh', name: 'Chinese' },
-  { code: 'hr', name: 'Croatian' },
-  { code: 'cs', name: 'Czech' },
-  { code: 'da', name: 'Danish' },
-  { code: 'nl', name: 'Dutch' },
-  { code: 'en', name: 'English' },
-  { code: 'eo', name: 'Esperanto' },
-  { code: 'et', name: 'Estonian' },
-  { code: 'fo', name: 'Faroese' },
-  { code: 'fi', name: 'Finnish' },
-  { code: 'fr', name: 'French' },
-  { code: 'fy', name: 'Frisian' },
-  { code: 'gl', name: 'Galician' },
-  { code: 'ka', name: 'Georgian' },
-  { code: 'de', name: 'German' },
-  { code: 'el', name: 'Greek' },
-  { code: 'gu', name: 'Gujarati' },
-  { code: 'he', name: 'Hebrew' },
-  { code: 'hi', name: 'Hindi' },
-  { code: 'hu', name: 'Hungarian' },
-  { code: 'is', name: 'Icelandic' },
-  { code: 'id', name: 'Indonesian' },
-  { code: 'ga', name: 'Irish' },
-  { code: 'it', name: 'Italian' },
-  { code: 'ja', name: 'Japanese' },
-  { code: 'kk', name: 'Kazakh' },
-  { code: 'ko', name: 'Korean' },
-  { code: 'ku', name: 'Kurdish' },
-  { code: 'la', name: 'Latin' },
-  { code: 'lv', name: 'Latvian' },
-  { code: 'lt', name: 'Lithuanian' },
-  { code: 'lb', name: 'Luxembourgish' },
-  { code: 'mk', name: 'Macedonian' },
-  { code: 'ms', name: 'Malay' },
-  { code: 'ml', name: 'Malayalam' },
-  { code: 'mt', name: 'Maltese' },
-  { code: 'mr', name: 'Marathi' },
-  { code: 'mn', name: 'Mongolian' },
-  { code: 'mi', name: 'Māori' },
-  { code: 'ne', name: 'Nepali' },
-  { code: 'no', name: 'Norwegian' },
-  { code: 'nb', name: 'Norwegian Bokmål' },
-  { code: 'nn', name: 'Norwegian Nynorsk' },
-  { code: 'fa', name: 'Persian' },
-  { code: 'pl', name: 'Polish' },
-  { code: 'pt', name: 'Portuguese' },
-  { code: 'pa', name: 'Punjabi' },
-  { code: 'ro', name: 'Romanian' },
-  { code: 'ru', name: 'Russian' },
-  { code: 'sa', name: 'Sanskrit' },
-  { code: 'gd', name: 'Scottish Gaelic' },
-  { code: 'sr', name: 'Serbian' },
-  { code: 'sk', name: 'Slovak' },
-  { code: 'sl', name: 'Slovenian' },
-  { code: 'so', name: 'Somali' },
-  { code: 'es', name: 'Spanish' },
-  { code: 'sw', name: 'Swahili' },
-  { code: 'sv', name: 'Swedish' },
-  { code: 'tl', name: 'Tagalog' },
-  { code: 'ta', name: 'Tamil' },
-  { code: 'te', name: 'Telugu' },
-  { code: 'th', name: 'Thai' },
-  { code: 'bo', name: 'Tibetan' },
-  { code: 'tr', name: 'Turkish' },
-  { code: 'uk', name: 'Ukrainian' },
-  { code: 'ur', name: 'Urdu' },
-  { code: 'uz', name: 'Uzbek' },
-  { code: 'vi', name: 'Vietnamese' },
-  { code: 'cy', name: 'Welsh' },
-  { code: 'yi', name: 'Yiddish' },
-  { code: 'zu', name: 'Zulu' },
-];
+/**
+ * The languages offered in the book form, in order of their English names:
+ * every code `toIso6391` can produce. Names live in the catalogue
+ * (`languages.names.fr`).
+ */
+const LANGUAGE_CODES = [
+  'af', 'sq', 'ar', 'hy', 'eu', 'be', 'bn', 'bs', 'br', 'bg', 'ca', 'zh', 'hr', 'cs', 'da', 'nl', 'en', 'eo', 'et', 'fo',
+  'fi', 'fr', 'fy', 'gl', 'ka', 'de', 'el', 'gu', 'he', 'hi', 'hu', 'is', 'id', 'ga', 'it', 'ja', 'kk', 'ko', 'ku', 'la',
+  'lv', 'lt', 'lb', 'mk', 'ms', 'ml', 'mt', 'mr', 'mn', 'mi', 'ne', 'no', 'nb', 'nn', 'fa', 'pl', 'pt', 'pa', 'ro', 'ru',
+  'sa', 'gd', 'sr', 'sk', 'sl', 'so', 'es', 'sw', 'sv', 'tl', 'ta', 'te', 'th', 'bo', 'tr', 'uk', 'ur', 'uz', 'vi', 'cy',
+  'yi', 'zu',
+] as const;
 
-const byCode = new Map(languages.map((l) => [l.code, l]));
+type LanguageCode = (typeof LANGUAGE_CODES)[number];
+
+const known = new Set<string>(LANGUAGE_CODES);
+
+/** The languages offered in the book form; each `name` is looked up when it is read. */
+export const languages: readonly Language[] = LANGUAGE_CODES.map((code) => ({
+  code,
+  get name() {
+    return t(`languages.names.${code}`);
+  },
+}));
 
 /** Whether a value is shaped like an ISO 639-1 code (lookups may bring codes outside the list). */
 export function isLanguageCode(code: string): boolean {
@@ -130,5 +70,5 @@ export function isLanguageCode(code: string): boolean {
 
 /** "en" -> "English"; codes without a name are shown as they are. */
 export function languageName(code: string): string {
-  return byCode.get(code)?.name ?? code;
+  return known.has(code) ? t(`languages.names.${code as LanguageCode}`) : code;
 }

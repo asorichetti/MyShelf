@@ -5,6 +5,7 @@ import { isValidSeriesPosition, parseSeriesPosition } from '@/domain';
 import { emit, useLibraryEvent } from '@/features/events';
 import { beginSeriesSave } from '@/features/series/seriesEvents';
 import { addToIdList, idListHas, removeFromIdList } from '@/features/series/seriesSettings';
+import { t } from '@/i18n';
 
 export interface SeriesConfirmState {
   /** Whether to ask "Is this Discworld #5?" for this book. */
@@ -80,11 +81,11 @@ export function useSeriesConfirm(bookId: number, seriesId: number | null): Serie
     (name, positionText) =>
       run(async () => {
         const clean = name.trim();
-        if (!clean) return { field: 'name' as const, message: 'Type the series name, or choose “Not a series”.' };
+        if (!clean) return { field: 'name' as const, message: t('bookDetail.seriesConfirm.nameMissing') };
         let position: number | null = null;
         if (positionText.trim()) {
           position = parseSeriesPosition(positionText);
-          if (!isValidSeriesPosition(position)) return { field: 'position' as const, message: 'Use a number like 3, or 2.5 for a novella between books.' };
+          if (!isValidSeriesPosition(position)) return { field: 'position' as const, message: t('draft.errors.seriesPosition') };
         }
         const probe = await beginSeriesSave(db, { bookId, seriesNames: [clean] });
         const series = await seriesRepo.findOrCreateSeries(db, clean);

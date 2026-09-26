@@ -4,6 +4,7 @@ import { StyleSheet, View } from 'react-native';
 import { Booky } from '@/components/booky';
 import { Button, Text } from '@/components/ui';
 import { formatSeriesLabel, formatSeriesPosition } from '@/domain';
+import { t } from '@/i18n';
 import { Testids } from '@/testing/testids.gen';
 import { useTheme } from '@/theme';
 
@@ -40,16 +41,16 @@ export function SeriesConfirm({ seriesName, position, existing, busy = false, on
   return (
     <View
       role="group"
-      aria-label="Check the series"
+      aria-label={t('bookDetail.seriesConfirm.label')}
       testID={Testids.seriesConfirm.root}
       style={[styles.card, { gap: spacing.md, padding: spacing.md, borderRadius: radii.md, borderColor: colors.primary, backgroundColor: colors.surfaceTint }]}
     >
       <View style={[styles.row, { gap: spacing.md }]}>
         <Booky expression="thinking" size={44} animated={false} />
         <View style={[styles.flex, { gap: spacing.xxs }]}>
-          <Text variant="bodyStrong">{`Is this ${label}?`}</Text>
+          <Text variant="bodyStrong">{t('bookDetail.seriesConfirm.question', { series: label })}</Text>
           <Text variant="caption" color="inkMuted">
-            I spotted the series in the book’s details. Is it right?
+            {t('bookDetail.seriesConfirm.explanation')}
           </Text>
         </View>
       </View>
@@ -71,15 +72,15 @@ export function SeriesConfirm({ seriesName, position, existing, busy = false, on
             positionError={error?.field === 'position' ? error.message : undefined}
           />
           <View style={[styles.actions, { gap: spacing.sm }]}>
-            <Button variant="ghost" label="Cancel" onPress={() => setEditing(false)} disabled={busy} testID={Testids.seriesConfirm.cancel} />
-            <Button label="Save series" onPress={save} loading={busy} testID={Testids.seriesConfirm.save} />
+            <Button variant="ghost" label={t('common.cancel')} onPress={() => setEditing(false)} disabled={busy} testID={Testids.seriesConfirm.cancel} />
+            <Button label={t('bookDetail.seriesConfirm.save')} onPress={save} loading={busy} testID={Testids.seriesConfirm.save} />
           </View>
         </View>
       ) : (
         <View style={[styles.actions, { gap: spacing.sm }]}>
-          <Button label="Yes" accessibilityLabel={`Yes, it’s ${label}`} onPress={onYes} disabled={busy} testID={Testids.seriesConfirm.yes} />
-          <Button variant="secondary" label="Change" onPress={() => setEditing(true)} disabled={busy} testID={Testids.seriesConfirm.change} />
-          <Button variant="ghost" label="Not a series" onPress={onNo} disabled={busy} testID={Testids.seriesConfirm.no} />
+          <Button label={t('bookDetail.seriesConfirm.yes')} accessibilityLabel={t('bookDetail.seriesConfirm.yesLabel', { series: label })} onPress={onYes} disabled={busy} testID={Testids.seriesConfirm.yes} />
+          <Button variant="secondary" label={t('bookDetail.seriesConfirm.change')} onPress={() => setEditing(true)} disabled={busy} testID={Testids.seriesConfirm.change} />
+          <Button variant="ghost" label={t('bookDetail.seriesConfirm.no')} onPress={onNo} disabled={busy} testID={Testids.seriesConfirm.no} />
         </View>
       )}
     </View>

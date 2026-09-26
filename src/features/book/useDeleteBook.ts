@@ -3,6 +3,7 @@ import { useCallback } from 'react';
 import { useSnackbar } from '@/components/ui';
 import { booksRepo, useDatabase } from '@/db';
 import { emit } from '@/features/events';
+import { t } from '@/i18n';
 import { deleteCover, isLocalCover } from '@/services/covers';
 
 /** How long "Undo" is offered after a delete. */
@@ -30,20 +31,20 @@ export function useDeleteBook(): (book: { id: number; title: string }) => Promis
       announceChanges();
       const coverUri = snapshot.book.cover_uri as string | null;
       show({
-        message: `Removed “${title}” from your shelf`,
+        message: t('bookDetail.undoDelete.removed', { title }),
         duration: UNDO_WINDOW_MS,
         action: {
-          label: 'Undo',
+          label: t('common.undo'),
           onPress: () => {
             booksRepo
               .restoreBook(db, snapshot)
               .then(() => {
                 announceChanges();
-                show({ message: `“${title}” is back on your shelf` });
+                show({ message: t('bookDetail.undoDelete.restored', { title }) });
               })
               .catch((e) => {
                 console.error('Could not restore the book', e);
-                show({ message: `Sorry, I couldn’t bring “${title}” back.` });
+                show({ message: t('bookDetail.undoDelete.restoreFailed', { title }) });
               });
           },
         },

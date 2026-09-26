@@ -4,6 +4,7 @@ import { Pressable, StyleSheet, View, type TextInput } from 'react-native';
 
 import { Button, Chip, Text, TextField } from '@/components/ui';
 import { formatSeriesLabel, formatSeriesPosition, isValidSeriesPosition, normaliseText, parseSeriesPosition } from '@/domain';
+import { t } from '@/i18n';
 import { Testids } from '@/testing/testids.gen';
 import { useTheme } from '@/theme';
 
@@ -37,7 +38,7 @@ export interface SeriesInputProps {
 }
 
 const MAX_OPTIONS = 5;
-const books = (n: number) => (n === 1 ? '1 book' : `${n} books`);
+const books = (count: number) => t('common.books', { count });
 
 /** Existing series whose name contains the typed text (ignoring case, accents and a leading "The"). */
 export function matchingSeries(existing: readonly SeriesOption[], typed: string): { exact: SeriesOption | null; options: SeriesOption[] } {
@@ -79,10 +80,10 @@ export function SeriesInput({
   const parsed = parseSeriesPosition(position);
   const positionOk = isValidSeriesPosition(parsed);
   const positionHelper = !position.trim()
-    ? '3, 2.5 or III'
+    ? t('bookForm.series.numberHelp')
     : positionOk
-      ? `Saves as #${formatSeriesPosition(parsed)}`
-      : 'Use a number like 3, 2.5 or III';
+      ? t('bookForm.series.savesAs', { position: formatSeriesPosition(parsed) })
+      : t('bookForm.series.numberInvalid');
 
   const suggestionApplied =
     suggestion != null &&
@@ -100,9 +101,9 @@ export function SeriesInput({
       {suggestion && !suggestionApplied ? (
         <View style={[styles.row, { gap: spacing.sm }]}>
           <Chip
-            label={`Suggested: ${suggestionLabel}`}
+            label={t('bookForm.series.suggested', { series: suggestionLabel })}
             icon="lightbulb-on-outline"
-            accessibilityLabel={`Use the suggested series, ${suggestionLabel}`}
+            accessibilityLabel={t('bookForm.series.useSuggested', { series: suggestionLabel })}
             onPress={() => {
               const known = matchingSeries(existing, suggestion.name).exact;
               onNameChange(known?.name ?? suggestion.name);
@@ -117,13 +118,13 @@ export function SeriesInput({
         <View style={styles.wide}>
           <TextField
             ref={nameRef}
-            label="Series"
+            label={t('bookFields.series')}
             value={name}
             onChangeText={(v) => {
               onNameChange(v);
               setSearching(true);
             }}
-            placeholder="Search or add, e.g. Discworld"
+            placeholder={t('bookForm.series.namePlaceholder')}
             autoCapitalize="words"
             autoCorrect={false}
             errorText={nameError}
@@ -133,10 +134,10 @@ export function SeriesInput({
         <View style={styles.narrow}>
           <TextField
             ref={positionRef}
-            label="Number"
+            label={t('bookForm.series.number')}
             value={position}
             onChangeText={onPositionChange}
-            placeholder="e.g. 5"
+            placeholder={t('bookForm.series.numberPlaceholder')}
             helperText={positionHelper}
             errorText={positionError}
             autoCorrect={false}
@@ -156,18 +157,18 @@ export function SeriesInput({
             aria-hidden
           />
           <Text variant="caption" color="inkMuted" style={styles.flex}>
-            {exact ? `In your library · ${books(exact.bookCount)}` : 'A new series: it’s added when you save.'}
+            {exact ? t('bookForm.series.inLibrary', { books: books(exact.bookCount) }) : t('bookForm.series.newSeries')}
           </Text>
         </View>
       ) : null}
 
       {showList ? (
-        <View aria-label="Series in your library" style={[styles.list, { borderColor: colors.border, borderRadius: radii.md, backgroundColor: colors.surface }]}>
+        <View aria-label={t('bookForm.series.list')} style={[styles.list, { borderColor: colors.border, borderRadius: radii.md, backgroundColor: colors.surface }]}>
           {options.map((option) => (
             <Pressable
               key={option.id}
               role="button"
-              accessibilityLabel={`${option.name}, ${books(option.bookCount)} in your library`}
+              accessibilityLabel={t('bookForm.series.option', { name: option.name, books: books(option.bookCount) })}
               onPress={() => pick(option)}
               testID={Testids.seriesInput.option}
               style={({ pressed }) => [styles.option, { minHeight: sizes.touchTarget, paddingHorizontal: spacing.md, gap: spacing.sm }, pressed && { backgroundColor: colors.surfaceTint }]}
@@ -182,7 +183,7 @@ export function SeriesInput({
           ))}
           <Pressable
             role="button"
-            accessibilityLabel={`Start a new series called ${typed}`}
+            accessibilityLabel={t('bookForm.series.createLabel', { name: typed })}
             onPress={() => {
               onNameChange(typed);
               setSearching(false);
@@ -197,7 +198,7 @@ export function SeriesInput({
           >
             <MaterialCommunityIcons name="plus" size={sizes.icon} color={colors.primary} aria-hidden />
             <Text variant="bodyStrong" color="primary" style={styles.flex} numberOfLines={1}>
-              {`New series “${typed}”`}
+              {t('bookForm.series.create', { name: typed })}
             </Text>
           </Pressable>
         </View>
@@ -206,7 +207,7 @@ export function SeriesInput({
       {name || position ? (
         <Button
           variant="ghost"
-          label="Not part of a series"
+          label={t('bookForm.series.clear')}
           icon={<MaterialCommunityIcons name="close" size={sizes.icon} color={colors.primary} />}
           onPress={() => {
             onNameChange('');

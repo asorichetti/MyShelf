@@ -3,13 +3,14 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Text } from '@/components/ui';
 import { refreshFieldLabels, type FieldChange } from '@/domain';
+import { t } from '@/i18n';
 import { Testids } from '@/testing/testids.gen';
 import { useTheme } from '@/theme';
 
 /** "Summary: add" / "Pages: 223 → 214", as a screen reader hears the row. */
 export function changeLabel(change: FieldChange): string {
   const name = refreshFieldLabels[change.field];
-  return change.kind === 'add' ? `${name}: add ${change.to}` : `${name}: ${change.from} → ${change.to}`;
+  return change.kind === 'add' ? t('draft.change.addLabel', { field: name, value: change.to }) : t('draft.change.changeLabel', { field: name, from: change.from, to: change.to });
 }
 
 export interface RefreshFieldRowProps {
@@ -55,13 +56,13 @@ export function RefreshFieldRow({ change, checked, onToggle }: RefreshFieldRowPr
           aria-hidden
         />
         <View style={[styles.text, { gap: spacing.xxs }]}>
-          <Text variant="bodyStrong">{`${name}: ${change.kind === 'add' ? 'add' : 'update'}`}</Text>
+          <Text variant="bodyStrong">{change.kind === 'add' ? t('draft.change.add', { field: name }) : t('draft.change.update', { field: name })}</Text>
           {change.kind === 'change' ? (
             <Text variant="caption" color="inkMuted" numberOfLines={2}>
-              {`Now: ${change.from}`}
+              {t('draft.change.now', { value: change.from })}
             </Text>
           ) : null}
-          <Text numberOfLines={change.field === 'summary' ? 4 : 2}>{change.kind === 'change' ? `New: ${change.to}` : change.to}</Text>
+          <Text numberOfLines={change.field === 'summary' ? 4 : 2}>{change.kind === 'change' ? t('draft.change.new', { value: change.to }) : change.to}</Text>
         </View>
       </Pressable>
     </View>

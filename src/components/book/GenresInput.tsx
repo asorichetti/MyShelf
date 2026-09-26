@@ -2,6 +2,7 @@ import { StyleSheet, View, type TextInput } from 'react-native';
 
 import { Button, Chip, Text, TextField } from '@/components/ui';
 import { addDraftGenre, genreSuggestions } from '@/domain';
+import { t } from '@/i18n';
 import { Testids } from '@/testing/testids.gen';
 import { useTheme } from '@/theme';
 
@@ -32,13 +33,13 @@ export function GenresInput({ genres, onChange, text, onTextChange, existing, er
   return (
     <View style={{ gap: spacing.sm }}>
       {genres.length ? (
-        <View role="list" aria-label="Chosen genres" style={[styles.wrap, { columnGap: spacing.sm }]}>
+        <View role="list" aria-label={t('bookForm.genres.chosen')} style={[styles.wrap, { columnGap: spacing.sm }]}>
           {genres.map((g) => (
             <View role="listitem" key={g}>
               <Chip
                 label={g}
                 testID={Testids.bookForm.genreChip}
-                removeLabel={`Remove genre ${g}`}
+                removeLabel={t('bookForm.genres.remove', { name: g })}
                 onRemove={() => onChange(genres.filter((x) => x !== g))}
               />
             </View>
@@ -49,10 +50,10 @@ export function GenresInput({ genres, onChange, text, onTextChange, existing, er
         <View style={styles.flex}>
           <TextField
             ref={inputRef}
-            label={genres.length ? 'Add another genre' : 'Genre'}
+            label={genres.length ? t('bookForm.genres.inputMore') : t('bookForm.genres.inputFirst')}
             value={text}
             onChangeText={onTextChange}
-            placeholder="e.g. Fantasy"
+            placeholder={t('bookForm.genres.placeholder')}
             autoCapitalize="words"
             returnKeyType="done"
             submitBehavior="submit"
@@ -63,8 +64,8 @@ export function GenresInput({ genres, onChange, text, onTextChange, existing, er
         </View>
         <Button
           variant="secondary"
-          label="Add"
-          accessibilityLabel={typed ? `Add genre ${typed}` : 'Add genre'}
+          label={t('bookForm.add')}
+          accessibilityLabel={typed ? t('bookForm.genres.addTyped', { name: typed }) : t('bookForm.genres.addEmpty')}
           disabled={!typed}
           onPress={() => add(text)}
           testID={Testids.bookForm.genreAdd}
@@ -74,11 +75,11 @@ export function GenresInput({ genres, onChange, text, onTextChange, existing, er
       {suggestions.length ? (
         <View style={{ gap: spacing.xxs }}>
           <Text variant="caption" color="inkMuted">
-            {typed ? 'Matching genres' : 'Suggestions'}
+            {typed ? t('bookForm.genres.matching') : t('bookForm.genres.suggestions')}
           </Text>
           <View style={[styles.wrap, { columnGap: spacing.sm }]}>
             {suggestions.map((g) => (
-              <Chip key={g} label={g} icon="plus" accessibilityLabel={`Add genre ${g}`} onPress={() => add(g)} testID={Testids.bookForm.genreSuggestion} />
+              <Chip key={g} label={g} icon="plus" accessibilityLabel={t('bookForm.genres.addTyped', { name: g })} onPress={() => add(g)} testID={Testids.bookForm.genreSuggestion} />
             ))}
           </View>
         </View>

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { View } from 'react-native';
 
 import { Button, Text } from '@/components/ui';
+import { t } from '@/i18n';
 import { useTheme } from '@/theme';
 
 /** Summaries longer than this start collapsed to five lines. */
@@ -27,8 +28,8 @@ export function SummaryText({ text, testID, readMoreTestID }: SummaryTextProps) 
       {long ? (
         <Button
           variant="ghost"
-          label={expanded ? 'Show less' : 'Read more'}
-          accessibilityLabel={expanded ? 'Show less of the summary' : 'Read more of the summary'}
+          label={expanded ? t('bookDetail.summary.showLess') : t('bookDetail.summary.readMore')}
+          accessibilityLabel={expanded ? t('bookDetail.summary.showLessLabel') : t('bookDetail.summary.readMoreLabel')}
           expanded={expanded}
           onPress={() => setExpanded((e) => !e)}
           testID={readMoreTestID}

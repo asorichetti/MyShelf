@@ -3,14 +3,16 @@ import { Pressable, StyleSheet, TextInput, View } from 'react-native';
 
 import { Button, Chip, IconButton, Text, TextField } from '@/components/ui';
 import { addDraftAuthor, toSortName, type AuthorRole, type DraftAuthor } from '@/domain';
+import { t, translate, type MessageKey } from '@/i18n';
 import { Testids } from '@/testing/testids.gen';
 import { useTheme } from '@/theme';
 
-export const authorRoles: { role: AuthorRole; label: string }[] = [
-  { role: 'author', label: 'Author' },
-  { role: 'illustrator', label: 'Illustrator' },
-  { role: 'translator', label: 'Translator' },
-  { role: 'editor', label: 'Editor' },
+/** The roles offered in an author's details, with the catalogue key naming each. */
+export const authorRoles: { role: AuthorRole; labelKey: MessageKey }[] = [
+  { role: 'author', labelKey: 'book.roles.author' },
+  { role: 'illustrator', labelKey: 'book.roles.illustrator' },
+  { role: 'translator', labelKey: 'book.roles.translator' },
+  { role: 'editor', labelKey: 'book.roles.editor' },
 ];
 
 export interface AuthorsInputProps {
@@ -73,13 +75,13 @@ export function AuthorsInput({ authors, onChange, text, onTextChange, suggest, e
     <View style={{ gap: spacing.sm }}>
       {authors.length ? (
         <Text variant="label" nativeID={listId}>
-          {authors.length === 1 ? 'Author' : 'Authors, in credited order'}
+          {authors.length === 1 ? t('bookForm.authors.listOne') : t('bookForm.authors.listMany')}
         </Text>
       ) : null}
       {authors.length ? (
         <View role="list" aria-labelledby={listId} style={{ gap: spacing.sm }}>
           {authors.map((a, i) => {
-            const roleLabel = authorRoles.find((r) => r.role === a.role)!.label;
+            const roleLabel = translate(authorRoles.find((r) => r.role === a.role)!.labelKey);
             const expanded = open === a.name;
             return (
               <View
@@ -94,15 +96,15 @@ export function AuthorsInput({ authors, onChange, text, onTextChange, suggest, e
                       {a.name}
                     </Text>
                     <Text variant="caption" color="inkMuted">
-                      {a.role === 'author' ? `Filed as ${a.sortName || toSortName(a.name)}` : roleLabel}
+                      {a.role === 'author' ? t('bookForm.authors.filedAs', { name: a.sortName || toSortName(a.name) }) : roleLabel}
                     </Text>
                   </View>
                   {authors.length > 1 ? (
                     <>
-                      <IconButton icon="arrow-up" accessibilityLabel={`Move ${a.name} up`} disabled={i === 0} onPress={() => onChange(move(authors, i, i - 1))} />
+                      <IconButton icon="arrow-up" accessibilityLabel={t('bookForm.authors.moveUp', { name: a.name })} disabled={i === 0} onPress={() => onChange(move(authors, i, i - 1))} />
                       <IconButton
                         icon="arrow-down"
-                        accessibilityLabel={`Move ${a.name} down`}
+                        accessibilityLabel={t('bookForm.authors.moveDown', { name: a.name })}
                         disabled={i === authors.length - 1}
                         onPress={() => onChange(move(authors, i, i + 1))}
                       />
@@ -110,25 +112,25 @@ export function AuthorsInput({ authors, onChange, text, onTextChange, suggest, e
                   ) : null}
                   <IconButton
                     icon={expanded ? 'chevron-up' : 'tune-variant'}
-                    accessibilityLabel={`Details for ${a.name}`}
+                    accessibilityLabel={t('bookForm.authors.details', { name: a.name })}
                     expanded={expanded}
                     onPress={() => setOpen(expanded ? null : a.name)}
                   />
-                  <IconButton icon="close" accessibilityLabel={`Remove ${a.name}`} onPress={() => onChange(authors.filter((_, j) => j !== i))} />
+                  <IconButton icon="close" accessibilityLabel={t('bookForm.authors.remove', { name: a.name })} onPress={() => onChange(authors.filter((_, j) => j !== i))} />
                 </View>
                 {expanded ? (
                   <View style={{ gap: spacing.sm, paddingRight: spacing.sm, paddingBottom: spacing.sm }}>
-                    <Text variant="label">Role</Text>
-                    <View role="radiogroup" aria-label={`Role of ${a.name}`} style={[styles.wrap, { columnGap: spacing.sm }]}>
+                    <Text variant="label">{t('bookForm.authors.role')}</Text>
+                    <View role="radiogroup" aria-label={t('bookForm.authors.roleOf', { name: a.name })} style={[styles.wrap, { columnGap: spacing.sm }]}>
                       {authorRoles.map((r) => (
-                        <Chip key={r.role} label={r.label} role="radio" selected={a.role === r.role} onPress={() => update(i, { role: r.role })} />
+                        <Chip key={r.role} label={translate(r.labelKey)} role="radio" selected={a.role === r.role} onPress={() => update(i, { role: r.role })} />
                       ))}
                     </View>
                     <TextField
-                      label="Filed as"
+                      label={t('bookForm.authors.filedAsLabel')}
                       value={a.sortName ?? ''}
                       placeholder={toSortName(a.name)}
-                      helperText="How the name sorts on the shelf. Leave empty to use the suggestion."
+                      helperText={t('bookForm.authors.filedAsHelp')}
                       onChangeText={(v) => update(i, { sortName: v || null })}
                       autoCapitalize="words"
                     />
@@ -143,10 +145,10 @@ export function AuthorsInput({ authors, onChange, text, onTextChange, suggest, e
         <View style={styles.flex}>
           <TextField
             ref={inputRef}
-            label={authors.length ? 'Add another author' : 'Author'}
+            label={authors.length ? t('bookForm.authors.inputMore') : t('bookForm.authors.inputFirst')}
             value={text}
             onChangeText={onTextChange}
-            placeholder="e.g. Terry Pratchett"
+            placeholder={t('bookForm.authors.placeholder')}
             autoCapitalize="words"
             autoCorrect={false}
             returnKeyType="done"
@@ -158,8 +160,8 @@ export function AuthorsInput({ authors, onChange, text, onTextChange, suggest, e
         </View>
         <Button
           variant="secondary"
-          label="Add"
-          accessibilityLabel={typed ? `Add ${typed} as an author` : 'Add author'}
+          label={t('bookForm.add')}
+          accessibilityLabel={typed ? t('bookForm.authors.addTyped', { name: typed }) : t('bookForm.authors.addEmpty')}
           disabled={!typed}
           onPress={() => add(text)}
           testID={Testids.bookForm.authorAdd}
@@ -167,19 +169,19 @@ export function AuthorsInput({ authors, onChange, text, onTextChange, suggest, e
         />
       </View>
       {typed && shown.length && !exact ? (
-        <View aria-label="Author suggestions" style={[styles.suggestions, { borderColor: colors.border, borderRadius: radii.md, backgroundColor: colors.surface }]}>
+        <View aria-label={t('bookForm.authors.suggestions')} style={[styles.suggestions, { borderColor: colors.border, borderRadius: radii.md, backgroundColor: colors.surface }]}>
           {shown.map((name) => (
             <Pressable
               key={name}
               role="button"
-              accessibilityLabel={`Add ${name}, already in your library`}
+              accessibilityLabel={t('bookForm.authors.addSuggestion', { name })}
               onPress={() => add(name)}
               testID={Testids.bookForm.authorSuggestion}
               style={({ pressed }) => [styles.suggestion, { minHeight: 48, paddingHorizontal: spacing.md, gap: spacing.sm }, pressed && { backgroundColor: colors.surfaceTint }]}
             >
               <Text>{name}</Text>
               <Text variant="caption" color="inkMuted">
-                in your library
+                {t('bookForm.authors.inLibrary')}
               </Text>
             </Pressable>
           ))}

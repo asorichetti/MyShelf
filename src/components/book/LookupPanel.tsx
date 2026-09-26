@@ -5,6 +5,7 @@ import { StyleSheet, View } from 'react-native';
 import { BookyBubble, tipById } from '@/components/booky';
 import { Button, Heading, Text, TextField } from '@/components/ui';
 import { formatIsbn13, isValidIsbn13, normalizeIsbn } from '@/domain';
+import { t } from '@/i18n';
 import { Testids } from '@/testing/testids.gen';
 import { useTheme } from '@/theme';
 
@@ -40,9 +41,9 @@ export interface LookupPanelProps {
 export function loadingMessage(mode: 'isbn' | 'search' | undefined, query = ''): string {
   if (mode === 'isbn') {
     const isbn = normalizeIsbn(query) ?? query;
-    return `Looking up ${isValidIsbn13(isbn) ? formatIsbn13(isbn) : query}…`;
+    return t('bookForm.lookup.lookingUp', { isbn: isValidIsbn13(isbn) ? formatIsbn13(isbn) : query });
   }
-  return `Searching the catalogues for “${query}”…`;
+  return t('bookForm.lookup.searching', { query });
 }
 
 /**
@@ -64,10 +65,10 @@ export function LookupPanel(props: LookupPanelProps) {
         <View style={[styles.chosen, { gap: spacing.sm }]}>
           <MaterialCommunityIcons name="check-circle-outline" size={sizes.icon} color={colors.onSuccessContainer} aria-hidden />
           <Text color="onSuccessContainer" style={styles.fill}>
-            {`Filled in from ${chosen.source}. Check the card below, change anything you like, then save.`}
+            {t('bookForm.lookup.chosen', { source: chosen.source })}
           </Text>
         </View>
-        <Button variant="ghost" label="Look up another book" onPress={props.onSearchAgain} testID={Testids.lookup.searchAgain} />
+        <Button variant="ghost" label={t('bookForm.lookup.searchAgain')} onPress={props.onSearchAgain} testID={Testids.lookup.searchAgain} />
       </View>
     );
   }
@@ -76,17 +77,17 @@ export function LookupPanel(props: LookupPanelProps) {
   return (
     <View testID={Testids.lookup.root} style={{ gap: spacing.md }}>
       <View style={[styles.sectionTitle, { borderBottomColor: colors.cardRule, paddingBottom: spacing.xs }]}>
-        <Heading level={2}>Find it online</Heading>
+        <Heading level={2}>{t('bookForm.lookup.heading')}</Heading>
       </View>
-      <Text color="inkMuted">Look the book up and I’ll fill in the card for you, cover and all.</Text>
+      <Text color="inkMuted">{t('bookForm.lookup.intro')}</Text>
       <View style={[styles.row, { gap: spacing.sm }]}>
         <View style={styles.field}>
           <TextField
-            label="ISBN"
+            label={t('bookForm.fields.isbn')}
             value={isbn}
             onChangeText={setIsbn}
             testID={Testids.lookup.isbnInput}
-            placeholder="e.g. 978-0-552-16659-1"
+            placeholder={t('bookForm.lookup.isbnPlaceholder')}
             keyboardType="number-pad"
             inputMode="numeric"
             autoCorrect={false}
@@ -95,23 +96,23 @@ export function LookupPanel(props: LookupPanelProps) {
             editable={!busy}
           />
         </View>
-        <Button label="Look up" onPress={() => props.onLookupIsbn(isbn)} disabled={busy} testID={Testids.lookup.isbnSubmit} />
+        <Button label={t('bookForm.lookup.lookUp')} onPress={() => props.onLookupIsbn(isbn)} disabled={busy} testID={Testids.lookup.isbnSubmit} />
       </View>
       <View style={[styles.row, { gap: spacing.sm }]}>
         <View style={styles.field}>
           <TextField
-            label="Search online"
+            label={t('bookForm.lookup.searchLabel')}
             value={text}
             onChangeText={setText}
             testID={Testids.lookup.searchInput}
-            placeholder="Title and author, e.g. colour of magic pratchett"
+            placeholder={t('bookForm.lookup.searchPlaceholder')}
             autoCorrect={false}
             returnKeyType="search"
             onSubmitEditing={() => props.onSearch(text)}
             editable={!busy}
           />
         </View>
-        <Button variant="secondary" label="Search" onPress={() => props.onSearch(text)} disabled={busy} testID={Testids.lookup.searchSubmit} />
+        <Button variant="secondary" label={t('bookForm.lookup.search')} onPress={() => props.onSearch(text)} disabled={busy} testID={Testids.lookup.searchSubmit} />
       </View>
 
       {status === 'loading' ? (
@@ -119,21 +120,21 @@ export function LookupPanel(props: LookupPanelProps) {
           testID={Testids.lookup.loading}
           expression="thinking"
           message={loadingMessage(mode, query)}
-          actions={[{ label: 'Cancel', onPress: props.onCancel, testID: Testids.lookup.cancel }]}
+          actions={[{ label: t('common.cancel'), onPress: props.onCancel, testID: Testids.lookup.cancel }]}
         />
       ) : null}
       {status === 'empty' ? (
         <BookyBubble
           testID={Testids.lookup.noResults}
           expression="concerned"
-          title={mode === 'isbn' ? 'No match for that ISBN' : 'No matches'}
+          title={mode === 'isbn' ? t('bookForm.lookup.noIsbnMatch') : t('bookForm.lookup.noMatches')}
           message={tipById('lookup-none').text}
-          actions={[{ label: 'Add it by hand', onPress: props.onAddManually, testID: Testids.lookup.addManually }]}
+          actions={[{ label: t('bookForm.lookup.addByHand'), onPress: props.onAddManually, testID: Testids.lookup.addManually }]}
         />
       ) : null}
       {status === 'error' ? (
         <View role="alert" testID={Testids.lookup.error}>
-          <BookyBubble expression="concerned" message={message ?? ''} actions={[{ label: 'Add it by hand', onPress: props.onAddManually }]} />
+          <BookyBubble expression="concerned" message={message ?? ''} actions={[{ label: t('bookForm.lookup.addByHand'), onPress: props.onAddManually }]} />
         </View>
       ) : null}
       {status === 'results' ? (
@@ -146,7 +147,7 @@ export function LookupPanel(props: LookupPanelProps) {
           <CandidateList
             candidates={candidates}
             onChoose={props.onChoose}
-            label={`${candidates.length === 1 ? '1 match' : `${candidates.length} matches`}. Choose yours to fill in the card.`}
+            label={t('bookForm.lookup.results', { count: candidates.length })}
           />
         </>
       ) : null}

@@ -3,6 +3,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { CatalogueCard, Stamp, Text } from '@/components/ui';
 import { joinNames, languageName, type CandidateLike } from '@/domain';
+import { t } from '@/i18n';
 import { Testids } from '@/testing/testids.gen';
 import { useTheme } from '@/theme';
 
@@ -33,21 +34,31 @@ export const sourceLabels: Record<CandidateCardData['source'], string> = {
   googlebooks: 'Google Books',
 };
 
-/** "1985 · Corgi Books · Paperback · 285 pages" (an edition) or "First published 1983 · 120 editions" (a work). */
-export function candidateFacts(c: CandidateCardData): string[] {
+/** One fact on a candidate card; `generic` facts are common words, lower-cased mid-sentence. */
+interface Fact {
+  text: string;
+  generic?: boolean;
+}
+
+function facts(c: CandidateCardData): Fact[] {
   if (c.kind === 'work') {
     return [
-      c.publicationYear != null ? `First published ${c.publicationYear}` : null,
-      c.editionCount ? `${c.editionCount} ${c.editionCount === 1 ? 'edition' : 'editions'}` : null,
-    ].filter((x): x is string => Boolean(x));
+      c.publicationYear != null ? { text: t('candidate.facts.firstPublished', { year: c.publicationYear }), generic: true } : null,
+      c.editionCount ? { text: t('candidate.facts.editions', { count: c.editionCount }) } : null,
+    ].filter((x): x is Fact => Boolean(x));
   }
   return [
-    c.publicationYear != null ? String(c.publicationYear) : null,
-    c.publisher,
-    c.format ? formatLabels[c.format] : null,
-    c.pageCount ? `${c.pageCount} pages` : null,
-    c.language && c.language !== 'en' ? languageName(c.language) : null,
-  ].filter((x): x is string => Boolean(x));
+    c.publicationYear != null ? { text: String(c.publicationYear) } : null,
+    c.publisher ? { text: c.publisher } : null,
+    c.format ? { text: formatLabels[c.format], generic: true } : null,
+    c.pageCount ? { text: t('candidate.facts.pages', { count: c.pageCount }) } : null,
+    c.language && c.language !== 'en' ? { text: languageName(c.language) } : null,
+  ].filter((x): x is Fact => Boolean(x));
+}
+
+/** "1985 · Corgi Books · Paperback · 285 pages" (an edition) or "First published 1983 · 120 editions" (a work). */
+export function candidateFacts(c: CandidateCardData): string[] {
+  return facts(c).map((f) => f.text);
 }
 
 /**
@@ -56,13 +67,12 @@ export function candidateFacts(c: CandidateCardData): string[] {
  */
 export function candidateLabel(c: CandidateCardData): string {
   const parts = [c.title];
-  if (c.authors.length) parts.push(`by ${joinNames(c.authors)}`);
+  if (c.authors.length) parts.push(t('candidate.label.by', { names: joinNames(c.authors) }));
   // Lower-case the generic words ("paperback", "first published"), never a publisher's name.
-  const generic = new Set([...Object.values(formatLabels), 'First published']);
-  parts.push(...candidateFacts(c).map((f) => (generic.has(f) || f.startsWith('First published') ? f.charAt(0).toLowerCase() + f.slice(1) : f)));
+  parts.push(...facts(c).map((f) => (f.generic ? f.text.charAt(0).toLowerCase() + f.text.slice(1) : f.text)));
   const isbn = c.isbn13 ?? c.isbn10;
-  if (isbn) parts.push(`ISBN ${isbn}`);
-  parts.push(`from ${sourceLabels[c.source]}`);
+  if (isbn) parts.push(t('candidate.label.isbn', { isbn }));
+  parts.push(t('candidate.label.source', { source: sourceLabels[c.source] }));
   return parts.join(', ');
 }
 

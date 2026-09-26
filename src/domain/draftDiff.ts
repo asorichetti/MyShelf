@@ -1,3 +1,5 @@
+import { t, translate, type MessageKey } from '@/i18n';
+
 import type { BookDraft } from './bookDraft';
 
 /** The fields "Refresh details" can update. The ISBN (the book's identity) and the user's notes never change. */
@@ -19,21 +21,28 @@ export const refreshFields = [
 
 export type RefreshField = (typeof refreshFields)[number];
 
-export const refreshFieldLabels: Record<RefreshField, string> = {
-  cover: 'Cover',
-  title: 'Title',
-  subtitle: 'Subtitle',
-  authors: 'Authors',
-  publisher: 'Publisher',
-  year: 'Year',
-  edition: 'Edition',
-  format: 'Format',
-  pages: 'Pages',
-  language: 'Language',
-  genres: 'Genres',
-  series: 'Series',
-  summary: 'Summary',
+/** The catalogue key naming each field ("Summary"). */
+const refreshFieldKeys: Record<RefreshField, MessageKey> = {
+  cover: 'bookFields.cover',
+  title: 'bookFields.title',
+  subtitle: 'bookFields.subtitle',
+  authors: 'bookFields.authors',
+  publisher: 'bookFields.publisher',
+  year: 'bookFields.year',
+  edition: 'bookFields.edition',
+  format: 'bookFields.format',
+  pages: 'bookFields.pages',
+  language: 'bookFields.language',
+  genres: 'bookFields.genres',
+  series: 'bookFields.series',
+  summary: 'bookFields.summary',
 };
+
+/** Each field's name, translated when read. */
+export const refreshFieldLabels: Readonly<Record<RefreshField, string>> = Object.defineProperties(
+  {} as Record<RefreshField, string>,
+  Object.fromEntries(refreshFields.map((f) => [f, { enumerable: true, get: () => translate(refreshFieldKeys[f]) }])),
+);
 
 /** One field that differs: `add` fills an empty field, `change` replaces a value. */
 export interface FieldChange {
@@ -55,7 +64,15 @@ export interface CurrentBook {
 }
 
 const same = (a: string, b: string) => a.trim().replace(/\s+/g, ' ').toLowerCase() === b.trim().replace(/\s+/g, ' ').toLowerCase();
-const seriesText = (d: BookDraft) => (d.seriesName.trim() ? `${d.seriesName.trim()}${d.seriesPosition.trim() ? ` #${d.seriesPosition.trim()}` : ''}` : '');
+/** "Discworld #5", "Discworld", or '' without a series. */
+const seriesText = (d: BookDraft) => {
+  const name = d.seriesName.trim();
+  const position = d.seriesPosition.trim();
+  if (!name) return '';
+  return position ? t('common.seriesLabel', { name, position }) : name;
+};
+/** A list of names or genres as the change shows it: "Fantasy, Humour". */
+const listText = (items: readonly string[]) => items.join(t('common.list.separator'));
 
 /**
  * The genres a refresh would leave: the user's own genres always stay; the
@@ -91,11 +108,11 @@ export function diffDrafts(current: CurrentBook, proposed: BookDraft, { hasCover
     changes.push({ field, kind, from: from.trim(), to: to.trim(), suggested: kind === 'add' });
   };
 
-  if (!hasCover && proposedCover) changes.push({ field: 'cover', kind: 'add', from: '', to: 'The real cover', suggested: true });
+  if (!hasCover && proposedCover) changes.push({ field: 'cover', kind: 'add', from: '', to: t('draft.change.realCover'), suggested: true });
   text('title', d.title, proposed.title);
   text('subtitle', d.subtitle, proposed.subtitle);
-  const authorsFrom = d.authors.map((a) => a.name).join(', ');
-  const authorsTo = proposed.authors.map((a) => a.name).join(', ');
+  const authorsFrom = listText(d.authors.map((a) => a.name));
+  const authorsTo = listText(proposed.authors.map((a) => a.name));
   text('authors', authorsFrom, authorsTo);
   text('publisher', d.publisher, proposed.publisher);
   text('year', d.year, proposed.year);
@@ -106,8 +123,8 @@ export function diffDrafts(current: CurrentBook, proposed: BookDraft, { hasCover
 
   if (proposed.genres.length) {
     const next = refreshedGenres(current, proposed.genres);
-    const from = d.genres.join(', ');
-    const to = next.join(', ');
+    const from = listText(d.genres);
+    const to = listText(next);
     if (!same(from, to)) {
       const onlyAdds = d.genres.every((g) => next.some((n) => same(n, g)));
       changes.push({ field: 'genres', kind: d.genres.length ? 'change' : 'add', from, to, suggested: onlyAdds });

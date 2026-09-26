@@ -5,6 +5,7 @@ import { MiniSpines } from '@/components/series/MiniSpines';
 import { progressSentence } from '@/components/series/seriesText';
 import { Heading, Text } from '@/components/ui';
 import { formatSeriesPosition, type Book, type SeriesNeighbour, type SeriesNeighbours, type SeriesProgress, type Series } from '@/domain';
+import { t } from '@/i18n';
 import { Testids } from '@/testing/testids.gen';
 import { useFontScale, useTheme } from '@/theme';
 
@@ -26,28 +27,29 @@ export interface SeriesSectionProps {
 
 /** "Book 5 of 9", "Book 5", or "Not numbered in the series". */
 export function placeText(position: number | null, totalCount: number | null): string {
-  if (position == null) return 'Not numbered in the series';
+  if (position == null) return t('book.seriesSection.notNumbered');
   const n = formatSeriesPosition(position);
-  return totalCount != null ? `Book ${n} of ${totalCount}` : `Book ${n}`;
+  return totalCount != null ? t('book.seriesSection.placeOf', { position: n, total: totalCount }) : t('book.seriesSection.place', { position: n });
 }
 
 /** "The Light Fantastic (#2)" or "#3 isn’t on your shelf yet". */
 export function neighbourText(n: SeriesNeighbour<Book>): string {
-  if (n.kind === 'missing') return `#${formatSeriesPosition(n.position)} isn’t on your shelf yet`;
+  if (n.kind === 'missing') return t('book.seriesSection.missing', { position: formatSeriesPosition(n.position) });
   const p = n.book.seriesPosition;
-  return p != null ? `${n.book.title} (#${formatSeriesPosition(p)})` : n.book.title;
+  return p != null ? t('book.seriesSection.neighbour', { title: n.book.title, position: formatSeriesPosition(p) }) : n.book.title;
 }
 
-function Neighbour({ which, neighbour, onOpenBook, testID }: { which: 'Previous' | 'Next'; neighbour: SeriesNeighbour<Book>; onOpenBook: (id: number) => void; testID: string }) {
+function Neighbour({ which, neighbour, onOpenBook, testID }: { which: 'previous' | 'next'; neighbour: SeriesNeighbour<Book>; onOpenBook: (id: number) => void; testID: string }) {
   const { colors, spacing, radii, sizes } = useTheme();
   const text = neighbourText(neighbour);
-  const icon = which === 'Previous' ? 'chevron-left' : 'chevron-right';
+  const icon = which === 'previous' ? 'chevron-left' : 'chevron-right';
+  const prefix = which === 'previous' ? t('book.seriesSection.previous') : t('book.seriesSection.next');
   if (neighbour.kind === 'missing') {
     return (
       <View testID={testID} style={[styles.neighbour, { minHeight: sizes.touchTarget, gap: spacing.sm, paddingHorizontal: spacing.sm }]}>
         <MaterialCommunityIcons name="book-outline" size={sizes.icon} color={colors.inkMuted} aria-hidden />
         <Text color="inkMuted" style={styles.flex}>
-          <Text variant="label" color="inkMuted">{`${which}: `}</Text>
+          <Text variant="label" color="inkMuted">{prefix}</Text>
           {text}
         </Text>
       </View>
@@ -57,7 +59,7 @@ function Neighbour({ which, neighbour, onOpenBook, testID }: { which: 'Previous'
   return (
     <Pressable
       role="link"
-      accessibilityLabel={`${which} in the series: ${text}`}
+      accessibilityLabel={which === 'previous' ? t('book.seriesSection.previousLink', { book: text }) : t('book.seriesSection.nextLink', { book: text })}
       onPress={() => onOpenBook(book.id)}
       testID={testID}
       style={({ pressed }) => [
@@ -68,7 +70,7 @@ function Neighbour({ which, neighbour, onOpenBook, testID }: { which: 'Previous'
     >
       <MaterialCommunityIcons name={icon} size={sizes.icon} color={colors.primary} aria-hidden />
       <Text style={styles.flex}>
-        <Text variant="label" color="inkMuted">{`${which}: `}</Text>
+        <Text variant="label" color="inkMuted">{prefix}</Text>
         <Text variant="bodyStrong" color="primary">
           {text}
         </Text>
@@ -89,11 +91,11 @@ export function SeriesSection({ series, position, progress, neighbours, bookCoun
   const counts = { name: series.name, owned: progress.owned, total: progress.total, missing: progress.gaps.length, bookCount, totalCount: series.totalCount };
   return (
     <View style={{ gap: spacing.sm }} testID={testID}>
-      <Heading level={2}>Series</Heading>
+      <Heading level={2}>{t('bookFields.series')}</Heading>
       {children}
       <Pressable
         role="link"
-        accessibilityLabel={`${series.name}: see the whole series`}
+        accessibilityLabel={t('book.seriesSection.seriesLink', { name: series.name })}
         onPress={onOpenSeries}
         testID={Testids.bookSeries.link}
         style={({ pressed }) => [
@@ -122,13 +124,13 @@ export function SeriesSection({ series, position, progress, neighbours, bookCoun
         </View>
         <View style={[styles.row, { gap: spacing.xxs }]}>
           <Text variant="label" color="primary">
-            See series
+            {t('book.seriesSection.seeSeries')}
           </Text>
           <MaterialCommunityIcons name="chevron-right" size={sizes.icon} color={colors.primary} aria-hidden />
         </View>
       </Pressable>
-      {neighbours.previous ? <Neighbour which="Previous" neighbour={neighbours.previous} onOpenBook={onOpenBook} testID={Testids.bookSeries.previous} /> : null}
-      {neighbours.next ? <Neighbour which="Next" neighbour={neighbours.next} onOpenBook={onOpenBook} testID={Testids.bookSeries.next} /> : null}
+      {neighbours.previous ? <Neighbour which="previous" neighbour={neighbours.previous} onOpenBook={onOpenBook} testID={Testids.bookSeries.previous} /> : null}
+      {neighbours.next ? <Neighbour which="next" neighbour={neighbours.next} onOpenBook={onOpenBook} testID={Testids.bookSeries.next} /> : null}
     </View>
   );
 }

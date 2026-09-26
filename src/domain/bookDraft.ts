@@ -1,3 +1,5 @@
+import { t } from '@/i18n';
+
 import { type AuthorRole } from './author';
 import { bookFormats, type BookDetail, type BookFormat } from './book';
 import { isbn10To13, isbn13To10, isValidIsbn10, isValidIsbn13, normalizeIsbn } from './isbn';
@@ -136,8 +138,8 @@ export function draftFromDetail(book: BookDetail): BookDraft {
 }
 
 const text = (v: string) => {
-  const t = v.trim();
-  return t ? t : null;
+  const trimmed = v.trim();
+  return trimmed ? trimmed : null;
 };
 
 /** Case-insensitive de-duplication that keeps the first spelling. */
@@ -153,15 +155,15 @@ function uniqueNames<T>(items: T[], nameOf: (item: T) => string): T[] {
 
 function checkIsbn(raw: string): { isbn13: string | null; isbn10: string | null } | string {
   if (!raw.trim()) return { isbn13: null, isbn10: null };
-  if (/[^0-9Xx\s-]/.test(raw)) return 'An ISBN only has digits (and maybe an X at the end).';
+  if (/[^0-9Xx\s-]/.test(raw)) return t('draft.errors.isbnCharacters');
   const n = normalizeIsbn(raw)!;
   if (n.length === 13) {
-    return isValidIsbn13(n) ? { isbn13: n, isbn10: isbn13To10(n) } : 'That ISBN doesn’t look right — check the last digit.';
+    return isValidIsbn13(n) ? { isbn13: n, isbn10: isbn13To10(n) } : t('draft.errors.isbnChecksum');
   }
   if (n.length === 10) {
-    return isValidIsbn10(n) ? { isbn13: isbn10To13(n), isbn10: n } : 'That ISBN doesn’t look right — check the last digit.';
+    return isValidIsbn10(n) ? { isbn13: isbn10To13(n), isbn10: n } : t('draft.errors.isbnChecksum');
   }
-  return `An ISBN has 10 or 13 digits — this one has ${n.length}.`;
+  return t('draft.errors.isbnLength', { count: n.length });
 }
 
 /**
@@ -172,8 +174,8 @@ export function validateBookDraft(draft: BookDraft, { currentYear = new Date().g
   const errors: BookDraftErrors = {};
 
   const title = draft.title.trim();
-  if (!title) errors.title = 'Every book needs a title.';
-  else if (title.length > TITLE_MAX) errors.title = `That title is a little long — keep it under ${TITLE_MAX} characters.`;
+  if (!title) errors.title = t('draft.errors.titleMissing');
+  else if (title.length > TITLE_MAX) errors.title = t('draft.errors.titleTooLong', { max: TITLE_MAX });
 
   const isbn = checkIsbn(draft.isbn);
   if (typeof isbn === 'string') errors.isbn = isbn;
@@ -181,11 +183,11 @@ export function validateBookDraft(draft: BookDraft, { currentYear = new Date().g
   let publicationYear: number | null = null;
   const year = draft.year.trim();
   if (year) {
-    if (!/^\d{1,4}$/.test(year)) errors.year = 'Enter the year as four digits, like 1987.';
+    if (!/^\d{1,4}$/.test(year)) errors.year = t('draft.errors.yearFormat');
     else {
       publicationYear = Number(year);
       if (publicationYear < EARLIEST_YEAR || publicationYear > currentYear + 1) {
-        errors.year = `Enter a year between ${EARLIEST_YEAR} and ${currentYear + 1}.`;
+        errors.year = t('draft.errors.yearRange', { earliest: EARLIEST_YEAR, latest: currentYear + 1 });
       }
     }
   }
@@ -193,21 +195,21 @@ export function validateBookDraft(draft: BookDraft, { currentYear = new Date().g
   let pageCount: number | null = null;
   const pages = draft.pages.trim();
   if (pages) {
-    if (!/^\d+$/.test(pages) || Number(pages) <= 0) errors.pages = 'Pages should be a whole number, like 320.';
-    else if (Number(pages) > 100000) errors.pages = 'That’s a lot of pages — check the number.';
+    if (!/^\d+$/.test(pages) || Number(pages) <= 0) errors.pages = t('draft.errors.pagesFormat');
+    else if (Number(pages) > 100000) errors.pages = t('draft.errors.pagesTooMany');
     else pageCount = Number(pages);
   }
 
-  if (draft.language && !isLanguageCode(draft.language)) errors.language = 'Pick a language from the list.';
-  if (draft.format && !(bookFormats as readonly string[]).includes(draft.format)) errors.format = 'Pick a format from the list.';
+  if (draft.language && !isLanguageCode(draft.language)) errors.language = t('draft.errors.language');
+  if (draft.format && !(bookFormats as readonly string[]).includes(draft.format)) errors.format = t('draft.errors.format');
 
   const seriesName = draft.seriesName.trim();
   let seriesPosition: number | null = null;
   const position = draft.seriesPosition.trim();
   if (position) {
     const parsed = parseSeriesPosition(position);
-    if (!isValidSeriesPosition(parsed)) errors.seriesPosition = 'Use a number like 3, or 2.5 for a novella between books.';
-    else if (!seriesName) errors.seriesName = 'Add the series name to go with its number.';
+    if (!isValidSeriesPosition(parsed)) errors.seriesPosition = t('draft.errors.seriesPosition');
+    else if (!seriesName) errors.seriesName = t('draft.errors.seriesNameMissing');
     else seriesPosition = parsed;
   }
 
@@ -215,7 +217,7 @@ export function validateBookDraft(draft: BookDraft, { currentYear = new Date().g
     draft.authors.map((a) => ({ ...a, name: a.name.trim().replace(/\s+/g, ' '), sortName: a.sortName?.trim() || null })),
     (a) => a.name,
   );
-  if (authors.some((a) => a.name.length > 200)) errors.authors = 'One of those names is very long — check it.';
+  if (authors.some((a) => a.name.length > 200)) errors.authors = t('draft.errors.authorTooLong');
   const genres = uniqueNames(
     draft.genres.map((g) => g.trim().replace(/\s+/g, ' ')),
     (g) => g,
