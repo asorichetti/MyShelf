@@ -32,7 +32,7 @@ export interface BookyBubbleProps {
   messageTestID?: string;
   dismissTestID?: string;
   avatarTestID?: string;
-  /** Pop in (150 ms scale and fade) when it appears; skipped with reduced motion. */
+  /** Pop in (a 150 ms fade and 6 px rise) when it appears; skipped with reduced motion. */
   pop?: boolean;
   /**
    * Announce the text politely (default). Booky's floating tips pass false:
@@ -81,7 +81,8 @@ export function BookyBubble({
   const withAvatar = showAvatar && mode !== 'off';
   const popping = usePop(pop);
   const motion = popping
-    ? { opacity: popping, transform: [{ scale: popping.interpolate({ inputRange: [0, 1], outputRange: [0.92, 1] }) }] }
+    ? // Fade and rise rather than scale: a scaled bubble would briefly shrink its buttons below 48 dp.
+      { opacity: popping, transform: [{ translateY: popping.interpolate({ inputRange: [0, 1], outputRange: [6, 0] }) }] }
     : null;
   return (
     <Animated.View testID={testID} style={[styles.row, { gap: spacing.sm }, motion, style]}>
