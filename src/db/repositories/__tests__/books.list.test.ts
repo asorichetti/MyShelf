@@ -5,6 +5,7 @@ import { booksRepo, type Db } from '@/db';
 import { sortableTitle } from '@/domain';
 import { createTestDb } from '@/testing/createTestDb';
 import { loadFixture } from '@/testing/loadFixture';
+import { oneKey } from '@/testing/sorts';
 
 let db: Db;
 beforeAll(async () => {
@@ -17,7 +18,7 @@ const titles = async (options: booksRepo.ListBookItemsOptions = {}) => (await bo
 
 describe('listBookItems sorting (demo fixture)', () => {
   it('title: A-Z ignoring a leading The/A/An, and matches sortableTitle()', async () => {
-    const got = await titles({ sort: 'title' });
+    const got = await titles({ sort: oneKey('title') });
     expect(got).toEqual([
       'The Colour of Magic',
       'Dune',
@@ -34,11 +35,11 @@ describe('listBookItems sorting (demo fixture)', () => {
     ]);
     const byDomain = [...got].sort((a, b) => sortableTitle(a).localeCompare(sortableTitle(b), 'en', { sensitivity: 'base' }));
     expect(got).toEqual(byDomain);
-    expect(await titles({ sort: 'title', direction: 'desc' })).toEqual([...got].reverse());
+    expect(await titles({ sort: oneKey('title', 'desc') })).toEqual([...got].reverse());
   });
 
   it('author: by the first author’s sort name, then title', async () => {
-    const items = await booksRepo.listBookItems(db, { sort: 'author' });
+    const items = await booksRepo.listBookItems(db, { sort: oneKey('author') });
     expect(items.map((b) => b.authors[0])).toEqual([
       'Jane Austen',
       'Agatha Christie',
@@ -55,20 +56,20 @@ describe('listBookItems sorting (demo fixture)', () => {
     ]);
     // "Murder of…" files before "Murder on…" once the leading "The" is ignored.
     expect(items.slice(1, 3).map((b) => b.title)).toEqual(['The Murder of Roger Ackroyd', 'Murder on the Orient Express']);
-    const desc = await booksRepo.listBookItems(db, { sort: 'author', direction: 'desc' });
+    const desc = await booksRepo.listBookItems(db, { sort: oneKey('author', 'desc') });
     expect(desc[0].authors[0]).toBe('Terry Pratchett');
     expect(desc[desc.length - 1].authors[0]).toBe('Jane Austen');
   });
 
   it('year: oldest first, newest first when descending', async () => {
-    const asc = await booksRepo.listBookItems(db, { sort: 'year' });
+    const asc = await booksRepo.listBookItems(db, { sort: oneKey('year') });
     expect(asc.map((b) => b.publicationYear)).toEqual([1813, 1902, 1926, 1934, 1965, 1968, 1969, 1972, 1983, 1986, 1987, 1990]);
-    const desc = await booksRepo.listBookItems(db, { sort: 'year', direction: 'desc' });
+    const desc = await booksRepo.listBookItems(db, { sort: oneKey('year', 'desc') });
     expect(desc[0].title).toBe('Good Omens');
   });
 
   it('added: in insertion order, newest first when descending', async () => {
-    const desc = await titles({ sort: 'added', direction: 'desc' });
+    const desc = await titles({ sort: oneKey('added', 'desc') });
     expect(desc[0]).toBe('Pride and Prejudice');
     expect(desc[11]).toBe('The Colour of Magic');
   });
@@ -78,8 +79,8 @@ describe('listBookItems sorting (demo fixture)', () => {
     await loadFixture(tmp, 'demo');
     await booksRepo.createBook(tmp, { title: 'Anonymous Pamphlet' });
     for (const direction of ['asc', 'desc'] as const) {
-      expect((await booksRepo.listBookItems(tmp, { sort: 'author', direction })).at(-1)!.title).toBe('Anonymous Pamphlet');
-      expect((await booksRepo.listBookItems(tmp, { sort: 'year', direction })).at(-1)!.title).toBe('Anonymous Pamphlet');
+      expect((await booksRepo.listBookItems(tmp, { sort: oneKey('author', direction) })).at(-1)!.title).toBe('Anonymous Pamphlet');
+      expect((await booksRepo.listBookItems(tmp, { sort: oneKey('year', direction) })).at(-1)!.title).toBe('Anonymous Pamphlet');
     }
     await tmp.close();
   });
@@ -135,7 +136,7 @@ describe('listBookItems search', () => {
   });
 
   it('keeps the chosen sort while searching', async () => {
-    expect(await titles({ query: 'prat', sort: 'year', direction: 'desc' })).toEqual([
+    expect(await titles({ query: 'prat', sort: oneKey('year', 'desc') })).toEqual([
       'Good Omens',
       'Mort',
       'The Light Fantastic',

@@ -58,7 +58,7 @@ export function useAuthor(id: number | null): AuthorDetail {
   useEffect(() => {
     if (id == null) return;
     let active = true;
-    Promise.all([authorsRepo.getAuthor(db, id), booksRepo.listBookItems(db, { scope: { authorId: id }, sort: 'year', direction: 'asc' })])
+    Promise.all([authorsRepo.getAuthor(db, id), booksRepo.listBookItems(db, { scope: { authorId: id }, sort: { levels: [{ key: 'year', direction: 'asc' }] } })])
       .then(([author, items]) => {
         if (!active) return;
         setState(author ? { status: 'ready', author, shelves: shelvesFor(items), count: items.length } : { status: 'missing' });

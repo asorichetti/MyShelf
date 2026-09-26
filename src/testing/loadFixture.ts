@@ -1,16 +1,16 @@
 import { authorsRepo, booksRepo, genresRepo, groupsRepo, libraryRepo, loansRepo, seriesRepo, settingsRepo, type Db } from '@/db';
 import { addDays, isbn13To10, today } from '@/domain';
 
-import { fixtures, type FixtureName } from './fixtures';
+import { fixtures, type Fixture, type FixtureName } from './fixtures';
 
 /**
  * Replaces the whole library with a named fixture, in one transaction (a
  * failure leaves the previous library untouched). Loan dates are relative to
  * `today()`, so freeze it first with `setToday` for fully fixed dates.
- * Shared by the E2E route and Jest.
+ * Shared by the E2E route and Jest; Jest may also pass a fixture of its own.
  */
-export async function loadFixture(db: Db, name: FixtureName): Promise<void> {
-  const fixture = fixtures[name];
+export async function loadFixture(db: Db, name: FixtureName | Fixture): Promise<void> {
+  const fixture = typeof name === 'string' ? fixtures[name] : name;
   const now = today();
   await db.transaction(async (tx) => {
     await libraryRepo.wipeLibrary(tx);

@@ -2,9 +2,10 @@
  * @jest-environment node
  */
 import { groupsRepo, shelfSectionsRepo, type Db, type ShelfSection } from '@/db';
-import { noFilters, type ShelfGroupBy } from '@/domain';
+import { noFilters, sortPreset, type ShelfGroupBy, type ShelfSort } from '@/domain';
 import { createTestDb } from '@/testing/createTestDb';
 import { loadFixture } from '@/testing/loadFixture';
+import { oneKey } from '@/testing/sorts';
 
 let db: Db;
 beforeEach(async () => {
@@ -13,8 +14,8 @@ beforeEach(async () => {
 });
 afterEach(() => db.close());
 
-const list = (groupBy: ShelfGroupBy, extra: { query?: string; sort?: 'title' | 'year'; direction?: 'asc' | 'desc' } = {}) =>
-  shelfSectionsRepo.listShelfSections(db, { groupBy, sort: extra.sort ?? 'title', direction: extra.direction ?? 'asc', query: extra.query });
+const list = (groupBy: ShelfGroupBy, extra: { query?: string; sort?: ShelfSort } = {}) =>
+  shelfSectionsRepo.listShelfSections(db, { groupBy, sort: extra.sort ?? oneKey('title'), query: extra.query });
 
 const summary = (sections: ShelfSection[]) => sections.map((s) => [s.sectionTitle, s.items.length]);
 const titles = (s: ShelfSection | undefined) => s?.items.map((i) => i.title);
@@ -51,18 +52,23 @@ describe('listShelfSections', () => {
     expect(titles(sections.at(-1))).toEqual(['Untagged']);
   });
 
-  it('groups by series in reading order, standalones last', async () => {
-    const { sections } = await list('series', { sort: 'year', direction: 'desc' });
+  it('groups by series A-Z, standalones last; the sort applies inside each series', async () => {
+    const { sections } = await list('series', { sort: oneKey('year', 'desc') });
     expect(summary(sections)).toEqual([
       ['Discworld', 3],
       ['Earthsea', 2],
       ['Not in a series', 7],
     ]);
-    // Reading order, whatever the shelf sort.
+    expect(titles(sections[0])).toEqual(['Mort', 'The Light Fantastic', 'The Colour of Magic']);
+    expect(titles(sections[1])).toEqual(['The Farthest Shore', 'A Wizard of Earthsea']);
+    expect(titles(sections[2])?.[0]).toBe('Good Omens');
+  });
+
+  it('series reading order inside series sections: the series level is skipped, the number decides', async () => {
+    const { sections, skipped } = await list('series', { sort: { levels: sortPreset('seriesOrder').levels } });
+    expect(skipped).toEqual({ key: 'series', direction: 'asc' });
     expect(titles(sections[0])).toEqual(['The Colour of Magic', 'The Light Fantastic', 'Mort']);
     expect(titles(sections[1])).toEqual(['A Wizard of Earthsea', 'The Farthest Shore']);
-    // The ungrouped bucket follows the sort (year, newest first).
-    expect(titles(sections[2])?.[0]).toBe('Good Omens');
   });
 
   it('groups by author A-Z by sort name; co-written books appear under each author', async () => {
@@ -95,7 +101,7 @@ describe('listShelfSections', () => {
   });
 
   it('applies the sort within sections', async () => {
-    const { sections } = await list('genre', { sort: 'year', direction: 'asc' });
+    const { sections } = await list('genre', { sort: oneKey('year') });
     expect(titles(sections[1])).toEqual([
       'A Wizard of Earthsea',
       'The Farthest Shore',
@@ -110,8 +116,7 @@ describe('listShelfSections', () => {
     const [fantasy] = (await db.all<{ id: number }>("SELECT id FROM genres WHERE name = 'Fantasy'")).map((r) => r.id);
     const { sections, count } = await shelfSectionsRepo.listShelfSections(db, {
       groupBy: 'series',
-      sort: 'title',
-      direction: 'asc',
+      sort: oneKey('title'),
       filters: { ...noFilters, genreIds: [fantasy], series: 'standalone' },
     });
     expect(count).toBe(1);

@@ -1,5 +1,5 @@
-import type { ShelfSort } from './book';
 import type { ShelfFilters } from './shelfFilters';
+import type { SavedSortPreset, ShelfSort } from './shelfSort';
 import type { ShelfGroupBy, ShelfViewMode } from './shelfView';
 
 /** Booky's chattiness (PLAN §8): all tips, only essential ones, or hidden. */
@@ -35,8 +35,13 @@ export interface AppSettings {
   loanDays: number;
   /** Local notifications at 10:00 on each open loan's due date (P05-08). Off until the user turns it on. */
   loanReminders: boolean;
-  /** The Shelf's sort order, remembered across restarts. */
+  /**
+   * The Shelf's sort, remembered across restarts: one to four levels (P11-01). Stored before Phase 11 as one
+   * key, `{ sort, direction }`; `parseShelfSort` still reads that shape (old installs and old backups).
+   */
   shelfSort: ShelfSort;
+  /** Sort presets the user named and saved (P11-04). */
+  shelfSortPresets: SavedSortPreset[];
   /** Books whose auto-detected series the user said was wrong ("Not a series"): never re-added (P04-03). */
   'series.dismissedBookIds': number[];
   /** Books linked to a series from a low- or medium-confidence guess, awaiting "Is this Discworld #5?" (P04-03). */
@@ -72,7 +77,8 @@ export const settingDefaults: Readonly<AppSettings> = Object.freeze<AppSettings>
   googleBooksEnabled: true,
   loanDays: 28,
   loanReminders: false,
-  shelfSort: { sort: 'title', direction: 'asc' },
+  shelfSort: { levels: [{ key: 'title', direction: 'asc' }] },
+  shelfSortPresets: [],
   'series.dismissedBookIds': [],
   'series.pendingConfirmBookIds': [],
   shelfGroupBy: 'none',

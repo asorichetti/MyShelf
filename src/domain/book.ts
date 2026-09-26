@@ -81,15 +81,6 @@ export interface BookDetail extends Book {
   openLoan: (Loan & { borrowerName: string }) | null;
 }
 
-export const shelfSortKeys = ['title', 'author', 'year', 'added', 'rating'] as const;
-export type ShelfSortKey = (typeof shelfSortKeys)[number];
-export type SortDirection = 'asc' | 'desc';
-
-export interface ShelfSort {
-  sort: ShelfSortKey;
-  direction: SortDirection;
-}
-
 const LEADING_ARTICLE = /^(the|a|an)\s+(?=\S)/i;
 
 /** The title as a library files it: a leading "The", "A" or "An" is ignored ("The Hobbit" -> "Hobbit"). */

@@ -1,5 +1,5 @@
 import { groupIconOf, moveItem, validateGroupName } from '../groupIcons';
-import { parseShelfGroupBy, parseShelfSort, parseShelfViewMode, sectionHeading, sectionLabel } from '../shelfView';
+import { parseShelfGroupBy, parseShelfViewMode, sectionHeading, sectionLabel } from '../shelfView';
 
 describe('shelf view preferences', () => {
   it('accept known values and reject the rest', () => {
@@ -9,10 +9,6 @@ describe('shelf view preferences', () => {
     expect(parseShelfSort({ sort: 'rating', direction: 'desc' })).toEqual({ sort: 'rating', direction: 'desc' });
     expect(parseShelfViewMode('spines')).toBe('spines');
     expect(parseShelfViewMode(3)).toBeNull();
-    expect(parseShelfSort({ sort: 'year', direction: 'desc' })).toEqual({ sort: 'year', direction: 'desc' });
-    expect(parseShelfSort({ sort: 'colour', direction: 'desc' })).toBeNull();
-    expect(parseShelfSort({ sort: 'year', direction: 'up' })).toBeNull();
-    expect(parseShelfSort(null)).toBeNull();
   });
 
   it('words section headers', () => {

@@ -33,6 +33,7 @@ export * from './seriesParser';
 export * from './seriesPosition';
 export * from './settings';
 export * from './shelfFilters';
+export * from './shelfSort';
 export * from './shelfView';
 export * from './summary';
 export * from './text';

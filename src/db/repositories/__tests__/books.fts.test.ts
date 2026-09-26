@@ -6,6 +6,7 @@ import { openNodeDatabase } from '@/db/node';
 import { noFilters } from '@/domain';
 import { createFtsTestDb, createTestDb } from '@/testing/createTestDb';
 import { loadFixture } from '@/testing/loadFixture';
+import { oneKey } from '@/testing/sorts';
 
 interface Seed {
   title: string;
@@ -123,7 +124,7 @@ describe.each([
   });
 
   it('keeps filters and sorting exactly as without a search', async () => {
-    const options: booksRepo.ListBookItemsOptions = { sort: 'year', direction: 'desc', filters: { ...noFilters, formats: ['hardcover'] } };
+    const options: booksRepo.ListBookItemsOptions = { sort: oneKey('year', 'desc'), filters: { ...noFilters, formats: ['hardcover'] } };
     expect(await search(db, 'fantasy', options)).toEqual(['Mort', 'The Hobbit']);
     const everything = await search(db, '', options);
     expect(everything).toEqual(['Mort', 'El amor en los tiempos del cólera', 'Die Blechtrommel', 'The Hobbit']);
@@ -196,8 +197,8 @@ describe('FTS5 and the plain index agree', () => {
   it.each(['silent', 'garden 12', 'hugo castell', 'saga 3', 'mystery', 'the', 'fair', 'cien anos', 'pratch', 'j r r', '9780552', 'lantern 1', 'nothing like this'])(
     '%s: the same books in the same order',
     async (query) => {
-      const a = await search(fts, query, { sort: 'author' });
-      expect(a).toEqual(await search(plain, query, { sort: 'author' }));
+      const a = await search(fts, query, { sort: oneKey('author') });
+      expect(a).toEqual(await search(plain, query, { sort: oneKey('author') }));
     },
   );
 

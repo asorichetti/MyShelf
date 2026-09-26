@@ -1,6 +1,5 @@
 import { t, type MessageKey } from '@/i18n';
 
-import { shelfSortKeys, type ShelfSort, type ShelfSortKey } from './book';
 import { translatedLabels } from './shelfFilters';
 
 /** How the Shelf is split into sections. */
@@ -42,14 +41,6 @@ export function parseShelfGroupBy(value: unknown): ShelfGroupBy | null {
 
 export function parseShelfViewMode(value: unknown): ShelfViewMode | null {
   return (shelfViewModes as readonly unknown[]).includes(value) ? (value as ShelfViewMode) : null;
-}
-
-export function parseShelfSort(value: unknown): ShelfSort | null {
-  if (!value || typeof value !== 'object') return null;
-  const { sort, direction } = value as Record<string, unknown>;
-  if (!(shelfSortKeys as readonly unknown[]).includes(sort)) return null;
-  if (direction !== 'asc' && direction !== 'desc') return null;
-  return { sort: sort as ShelfSortKey, direction };
 }
 
 /** "Fantasy · 23": a section header's text. */

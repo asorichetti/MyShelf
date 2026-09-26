@@ -8,15 +8,16 @@ import {
   type BookPatch,
   type NewBook,
   type ShelfFilters,
-  type ShelfSortKey,
-  type SortDirection,
+  type ShelfSort,
   type ValidBookDraft,
   isRating,
+  defaultShelfSort,
   RECENTLY_ADDED_DAYS,
   stripDiacritics,
 } from '@/domain';
 
 
+import { buildSortSql, SORT_JOINS, SORT_TITLE_SQL } from '../sortKeys';
 import { deleteOrphanAuthors, findOrCreateAuthor, listAuthorsForBook, setBookAuthors, updateAuthor } from './authors';
 import { findOrCreateGenre, listGenresForBook, setBookGenres } from './genres';
 import { findOrCreateSeries, getSeries } from './series';
@@ -144,47 +145,18 @@ export async function deleteBook(db: Db, id: number): Promise<boolean> {
 
 // ---- Shelf list ----
 
-/** SQL twin of `sortableTitle()` in src/domain/book.ts: a leading The/A/An is ignored. */
-const SORT_TITLE = `CASE
-  WHEN b.title LIKE 'the %' THEN ltrim(substr(b.title, 5))
-  WHEN b.title LIKE 'a %' THEN ltrim(substr(b.title, 3))
-  WHEN b.title LIKE 'an %' THEN ltrim(substr(b.title, 4))
-  ELSE b.title END COLLATE NOCASE`;
-
-/** The first credited author's sort name. */
-const PRIMARY_AUTHOR_SORT = `(SELECT COALESCE(a.sort_name, a.name) FROM book_authors ba JOIN authors a ON a.id = ba.author_id
-  WHERE ba.book_id = b.id ORDER BY ba.position, a.id LIMIT 1)`;
-
-function orderBy(sort: ShelfSortKey, dir: SortDirection): string {
-  const d = dir === 'desc' ? 'DESC' : 'ASC';
-  switch (sort) {
-    case 'title':
-      return `${SORT_TITLE} ${d}, b.id ${d}`;
-    case 'author':
-      // Books without an author go last in either direction.
-      return `author_sort IS NULL, author_sort COLLATE NOCASE ${d}, ${SORT_TITLE} ASC, b.id`;
-    case 'year':
-      return `b.publication_year IS NULL, b.publication_year ${d}, ${SORT_TITLE} ASC, b.id`;
-    case 'added':
-      return `b.created_at ${d}, b.id ${d}`;
-    case 'rating':
-      // Unrated books go last in either direction; equal ratings in title order.
-      return `b.rating IS NULL, b.rating ${d}, ${SORT_TITLE} ASC, b.id`;
-  }
-}
-
 /**
  * Who has the book and when it is due, for the Shelf's loan stamp (P05-09):
  * one join, since a book has at most one open loan (`loans_one_open_per_book`).
+ * The series and open-loan joins are the ones the sort keys read (`SORT_JOINS`).
  */
-const OPEN_LOAN_JOIN = `LEFT JOIN loans ol ON ol.book_id = b.id AND ol.returned_on IS NULL
-  LEFT JOIN borrowers olp ON olp.id = ol.borrower_id`;
+const BASE_JOINS = `${SORT_JOINS.series} ${SORT_JOINS.openLoan}`;
 
 export interface ListBookItemsOptions {
   /** Full-text search: every word must match the title, subtitle, authors, series, genres, notes or ISBN (see `searchClause`). */
   query?: string;
-  sort?: ShelfSortKey;
-  direction?: SortDirection;
+  /** One to four levels (see src/db/sortKeys.ts); title order by default. */
+  sort?: ShelfSort;
   /** The Shelf's filters (see `filterClause`). */
   filters?: ShelfFilters;
   /** Only books by this author, in this genre or in this user group. */
@@ -398,7 +370,7 @@ export async function searchClause(db: Db, query: string): Promise<SqlClause | n
  * one for their authors, whatever the number of books.
  */
 export async function listBookItems(db: Db, options: ListBookItemsOptions = {}): Promise<BookListItem[]> {
-  const { sort = 'title', direction = 'asc', limit, offset = 0, scope = {} } = options;
+  const { sort = defaultShelfSort, limit, offset = 0, scope = {} } = options;
   const query = options.query?.trim() ?? '';
   const where: string[] = [];
   const params: (string | number)[] = [];
@@ -425,16 +397,16 @@ export async function listBookItems(db: Db, options: ListBookItemsOptions = {}):
     where.push(search.sql);
     params.push(...search.params);
   }
-  const order = scope.groupId != null && options.groupOrder ? `gb.position, ${SORT_TITLE}, b.id` : orderBy(sort, direction);
-  const rows = await db.all<ListRow & { author_sort: string | null }>(
+  const groupOrder = scope.groupId != null && options.groupOrder;
+  const order = groupOrder ? { orderBy: `gb.position, ${SORT_TITLE_SQL} COLLATE NOCASE, b.id`, params: [] } : await buildSortSql(db, sort);
+  const rows = await db.all<ListRow>(
     `SELECT b.id, b.title, b.subtitle, b.cover_uri, b.publication_year, b.series_id, s.name AS series_name, b.series_position,
-       ol.id IS NOT NULL AS on_loan, olp.name AS loan_borrower, ol.due_on AS loan_due_on, b.rating,
-       ${sort === 'author' ? PRIMARY_AUTHOR_SORT : 'NULL'} AS author_sort
-     FROM books b ${joins.join(' ')} LEFT JOIN series s ON s.id = b.series_id ${OPEN_LOAN_JOIN}
+       ol.id IS NOT NULL AS on_loan, olp.name AS loan_borrower, ol.due_on AS loan_due_on, b.rating
+     FROM books b ${joins.join(' ')} ${BASE_JOINS}
      ${where.length ? `WHERE ${where.join(' AND ')}` : ''}
-     ORDER BY ${order}
+     ORDER BY ${order.orderBy}
      ${limit != null ? 'LIMIT ? OFFSET ?' : ''}`,
-    limit != null ? [...params, limit, offset] : params,
+    [...params, ...order.params, ...(limit != null ? [limit, offset] : [])],
   );
 
   const names = await authorNamesFor(db, rows.map((r) => r.id));
