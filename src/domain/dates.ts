@@ -64,3 +64,11 @@ export function daysBetween(from: IsoDate, to: IsoDate): number {
   const ms = parseIsoDate(to).getTime() - parseIsoDate(from).getTime();
   return Math.round(ms / 86_400_000);
 }
+
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+/** "2026-10-12" -> "12 Oct 2026" (British order, short month). */
+export function formatDate(value: IsoDate): string {
+  const d = parseIsoDate(value);
+  return `${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+}

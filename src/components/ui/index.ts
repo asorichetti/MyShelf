@@ -6,6 +6,7 @@ export { ConfirmDialog, type ConfirmDialogProps } from './ConfirmDialog';
 export { EmptyState, type EmptyStateAction, type EmptyStateProps } from './EmptyState';
 export { Heading, type HeadingLevel, type HeadingProps } from './Heading';
 export { IconButton, type IconButtonProps, type IconButtonVariant, type IconName } from './IconButton';
+export { Menu, type MenuItem, type MenuProps } from './Menu';
 export { Screen, type ScreenProps } from './Screen';
 export {
   Snackbar,

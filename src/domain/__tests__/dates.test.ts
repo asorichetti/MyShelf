@@ -1,4 +1,4 @@
-import { addDays, compareDates, daysBetween, isIsoDate, isOverdue, parseIsoDate, setToday, toIsoDate, today } from '@/domain';
+import { addDays, compareDates, daysBetween, formatDate, isIsoDate, isOverdue, parseIsoDate, setToday, toIsoDate, today } from '@/domain';
 
 describe('dates', () => {
   it('formats local calendar dates', () => {
@@ -14,6 +14,11 @@ describe('dates', () => {
     setToday(null);
     expect(today()).toBe(toIsoDate(new Date()));
     expect(() => setToday('2026-02-30')).toThrow(/calendar date/);
+  });
+
+  it('formats dates for people, day first', () => {
+    expect(formatDate('2026-10-12')).toBe('12 Oct 2026');
+    expect(formatDate('2027-01-01')).toBe('1 Jan 2027');
   });
 
   it('parses and validates', () => {

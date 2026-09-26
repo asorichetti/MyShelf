@@ -68,12 +68,13 @@ A usable, offline catalogue: the user can add a book by hand, see it on the Shel
 - **Tests:** `src/domain/__tests__/bookDraft.test.ts`.
 - **Delivered:** `validateBookDraft(draft, { currentYear })` returns `{ ok, value }` (cleaned `ValidBookDraft`: empty text becomes null, authors and genres trimmed and de-duplicated case-insensitively) or `{ ok: false, errors }`; also `emptyDraft`, `draftFromDetail`, `draftFieldOrder`, `firstInvalidField` and `draftsDiffer`. A series position needs a series name. A 979 ISBN-13 has no ISBN-10, so only the 13 is stored. `languages.ts` lists 31 languages with ISO 639-1 and MARC codes (`languageName`, `languageFromMarc` for Phase 02).
 
-### P01-06 Book detail screen
+### P01-06 Book detail screen — done
 
 - **Description:** Route `src/app/book/[id].tsx`. Header is a large `CatalogueCard`: cover, title/subtitle (Lora), authors, a "call number" line in Courier Prime (e.g. `FIC PRA 1987`), publisher, year, edition, format, pages, language, ISBN-13/10. Sections: Summary (collapsed to 5 lines with "Read more"), Genres (chips), Series ("Discworld · #5", link placeholder until Phase 04), Notes, Loan status (placeholder until Phase 05). Header actions: Edit, Delete (overflow). Missing book id → `page-error` with Booky (*concerned*) and "Back to shelf".
 - **Files:** `src/app/book/[id].tsx`, `src/features/book/useBook.ts`, `src/components/book/{BookHeader,CallNumber,SummaryText,GenreChips}.tsx`, `src/domain/callNumber.ts`.
 - **Acceptance:** all fields render from `demo`; empty fields hidden (no "undefined"); unknown id shows error state; headings have `role="heading"`.
 - **Tests:** `src/__tests__/bookDetail.test.tsx`, `src/domain/__tests__/callNumber.test.ts`, component tests.
+- **Delivered:** the screen is `src/features/book/BookDetailScreen.tsx` (the route re-exports it). The book title is the page's `h1`; sections are `h2`. The header bar has Back and Edit; the overflow menu (a new `Menu` primitive in `src/components/ui`) arrives with Delete in P01-11. The call number's class comes from the first genre (fiction genres are `FIC`, non-fiction subjects have their own codes, `GEN` with none) and the mark from the first author's sort name, or the title when there is no author. The loan section already shows the open loan with a due or overdue stamp (`formatDate` in `src/domain/dates.ts`), not a placeholder. A missing or malformed id shows `page-error` with its own `bookMissing` test ids. Component tests are in `src/components/book/__tests__/detailParts.test.tsx`.
 
 ### P01-07 Add and edit book form
 
