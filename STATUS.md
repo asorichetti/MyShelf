@@ -16,9 +16,9 @@ On `main`: the scaffold (P00-01 to P00-07), the design system, Booky, tabs, data
 | [Phase 05](docs/plan/phase-05-lending.md) | Lending | 8 / 10 |
 | [Phase 06](docs/plan/phase-06-grouping-and-shelf-views.md) | Grouping and shelf views | 9 / 11 |
 | [Phase 07](docs/plan/phase-07-booky-assistant.md) | Booky assistant | 0 / 9 |
-| [Phase 08](docs/plan/phase-08-settings-backup.md) | Settings, backup, export and import | 0 / 10 |
+| [Phase 08](docs/plan/phase-08-settings-backup.md) | Settings, backup, export and import | 8 / 10 |
 | [Phase 09](docs/plan/phase-09-polish-a11y-release.md) | Polish, accessibility and release | 0 / 12 |
-| **Total** | | **92 / 132** |
+| **Total** | | **100 / 132** |
 
 ## Phase 00 — Foundation
 
@@ -174,16 +174,16 @@ On `main`: the scaffold (P00-01 to P00-07), the design system, Booky, tabs, data
 
 [Phase document](docs/plan/phase-08-settings-backup.md)
 
-- [ ] P08-01 Settings screen
-- [ ] P08-02 JSON backup export
-- [ ] P08-03 JSON backup import (restore)
-- [ ] P08-04 CSV export
+- [x] P08-01 Settings screen
+- [x] P08-02 JSON backup export
+- [x] P08-03 JSON backup import (restore)
+- [x] P08-04 CSV export
 - [ ] P08-05 CSV import with mapping and Goodreads preset
 - [ ] P08-06 Backup reminder
-- [ ] P08-07 Preferences
-- [ ] P08-08 About and attribution
-- [ ] P08-09 Clear all data
-- [ ] P08-10 Manage borrowers and pending lookups
+- [x] P08-07 Preferences
+- [x] P08-08 About and attribution
+- [x] P08-09 Clear all data
+- [x] P08-10 Manage borrowers and pending lookups
 
 ## Phase 09 — Polish, accessibility and release
 
