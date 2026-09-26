@@ -152,12 +152,13 @@ A usable, offline catalogue: the user can add a book by hand, see it on the Shel
     "isbn": "book-form-isbn", "publisher": "book-form-publisher", "year": "book-form-year",
     "edition": "book-form-edition", "format": "book-form-format", "pages": "book-form-pages",
     "language": "book-form-language", "genreInput": "book-form-genre-input", "genreChip": "book-form-genre-chip",
-    "seriesName": "book-form-series-name", "seriesPosition": "book-form-series-position",
     "summary": "book-form-summary", "notes": "book-form-notes", "save": "book-form-save",
     "cancel": "book-form-cancel", "error": "book-form-error"
   }
 }
 ```
+
+The series fields were later replaced by the `SeriesInput` component (P04-02), whose ids live in the `seriesInput` group (`seriesInput.search`, `seriesInput.position`).
 
 The `home` group already exists (the Shelf tab's `root`, `title`, `bookCount`, `scanAction`, `askBooky`); add these keys to it. The `dialog` and `snackbar` groups come with `ConfirmDialog` and `Snackbar` in P00-30.
 
