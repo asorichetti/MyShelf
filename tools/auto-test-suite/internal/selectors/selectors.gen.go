@@ -105,6 +105,19 @@ var NotFound = notFoundSelectors{
 	HomeLink: `[data-testid="not-found-home-link"]`,
 }
 
+type dbErrorSelectors struct {
+	Root  string
+	Title string
+	Retry string
+}
+
+// DbError selectors.
+var DbError = dbErrorSelectors{
+	Root:  `[data-testid="db-error-root"]`,
+	Title: `[data-testid="db-error-title"]`,
+	Retry: `[data-testid="db-error-retry"]`,
+}
+
 type bookySelectors struct {
 	Avatar        string
 	Bubble        string

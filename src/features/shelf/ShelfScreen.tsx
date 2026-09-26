@@ -6,9 +6,12 @@ import { Button, EmptyState, Heading, Screen, Text } from '@/components/ui';
 import { Testids } from '@/testing/testids.gen';
 import { useTheme } from '@/theme';
 
+import { useBookCount } from './useBookCount';
+
 export function ShelfScreen() {
   const theme = useTheme();
   const { showTip } = useBooky();
+  const count = useBookCount();
   return (
     <Screen testID={Testids.home.root}>
       <View style={{ gap: theme.spacing.xs }}>
@@ -16,6 +19,11 @@ export function ShelfScreen() {
           MyShelf
         </Heading>
         <Text color="inkMuted">Your personal library, one shelf at a time.</Text>
+        {count != null ? (
+          <Text variant="stamp" color="accent" testID={Testids.home.bookCount}>
+            {count === 1 ? '1 book catalogued' : `${count} books catalogued`}
+          </Text>
+        ) : null}
       </View>
       <EmptyState
         illustration={<Booky expression="happy" size={120} />}

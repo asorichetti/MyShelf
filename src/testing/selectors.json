@@ -1,5 +1,8 @@
 {
-  "pageState": { "content": "page-content", "error": "page-error" },
+  "pageState": {
+    "content": "page-content",
+    "error": "page-error"
+  },
   "home": {
     "root": "home-root",
     "title": "home-title",
@@ -14,11 +17,32 @@
     "tabGroups": "tab-groups",
     "tabSettings": "tab-settings"
   },
-  "scan": { "root": "scan-root", "title": "scan-title" },
-  "loans": { "root": "loans-root", "title": "loans-title" },
-  "groups": { "root": "groups-root", "title": "groups-title" },
-  "settings": { "root": "settings-root", "title": "settings-title" },
-  "notFound": { "root": "not-found-root", "title": "not-found-title", "homeLink": "not-found-home-link" },
+  "scan": {
+    "root": "scan-root",
+    "title": "scan-title"
+  },
+  "loans": {
+    "root": "loans-root",
+    "title": "loans-title"
+  },
+  "groups": {
+    "root": "groups-root",
+    "title": "groups-title"
+  },
+  "settings": {
+    "root": "settings-root",
+    "title": "settings-title"
+  },
+  "notFound": {
+    "root": "not-found-root",
+    "title": "not-found-title",
+    "homeLink": "not-found-home-link"
+  },
+  "dbError": {
+    "root": "db-error-root",
+    "title": "db-error-title",
+    "retry": "db-error-retry"
+  },
   "booky": {
     "avatar": "booky-avatar",
     "bubble": "booky-bubble",

@@ -1,6 +1,7 @@
 import { act, fireEvent, renderRouter, screen } from 'expo-router/testing-library';
 
 import { BookyProvider } from '@/components/booky';
+import { StaticDatabaseProvider, type Db } from '@/db';
 import { GroupsScreen } from '@/features/groups/GroupsScreen';
 import { LoansScreen } from '@/features/loans/LoansScreen';
 import { NotFoundScreen } from '@/features/navigation/NotFoundScreen';
@@ -8,13 +9,22 @@ import { TabsLayout } from '@/features/navigation/TabsLayout';
 import { ScanScreen } from '@/features/scan/ScanScreen';
 import { SettingsScreen } from '@/features/settings/SettingsScreen';
 import { ShelfScreen } from '@/features/shelf/ShelfScreen';
+import { openTestDatabase } from '@/testing/db';
 import { AppTestProviders } from '@/testing/render';
 import { Testids } from '@/testing/testids.gen';
+
+let db: Db;
+beforeEach(async () => {
+  db = await openTestDatabase();
+});
+afterEach(() => db.close());
 
 function Root({ children }: { children: React.ReactNode }) {
   return (
     <AppTestProviders>
-      <BookyProvider>{children}</BookyProvider>
+      <StaticDatabaseProvider db={db}>
+        <BookyProvider>{children}</BookyProvider>
+      </StaticDatabaseProvider>
     </AppTestProviders>
   );
 }
@@ -30,8 +40,9 @@ const routes = {
 };
 
 describe('tab navigation', () => {
-  it('lands on the Shelf and shows all five tabs', () => {
+  it('lands on the Shelf and shows all five tabs', async () => {
     const r = renderRouter(routes, { initialUrl: '/', wrapper: Root });
+    await screen.findByTestId(Testids.home.bookCount);
     expect(r.getPathname()).toBe('/');
     expect(screen.getByTestId(Testids.home.title)).toHaveTextContent('MyShelf');
     for (const id of Object.values(Testids.nav)) expect(screen.getByTestId(id)).toBeOnTheScreen();
@@ -44,6 +55,7 @@ describe('tab navigation', () => {
     [Testids.nav.tabSettings, '/settings', Testids.settings.title],
   ])('tab %s navigates to %s', async (tabId, path, titleId) => {
     const r = renderRouter(routes, { initialUrl: '/', wrapper: Root });
+    await screen.findByTestId(Testids.home.bookCount);
     await act(async () => fireEvent.press(screen.getByTestId(tabId)));
     expect(r.getPathname()).toBe(path);
     expect(screen.getByTestId(titleId)).toBeOnTheScreen();
@@ -51,6 +63,7 @@ describe('tab navigation', () => {
 
   it('the Shelf scan action goes to the Scan tab', async () => {
     const r = renderRouter(routes, { initialUrl: '/', wrapper: Root });
+    await screen.findByTestId(Testids.home.bookCount);
     await act(async () => fireEvent.press(screen.getByTestId(Testids.home.scanAction)));
     expect(r.getPathname()).toBe('/scan');
   });
@@ -60,5 +73,6 @@ describe('tab navigation', () => {
     expect(screen.getByTestId(Testids.notFound.title)).toHaveTextContent('Page not found');
     await act(async () => fireEvent.press(screen.getByTestId(Testids.notFound.homeLink)));
     expect(r.getPathname()).toBe('/');
+    await screen.findByTestId(Testids.home.bookCount);
   });
 });

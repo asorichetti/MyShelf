@@ -40,6 +40,11 @@ export const Testids = {
     title: 'not-found-title',
     homeLink: 'not-found-home-link',
   },
+  dbError: {
+    root: 'db-error-root',
+    title: 'db-error-title',
+    retry: 'db-error-retry',
+  },
   booky: {
     avatar: 'booky-avatar',
     bubble: 'booky-bubble',
