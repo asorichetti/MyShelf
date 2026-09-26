@@ -14,6 +14,9 @@ export const CONFETTI_MS = 2600;
 /** The shower waits this long, so the reduce-motion preference (read asynchronously) is known first. */
 export const CONFETTI_DELAY_MS = 150;
 
+/** Pieces stay this far inside the screen edges (a spinning 8 x 16 bookmark is at most ~18 wide). */
+const MARGIN = 24;
+
 interface Piece {
   x: number;
   delay: number;
@@ -31,7 +34,8 @@ function pieces(count: number): Piece[] {
       x: (i + 0.5) / count,
       delay: h % 500,
       duration: CONFETTI_MS - 800 + (h % 800),
-      drift: ((h >> 3) % 60) - 30,
+      // Drift towards the middle, so no piece strays past either edge.
+      drift: ((i + 0.5) / count < 0.5 ? 1 : -1) * ((h >> 3) % 30),
       spin: ((h >> 5) % 2 ? 1 : -1) * (180 + ((h >> 7) % 360)),
       colour: (h >> 9) % 97,
     };
@@ -69,7 +73,7 @@ function Confetti({ onDone, testID }: { onDone: () => void; testID?: string }) {
           style={[
             styles.piece,
             {
-              left: p.x * width,
+              left: MARGIN + p.x * (width - 2 * MARGIN),
               backgroundColor: colours[p.colour % colours.length],
               borderBottomLeftRadius: theme.radii.none,
               borderTopLeftRadius: theme.radii.sm - 4,
