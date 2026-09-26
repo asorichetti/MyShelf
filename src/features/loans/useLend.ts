@@ -12,6 +12,7 @@ import {
 } from '@/db';
 import { normaliseLoanDays, settingDefaults, today as todayOf, validateLoanDates, type IsoDate, type Loan, type LoanIssue } from '@/domain';
 import { emit } from '@/features/events';
+import { t } from '@/i18n';
 
 export interface LendInput {
   bookId: number;
@@ -53,7 +54,7 @@ export async function lendToBorrower(db: Db, input: LendInput, today: IsoDate): 
     if (error instanceof BookAlreadyOnLoanError) {
       const open = await loansRepo.getOpenLoanForBook(db, input.bookId).catch(() => null);
       const who = open ? await loansRepo.getBorrower(db, open.borrowerId).catch(() => null) : null;
-      return { status: 'already-on-loan', current: open ? { ...open, borrowerName: who?.name ?? 'someone' } : null };
+      return { status: 'already-on-loan', current: open ? { ...open, borrowerName: who?.name ?? t('loans.someone') } : null };
     }
     if (error instanceof BorrowerNotFoundError) return { status: 'borrower-missing' };
     if (error instanceof BookNotFoundError) return { status: 'book-missing' };
@@ -66,18 +67,18 @@ export function loanIssueMessage(issue: LoanIssue): string {
   switch (issue.code) {
     case 'invalid-date':
       return issue.field === 'dueOn'
-        ? 'Enter a due date like 12/10/2026, or choose “No due date”.'
+        ? t('lend.issues.invalidDue')
         : issue.field === 'returnedOn'
-          ? 'Enter the day it came back, like 12/10/2026.'
-          : 'Enter the day you lent it, like 12/10/2026.';
+          ? t('lend.issues.invalidReturned')
+          : t('lend.issues.invalidLent');
     case 'lent-in-future':
-      return 'The day you lent it can’t be in the future.';
+      return t('lend.issues.lentInFuture');
     case 'due-before-lent':
-      return 'The due date can’t be before the day you lent it.';
+      return t('lend.issues.dueBeforeLent');
     case 'returned-before-lent':
-      return 'It can’t come back before the day it was lent.';
+      return t('lend.issues.returnedBeforeLent');
     case 'returned-in-future':
-      return 'The return date can’t be in the future.';
+      return t('lend.issues.returnedInFuture');
   }
 }
 

@@ -4,6 +4,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Text } from '@/components/ui';
 import { formatDate, type LoanWithDetails } from '@/domain';
+import { t } from '@/i18n';
 import { Testids } from '@/testing/testids.gen';
 import { useTheme } from '@/theme';
 
@@ -30,7 +31,7 @@ export function BookLoanHistory({ loans }: BookLoanHistoryProps) {
   const listId = `loan-history-${useId().replace(/:/g, '')}`;
   const past = pastLoans(loans);
   if (!past.length) return null;
-  const count = past.length === 1 ? '1 past loan' : `${past.length} past loans`;
+  const count = t('loanHistory.count', { count: past.length });
 
   return (
     <View testID={Testids.bookLoan.history} style={{ gap: spacing.sm }}>
@@ -39,7 +40,7 @@ export function BookLoanHistory({ loans }: BookLoanHistoryProps) {
         aria-expanded={open}
         aria-controls={listId}
         accessibilityState={{ expanded: open }}
-        accessibilityLabel={`Lending history, ${count}`}
+        accessibilityLabel={t('loanHistory.toggleLabel', { count: past.length })}
         onPress={() => setOpen((v) => !v)}
         testID={Testids.bookLoan.historyToggle}
         style={({ pressed }) => [
@@ -50,7 +51,7 @@ export function BookLoanHistory({ loans }: BookLoanHistoryProps) {
       >
         <MaterialCommunityIcons name={open ? 'chevron-down' : 'chevron-right'} size={sizes.icon} color={colors.primary} />
         <Text variant="bodyStrong" color="primary">
-          Lending history
+          {t('loanHistory.title')}
         </Text>
         <Text variant="caption" color="inkMuted">
           {count}
@@ -66,7 +67,7 @@ export function BookLoanHistory({ loans }: BookLoanHistoryProps) {
             >
               <Text variant="bodyStrong">{loan.borrowerName}</Text>
               <Text variant="mono" color="inkMuted">
-                {`${formatDate(loan.lentOn)} – ${formatDate(loan.returnedOn!)}`}
+                {t('loanHistory.range', { from: formatDate(loan.lentOn), to: formatDate(loan.returnedOn!) })}
               </Text>
               {loan.note ? (
                 <Text variant="caption" color="inkMuted">

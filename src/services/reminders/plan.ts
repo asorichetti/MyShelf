@@ -1,4 +1,5 @@
 import { isIsoDate, parseIsoDate, type IsoDate, type LoanWithDetails } from '@/domain';
+import { t } from '@/i18n';
 
 /**
  * Due-date reminders (P05-08): which local notifications should exist, and
@@ -53,8 +54,8 @@ export function planReminders(loans: readonly ReminderLoan[], now: Date): Remind
       id: reminderId({ id: loan.id, dueOn: loan.dueOn }),
       loanId: loan.id,
       bookId: loan.bookId,
-      title: `“${loan.bookTitle}” is due back today`,
-      body: `${loan.borrowerName} has it. A gentle reminder, no rush.`,
+      title: t('reminders.notification.title', { title: loan.bookTitle }),
+      body: t('reminders.notification.body', { name: loan.borrowerName }),
       at,
       url: `/book/${loan.bookId}`,
     });

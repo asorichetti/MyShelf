@@ -4,6 +4,7 @@ import { useSnackbar } from '@/components/ui';
 import { BookAlreadyOnLoanError, loansRepo, useDatabase, type Db } from '@/db';
 import { LoanValidationError, today as todayOf, validateLoanDates, type IsoDate, type Loan, type LoanIssue, type LoanWithDetails } from '@/domain';
 import { emit } from '@/features/events';
+import { t } from '@/i18n';
 
 import { loanIssueMessage } from './useLend';
 
@@ -58,18 +59,18 @@ export function useReturn(): { returnLoan: (loan: ReturnableLoan, returnedOn: Is
       emit('loans-changed');
       if (outcome.status === 'not-open') return null;
       show({
-        message: `Welcome home, “${loan.bookTitle}”!`,
+        message: t('returnLoan.welcomeHome', { title: loan.bookTitle }),
         action: {
-          label: 'Undo',
+          label: t('common.undo'),
           onPress: () => {
             undoReturn(db, loan.id)
               .then((result) => {
                 emit('loans-changed');
-                if (result === 'lent-again') show({ message: `“${loan.bookTitle}” has gone out on a new loan since, so I kept this one closed.` });
+                if (result === 'lent-again') show({ message: t('returnLoan.lentAgain', { title: loan.bookTitle }) });
               })
               .catch((e) => {
                 console.error('Could not undo the return', e);
-                show({ message: 'Sorry, I couldn’t undo that.' });
+                show({ message: t('returnLoan.undoFailed') });
               });
           },
         },

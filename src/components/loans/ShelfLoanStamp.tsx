@@ -1,5 +1,6 @@
 import { Stamp } from '@/components/ui';
 import { loanStatus, type IsoDate } from '@/domain';
+import { t } from '@/i18n';
 import { Testids } from '@/testing/testids.gen';
 
 export interface ShelfLoanInfo {
@@ -11,8 +12,9 @@ export interface ShelfLoanInfo {
 /** "on loan to Sam", "on loan to Priya, overdue": the words a Shelf row adds for its loan. */
 export function shelfLoanLabel(item: ShelfLoanInfo, today: IsoDate): string | null {
   if (!item.onLoan) return null;
-  const who = item.loanBorrower ? `on loan to ${item.loanBorrower}` : 'on loan';
-  return loanStatus({ dueOn: item.loanDueOn ?? null, returnedOn: null }, today) === 'overdue' ? `${who}, overdue` : who;
+  const overdue = loanStatus({ dueOn: item.loanDueOn ?? null, returnedOn: null }, today) === 'overdue';
+  if (item.loanBorrower) return overdue ? t('loans.shelf.onLoanToOverdue', { name: item.loanBorrower }) : t('loans.shelf.onLoanTo', { name: item.loanBorrower });
+  return overdue ? t('loans.shelf.onLoanOverdue') : t('loans.shelf.onLoan');
 }
 
 /**
@@ -22,5 +24,5 @@ export function shelfLoanLabel(item: ShelfLoanInfo, today: IsoDate): string | nu
 export function ShelfLoanStamp({ item, today }: { item: ShelfLoanInfo; today: IsoDate }) {
   if (!item.onLoan) return null;
   const overdue = loanStatus({ dueOn: item.loanDueOn ?? null, returnedOn: null }, today) === 'overdue';
-  return <Stamp label={overdue ? 'Overdue' : 'On loan'} tone={overdue ? 'danger' : 'accent'} rotate={-6} testID={Testids.bookLoan.badge} />;
+  return <Stamp label={overdue ? t('loans.shelf.overdueStamp') : t('loanStamp.onLoan')} tone={overdue ? 'danger' : 'accent'} rotate={-6} testID={Testids.bookLoan.badge} />;
 }

@@ -4,6 +4,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { CoverImage } from '@/components/book/CoverImage';
 import { Button, Text } from '@/components/ui';
 import { formatDate, type IsoDate, type LoanWithDetails } from '@/domain';
+import { t } from '@/i18n';
 import { Testids } from '@/testing/testids.gen';
 import { useTheme } from '@/theme';
 
@@ -30,8 +31,8 @@ export const LoanRow = memo(function LoanRow({ loan, today, onOpenBook, onOpenBo
   const { colors, spacing, radii, sizes } = theme;
   const open = loan.returnedOn == null;
   const dates = open
-    ? `Lent ${formatDate(loan.lentOn)}`
-    : `Lent ${formatDate(loan.lentOn)}, back ${formatDate(loan.returnedOn!)}`;
+    ? t('loans.row.lent', { date: formatDate(loan.lentOn) })
+    : t('loans.row.lentAndBack', { lent: formatDate(loan.lentOn), back: formatDate(loan.returnedOn!) });
 
   return (
     <View
@@ -48,7 +49,7 @@ export const LoanRow = memo(function LoanRow({ loan, today, onOpenBook, onOpenBo
         <View style={[styles.text, { gap: spacing.xxs }]}>
           <Pressable
             role="button"
-            accessibilityLabel={`Open ${loan.bookTitle}`}
+            accessibilityLabel={t('loans.row.openBook', { title: loan.bookTitle })}
             onPress={() => onOpenBook(loan.bookId)}
             testID={Testids.loans.rowBook}
             style={({ pressed }) => [
@@ -63,10 +64,10 @@ export const LoanRow = memo(function LoanRow({ loan, today, onOpenBook, onOpenBo
           </Pressable>
           {onOpenBorrower ? (
             <View style={[styles.line, { gap: spacing.xs }]}>
-              <Text color="inkMuted">{open ? 'With' : 'Borrowed by'}</Text>
+              <Text color="inkMuted">{open ? t('loans.row.with') : t('loans.row.borrowedBy')}</Text>
               <Pressable
                 role="button"
-                accessibilityLabel={`${loan.borrowerName}, see everything they have borrowed`}
+                accessibilityLabel={t('loans.row.borrowerLabel', { name: loan.borrowerName })}
                 onPress={() => onOpenBorrower(loan.borrowerId)}
                 testID={Testids.loans.rowBorrower}
                 style={({ pressed }) => [
@@ -95,9 +96,9 @@ export const LoanRow = memo(function LoanRow({ loan, today, onOpenBook, onOpenBo
       {open && onReturn ? (
         <View style={[styles.actions, { paddingHorizontal: spacing.md, paddingBottom: spacing.md }]}>
           <Button
-            label="Mark returned"
+            label={t('loans.markReturned')}
             variant="secondary"
-            accessibilityLabel={`Mark ${loan.bookTitle} returned`}
+            accessibilityLabel={t('loans.row.markReturnedLabel', { title: loan.bookTitle })}
             onPress={() => onReturn(loan)}
             testID={Testids.loans.rowReturn}
           />

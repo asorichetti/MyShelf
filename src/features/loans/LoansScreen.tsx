@@ -6,6 +6,7 @@ import { Booky, HelpButton } from '@/components/booky';
 import { LoanRow } from '@/components/loans/LoanRow';
 import { EmptyState, Heading, Screen, SelectField, Text } from '@/components/ui';
 import type { LoanWithDetails } from '@/domain';
+import { t } from '@/i18n';
 import { Testids } from '@/testing/testids.gen';
 import { useTheme } from '@/theme';
 
@@ -73,9 +74,9 @@ export function LoansScreen() {
     return (
       <Screen testID={Testids.loans.root} pageState="loading">
         <Heading level={1} testID={Testids.loans.title}>
-          Loans
+          {t('loans.screen.title')}
         </Heading>
-        <Text color="inkMuted">Checking the loan drawer…</Text>
+        <Text color="inkMuted">{t('loans.screen.loading')}</Text>
       </Screen>
     );
   }
@@ -86,26 +87,26 @@ export function LoansScreen() {
         <EmptyState
           testID={Testids.emptyState.root}
           illustration={<Booky expression="sleepy" size={96} />}
-          title={`${who} has nothing out`}
-          message="Everything they borrowed is back on your shelf."
-          action={{ label: 'Show everyone', onPress: () => setBorrowerId(''), variant: 'secondary' }}
+          title={t('loans.empty.borrowerNothingOutTitle', { name: who })}
+          message={t('loans.empty.borrowerNothingOutMessage')}
+          action={{ label: t('loans.empty.showEveryone'), onPress: () => setBorrowerId(''), variant: 'secondary' }}
         />
       ) : (
         <EmptyState
           testID={Testids.emptyState.root}
           illustration={<Booky expression="sleepy" size={112} />}
-          title="Every book is home. Lovely."
-          message="When you lend a book I’ll stamp the due date here, and give you a gentle nudge if it’s late. Lend one from its page on your shelf."
-          action={{ label: 'Go to your shelf', onPress: () => router.navigate('/'), variant: 'secondary' }}
+          title={t('loans.empty.allHomeTitle')}
+          message={t('loans.empty.allHomeMessage')}
+          action={{ label: t('loans.empty.goToShelf'), onPress: () => router.navigate('/'), variant: 'secondary' }}
         />
       )
     ) : (
       <EmptyState
         testID={Testids.emptyState.root}
         illustration={<Booky expression="sleepy" size={96} />}
-        title={who ? `Nothing back from ${who} yet` : 'Nothing has come back yet'}
-        message="Returned loans are kept here, newest first."
-        action={{ label: 'See what’s out', onPress: () => setSection('out'), variant: 'secondary' }}
+        title={who ? t('loans.empty.historyBorrowerTitle', { name: who }) : t('loans.empty.historyTitle')}
+        message={t('loans.empty.historyMessage')}
+        action={{ label: t('loans.empty.seeWhatsOut'), onPress: () => setSection('out'), variant: 'secondary' }}
       />
     );
 
@@ -114,29 +115,29 @@ export function LoansScreen() {
       <View style={{ gap: spacing.xs }}>
         <View style={[styles.titleRow, { gap: spacing.sm }]}>
           <Heading level={1} testID={Testids.loans.title} style={styles.fill}>
-            Loans
+            {t('loans.screen.title')}
           </Heading>
           <HelpButton screen="loans" />
         </View>
-        <Text color="inkMuted">Who has your books, and when they’re due back.</Text>
+        <Text color="inkMuted">{t('loans.screen.intro')}</Text>
         {overdueCount ? (
           <Text variant="stamp" color="danger">
-            {overdueCount === 1 ? '1 book overdue' : `${overdueCount} books overdue`}
+            {t('loans.screen.overdueCount', { count: overdueCount })}
           </Text>
         ) : null}
       </View>
       <View
         role="tablist"
-        aria-label="Loans"
+        aria-label={t('loans.screen.title')}
         style={[styles.segments, { gap: spacing.xs, padding: spacing.xxs, borderRadius: radii.xl + spacing.xxs, borderColor: colors.outline, backgroundColor: colors.surface }]}
       >
-        <SegmentTab label={`Out now · ${out.length}`} selected={section === 'out'} onPress={() => setSection('out')} testID={Testids.loans.tabOut} />
-        <SegmentTab label={`History · ${history.length}`} selected={section === 'history'} onPress={() => setSection('history')} testID={Testids.loans.tabHistory} />
+        <SegmentTab label={t('loans.screen.tabOut', { count: out.length })} selected={section === 'out'} onPress={() => setSection('out')} testID={Testids.loans.tabOut} />
+        <SegmentTab label={t('loans.screen.tabHistory', { count: history.length })} selected={section === 'history'} onPress={() => setSection('history')} testID={Testids.loans.tabHistory} />
       </View>
       {borrowers.length > 1 ? (
-        <SelectField label="Borrower" placeholder="Everyone" value={borrowerId} options={borrowers} onChange={setBorrowerId} testID={Testids.loans.filterBorrower} />
+        <SelectField label={t('loans.screen.borrowerFilter')} placeholder={t('loans.screen.everyone')} value={borrowerId} options={borrowers} onChange={setBorrowerId} testID={Testids.loans.filterBorrower} />
       ) : null}
-      <View nativeID={PANEL_ID} role="tabpanel" aria-label={section === 'out' ? 'Out now' : 'History'} testID={Testids.loans.list} style={{ gap: spacing.md }}>
+      <View nativeID={PANEL_ID} role="tabpanel" aria-label={section === 'out' ? t('loans.screen.tabOutName') : t('loans.screen.tabHistoryName')} testID={Testids.loans.list} style={{ gap: spacing.md }}>
         {shown?.length ? (
           shown.map((loan) => <LoanRow key={loan.id} loan={loan} today={today} onOpenBook={openBook} onOpenBorrower={openBorrower} onReturn={returning.start} />)
         ) : (

@@ -3,6 +3,7 @@ import { View } from 'react-native';
 
 import { Button, DateField, Sheet, Text } from '@/components/ui';
 import { formatDate, validateLoanDates, type IsoDate, type LoanIssue, type LoanWithDetails } from '@/domain';
+import { t } from '@/i18n';
 import { Testids } from '@/testing/testids.gen';
 import { useTheme } from '@/theme';
 
@@ -35,7 +36,7 @@ export function ReturnSheet({ loan, visible, today, onConfirm, onClose, issueMes
       if (problem) setError(problem);
     } catch (e) {
       console.error('Could not mark the book returned', e);
-      setError('Sorry, I couldn’t save that. Please try again.');
+      setError(t('common.saveFailed'));
     } finally {
       setSaving(false);
     }
@@ -44,15 +45,15 @@ export function ReturnSheet({ loan, visible, today, onConfirm, onClose, issueMes
   return (
     <Sheet
       visible={visible}
-      title={`Mark “${loan.bookTitle}” returned?`}
-      subtitle={`Lent to ${loan.borrowerName} on ${formatDate(loan.lentOn)}.`}
+      title={t('returnLoan.sheet.title', { title: loan.bookTitle })}
+      subtitle={t('returnLoan.sheet.subtitle', { name: loan.borrowerName, date: formatDate(loan.lentOn) })}
       onClose={onClose}
       busy={saving}
       testID={Testids.returnLoan.sheet}
       footer={
         <>
-          <Button label="Not yet" variant="secondary" onPress={onClose} disabled={saving} testID={Testids.returnLoan.cancel} />
-          <Button label="Mark returned" onPress={() => void confirm()} loading={saving} testID={Testids.returnLoan.confirm} />
+          <Button label={t('returnLoan.sheet.notYet')} variant="secondary" onPress={onClose} disabled={saving} testID={Testids.returnLoan.cancel} />
+          <Button label={t('loans.markReturned')} onPress={() => void confirm()} loading={saving} testID={Testids.returnLoan.confirm} />
         </>
       }
     >
@@ -62,7 +63,7 @@ export function ReturnSheet({ loan, visible, today, onConfirm, onClose, issueMes
         </View>
       ) : null}
       <DateField
-        label="Came back on"
+        label={t('returnLoan.sheet.date')}
         value={returnedOn}
         onChange={(value) => {
           setReturnedOn(value);

@@ -1,6 +1,7 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Text } from '@/components/ui';
+import { t } from '@/i18n';
 import { Testids } from '@/testing/testids.gen';
 import { useTheme } from '@/theme';
 
@@ -30,8 +31,8 @@ export function ReminderSwitch({ value, onChange, disabled = false, note }: Remi
         aria-checked={value}
         aria-disabled={disabled}
         accessibilityState={{ checked: value, disabled }}
-        accessibilityLabel="Remind me when loans are due"
-        accessibilityHint="A notification at 10:00 on the day a lent book is due back"
+        accessibilityLabel={t('reminders.switch.label')}
+        accessibilityHint={t('reminders.switch.hint')}
         disabled={disabled}
         onPress={() => onChange(!value)}
         testID={Testids.reminders.toggle}
@@ -43,9 +44,9 @@ export function ReminderSwitch({ value, onChange, disabled = false, note }: Remi
         ]}
       >
         <View style={styles.flex}>
-          <Text variant="bodyStrong">Remind me when loans are due</Text>
+          <Text variant="bodyStrong">{t('reminders.switch.label')}</Text>
           <Text variant="caption" color="inkMuted">
-            A note at 10:00 on the day a lent book is due back. Nothing leaves your phone.
+            {t('reminders.switch.caption')}
           </Text>
         </View>
         <View

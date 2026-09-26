@@ -5,6 +5,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { Button, DateField, Sheet, Text, TextField } from '@/components/ui';
 import type { BorrowerWithStats } from '@/db';
 import { defaultDueDate, isIsoDate, validateLoanDates, type Borrower, type IsoDate, type LoanIssue } from '@/domain';
+import { t } from '@/i18n';
 import { Testids } from '@/testing/testids.gen';
 import { useTheme } from '@/theme';
 
@@ -68,12 +69,12 @@ export function LendSheet({ visible, bookTitle, today, loanDays, onSubmit, onClo
 
   const save = async () => {
     const next: Errors = {};
-    if (!borrower) next.borrower = 'Choose who’s borrowing it, or add their name.';
+    if (!borrower) next.borrower = t('lend.errors.chooseBorrower');
     for (const issue of validateLoanDates({ lentOn, dueOn: noDue ? null : dueOn }, today)) {
       const field = issue.field === 'dueOn' ? 'dueOn' : 'lentOn';
       next[field] ??= issueMessage(issue);
     }
-    if (!noDue && !dueOn) next.dueOn = 'Enter a due date, or choose “No due date”.';
+    if (!noDue && !dueOn) next.dueOn = t('lend.errors.dueRequired');
     setErrors(next);
     if (Object.keys(next).length || !borrower) return;
     setSaving(true);
@@ -85,13 +86,13 @@ export function LendSheet({ visible, bookTitle, today, loanDays, onSubmit, onClo
         setErrors(fromRepo);
       } else if (result.status === 'borrower-missing') {
         setBorrower(null);
-        setErrors({ borrower: 'That borrower has just been removed. Choose someone else.' });
+        setErrors({ borrower: t('lend.errors.borrowerRemoved') });
       } else if (result.status === 'book-missing') {
-        setErrors({ form: 'This book is no longer on your shelf.' });
+        setErrors({ form: t('lend.errors.bookMissing') });
       }
     } catch (e) {
       console.error('Could not lend the book', e);
-      setErrors({ form: 'Sorry, I couldn’t save that loan. Please try again.' });
+      setErrors({ form: t('lend.errors.saveFailed') });
     } finally {
       setSaving(false);
     }
@@ -102,15 +103,15 @@ export function LendSheet({ visible, bookTitle, today, loanDays, onSubmit, onClo
   return (
     <Sheet
       visible={visible}
-      title={`Lend “${bookTitle}”`}
-      subtitle="I’ll stamp the due date and keep an eye on it for you."
+      title={t('lend.sheet.title', { title: bookTitle })}
+      subtitle={t('lend.sheet.subtitle')}
       onClose={onClose}
       busy={saving}
       testID={Testids.lend.sheet}
       footer={
         <>
-          <Button label="Cancel" variant="secondary" onPress={onClose} disabled={saving} testID={Testids.lend.cancel} />
-          <Button label="Lend" onPress={() => void save()} loading={saving} testID={Testids.lend.save} />
+          <Button label={t('common.cancel')} variant="secondary" onPress={onClose} disabled={saving} testID={Testids.lend.cancel} />
+          <Button label={t('lend.sheet.save')} onPress={() => void save()} loading={saving} testID={Testids.lend.save} />
         </>
       }
     >
@@ -133,18 +134,18 @@ export function LendSheet({ visible, bookTitle, today, loanDays, onSubmit, onClo
         findByName={findByName}
         errorText={errors.borrower}
       />
-      <DateField label="Lent on" value={lentOn} onChange={changeLentOn} max={today} errorText={errors.lentOn} testID={Testids.lend.lentOn} />
+      <DateField label={t('lend.sheet.lentOn')} value={lentOn} onChange={changeLentOn} max={today} errorText={errors.lentOn} testID={Testids.lend.lentOn} />
       <View style={{ gap: spacing.sm }}>
         {noDue ? null : (
           <DateField
-            label="Due back"
+            label={t('lend.sheet.dueBack')}
             value={dueOn}
             onChange={(value) => {
               dueTouched.current = true;
               setDueOn(value);
             }}
             min={isIsoDate(lentOn) ? lentOn : undefined}
-            helperText={`${loanDays} days after lending, unless you change it`}
+            helperText={t('lend.sheet.dueHelp', { count: loanDays })}
             errorText={errors.dueOn}
             testID={Testids.lend.dueOn}
           />
@@ -153,7 +154,7 @@ export function LendSheet({ visible, bookTitle, today, loanDays, onSubmit, onClo
           role="checkbox"
           aria-checked={noDue}
           accessibilityState={{ checked: noDue }}
-          accessibilityLabel="No due date"
+          accessibilityLabel={t('lend.sheet.noDueDate')}
           onPress={() => {
             setNoDue((v) => !v);
             setErrors((e) => ({ ...e, dueOn: undefined }));
@@ -170,14 +171,14 @@ export function LendSheet({ visible, bookTitle, today, loanDays, onSubmit, onClo
             size={sizes.icon + 4}
             color={noDue ? colors.primary : colors.outline}
           />
-          <Text>No due date</Text>
+          <Text>{t('lend.sheet.noDueDate')}</Text>
         </Pressable>
       </View>
       <TextField
-        label="Note (optional)"
+        label={t('lend.sheet.note')}
         value={note}
         onChangeText={setNote}
-        placeholder="e.g. Bring it to book club"
+        placeholder={t('lend.sheet.notePlaceholder')}
         multiline
         testID={Testids.lend.note}
       />

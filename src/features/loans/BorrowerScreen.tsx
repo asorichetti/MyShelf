@@ -3,11 +3,11 @@ import { useCallback, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { Booky } from '@/components/booky';
-import { CONTACT_HELP } from '@/components/loans/BorrowerPicker';
 import { LoanRow } from '@/components/loans/LoanRow';
 import { Button, ConfirmDialog, EmptyState, Heading, IconButton, Screen, Sheet, Text, TextField, useSnackbar } from '@/components/ui';
 import { formatDate, today as todayOf, type Borrower } from '@/domain';
 import { parseBookId } from '@/features/book/useBook';
+import { t } from '@/i18n';
 import { Testids } from '@/testing/testids.gen';
 import { useTheme } from '@/theme';
 
@@ -15,7 +15,6 @@ import { useReturnFlow } from './ReturnFlow';
 import { useBorrower, type BorrowerDetail } from './useBorrower';
 
 const EDGES = ['top', 'bottom', 'left', 'right'] as const;
-const books = (n: number) => (n === 1 ? '1 book' : `${n} books`);
 
 function goBackOrLoans() {
   if (router.canGoBack()) router.back();
@@ -25,10 +24,10 @@ function goBackOrLoans() {
 /** "Has 1 book now · borrowed 3 times since 5 Jun 2025". */
 export function borrowerStats({ current, past }: Pick<BorrowerDetail, 'current' | 'past'>): string {
   const total = current.length + past.length;
-  if (!total) return 'Hasn’t borrowed anything yet';
+  if (!total) return t('borrowers.stats.never');
   const first = [...current, ...past].map((l) => l.lentOn).sort()[0];
-  const now = current.length ? `Has ${books(current.length)} now` : 'Has nothing out';
-  return `${now} · borrowed ${total === 1 ? 'once' : `${total} times`} since ${formatDate(first)}`;
+  const now = current.length ? t('borrowers.stats.hasNow', { count: current.length }) : t('borrowers.stats.nothingOut');
+  return t('borrowers.stats.line', { now, count: total, date: formatDate(first) });
 }
 
 /** Rename a borrower or change how to reach them (also used by Settings → Borrowers). */
@@ -52,7 +51,7 @@ export function BorrowerEditSheet({
       setError(problem);
     } catch (e) {
       console.error('Could not save the borrower', e);
-      setError('Sorry, I couldn’t save that. Please try again.');
+      setError(t('common.saveFailed'));
     } finally {
       setSaving(false);
     }
@@ -60,23 +59,23 @@ export function BorrowerEditSheet({
   return (
     <Sheet
       visible
-      title={`Edit ${borrower.name}`}
+      title={t('borrowers.edit.title', { name: borrower.name })}
       onClose={onClose}
       busy={saving}
       testID={Testids.borrower.editSheet}
       footer={
         <>
-          <Button label="Cancel" variant="secondary" onPress={onClose} disabled={saving} />
-          <Button label="Save" onPress={() => void save()} loading={saving} testID={Testids.borrower.editSave} />
+          <Button label={t('common.cancel')} variant="secondary" onPress={onClose} disabled={saving} />
+          <Button label={t('common.save')} onPress={() => void save()} loading={saving} testID={Testids.borrower.editSave} />
         </>
       }
     >
-      <TextField label="Name" value={name} onChangeText={setName} autoCapitalize="words" errorText={error ?? undefined} testID={Testids.borrower.editName} />
+      <TextField label={t('borrowers.edit.name')} value={name} onChangeText={setName} autoCapitalize="words" errorText={error ?? undefined} testID={Testids.borrower.editName} />
       <TextField
-        label="How to reach them (optional)"
+        label={t('borrowers.edit.contact')}
         value={contact}
         onChangeText={setContact}
-        helperText={CONTACT_HELP}
+        helperText={t('lend.picker.contactHelp')}
         autoCapitalize="none"
         testID={Testids.borrower.editContact}
       />
@@ -112,29 +111,29 @@ function BorrowerContent({ detail, hooks }: { detail: BorrowerDetail; hooks: Ret
         setDeleting(false);
         return;
       }
-      show({ message: `Removed ${borrower.name}` });
+      show({ message: t('borrowers.remove.removed', { name: borrower.name }) });
       goBackOrLoans();
     } catch (e) {
       console.error('Could not remove the borrower', e);
       setDeleting(false);
       setConfirming(false);
-      show({ message: `Sorry, I couldn’t remove ${borrower.name}. Please try again.` });
+      show({ message: t('borrowers.remove.failed', { name: borrower.name }) });
     }
   };
 
   return (
     <Screen testID={Testids.borrower.root} edges={[...EDGES]}>
       <View style={[styles.bar, { gap: spacing.xs, marginTop: -spacing.sm, marginHorizontal: -spacing.sm }]}>
-        <IconButton icon="arrow-left" accessibilityLabel="Back" onPress={goBackOrLoans} testID={Testids.borrower.back} />
+        <IconButton icon="arrow-left" accessibilityLabel={t('common.back')} onPress={goBackOrLoans} testID={Testids.borrower.back} />
         <View style={styles.flex} />
         <IconButton
           icon="pencil-outline"
           variant="tonal"
-          accessibilityLabel={`Edit ${borrower.name}`}
+          accessibilityLabel={t('borrowers.edit.title', { name: borrower.name })}
           onPress={() => setEditing(true)}
           testID={Testids.borrower.edit}
         />
-        <IconButton icon="trash-can-outline" variant="danger" accessibilityLabel={`Remove ${borrower.name}`} onPress={askDelete} testID={Testids.borrower.delete} />
+        <IconButton icon="trash-can-outline" variant="danger" accessibilityLabel={t('borrowers.remove.label', { name: borrower.name })} onPress={askDelete} testID={Testids.borrower.delete} />
       </View>
 
       {/* The library card pocket: who they are, as on a borrower's ticket. */}
@@ -145,7 +144,7 @@ function BorrowerContent({ detail, hooks }: { detail: BorrowerDetail; hooks: Ret
         ]}
       >
         <Text variant="stamp" color="accent">
-          Borrower’s card
+          {t('borrowers.screen.card')}
         </Text>
         <Heading level={1} testID={Testids.borrower.name}>
           {borrower.name}
@@ -156,7 +155,7 @@ function BorrowerContent({ detail, hooks }: { detail: BorrowerDetail; hooks: Ret
           </Text>
         ) : (
           <Text color="inkMuted" testID={Testids.borrower.contact}>
-            No contact details. Add some with Edit — they stay on this phone.
+            {t('borrowers.screen.noContact')}
           </Text>
         )}
         <Text variant="mono" color="inkMuted" testID={Testids.borrower.stats}>
@@ -172,26 +171,26 @@ function BorrowerContent({ detail, hooks }: { detail: BorrowerDetail; hooks: Ret
         >
           <Booky expression="concerned" size={48} animated={false} />
           <Text color="onWarnContainer" style={styles.flex}>
-            {`${borrower.name} still has ${books(current.length)} of yours. Mark ${current.length === 1 ? 'it' : 'them'} returned first, then you can remove ${borrower.name}.`}
+            {t('borrowers.remove.blocked', { name: borrower.name, count: current.length })}
           </Text>
         </View>
       ) : null}
 
       <View style={{ gap: spacing.md }} testID={Testids.borrower.current}>
-        <Heading level={2}>Currently has</Heading>
+        <Heading level={2}>{t('borrowers.screen.currentHeading')}</Heading>
         {current.length ? (
           current.map((loan) => <LoanRow key={loan.id} loan={loan} today={today} onOpenBook={openBook} onReturn={returning.start} />)
         ) : (
-          <Text color="inkMuted">Nothing right now — every book is home.</Text>
+          <Text color="inkMuted">{t('borrowers.screen.currentEmpty')}</Text>
         )}
       </View>
 
       <View style={{ gap: spacing.md }} testID={Testids.borrower.past}>
-        <Heading level={2}>Has borrowed before</Heading>
+        <Heading level={2}>{t('borrowers.screen.pastHeading')}</Heading>
         {past.length ? (
           past.map((loan) => <LoanRow key={loan.id} loan={loan} today={today} onOpenBook={openBook} />)
         ) : (
-          <Text color="inkMuted">No returned loans yet.</Text>
+          <Text color="inkMuted">{t('borrowers.screen.pastEmpty')}</Text>
         )}
       </View>
 
@@ -203,26 +202,24 @@ function BorrowerContent({ detail, hooks }: { detail: BorrowerDetail; hooks: Ret
             const outcome = await hooks.save(name, contact);
             if (outcome.status === 'saved') {
               setEditing(false);
-              show({ message: 'Saved' });
+              show({ message: t('borrowers.edit.saved') });
               return null;
             }
-            if (outcome.status === 'duplicate') return `${outcome.other.name} is already a borrower. Pick a different name.`;
-            if (outcome.status === 'blank') return 'Give them a name.';
-            return 'This borrower has been removed.';
+            if (outcome.status === 'duplicate') return t('borrowers.edit.duplicate', { name: outcome.other.name });
+            if (outcome.status === 'blank') return t('borrowers.edit.blank');
+            return t('borrowers.edit.gone');
           }}
         />
       ) : null}
       <ConfirmDialog
         visible={confirming}
         illustration={<Booky expression="concerned" size={72} animated={false} />}
-        title={`Remove ${borrower.name}?`}
+        title={t('borrowers.remove.confirmTitle', { name: borrower.name })}
         message={
-          past.length
-            ? `This also clears their lending history (${past.length === 1 ? '1 past loan' : `${past.length} past loans`}). Your books stay on your shelf.`
-            : 'They haven’t borrowed anything, so nothing else changes.'
+          past.length ? t('borrowers.remove.clearsHistory', { count: past.length }) : t('borrowers.remove.nothingElse')
         }
-        confirmLabel="Remove"
-        cancelLabel="Keep"
+        confirmLabel={t('common.remove')}
+        cancelLabel={t('borrowers.remove.keep')}
         destructive
         busy={deleting}
         onConfirm={() => void confirmDelete()}
@@ -243,9 +240,9 @@ export function BorrowerScreen() {
         <EmptyState
           illustration={<Booky expression="concerned" size={120} />}
           headingLevel={1}
-          title="Borrower not found"
-          message="I can’t find that borrower. They may have been removed."
-          action={{ label: 'Back to loans', onPress: () => router.replace('/loans'), testID: Testids.borrower.missingBack }}
+          title={t('borrowers.screen.missingTitle')}
+          message={t('borrowers.screen.missingMessage')}
+          action={{ label: t('borrowers.screen.backToLoans'), onPress: () => router.replace('/loans'), testID: Testids.borrower.missingBack }}
         />
       </Screen>
     );
@@ -254,7 +251,7 @@ export function BorrowerScreen() {
     return (
       <Screen pageState="loading" centered edges={[...EDGES]}>
         <Text color="inkMuted" align="center">
-          Finding their card…
+          {t('borrowers.screen.loading')}
         </Text>
       </Screen>
     );

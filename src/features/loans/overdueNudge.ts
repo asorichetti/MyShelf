@@ -1,5 +1,6 @@
 import type { BookyEvent } from '@/components/booky';
-import { dayCount, daysOverdue, type IsoDate, type LoanWithDetails } from '@/domain';
+import { daysOverdue, type IsoDate, type LoanWithDetails } from '@/domain';
+import { t } from '@/i18n';
 
 /**
  * Booky's overdue nudge (P05-10): "“Dune” was due back from Sam 3 days
@@ -14,12 +15,12 @@ export const OVERDUE_NUDGE_KIND = 'loan-overdue';
 /** "yesterday", "3 days ago". */
 export function overdueWhen(loan: Pick<LoanWithDetails, 'dueOn' | 'returnedOn'>, today: IsoDate): string {
   const days = daysOverdue(loan, today);
-  return days === 1 ? 'yesterday' : `${dayCount(days)} ago`;
+  return days === 1 ? t('loans.overdue.yesterday') : t('loans.overdue.daysAgo', { count: days });
 }
 
 /** The nudge's words for one loan, as Booky's catalogue fills them in. */
 export function overdueNudgeMessage(loan: Pick<LoanWithDetails, 'bookTitle' | 'borrowerName' | 'dueOn' | 'returnedOn'>, today: IsoDate): string {
-  return `“${loan.bookTitle}” was due back from ${loan.borrowerName} ${overdueWhen(loan, today)}.`;
+  return t('loans.overdue.nudge', { title: loan.bookTitle, borrower: loan.borrowerName, when: overdueWhen(loan, today) });
 }
 
 /**

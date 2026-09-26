@@ -6,6 +6,7 @@ import { Button, Text, TextField } from '@/components/ui';
 import type { BorrowerWithStats } from '@/db';
 import type { Borrower } from '@/domain';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
+import { t } from '@/i18n';
 import { Testids } from '@/testing/testids.gen';
 import { useTheme } from '@/theme';
 
@@ -24,12 +25,17 @@ export interface BorrowerPickerProps {
   maxSuggestions?: number;
 }
 
-export const CONTACT_HELP = 'Phone, email or where they live — just for you.';
-
 function borrowerCaption(b: BorrowerWithStats): string {
-  if (b.openLoans > 0) return b.openLoans === 1 ? 'Has 1 book now' : `Has ${b.openLoans} books now`;
-  if (b.totalLoans > 0) return b.totalLoans === 1 ? 'Borrowed once before' : `Borrowed ${b.totalLoans} times before`;
-  return 'Not borrowed anything yet';
+  if (b.openLoans > 0) return t('lend.picker.captionHasNow', { count: b.openLoans });
+  if (b.totalLoans > 0) return t('lend.picker.captionBorrowedBefore', { count: b.totalLoans });
+  return t('lend.picker.captionNotYet');
+}
+
+/** "Lend to Sam, has 1 book now": a suggestion's accessible name. */
+function borrowerOptionLabel(b: BorrowerWithStats): string {
+  if (b.openLoans > 0) return t('lend.picker.optionHasNow', { name: b.name, count: b.openLoans });
+  if (b.totalLoans > 0) return t('lend.picker.optionBorrowedBefore', { name: b.name, count: b.totalLoans });
+  return t('lend.picker.optionNotYet', { name: b.name });
 }
 
 /**
@@ -76,7 +82,7 @@ export function BorrowerPicker({ value, onChange, search, findByName, errorText,
           <MaterialCommunityIcons name={isNew ? 'account-plus-outline' : 'account-outline'} size={sizes.icon + 4} color={colors.primary} />
           <View style={styles.flex}>
             <Text variant="caption" color="inkMuted">
-              {isNew ? 'New borrower' : 'Lending to'}
+              {isNew ? t('lend.picker.newBorrower') : t('lend.picker.lendingTo')}
             </Text>
             <Text variant="bodyStrong">{shown}</Text>
             {!isNew && value.borrower.contact ? (
@@ -86,9 +92,9 @@ export function BorrowerPicker({ value, onChange, search, findByName, errorText,
             ) : null}
           </View>
           <Button
-            label="Change"
+            label={t('lend.picker.change')}
             variant="ghost"
-            accessibilityLabel={`Change borrower (now ${shown})`}
+            accessibilityLabel={t('lend.picker.changeLabel', { name: shown })}
             onPress={() => {
               setQuery(shown);
               onChange(null);
@@ -98,10 +104,10 @@ export function BorrowerPicker({ value, onChange, search, findByName, errorText,
         </View>
         {isNew ? (
           <TextField
-            label={`How to reach ${value.name} (optional)`}
+            label={t('lend.picker.contactLabel', { name: value.name })}
             value={value.contact}
             onChangeText={(contact) => onChange({ ...value, contact })}
-            helperText={CONTACT_HELP}
+            helperText={t('lend.picker.contactHelp')}
             autoCapitalize="none"
             testID={Testids.lend.borrowerContact}
           />
@@ -114,17 +120,17 @@ export function BorrowerPicker({ value, onChange, search, findByName, errorText,
   return (
     <View style={{ gap: spacing.sm }}>
       <TextField
-        label="Who’s borrowing it?"
+        label={t('lend.picker.search')}
         value={query}
         onChangeText={(text) => {
           setQuery(text);
           setDuplicate(null);
         }}
-        placeholder="A name, like Sam"
+        placeholder={t('lend.picker.searchPlaceholder')}
         autoCapitalize="words"
         autoComplete="off"
         errorText={errorText}
-        helperText={activeQuery ? undefined : results?.length ? 'Pick someone below or type a new name.' : 'Type their name.'}
+        helperText={activeQuery ? undefined : results?.length ? t('lend.picker.helpPick') : t('lend.picker.helpType')}
         returnKeyType="done"
         onSubmitEditing={() => {
           if (name) void create();
@@ -137,17 +143,17 @@ export function BorrowerPicker({ value, onChange, search, findByName, errorText,
           testID={Testids.lend.borrowerExisting}
           style={[{ gap: spacing.sm, padding: spacing.md, borderRadius: radii.md, backgroundColor: colors.warnContainer }]}
         >
-          <Text color="onWarnContainer">{`${duplicate.name} already exists — use them?`}</Text>
+          <Text color="onWarnContainer">{t('lend.picker.duplicate', { name: duplicate.name })}</Text>
           <View style={[styles.wrap, { gap: spacing.sm }]}>
             <Button
-              label={`Use ${duplicate.name}`}
+              label={t('lend.picker.useExisting', { name: duplicate.name })}
               onPress={() => onChange({ kind: 'existing', borrower: duplicate })}
               testID={Testids.lend.borrowerUseExisting}
             />
             <Button
-              label="Add someone new"
+              label={t('lend.picker.addNew')}
               variant="secondary"
-              accessibilityLabel={`Add a different ${name}`}
+              accessibilityLabel={t('lend.picker.addNewLabel', { name })}
               onPress={() => onChange({ kind: 'new', name, contact: '' })}
               testID={Testids.lend.borrowerAddAnyway}
             />
@@ -160,7 +166,7 @@ export function BorrowerPicker({ value, onChange, search, findByName, errorText,
             <Pressable
               key={b.id}
               role="button"
-              accessibilityLabel={`Lend to ${b.name}, ${borrowerCaption(b).toLowerCase()}`}
+              accessibilityLabel={borrowerOptionLabel(b)}
               onPress={() => onChange({ kind: 'existing', borrower: { id: b.id, name: b.name, contact: b.contact } })}
               testID={Testids.lend.borrowerOption}
               style={({ pressed }) => [
@@ -189,9 +195,9 @@ export function BorrowerPicker({ value, onChange, search, findByName, errorText,
       ) : null}
       {name && !duplicate ? (
         <Button
-          label={`Add “${name}”`}
+          label={t('lend.picker.create', { name })}
           variant="secondary"
-          accessibilityLabel={`Add ${name} as a new borrower`}
+          accessibilityLabel={t('lend.picker.createLabel', { name })}
           icon={<MaterialCommunityIcons name="account-plus-outline" size={sizes.icon} color={colors.onPrimaryContainer} />}
           onPress={() => void create()}
           testID={Testids.lend.borrowerCreate}

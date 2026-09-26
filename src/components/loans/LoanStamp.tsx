@@ -1,6 +1,7 @@
 
 import { Stamp } from '@/components/ui';
 import { loanStamp, type IsoDate, type Loan } from '@/domain';
+import { t } from '@/i18n';
 
 import type { StyleProp, ViewStyle } from 'react-native';
 
@@ -19,10 +20,10 @@ export function LoanStamp({ loan, today, prefix, rotate, testID, style }: LoanSt
   const info = loanStamp(loan, today);
   return (
     <Stamp
-      label={prefix ? `${prefix} · ${info.label}` : info.label}
+      label={prefix ? t('loans.stamp.withPrefix', { prefix, label: info.label }) : info.label}
       tone={info.tone}
       rotate={rotate}
-      accessibilityLabel={prefix ? `${prefix}. ${info.description}` : info.description}
+      accessibilityLabel={prefix ? t('loans.stamp.withPrefixDescription', { prefix, description: info.description }) : info.description}
       testID={testID}
       style={style}
     />

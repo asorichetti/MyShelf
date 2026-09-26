@@ -182,6 +182,249 @@ export const en = {
     },
   },
 
+  // Lending
+  /** The Loans tab, a book's loan section, loan rows and the Shelf row's loan words (P05). */
+  loans: {
+    markReturned: 'Mark returned',
+    /** A borrower whose name could not be read: "“Dune” is already on loan to someone." */
+    someone: 'someone',
+    screen: {
+      title: 'Loans',
+      loading: 'Checking the loan drawer…',
+      intro: 'Who has your books, and when they’re due back.',
+      /** Shown as a red stamp under the title. */
+      overdueCount: { one: '{count} book overdue', other: '{count} books overdue' },
+      /** Tab label with the number of loans in it. */
+      tabOut: 'Out now · {count}',
+      tabOutName: 'Out now',
+      tabHistory: 'History · {count}',
+      tabHistoryName: 'History',
+      borrowerFilter: 'Borrower',
+      /** The borrower filter with no one chosen. */
+      everyone: 'Everyone',
+    },
+    empty: {
+      borrowerNothingOutTitle: '{name} has nothing out',
+      borrowerNothingOutMessage: 'Everything they borrowed is back on your shelf.',
+      showEveryone: 'Show everyone',
+      allHomeTitle: 'Every book is home. Lovely.',
+      allHomeMessage: 'When you lend a book I’ll stamp the due date here, and give you a gentle nudge if it’s late. Lend one from its page on your shelf.',
+      goToShelf: 'Go to your shelf',
+      historyTitle: 'Nothing has come back yet',
+      historyBorrowerTitle: 'Nothing back from {name} yet',
+      historyMessage: 'Returned loans are kept here, newest first.',
+      seeWhatsOut: 'See what’s out',
+    },
+    row: {
+      openBook: 'Open {title}',
+      lent: 'Lent {date}',
+      lentAndBack: 'Lent {lent}, back {back}',
+      /** Before the borrower's name on an open loan: "With Sam". */
+      with: 'With',
+      /** Before the borrower's name on a returned loan: "Borrowed by Sam". */
+      borrowedBy: 'Borrowed by',
+      borrowerLabel: '{name}, see everything they have borrowed',
+      markReturnedLabel: 'Mark {title} returned',
+    },
+    stamp: {
+      /** A stamp with a prefix, e.g. "On loan · Sam · Due 12 Oct". */
+      withPrefix: '{prefix} · {label}',
+      /** What a screen reader says for a stamp with a prefix. */
+      withPrefixDescription: '{prefix}. {description}',
+    },
+    bookSection: {
+      stampPrefix: 'On loan · {name}',
+      summaryNoDue: 'Lent to {name} on {date}. No due date.',
+      summaryDue: 'Lent to {name} on {date}. Due back on {due}.',
+      summaryOverdue: {
+        one: 'Lent to {name} on {date}. It was due back on {due} ({count} day ago).',
+        other: 'Lent to {name} on {date}. It was due back on {due} ({count} days ago).',
+      },
+      note: 'Note: {note}',
+      aboutBorrower: 'About {name}',
+      aboutBorrowerLabel: 'See everything {name} has borrowed',
+      /** The rubber stamp shown briefly after a return. */
+      returnedStamp: 'Returned',
+      onShelf: 'On the shelf, not lent to anyone.',
+      lend: 'Lend',
+      lendLabel: 'Lend {title}',
+      lent: 'Lent to {name}',
+      alreadyOnLoanTo: '“{title}” is already on loan to {name}.',
+      alreadyOnLoan: '“{title}” is already on loan.',
+    },
+    /** Booky's overdue nudge: "“Dune” was due back from Sam 3 days ago." */
+    overdue: {
+      nudge: '“{title}” was due back from {borrower} {when}.',
+      yesterday: 'yesterday',
+      daysAgo: { one: '{count} day ago', other: '{count} days ago' },
+    },
+    /** Words a Shelf row adds to its accessible name for a book on loan. */
+    shelf: {
+      onLoanTo: 'on loan to {name}',
+      onLoanToOverdue: 'on loan to {name}, overdue',
+      onLoan: 'on loan',
+      onLoanOverdue: 'on loan, overdue',
+      /** The Shelf row's stamp for an overdue loan. */
+      overdueStamp: 'Overdue',
+    },
+  },
+  /** The lend sheet and its borrower picker. */
+  lend: {
+    sheet: {
+      title: 'Lend “{title}”',
+      subtitle: 'I’ll stamp the due date and keep an eye on it for you.',
+      save: 'Lend',
+      lentOn: 'Lent on',
+      dueBack: 'Due back',
+      /** Under the due date: the loan-length setting. */
+      dueHelp: { one: '{count} day after lending, unless you change it', other: '{count} days after lending, unless you change it' },
+      noDueDate: 'No due date',
+      note: 'Note (optional)',
+      notePlaceholder: 'e.g. Bring it to book club',
+    },
+    errors: {
+      chooseBorrower: 'Choose who’s borrowing it, or add their name.',
+      dueRequired: 'Enter a due date, or choose “No due date”.',
+      borrowerRemoved: 'That borrower has just been removed. Choose someone else.',
+      bookMissing: 'This book is no longer on your shelf.',
+      saveFailed: 'Sorry, I couldn’t save that loan. Please try again.',
+    },
+    /** Date problems in the lend and return sheets. */
+    issues: {
+      invalidDue: 'Enter a due date like 12/10/2026, or choose “No due date”.',
+      invalidReturned: 'Enter the day it came back, like 12/10/2026.',
+      invalidLent: 'Enter the day you lent it, like 12/10/2026.',
+      lentInFuture: 'The day you lent it can’t be in the future.',
+      dueBeforeLent: 'The due date can’t be before the day you lent it.',
+      returnedBeforeLent: 'It can’t come back before the day it was lent.',
+      returnedInFuture: 'The return date can’t be in the future.',
+    },
+    picker: {
+      newBorrower: 'New borrower',
+      lendingTo: 'Lending to',
+      change: 'Change',
+      changeLabel: 'Change borrower (now {name})',
+      contactLabel: 'How to reach {name} (optional)',
+      contactHelp: 'Phone, email or where they live — just for you.',
+      search: 'Who’s borrowing it?',
+      searchPlaceholder: 'A name, like Sam',
+      helpPick: 'Pick someone below or type a new name.',
+      helpType: 'Type their name.',
+      duplicate: '{name} already exists — use them?',
+      useExisting: 'Use {name}',
+      addNew: 'Add someone new',
+      addNewLabel: 'Add a different {name}',
+      create: 'Add “{name}”',
+      createLabel: 'Add {name} as a new borrower',
+      /** Under a suggested borrower's name. */
+      captionHasNow: { one: 'Has {count} book now', other: 'Has {count} books now' },
+      captionBorrowedBefore: { one: 'Borrowed once before', other: 'Borrowed {count} times before' },
+      captionNotYet: 'Not borrowed anything yet',
+      /** What a screen reader says for a suggested borrower. */
+      optionHasNow: { one: 'Lend to {name}, has {count} book now', other: 'Lend to {name}, has {count} books now' },
+      optionBorrowedBefore: { one: 'Lend to {name}, borrowed once before', other: 'Lend to {name}, borrowed {count} times before' },
+      optionNotYet: 'Lend to {name}, not borrowed anything yet',
+    },
+  },
+  /** Marking a loan returned, and undoing it. */
+  returnLoan: {
+    sheet: {
+      title: 'Mark “{title}” returned?',
+      subtitle: 'Lent to {name} on {date}.',
+      notYet: 'Not yet',
+      date: 'Came back on',
+    },
+    welcomeHome: 'Welcome home, “{title}”!',
+    lentAgain: '“{title}” has gone out on a new loan since, so I kept this one closed.',
+    undoFailed: 'Sorry, I couldn’t undo that.',
+  },
+  /** A borrower's page and Settings → Borrowers. */
+  borrowers: {
+    screen: {
+      card: 'Borrower’s card',
+      noContact: 'No contact details. Add some with Edit — they stay on this phone.',
+      currentHeading: 'Currently has',
+      currentEmpty: 'Nothing right now — every book is home.',
+      pastHeading: 'Has borrowed before',
+      pastEmpty: 'No returned loans yet.',
+      loading: 'Finding their card…',
+      missingTitle: 'Borrower not found',
+      missingMessage: 'I can’t find that borrower. They may have been removed.',
+      backToLoans: 'Back to loans',
+    },
+    /** Under a borrower's name: "Has 1 book now · borrowed 3 times since 5 Jun 2025". */
+    stats: {
+      never: 'Hasn’t borrowed anything yet',
+      hasNow: { one: 'Has {count} book now', other: 'Has {count} books now' },
+      nothingOut: 'Has nothing out',
+      /** {now} is "Has 1 book now" or "Has nothing out"; {count} is every loan they have had. */
+      line: { one: '{now} · borrowed once since {date}', other: '{now} · borrowed {count} times since {date}' },
+    },
+    edit: {
+      title: 'Edit {name}',
+      name: 'Name',
+      contact: 'How to reach them (optional)',
+      saved: 'Saved',
+      duplicate: '{name} is already a borrower. Pick a different name.',
+      blank: 'Give them a name.',
+      gone: 'This borrower has been removed.',
+    },
+    remove: {
+      label: 'Remove {name}',
+      removed: 'Removed {name}',
+      failed: 'Sorry, I couldn’t remove {name}. Please try again.',
+      confirmTitle: 'Remove {name}?',
+      clearsHistory: {
+        one: 'This also clears their lending history ({count} past loan). Your books stay on your shelf.',
+        other: 'This also clears their lending history ({count} past loans). Your books stay on your shelf.',
+      },
+      nothingElse: 'They haven’t borrowed anything, so nothing else changes.',
+      keep: 'Keep',
+      /** Removing is refused while they still have books out. */
+      blocked: {
+        one: '{name} still has {count} book of yours. Mark it returned first, then you can remove {name}.',
+        other: '{name} still has {count} books of yours. Mark them returned first, then you can remove {name}.',
+      },
+    },
+    settings: {
+      title: 'Borrowers',
+      intro: 'The people you lend to. Open someone to see what they have and what they’ve borrowed before.',
+      emptyTitle: 'No borrowers yet',
+      emptyMessage: 'When you lend a book, the person you lend it to appears here.',
+      rowLabel: '{name}, {line}',
+      /** "has 1 book now · 3 loans in all": {now} and {all} are the two keys below. */
+      line: '{now} · {all}',
+      hasNow: { one: 'has {count} book now', other: 'has {count} books now' },
+      nothingNow: 'has nothing now',
+      loansInAll: { one: '{count} loan in all', other: '{count} loans in all' },
+    },
+  },
+  /** "Lending history" on book detail. */
+  loanHistory: {
+    title: 'Lending history',
+    count: { one: '{count} past loan', other: '{count} past loans' },
+    toggleLabel: { one: 'Lending history, {count} past loan', other: 'Lending history, {count} past loans' },
+    /** From the day it was lent to the day it came back. */
+    range: '{from} – {to}',
+  },
+  /** Due-date reminders (P05-08). */
+  reminders: {
+    switch: {
+      label: 'Remind me when loans are due',
+      hint: 'A notification at 10:00 on the day a lent book is due back',
+      caption: 'A note at 10:00 on the day a lent book is due back. Nothing leaves your phone.',
+    },
+    notification: {
+      title: '“{title}” is due back today',
+      body: '{name} has it. A gentle reminder, no rush.',
+    },
+    /** The Android notification channel, as the phone's settings list it. */
+    channel: {
+      name: 'Loan reminders',
+      description: 'A note on the day a lent book is due back',
+    },
+  },
+
   // Series and groups
   /** Series: the list, a series' page and the words that summarise one (P04). */
   series: {

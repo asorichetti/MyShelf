@@ -10,8 +10,9 @@ import { LoanStamp } from '@/components/loans/LoanStamp';
 import { Button, Stamp, Text, useSnackbar } from '@/components/ui';
 import { focusViewIfLost } from '@/components/ui/focusView';
 import { loansRepo, useDatabase } from '@/db';
-import { dayCount, daysOverdue, formatDate, loanStatus, today as todayOf, type BookDetail, type LoanWithDetails } from '@/domain';
+import { daysOverdue, formatDate, loanStatus, today as todayOf, type BookDetail, type LoanWithDetails } from '@/domain';
 import { useLibraryEvent } from '@/features/events';
+import { t } from '@/i18n';
 import { Testids } from '@/testing/testids.gen';
 import { useTheme } from '@/theme';
 
@@ -25,10 +26,11 @@ type OpenLoan = NonNullable<BookDetail['openLoan']>;
 
 /** "Lent to Sam on 5 Jun 2026. Due back on 26 Jun 2026." (or how long ago it was due). */
 export function loanSummary(loan: OpenLoan, today: string): string {
-  const lent = `Lent to ${loan.borrowerName} on ${formatDate(loan.lentOn)}.`;
-  if (!loan.dueOn) return `${lent} No due date.`;
-  if (loanStatus(loan, today) === 'overdue') return `${lent} It was due back on ${formatDate(loan.dueOn)} (${dayCount(daysOverdue(loan, today))} ago).`;
-  return `${lent} Due back on ${formatDate(loan.dueOn)}.`;
+  const lent = { name: loan.borrowerName, date: formatDate(loan.lentOn) };
+  if (!loan.dueOn) return t('loans.bookSection.summaryNoDue', lent);
+  const due = formatDate(loan.dueOn);
+  if (loanStatus(loan, today) === 'overdue') return t('loans.bookSection.summaryOverdue', { ...lent, due, count: daysOverdue(loan, today) });
+  return t('loans.bookSection.summaryDue', { ...lent, due });
 }
 
 /**
@@ -83,12 +85,16 @@ export function BookLoanSection({ book }: { book: BookDetail }) {
       const outcome = await lending.lend({ bookId: book.id, ...values });
       if (outcome.status === 'lent') {
         setLendOpen(false);
-        show({ message: `Lent to ${outcome.borrowerName}` });
+        show({ message: t('loans.bookSection.lent', { name: outcome.borrowerName }) });
         return { status: 'lent' };
       }
       if (outcome.status === 'already-on-loan') {
         setLendOpen(false);
-        show({ message: outcome.current ? `“${book.title}” is already on loan to ${outcome.current.borrowerName}.` : `“${book.title}” is already on loan.` });
+        show({
+          message: outcome.current
+            ? t('loans.bookSection.alreadyOnLoanTo', { title: book.title, name: outcome.current.borrowerName })
+            : t('loans.bookSection.alreadyOnLoan', { title: book.title }),
+        });
         return { status: 'handled' };
       }
       return outcome;
@@ -101,22 +107,22 @@ export function BookLoanSection({ book }: { book: BookDetail }) {
       {loan ? (
         <>
           <View style={[styles.row, { gap: spacing.md }]}>
-            <LoanStamp loan={loan} today={today} prefix={`On loan · ${loan.borrowerName}`} testID={Testids.bookLoan.stamp} />
+            <LoanStamp loan={loan} today={today} prefix={t('loans.bookSection.stampPrefix', { name: loan.borrowerName })} testID={Testids.bookLoan.stamp} />
           </View>
           <Text testID={Testids.bookLoan.summary}>{loanSummary(loan, today)}</Text>
-          {loan.note ? <Text color="inkMuted">{`Note: ${loan.note}`}</Text> : null}
+          {loan.note ? <Text color="inkMuted">{t('loans.bookSection.note', { note: loan.note })}</Text> : null}
           <View style={[styles.row, { gap: spacing.sm }]}>
             <Button
               ref={primary}
-              label="Mark returned"
+              label={t('loans.markReturned')}
               icon={<MaterialCommunityIcons name="book-arrow-left-outline" size={sizes.icon} color={colors.onPrimary} />}
               onPress={() => returning.start({ ...loan, bookTitle: book.title })}
               testID={Testids.returnLoan.open}
             />
             <Button
-              label={`About ${loan.borrowerName}`}
+              label={t('loans.bookSection.aboutBorrower', { name: loan.borrowerName })}
               variant="ghost"
-              accessibilityLabel={`See everything ${loan.borrowerName} has borrowed`}
+              accessibilityLabel={t('loans.bookSection.aboutBorrowerLabel', { name: loan.borrowerName })}
               onPress={() => router.navigate({ pathname: '/borrower/[id]', params: { id: String(loan.borrowerId) } })}
               testID={Testids.bookLoan.borrower}
             />
@@ -127,17 +133,17 @@ export function BookLoanSection({ book }: { book: BookDetail }) {
           {welcome && !loan ? (
             <View testID={Testids.bookLoan.welcome} role="status" aria-live="polite" accessibilityLiveRegion="polite" style={[styles.row, { gap: spacing.md }]}>
               <Booky expression="happy" size={56} animated={false} />
-              <Stamp label="Returned" tone="success" />
-              <Text style={styles.flex}>{`Welcome home, “${book.title}”!`}</Text>
+              <Stamp label={t('loans.bookSection.returnedStamp')} tone="success" />
+              <Text style={styles.flex}>{t('returnLoan.welcomeHome', { title: book.title })}</Text>
             </View>
           ) : (
-            <Text color="inkMuted">On the shelf, not lent to anyone.</Text>
+            <Text color="inkMuted">{t('loans.bookSection.onShelf')}</Text>
           )}
           <Button
             ref={primary}
-            label="Lend"
+            label={t('loans.bookSection.lend')}
             variant="secondary"
-            accessibilityLabel={`Lend ${book.title}`}
+            accessibilityLabel={t('loans.bookSection.lendLabel', { title: book.title })}
             icon={<MaterialCommunityIcons name="book-arrow-right-outline" size={sizes.icon} color={colors.onPrimaryContainer} />}
             onPress={() => setLendOpen(true)}
             testID={Testids.lend.open}

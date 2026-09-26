@@ -10,6 +10,7 @@ import { emit, useLibraryEvent } from '@/features/events';
 import { BorrowerEditSheet } from '@/features/loans/BorrowerScreen';
 import { removeBorrower, saveBorrower } from '@/features/loans/useBorrower';
 import { LoadingPage } from '@/features/navigation/LoadingPage';
+import { t } from '@/i18n';
 import { Testids } from '@/testing/testids.gen';
 import { useTheme } from '@/theme';
 
@@ -17,13 +18,11 @@ import { useTheme } from '@/theme';
 import { SettingsPage } from './SettingsPage';
 
 const T = Testids.borrowers;
-const books = (n: number) => (n === 1 ? '1 book' : `${n} books`);
 
 /** "has 1 book now · 3 loans in all" */
 export function borrowerLine(b: BorrowerWithStats): string {
-  const now = b.openLoans ? `has ${books(b.openLoans)} now` : 'has nothing now';
-  const all = b.totalLoans === 1 ? '1 loan in all' : `${b.totalLoans} loans in all`;
-  return `${now} · ${all}`;
+  const now = b.openLoans ? t('borrowers.settings.hasNow', { count: b.openLoans }) : t('borrowers.settings.nothingNow');
+  return t('borrowers.settings.line', { now, all: t('borrowers.settings.loansInAll', { count: b.totalLoans }) });
 }
 
 /**
@@ -69,32 +68,32 @@ export function BorrowersScreen() {
       const outcome = await removeBorrower(db, deleting.id);
       if (outcome === 'deleted') {
         emit('loans-changed');
-        show({ message: `Removed ${deleting.name}` });
+        show({ message: t('borrowers.remove.removed', { name: deleting.name }) });
       } else if (outcome === 'has-books-out') setBlocked(deleting);
     } catch (e) {
       console.error('Could not remove the borrower', e);
-      show({ message: `Sorry, I couldn’t remove ${deleting.name}. Please try again.` });
+      show({ message: t('borrowers.remove.failed', { name: deleting.name }) });
     }
     setBusy(false);
     setDeleting(null);
   };
 
   return (
-    <SettingsPage title="Borrowers" intro="The people you lend to. Open someone to see what they have and what they’ve borrowed before." testID={T.root} backTestID={T.back}>
+    <SettingsPage title={t('borrowers.settings.title')} intro={t('borrowers.settings.intro')} testID={T.root} backTestID={T.back}>
       {blocked ? (
         <SettingsNotice tone="warn" role="alert">
-          {`${blocked.name} still has ${books(blocked.openLoans)} of yours. Mark ${blocked.openLoans === 1 ? 'it' : 'them'} returned first, then you can remove ${blocked.name}.`}
+          {t('borrowers.remove.blocked', { name: blocked.name, count: blocked.openLoans })}
         </SettingsNotice>
       ) : null}
       {list.length === 0 ? (
         <EmptyState
           testID={T.empty}
           illustration={<Booky expression="sleepy" size={96} />}
-          title="No borrowers yet"
-          message="When you lend a book, the person you lend it to appears here."
+          title={t('borrowers.settings.emptyTitle')}
+          message={t('borrowers.settings.emptyMessage')}
         />
       ) : (
-        <View role="list" aria-label="Borrowers" style={{ gap: spacing.sm }}>
+        <View role="list" aria-label={t('borrowers.settings.title')} style={{ gap: spacing.sm }}>
           {list.map((b) => (
             <View
               key={b.id}
@@ -103,7 +102,7 @@ export function BorrowersScreen() {
             >
               <Pressable
                 role="link"
-                accessibilityLabel={`${b.name}, ${borrowerLine(b)}`}
+                accessibilityLabel={t('borrowers.settings.rowLabel', { name: b.name, line: borrowerLine(b) })}
                 onPress={() => router.navigate({ pathname: '/borrower/[id]', params: { id: String(b.id) } })}
                 testID={T.row}
                 style={({ pressed }) => [
@@ -119,8 +118,8 @@ export function BorrowersScreen() {
                   {borrowerLine(b)}
                 </Text>
               </Pressable>
-              <IconButton icon="pencil-outline" accessibilityLabel={`Edit ${b.name}`} onPress={() => setEditing(b)} testID={T.edit} />
-              <IconButton icon="trash-can-outline" variant="danger" accessibilityLabel={`Remove ${b.name}`} onPress={() => askDelete(b)} testID={T.delete} />
+              <IconButton icon="pencil-outline" accessibilityLabel={t('borrowers.edit.title', { name: b.name })} onPress={() => setEditing(b)} testID={T.edit} />
+              <IconButton icon="trash-can-outline" variant="danger" accessibilityLabel={t('borrowers.remove.label', { name: b.name })} onPress={() => askDelete(b)} testID={T.delete} />
             </View>
           ))}
         </View>
@@ -134,26 +133,24 @@ export function BorrowersScreen() {
             if (outcome.status === 'saved') {
               emit('loans-changed');
               setEditing(null);
-              show({ message: 'Saved' });
+              show({ message: t('borrowers.edit.saved') });
               return null;
             }
-            if (outcome.status === 'duplicate') return `${outcome.other.name} is already a borrower. Pick a different name.`;
-            if (outcome.status === 'blank') return 'Give them a name.';
-            return 'This borrower has been removed.';
+            if (outcome.status === 'duplicate') return t('borrowers.edit.duplicate', { name: outcome.other.name });
+            if (outcome.status === 'blank') return t('borrowers.edit.blank');
+            return t('borrowers.edit.gone');
           }}
         />
       ) : null}
       <ConfirmDialog
         visible={deleting != null}
         illustration={<Booky expression="concerned" size={72} animated={false} />}
-        title={`Remove ${deleting?.name ?? ''}?`}
+        title={t('borrowers.remove.confirmTitle', { name: deleting?.name ?? '' })}
         message={
-          deleting?.totalLoans
-            ? `This also clears their lending history (${deleting.totalLoans === 1 ? '1 past loan' : `${deleting.totalLoans} past loans`}). Your books stay on your shelf.`
-            : 'They haven’t borrowed anything, so nothing else changes.'
+          deleting?.totalLoans ? t('borrowers.remove.clearsHistory', { count: deleting.totalLoans }) : t('borrowers.remove.nothingElse')
         }
-        confirmLabel="Remove"
-        cancelLabel="Keep"
+        confirmLabel={t('common.remove')}
+        cancelLabel={t('borrowers.remove.keep')}
         destructive
         busy={busy}
         onConfirm={() => void confirmDelete()}

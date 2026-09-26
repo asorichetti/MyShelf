@@ -1,6 +1,8 @@
 import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
 
+import { t } from '@/i18n';
+
 import { REMINDER_CHANNEL } from './plan';
 
 import type { ReminderPermission, ReminderScheduler } from './types';
@@ -16,8 +18,8 @@ async function prepare(): Promise<void> {
   });
   if (Platform.OS === 'android') {
     await Notifications.setNotificationChannelAsync(REMINDER_CHANNEL, {
-      name: 'Loan reminders',
-      description: 'A note on the day a lent book is due back',
+      name: t('reminders.channel.name'),
+      description: t('reminders.channel.description'),
       importance: Notifications.AndroidImportance.DEFAULT,
     });
   }
