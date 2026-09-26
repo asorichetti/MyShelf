@@ -1,5 +1,7 @@
 import { platformTypography, type PlatformTypography } from './platformTypography';
 import {
+  coverPalette,
+  coverSizes,
   elevation,
   fontFamilies,
   lightColors,
@@ -8,6 +10,7 @@ import {
   spacing,
   typography,
   type ColorTokens,
+  type CoverColors,
 } from './tokens';
 
 export type ColorSchemeName = 'light' | 'dark';
@@ -21,6 +24,8 @@ export interface Theme {
   typography: PlatformTypography;
   fonts: typeof fontFamilies;
   elevation: typeof elevation;
+  covers: readonly CoverColors[];
+  coverSizes: typeof coverSizes;
 }
 
 export const lightTheme: Theme = {
@@ -32,6 +37,8 @@ export const lightTheme: Theme = {
   typography: platformTypography(typography),
   fonts: fontFamilies,
   elevation,
+  covers: coverPalette,
+  coverSizes,
 };
 
 /**

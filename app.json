@@ -37,7 +37,8 @@
       "expo-sqlite",
       "expo-font",
       "expo-splash-screen",
-      "expo-asset"
+      "expo-asset",
+      "expo-image"
     ],
     "scheme": "myshelf",
     "experiments": {

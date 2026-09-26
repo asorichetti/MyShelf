@@ -5,6 +5,7 @@ export * from './genre';
 export * from './genreNormaliser';
 export * from './genres';
 export * from './group';
+export * from './hashColour';
 export * from './isbn';
 export * from './languages';
 export * from './loan';

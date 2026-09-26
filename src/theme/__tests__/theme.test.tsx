@@ -50,6 +50,13 @@ describe('light theme colour pairs', () => {
     },
   );
 
+  it.each(lightTheme.covers.map((c, i) => [i, c.cloth, contrastRatio(c.ink, c.cloth)]))(
+    'generated cover %i: ink on %s meets WCAG AA (ratio %f)',
+    (_i, _cloth, ratio) => {
+      expect(ratio).toBeGreaterThanOrEqual(4.5);
+    },
+  );
+
   it('covers every on* role with a pair', () => {
     const onRoles = Object.keys(colors).filter((k) => /^on[A-Z]/.test(k));
     const covered = new Set(textPairs.map(([fg]) => fg));

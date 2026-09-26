@@ -277,6 +277,38 @@ export const typography = {
 
 export type TypographyVariant = keyof typeof typography;
 
+/** Colours for a generated cover: card-stock ink on a cloth binding, with brass trim. */
+export interface CoverColors {
+  cloth: string;
+  ink: string;
+  trim: string;
+}
+
+/**
+ * Bindings for generated covers, picked by a stable hash of the title
+ * (`hashColour` in src/domain). Every `ink` on `cloth` meets WCAG AA; the
+ * theme tests check it.
+ */
+export const coverPalette: readonly CoverColors[] = [
+  { cloth: palette.plum700, ink: palette.paper50, trim: palette.brass300 },
+  { cloth: palette.berry800, ink: palette.paper50, trim: palette.brass300 },
+  { cloth: palette.moss900, ink: palette.paper50, trim: palette.brass300 },
+  { cloth: palette.plum900, ink: palette.paper50, trim: palette.brass300 },
+  { cloth: palette.amber900, ink: palette.paper50, trim: palette.brass300 },
+  { cloth: palette.ink700, ink: palette.paper50, trim: palette.brass300 },
+  { cloth: palette.berry600, ink: palette.white, trim: palette.brass300 },
+  { cloth: palette.rose900, ink: palette.paper50, trim: palette.brass300 },
+];
+
+/** Cover sizes (points): list thumbnails, form previews and the detail header. */
+export const coverSizes = {
+  thumb: { width: 48, height: 72 },
+  medium: { width: 120, height: 180 },
+  large: { width: 200, height: 300 },
+} as const;
+
+export type CoverSize = keyof typeof coverSizes;
+
 /** Cross-platform shadows (React Native `boxShadow` strings). */
 export const elevation = {
   none: 'none',

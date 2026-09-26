@@ -93,12 +93,13 @@ A usable, offline catalogue: the user can add a book by hand, see it on the Shel
 - **Acceptance:** case-insensitive de-duplication; removing a genre from the last book leaves the genre row (genres are managed in P06-02).
 - **Tests:** `src/components/book/__tests__/GenresInput.test.tsx`, `src/db/repositories/__tests__/genres.test.ts`.
 
-### P01-10 Cover image and generated fallback
+### P01-10 Cover image and generated fallback — done
 
 - **Description:** `CoverImage` using `expo-image` (install with `npx expo install expo-image`) with placeholder and error fallback to `GeneratedCover`: an SVG cover in theme purples/brass, colour chosen by a stable hash of the title, title and author set in Lora. Sizes `thumb` (48×72), `medium` (120×180), `large` (200×300). Decorative when adjacent text already names the book.
 - **Files:** `src/components/book/CoverImage.tsx`, `src/components/book/GeneratedCover.tsx`, `src/domain/hashColour.ts`.
 - **Acceptance:** same title always gets the same colour; broken URI falls back without console errors.
 - **Tests:** `src/components/book/__tests__/CoverImage.test.tsx`, `src/domain/__tests__/hashColour.test.ts`.
+- **Delivered:** built before P01-03, which uses it. `GeneratedCover` is a cloth-coloured `View` with an SVG layer for the spine hinge and brass rules, and the title and author as wrapping `Text` in Lora (SVG text cannot wrap); a thumbnail shows the title's initial. Bindings come from `coverPalette` and sizes from `coverSizes` in `src/theme/tokens.ts` (`theme.covers`, `theme.coverSizes`); every binding's ink is checked for AA. `hashColour(title, count)` is FNV-1a over the trimmed, lower-cased title. The generated cover sits under the image as its placeholder; on error the image is removed (no broken `<img>` left for the render gate), and a decorative image gets `alt=""`.
 
 ### P01-11 Delete book with confirmation and undo
 
