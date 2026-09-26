@@ -5,6 +5,7 @@ import { type BookListItem, type ShelfFilters, type ShelfGroupBy, type ShelfSort
 import { useLibraryEvent } from '@/features/events';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 
+import { recordTiming, SHELF_QUERY_MEASURE, timingStart } from './timing';
 import { defaultShelfPrefs, useShelfPrefs } from './useShelfPrefs';
 
 /** How long typing must pause before the Shelf searches. */
@@ -68,6 +69,7 @@ export function useShelf(): ShelfState {
     const id = ++request.current;
     const key = JSON.stringify([activeQuery, sort, groupBy, filters]);
     asked.current = key;
+    const started = timingStart();
     Promise.all([shelfSectionsRepo.listShelfSections(db, { groupBy, query: activeQuery, filters, ...sort }), booksRepo.countBooks(db)])
       .then(([result, count]) => {
         // An answer for an older search, sort or filter is dropped. For the same one, any answer newer than
@@ -75,6 +77,7 @@ export function useShelf(): ShelfState {
         // still reaches the screen instead of being overtaken by the next.
         if (key !== asked.current || id < applied.current) return;
         applied.current = id;
+        recordTiming(SHELF_QUERY_MEASURE, started, { query: activeQuery, count: result.count });
         setSections(result.sections);
         setTotal(count);
       })
