@@ -298,13 +298,11 @@ export function sectionSort(levels: readonly SortLevel[], groupBy: ShelfGroupBy)
 const MASK = 0xffffffffn;
 
 /**
- * The shuffle's rank for a book: a 32-bit integer hash of the book's id and
- * the seed (Mueller's integer hash, two rounds). The SQL in the registry
- * computes exactly this; this twin is for tests.
+ * The shuffle's rank for a book: the id stepped by the golden ratio plus the
+ * seed, then one xor-shift-multiply round, all in 32 bits. The SQL in the
+ * registry computes exactly this; this twin is for tests.
  */
 export function shuffleRank(id: number, seed: number): number {
-  let x = (BigInt(id) * 2654435761n + BigInt(seed)) & MASK;
-  const round = (v: bigint) => ((((v >> 16n) ^ v) * 73244475n) & MASK);
-  x = round(round(x));
-  return Number((x >> 16n) ^ x);
+  const x = (BigInt(id) * 2654435761n + BigInt(seed)) & MASK;
+  return Number((((x >> 16n) ^ x) * 73244475n) & MASK);
 }

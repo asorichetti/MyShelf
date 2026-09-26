@@ -150,17 +150,17 @@ const FORMAT_ORDER = `CASE b.format WHEN 'hardcover' THEN 1 WHEN 'paperback' THE
 
 // ---- Surprise me ----
 
-/** One round of Mueller's integer hash; `^` written as `(a | b) - (a & b)`, since SQLite has no XOR. */
-function mixSql(x: string): string {
-  const shifted = `(${x} >> 16)`;
-  return `((((${shifted} | ${x}) - (${shifted} & ${x})) * 73244475) & 4294967295)`;
-}
-
-/** SQL twin of `shuffleRank()` in src/domain/shelfSort.ts. `seed` is a validated integer, inlined. */
+/**
+ * SQL twin of `shuffleRank()` in src/domain/shelfSort.ts: the id stepped by
+ * the golden ratio plus the seed, then one xor-shift-multiply round (SQLite
+ * has no XOR, so `a ^ b` is written `(a | b) - (a & b)`). One round keeps
+ * the expression small enough to cost little more than sorting by id.
+ * `seed` is a validated integer, inlined.
+ */
 export function shuffleSql(seed: number): string {
   if (!Number.isInteger(seed) || seed < 0) throw new RangeError(`Bad shuffle seed ${seed}`);
-  const x = mixSql(mixSql(`((b.id * 2654435761 + ${seed}) & 4294967295)`));
-  return `(((${x} >> 16) | ${x}) - ((${x} >> 16) & ${x}))`;
+  const x = `((b.id * 2654435761 + ${seed}) & 4294967295)`;
+  return `((((${x} >> 16) | ${x}) - ((${x} >> 16) & ${x})) * 73244475 & 4294967295)`;
 }
 
 // ---- Computed ranks ----
@@ -202,11 +202,25 @@ function denseRanks<T>(entries: [number, T][], compare: (a: T, b: T) => number):
   return out;
 }
 
+const HUE_RANKS = rainbowRanks();
+/** Title -> place on the wheel: a title's colour never changes, so it is worked out once per title. */
+const hueByTitle = new Map<string, number>();
+const MAX_REMEMBERED_TITLES = 50_000;
+
 /** Each book's spine colour, as its place round the colour wheel (0 = red). */
 async function colourRanks(db: Db): Promise<Map<number, number>> {
-  const hue = rainbowRanks();
   const rows = await db.all<{ id: number; title: string }>('SELECT id, title FROM books');
-  return new Map(rows.map((r) => [r.id, hue[hashColour(r.title, coverCount)]]));
+  if (hueByTitle.size > MAX_REMEMBERED_TITLES) hueByTitle.clear();
+  const out = new Map<number, number>();
+  for (const { id, title } of rows) {
+    let rank = hueByTitle.get(title);
+    if (rank === undefined) {
+      rank = HUE_RANKS[hashColour(title, coverCount)];
+      hueByTitle.set(title, rank);
+    }
+    out.set(id, rank);
+  }
+  return out;
 }
 
 /** Call number parts: class, author mark, year (none last). */
@@ -221,9 +235,17 @@ async function callNumberRanks(db: Db): Promise<Map<number, number>> {
        (SELECT COALESCE(a.sort_name, a.name) FROM book_authors ba JOIN authors a ON a.id = ba.author_id WHERE ba.book_id = b.id ORDER BY ba.position, a.id LIMIT 1) AS author
      FROM books b`,
   );
+  // Books by the same author in the same genre and year share a call number: work each one out once.
+  const seen = new Map<string, CallParts>();
   const parts = rows.map((r): [number, CallParts] => {
-    const [cls, mark, year] = callNumber({ genres: r.genre ? [r.genre] : [], author: r.author, title: r.title, year: r.year }).split(' ');
-    return [r.id, [cls, mark, year ? Number(year) : Number.MAX_SAFE_INTEGER]];
+    const key = `${r.genre ?? ''}\u0000${r.author != null ? `a${r.author}` : `t${r.title}`}\u0000${r.year ?? ''}`;
+    let call = seen.get(key);
+    if (!call) {
+      const [cls, mark, year] = callNumber({ genres: r.genre ? [r.genre] : [], author: r.author, title: r.title, year: r.year }).split(' ');
+      call = [cls, mark, year ? Number(year) : Number.MAX_SAFE_INTEGER];
+      seen.set(key, call);
+    }
+    return [r.id, call];
   });
   return denseRanks(parts, compareCall);
 }
