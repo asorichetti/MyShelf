@@ -44,8 +44,9 @@ export function BookyTipHost({ style }: { style?: StyleProp<ViewStyle> }) {
   const { tip, dismissTip } = useBooky();
   const { spacing, sizes } = useTheme();
   if (!tip) return null;
-  const actions = tip.actions?.map((a) => ({
+  const actions = tip.actions?.map((a, i) => ({
     ...a,
+    testID: a.testID ?? (i === 0 ? Testids.booky.action : undefined),
     onPress: () => {
       a.onPress();
       dismissTip();
@@ -63,8 +64,8 @@ export function BookyTipHost({ style }: { style?: StyleProp<ViewStyle> }) {
         actions={actions}
         onDismiss={tip.dismissible === false ? undefined : dismissTip}
         testID={Testids.booky.bubble}
-        messageTestID={Testids.booky.bubbleMessage}
-        dismissTestID={Testids.booky.bubbleDismiss}
+        messageTestID={Testids.booky.bubbleText}
+        dismissTestID={Testids.booky.dismiss}
         avatarTestID={Testids.booky.avatar}
       />
     </View>

@@ -55,10 +55,11 @@ describe.each(cases)('%s screen', (_name, Component, rootId, titleId, titleText)
     expect(screen.getByTestId(Testids.pageState.content)).toContainElement(screen.getByTestId(rootId));
   });
 
-  it('shows Booky', async () => {
+  it('shows Booky in an empty state', async () => {
     renderScreen(Component);
     await settle();
     expect(screen.getByLabelText(/^Booky the bookmark/)).toBeOnTheScreen();
+    expect(screen.getByTestId(Testids.emptyState.root)).toBeOnTheScreen();
   });
 });
 

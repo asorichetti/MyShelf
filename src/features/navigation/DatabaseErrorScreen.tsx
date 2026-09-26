@@ -6,6 +6,7 @@ export function DatabaseErrorScreen({ error, onRetry }: { error: Error; onRetry:
   return (
     <Screen pageState="error" testID={Testids.dbError.root} centered edges={['top', 'bottom', 'left', 'right']}>
       <EmptyState
+        testID={Testids.emptyState.root}
         illustration={<Booky expression="concerned" size={120} />}
         headingLevel={1}
         title="I couldn't open your library"

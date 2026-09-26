@@ -26,6 +26,7 @@ export function ShelfScreen() {
         ) : null}
       </View>
       <EmptyState
+        testID={Testids.emptyState.root}
         illustration={<Booky expression="happy" size={120} />}
         title="Your shelf is empty"
         message="Scan a book's barcode or cover and I'll fill in the title, author, genre and series for you."

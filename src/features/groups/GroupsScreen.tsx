@@ -9,6 +9,7 @@ export function GroupsScreen() {
         Groups
       </Heading>
       <EmptyState
+        testID={Testids.emptyState.root}
         illustration={<Booky expression="happy" size={112} />}
         title="No groups yet"
         message="Browse by genre, series or author, or make your own shelves like “Summer reads”."

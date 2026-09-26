@@ -9,6 +9,7 @@ export function ScanScreen() {
         Scan a book
       </Heading>
       <EmptyState
+        testID={Testids.emptyState.root}
         illustration={<Booky expression="excited" size={112} />}
         title="Ready when you are"
         message="Soon you'll point your camera at a barcode or cover and I'll look the book up."

@@ -8,6 +8,7 @@ export function NotFoundScreen() {
   return (
     <Screen testID={Testids.notFound.root} centered edges={['top', 'bottom', 'left', 'right']}>
       <EmptyState
+        testID={Testids.emptyState.root}
         illustration={<Booky expression="concerned" size={120} />}
         headingLevel={1}
         title="Page not found"

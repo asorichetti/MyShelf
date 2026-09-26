@@ -9,6 +9,7 @@ export function SettingsScreen() {
         Settings
       </Heading>
       <EmptyState
+        testID={Testids.emptyState.root}
         illustration={<Booky expression="sleepy" size={112} />}
         title="Nothing to tweak yet"
         message="Settings are having a little nap. They'll wake up as MyShelf grows."

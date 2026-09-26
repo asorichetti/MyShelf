@@ -11,11 +11,11 @@ import { useTheme } from '@/theme';
 type IconName = ComponentProps<typeof MaterialCommunityIcons>['name'];
 
 export const tabs: { name: string; title: string; icon: IconName; testID: string }[] = [
-  { name: 'index', title: 'Shelf', icon: 'bookshelf', testID: Testids.nav.tabShelf },
-  { name: 'scan', title: 'Scan', icon: 'barcode-scan', testID: Testids.nav.tabScan },
-  { name: 'loans', title: 'Loans', icon: 'book-clock-outline', testID: Testids.nav.tabLoans },
-  { name: 'groups', title: 'Groups', icon: 'tag-multiple-outline', testID: Testids.nav.tabGroups },
-  { name: 'settings', title: 'Settings', icon: 'cog-outline', testID: Testids.nav.tabSettings },
+  { name: 'index', title: 'Shelf', icon: 'bookshelf', testID: Testids.tabs.shelf },
+  { name: 'scan', title: 'Scan', icon: 'barcode-scan', testID: Testids.tabs.scan },
+  { name: 'loans', title: 'Loans', icon: 'book-clock-outline', testID: Testids.tabs.loans },
+  { name: 'groups', title: 'Groups', icon: 'tag-multiple-outline', testID: Testids.tabs.groups },
+  { name: 'settings', title: 'Settings', icon: 'cog-outline', testID: Testids.tabs.settings },
 ];
 
 /**

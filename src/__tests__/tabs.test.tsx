@@ -45,14 +45,14 @@ describe('tab navigation', () => {
     await screen.findByTestId(Testids.home.bookCount);
     expect(r.getPathname()).toBe('/');
     expect(screen.getByTestId(Testids.home.title)).toHaveTextContent('MyShelf');
-    for (const id of Object.values(Testids.nav)) expect(screen.getByTestId(id)).toBeOnTheScreen();
+    for (const id of Object.values(Testids.tabs)) expect(screen.getByTestId(id)).toBeOnTheScreen();
   });
 
   it.each([
-    [Testids.nav.tabScan, '/scan', Testids.scan.title],
-    [Testids.nav.tabLoans, '/loans', Testids.loans.title],
-    [Testids.nav.tabGroups, '/groups', Testids.groups.title],
-    [Testids.nav.tabSettings, '/settings', Testids.settings.title],
+    [Testids.tabs.scan, '/scan', Testids.scan.title],
+    [Testids.tabs.loans, '/loans', Testids.loans.title],
+    [Testids.tabs.groups, '/groups', Testids.groups.title],
+    [Testids.tabs.settings, '/settings', Testids.settings.title],
   ])('tab %s navigates to %s', async (tabId, path, titleId) => {
     const r = renderRouter(routes, { initialUrl: '/', wrapper: Root });
     await screen.findByTestId(Testids.home.bookCount);

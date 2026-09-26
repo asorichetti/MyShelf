@@ -1,8 +1,5 @@
 {
-  "pageState": {
-    "content": "page-content",
-    "error": "page-error"
-  },
+  "pageState": { "content": "page-content", "error": "page-error", "loading": "page-loading" },
   "home": {
     "root": "home-root",
     "title": "home-title",
@@ -10,44 +7,27 @@
     "scanAction": "home-scan-action",
     "askBooky": "home-ask-booky"
   },
-  "nav": {
-    "tabShelf": "tab-shelf",
-    "tabScan": "tab-scan",
-    "tabLoans": "tab-loans",
-    "tabGroups": "tab-groups",
-    "tabSettings": "tab-settings"
+  "tabs": {
+    "shelf": "tab-shelf",
+    "scan": "tab-scan",
+    "loans": "tab-loans",
+    "groups": "tab-groups",
+    "settings": "tab-settings"
   },
-  "scan": {
-    "root": "scan-root",
-    "title": "scan-title"
-  },
-  "loans": {
-    "root": "loans-root",
-    "title": "loans-title"
-  },
-  "groups": {
-    "root": "groups-root",
-    "title": "groups-title"
-  },
-  "settings": {
-    "root": "settings-root",
-    "title": "settings-title"
-  },
-  "notFound": {
-    "root": "not-found-root",
-    "title": "not-found-title",
-    "homeLink": "not-found-home-link"
-  },
-  "dbError": {
-    "root": "db-error-root",
-    "title": "db-error-title",
-    "retry": "db-error-retry"
-  },
+  "scan": { "root": "scan-root", "title": "scan-title" },
+  "loans": { "root": "loans-root", "title": "loans-title" },
+  "groups": { "root": "groups-root", "title": "groups-title" },
+  "settings": { "root": "settings-root", "title": "settings-title" },
+  "notFound": { "root": "not-found-root", "title": "not-found-title", "homeLink": "not-found-home-link" },
+  "loading": { "root": "loading-root", "title": "loading-title" },
+  "dbError": { "root": "db-error-root", "title": "db-error-title", "retry": "db-error-retry" },
+  "emptyState": { "root": "empty-state", "action": "empty-state-action" },
   "booky": {
     "avatar": "booky-avatar",
     "bubble": "booky-bubble",
-    "bubbleMessage": "booky-bubble-message",
-    "bubbleDismiss": "booky-bubble-dismiss",
+    "bubbleText": "booky-bubble-text",
+    "dismiss": "booky-dismiss",
+    "action": "booky-action",
     "tipHost": "booky-tip-host"
   }
 }

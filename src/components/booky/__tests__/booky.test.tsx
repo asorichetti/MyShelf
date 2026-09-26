@@ -113,9 +113,9 @@ describe('useBooky', () => {
     );
     expect(screen.queryByTestId(Testids.booky.bubble)).toBeNull();
     fireEvent.press(screen.getByRole('button', { name: 'help' }));
-    expect(screen.getByTestId(Testids.booky.bubbleMessage)).toHaveTextContent('Books you lend show up here.');
+    expect(screen.getByTestId(Testids.booky.bubbleText)).toHaveTextContent('Books you lend show up here.');
     expect(screen.getByTestId(Testids.booky.avatar).props.accessibilityLabel).toMatch(/thinking/);
-    fireEvent.press(screen.getByTestId(Testids.booky.bubbleDismiss));
+    fireEvent.press(screen.getByTestId(Testids.booky.dismiss));
     expect(screen.queryByTestId(Testids.booky.bubble)).toBeNull();
   });
 
@@ -127,6 +127,7 @@ describe('useBooky', () => {
       </BookyProvider>,
     );
     fireEvent.press(screen.getByRole('button', { name: 'help' }));
+    expect(screen.getByTestId(Testids.booky.action)).toBe(screen.getByRole('button', { name: 'Got it' }));
     fireEvent.press(screen.getByRole('button', { name: 'Got it' }));
     expect(screen.queryByTestId(Testids.booky.bubble)).toBeNull();
   });

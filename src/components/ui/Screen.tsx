@@ -9,8 +9,8 @@ export interface ScreenProps {
   children: ReactNode;
   /** testID for the `main` landmark (e.g. the screen's root id). */
   testID?: string;
-  /** Page-state marker placed on the outer container. */
-  pageState?: 'content' | 'error';
+  /** Page-state marker placed on the outer container (exactly one per screen). */
+  pageState?: 'loading' | 'content' | 'error';
   /** Wrap content in a ScrollView (default true). */
   scroll?: boolean;
   /** Safe-area edges to pad. Tab screens skip the bottom edge (the tab bar handles it). */
@@ -47,7 +47,7 @@ export function Screen({
 
   return (
     <View
-      testID={pageState === 'error' ? Testids.pageState.error : Testids.pageState.content}
+      testID={Testids.pageState[pageState]}
       style={[styles.fill, { backgroundColor: theme.colors.paper }]}
     >
       <SafeAreaView edges={edges} style={styles.fill}>

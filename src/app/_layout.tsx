@@ -8,6 +8,7 @@ import { BookyProvider } from '@/components/booky';
 import { DatabaseProvider, type DatabaseStatus } from '@/db';
 import { openAppDatabase } from '@/db/expo';
 import { DatabaseErrorScreen } from '@/features/navigation/DatabaseErrorScreen';
+import { LoadingScreen } from '@/features/navigation/LoadingScreen';
 import { ThemeProvider, useTheme } from '@/theme';
 import { appFonts } from '@/theme/fonts';
 
@@ -46,6 +47,7 @@ export default function RootLayout() {
       <DatabaseProvider
         open={openAppDatabase}
         onStatusChange={setDbState}
+        fallback={fontsReady ? <LoadingScreen /> : null}
         renderError={(error, retry) => (fontsReady ? <DatabaseErrorScreen error={error} onRetry={retry} /> : null)}
       >
         {fontsReady ? <RootStack /> : null}

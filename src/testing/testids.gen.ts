@@ -4,6 +4,7 @@ export const Testids = {
   pageState: {
     content: 'page-content',
     error: 'page-error',
+    loading: 'page-loading',
   },
   home: {
     root: 'home-root',
@@ -12,12 +13,12 @@ export const Testids = {
     scanAction: 'home-scan-action',
     askBooky: 'home-ask-booky',
   },
-  nav: {
-    tabShelf: 'tab-shelf',
-    tabScan: 'tab-scan',
-    tabLoans: 'tab-loans',
-    tabGroups: 'tab-groups',
-    tabSettings: 'tab-settings',
+  tabs: {
+    shelf: 'tab-shelf',
+    scan: 'tab-scan',
+    loans: 'tab-loans',
+    groups: 'tab-groups',
+    settings: 'tab-settings',
   },
   scan: {
     root: 'scan-root',
@@ -40,16 +41,25 @@ export const Testids = {
     title: 'not-found-title',
     homeLink: 'not-found-home-link',
   },
+  loading: {
+    root: 'loading-root',
+    title: 'loading-title',
+  },
   dbError: {
     root: 'db-error-root',
     title: 'db-error-title',
     retry: 'db-error-retry',
   },
+  emptyState: {
+    root: 'empty-state',
+    action: 'empty-state-action',
+  },
   booky: {
     avatar: 'booky-avatar',
     bubble: 'booky-bubble',
-    bubbleMessage: 'booky-bubble-message',
-    bubbleDismiss: 'booky-bubble-dismiss',
+    bubbleText: 'booky-bubble-text',
+    dismiss: 'booky-dismiss',
+    action: 'booky-action',
     tipHost: 'booky-tip-host',
   },
 } as const;

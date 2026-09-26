@@ -1,6 +1,6 @@
 import { fireEvent, screen } from '@testing-library/react-native';
 import { useState } from 'react';
-import { Text as RNText } from 'react-native';
+import { ScrollView, Text as RNText } from 'react-native';
 
 import { Button, Card, EmptyState, Heading, Screen, Text, TextField } from '@/components/ui';
 import { renderWithTheme } from '@/testing/render';
@@ -21,14 +21,30 @@ describe('Screen', () => {
     expect(screen.getByText('Hello')).toBeOnTheScreen();
   });
 
-  it('switches to the page-error marker', () => {
+  it.each(['loading', 'error'] as const)('switches to the page-%s marker only', (state) => {
     renderWithTheme(
-      <Screen pageState="error" scroll={false}>
-        <RNText>Oops</RNText>
+      <Screen pageState={state}>
+        <RNText>State</RNText>
       </Screen>,
     );
-    expect(screen.getByTestId(Testids.pageState.error)).toBeOnTheScreen();
+    expect(screen.getByTestId(Testids.pageState[state])).toBeOnTheScreen();
     expect(screen.queryByTestId(Testids.pageState.content)).toBeNull();
+  });
+
+  it('scrolls by default and not when asked', () => {
+    const { rerender } = renderWithTheme(
+      <Screen>
+        <RNText>Body</RNText>
+      </Screen>,
+    );
+    expect(screen.UNSAFE_queryAllByType(ScrollView)).toHaveLength(1);
+    rerender(
+      <Screen scroll={false}>
+        <RNText>Body</RNText>
+      </Screen>,
+    );
+    expect(screen.UNSAFE_queryAllByType(ScrollView)).toHaveLength(0);
+    expect(screen.getByText('Body')).toBeOnTheScreen();
   });
 });
 

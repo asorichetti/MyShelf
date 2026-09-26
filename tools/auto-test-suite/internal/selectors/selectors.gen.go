@@ -6,12 +6,14 @@ package selectors
 type pageStateSelectors struct {
 	Content string
 	Error   string
+	Loading string
 }
 
 // PageState selectors.
 var PageState = pageStateSelectors{
 	Content: `[data-testid="page-content"]`,
 	Error:   `[data-testid="page-error"]`,
+	Loading: `[data-testid="page-loading"]`,
 }
 
 type homeSelectors struct {
@@ -31,21 +33,21 @@ var Home = homeSelectors{
 	AskBooky:   `[data-testid="home-ask-booky"]`,
 }
 
-type navSelectors struct {
-	TabShelf    string
-	TabScan     string
-	TabLoans    string
-	TabGroups   string
-	TabSettings string
+type tabsSelectors struct {
+	Shelf    string
+	Scan     string
+	Loans    string
+	Groups   string
+	Settings string
 }
 
-// Nav selectors.
-var Nav = navSelectors{
-	TabShelf:    `[data-testid="tab-shelf"]`,
-	TabScan:     `[data-testid="tab-scan"]`,
-	TabLoans:    `[data-testid="tab-loans"]`,
-	TabGroups:   `[data-testid="tab-groups"]`,
-	TabSettings: `[data-testid="tab-settings"]`,
+// Tabs selectors.
+var Tabs = tabsSelectors{
+	Shelf:    `[data-testid="tab-shelf"]`,
+	Scan:     `[data-testid="tab-scan"]`,
+	Loans:    `[data-testid="tab-loans"]`,
+	Groups:   `[data-testid="tab-groups"]`,
+	Settings: `[data-testid="tab-settings"]`,
 }
 
 type scanSelectors struct {
@@ -105,6 +107,17 @@ var NotFound = notFoundSelectors{
 	HomeLink: `[data-testid="not-found-home-link"]`,
 }
 
+type loadingSelectors struct {
+	Root  string
+	Title string
+}
+
+// Loading selectors.
+var Loading = loadingSelectors{
+	Root:  `[data-testid="loading-root"]`,
+	Title: `[data-testid="loading-title"]`,
+}
+
 type dbErrorSelectors struct {
 	Root  string
 	Title string
@@ -118,19 +131,32 @@ var DbError = dbErrorSelectors{
 	Retry: `[data-testid="db-error-retry"]`,
 }
 
+type emptyStateSelectors struct {
+	Root   string
+	Action string
+}
+
+// EmptyState selectors.
+var EmptyState = emptyStateSelectors{
+	Root:   `[data-testid="empty-state"]`,
+	Action: `[data-testid="empty-state-action"]`,
+}
+
 type bookySelectors struct {
-	Avatar        string
-	Bubble        string
-	BubbleMessage string
-	BubbleDismiss string
-	TipHost       string
+	Avatar     string
+	Bubble     string
+	BubbleText string
+	Dismiss    string
+	Action     string
+	TipHost    string
 }
 
 // Booky selectors.
 var Booky = bookySelectors{
-	Avatar:        `[data-testid="booky-avatar"]`,
-	Bubble:        `[data-testid="booky-bubble"]`,
-	BubbleMessage: `[data-testid="booky-bubble-message"]`,
-	BubbleDismiss: `[data-testid="booky-bubble-dismiss"]`,
-	TipHost:       `[data-testid="booky-tip-host"]`,
+	Avatar:     `[data-testid="booky-avatar"]`,
+	Bubble:     `[data-testid="booky-bubble"]`,
+	BubbleText: `[data-testid="booky-bubble-text"]`,
+	Dismiss:    `[data-testid="booky-dismiss"]`,
+	Action:     `[data-testid="booky-action"]`,
+	TipHost:    `[data-testid="booky-tip-host"]`,
 }
