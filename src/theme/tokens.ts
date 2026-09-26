@@ -53,6 +53,39 @@ export const palette = {
 
   white: '#FFFFFF',
   cheek: '#F4A6C6',
+
+  // Night library (dark theme, P09-02): warm aubergine grounds, parchment ink, lamp-lit accents.
+  night900: '#1C1424',
+  night800: '#261C30',
+  night700: '#33263F',
+  night600: '#43355A',
+  night500: '#948AA3',
+  night300: '#BDB0C8',
+  parchment: '#F1E8DC',
+  parchmentDim: '#EFE6DA',
+  lavender300: '#C4A8EE',
+  lavender100: '#EADFFA',
+  plumNight: '#3D2A5C',
+  berry300: '#F29BC4',
+  berry200: '#FAD3E4',
+  berry700: '#8E2A5A',
+  berryNight: '#4D2139',
+  berryDusk: '#5A2340',
+  moss300: '#8FD1A8',
+  moss200: '#C5EBD3',
+  mossNight: '#1E3A29',
+  mossInk: '#10261A',
+  amber300: '#F0C674',
+  amber200: '#F8E0AE',
+  amberNight: '#3E2E10',
+  amberDusk: '#4A3510',
+  amberInk: '#2A1C00',
+  rose300: '#F0A49C',
+  rose200: '#FAD4CF',
+  roseNight: '#4D1D19',
+  roseInk: '#2A0E0B',
+  cheekNight: '#E48DB2',
+  brass400: '#C9A45F',
 } as const;
 
 export interface ColorTokens {
@@ -151,6 +184,56 @@ export const lightColors: ColorTokens = {
   bookyShade: palette.plum700,
   bookyStitch: palette.plum200,
   bookyCheek: palette.cheek,
+  bookyEye: palette.white,
+  bookyPupil: palette.plum900,
+};
+
+/**
+ * The dark theme (P09-02): a night library rather than pure black. Warm
+ * aubergine paper and card stock, parchment-coloured ink, lamp-lit lavender
+ * and berry, and soft dark fills for the containers. Every pair in
+ * `textPairs` and `uiPairs` is checked in `contrast.dark.test.ts` as well.
+ */
+export const darkColors: ColorTokens = {
+  paper: palette.night900,
+  surface: palette.night800,
+  surfaceTint: palette.night700,
+  ink: palette.parchment,
+  inkMuted: palette.night300,
+  primary: palette.lavender300,
+  onPrimary: palette.night900,
+  primaryContainer: palette.plumNight,
+  onPrimaryContainer: palette.lavender100,
+  accent: palette.berry300,
+  onAccent: palette.night900,
+  accentContainer: palette.berryNight,
+  onAccentContainer: palette.berry200,
+  success: palette.moss300,
+  onSuccess: palette.mossInk,
+  successContainer: palette.mossNight,
+  onSuccessContainer: palette.moss200,
+  warn: palette.amber300,
+  onWarn: palette.amberInk,
+  warnContainer: palette.amberNight,
+  onWarnContainer: palette.amber200,
+  danger: palette.rose300,
+  onDanger: palette.roseInk,
+  dangerContainer: palette.roseNight,
+  onDangerContainer: palette.rose200,
+  border: palette.night600,
+  outline: palette.night500,
+  cardRule: palette.berry300,
+  cardLine: palette.night700,
+  scrim: 'rgba(8, 5, 12, 0.6)',
+  inverseSurface: palette.parchmentDim,
+  onInverseSurface: palette.plum900,
+  inversePrimary: palette.plum600,
+  brass: palette.brass400,
+  // Booky reads by lamplight: a brighter bookmark, a moonlit edge (also his thought bubbles), the same face.
+  bookyBody: palette.plum400,
+  bookyShade: palette.plum300,
+  bookyStitch: palette.lavender100,
+  bookyCheek: palette.cheekNight,
   bookyEye: palette.white,
   bookyPupil: palette.plum900,
 };
@@ -303,6 +386,23 @@ export const coverPalette: readonly CoverColors[] = [
   { cloth: palette.rose900, ink: palette.paper50, trim: palette.brass300 },
 ];
 
+/**
+ * Generated-cover bindings on the dark theme: the same eight hues, one step
+ * brighter, so a cloth cover stands out from night card stock instead of
+ * sinking into it (the darkest light-theme cloths are nearly the dark
+ * surface). Same length and order as `coverPalette`, so a book keeps its hue.
+ */
+export const darkCoverPalette: readonly CoverColors[] = [
+  { cloth: palette.plum600, ink: palette.white, trim: palette.brass300 },
+  { cloth: palette.berry700, ink: palette.paper50, trim: palette.brass300 },
+  { cloth: palette.moss700, ink: palette.paper50, trim: palette.brass300 },
+  { cloth: palette.plum500, ink: palette.white, trim: palette.brass300 },
+  { cloth: palette.amber700, ink: palette.paper50, trim: palette.brass300 },
+  { cloth: palette.ink500, ink: palette.white, trim: palette.brass300 },
+  { cloth: palette.berry600, ink: palette.white, trim: palette.brass300 },
+  { cloth: palette.rose700, ink: palette.white, trim: palette.brass300 },
+];
+
 /** Cover sizes (points): list thumbnails, form previews and the detail header. */
 export const coverSizes = {
   thumb: { width: 48, height: 72 },
@@ -319,5 +419,13 @@ export const elevation = {
   card: '0px 2px 6px rgba(42, 24, 70, 0.10), 0px 1px 1px rgba(42, 24, 70, 0.06)',
   raised: '0px 6px 16px rgba(42, 24, 70, 0.16)',
 } as const;
+
+/** Shadows on the dark theme: plain black and a little stronger, since a plum tint vanishes on night paper. */
+export const darkElevation: Record<keyof typeof elevation, string> = {
+  none: 'none',
+  low: '0px 1px 2px rgba(0, 0, 0, 0.35)',
+  card: '0px 2px 6px rgba(0, 0, 0, 0.35), 0px 1px 1px rgba(0, 0, 0, 0.25)',
+  raised: '0px 6px 16px rgba(0, 0, 0, 0.5)',
+};
 
 export type ElevationLevel = keyof typeof elevation;

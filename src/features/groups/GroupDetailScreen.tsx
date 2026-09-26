@@ -52,7 +52,7 @@ export function GroupDetailScreen() {
     return <MissingScreen title="Group not found" message="That group isn’t here any more. It may have been deleted." fallback="/groups" />;
   }
   const { group, items } = state;
-  const swatch = groupSwatch(group.colour);
+  const swatch = groupSwatch(group.colour, theme.scheme);
 
   const save = async (draft: GroupDraft) => {
     await update(group.id, draft);

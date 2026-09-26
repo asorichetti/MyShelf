@@ -32,7 +32,7 @@ export interface GroupCardProps {
 export const GroupCard = memo(function GroupCard({ group, onPress }: GroupCardProps) {
   const theme = useTheme();
   const { colors, spacing, radii, sizes } = theme;
-  const swatch = groupSwatch(group.colour);
+  const swatch = groupSwatch(group.colour, theme.scheme);
   const thumb = theme.coverSizes.thumb;
   return (
     <Pressable

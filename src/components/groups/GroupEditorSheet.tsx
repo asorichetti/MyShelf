@@ -5,7 +5,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { Button, Heading, Sheet, Text, TextField } from '@/components/ui';
 import { DEFAULT_GROUP_ICON, groupIconLabels, groupIconOf, groupIcons, GROUP_NAME_MAX, validateGroupName, type GroupIcon } from '@/domain';
 import { Testids } from '@/testing/testids.gen';
-import { DEFAULT_GROUP_SWATCH, groupSwatch, groupSwatches, useTheme } from '@/theme';
+import { DEFAULT_GROUP_SWATCH, groupSwatch, groupSwatchesFor, useTheme } from '@/theme';
 
 import { groupIconNames } from './groupIconNames';
 
@@ -60,7 +60,7 @@ function OpenGroupEditor({ visible, initial, onSave, onCancel }: GroupEditorShee
     }
   };
 
-  const swatch = groupSwatch(colour);
+  const swatch = groupSwatch(colour, theme.scheme);
   return (
     <Sheet
       visible={visible}
@@ -93,7 +93,7 @@ function OpenGroupEditor({ visible, initial, onSave, onCancel }: GroupEditorShee
       <View style={{ gap: spacing.xs }}>
         <Heading level={3}>Colour</Heading>
         <View role="radiogroup" aria-label="Colour" style={[styles.wrap, { gap: spacing.xs }]}>
-          {groupSwatches.map((s) => {
+          {groupSwatchesFor(theme.scheme).map((s) => {
             const selected = s.name === colour;
             return (
               <Pressable

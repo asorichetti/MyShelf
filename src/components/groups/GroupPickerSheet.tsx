@@ -54,7 +54,7 @@ export function GroupPickerSheet({ visible, title, groups, disabledIds, onPick, 
     >
       <View role="list" style={{ gap: spacing.xs }}>
         {groups.map((g) => {
-          const swatch = groupSwatch(g.colour);
+          const swatch = groupSwatch(g.colour, theme.scheme);
           const already = disabledIds?.has(g.id) ?? false;
           const count = g.count === 1 ? '1 book' : `${g.count} books`;
           return (

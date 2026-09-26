@@ -2,6 +2,9 @@ import { platformTypography, type PlatformTypography } from './platformTypograph
 import {
   coverPalette,
   coverSizes,
+  darkColors,
+  darkCoverPalette,
+  darkElevation,
   elevation,
   fontFamilies,
   lightColors,
@@ -23,7 +26,7 @@ export interface Theme {
   radii: typeof radii;
   typography: PlatformTypography;
   fonts: typeof fontFamilies;
-  elevation: typeof elevation;
+  elevation: Record<keyof typeof elevation, string>;
   covers: readonly CoverColors[];
   coverSizes: typeof coverSizes;
 }
@@ -41,12 +44,17 @@ export const lightTheme: Theme = {
   coverSizes,
 };
 
-/**
- * Registry of available themes. A dark theme slots in here later: add
- * `darkColors` in tokens.ts, a `darkTheme` below, and set `dark: darkTheme`.
- * Until then the dark scheme falls back to light.
- */
+/** The night library (P09-02): the same type, spacing and shapes with dark colours, covers and shadows. */
+export const darkTheme: Theme = {
+  ...lightTheme,
+  scheme: 'dark',
+  colors: darkColors,
+  elevation: darkElevation,
+  covers: darkCoverPalette,
+};
+
+/** Registry of available themes, by colour scheme. */
 export const themes: Record<ColorSchemeName, Theme> = {
   light: lightTheme,
-  dark: lightTheme,
+  dark: darkTheme,
 };
