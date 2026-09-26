@@ -1,4 +1,6 @@
 import {
+  addDraftAuthor,
+  addDraftGenre,
   draftFromDetail,
   draftsDiffer,
   emptyDraft,
@@ -191,5 +193,20 @@ describe('cleaning and helpers', () => {
     expect(draftsDiffer(d, draftFromDetail(detail))).toBe(false);
     expect(draftsDiffer(d, { ...d, year: '1988' })).toBe(true);
     expect(validateBookDraft(d, { currentYear: 2026 }).ok).toBe(true);
+  });
+});
+
+describe('adding authors and genres', () => {
+  it('adds a trimmed author once, ignoring case', () => {
+    const one = addDraftAuthor([], '  Terry   Pratchett ');
+    expect(one).toEqual([{ name: 'Terry Pratchett', role: 'author', sortName: null }]);
+    expect(addDraftAuthor(one, 'terry pratchett')).toBe(one);
+    expect(addDraftAuthor(one, '  ')).toBe(one);
+  });
+
+  it('adds a genre once, reusing the library spelling', () => {
+    expect(addDraftGenre([], 'science fiction', ['Science Fiction'])).toEqual(['Science Fiction']);
+    expect(addDraftGenre(['Fantasy'], 'FANTASY')).toEqual(['Fantasy']);
+    expect(addDraftGenre(['Fantasy'], 'Cosy Crime')).toEqual(['Fantasy', 'Cosy Crime']);
   });
 });

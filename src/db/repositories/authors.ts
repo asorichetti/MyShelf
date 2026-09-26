@@ -102,3 +102,25 @@ export async function groupBooksByAuthor(db: Db): Promise<BookGroup<Author>[]> {
   );
   return foldBookGroups(rows, (r) => (r.a_id == null ? null : { id: r.a_id, name: r.a_name!, sortName: r.a_sort_name }));
 }
+
+/**
+ * Authors whose name, or any word of it, starts with `prefix` ("prat" finds
+ * Terry Pratchett), case-insensitively, for the author picker.
+ */
+export async function searchAuthors(db: Db, prefix: string, limit = 8): Promise<Author[]> {
+  const p = prefix.trim().replace(/[\\%_]/g, (c) => `\\${c}`);
+  if (!p) return [];
+  const rows = await db.all<AuthorRow>(
+    `SELECT id, name, sort_name FROM authors
+     WHERE name LIKE ? ESCAPE '\\' OR name LIKE ? ESCAPE '\\'
+     ORDER BY name LIKE ? ESCAPE '\\' DESC, COALESCE(sort_name, name) COLLATE NOCASE, id LIMIT ?`,
+    [`${p}%`, `% ${p}%`, `${p}%`, limit],
+  );
+  return rows.map(toAuthor);
+}
+
+/** Deletes authors no book credits any more; returns how many went. */
+export async function deleteOrphanAuthors(db: Db): Promise<number> {
+  const { changes } = await db.run('DELETE FROM authors WHERE NOT EXISTS (SELECT 1 FROM book_authors ba WHERE ba.author_id = authors.id)');
+  return changes;
+}

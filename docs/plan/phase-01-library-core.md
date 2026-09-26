@@ -83,14 +83,15 @@ A usable, offline catalogue: the user can add a book by hand, see it on the Shel
 - **Acceptance:** create then edit round-trips every field; invalid ISBN blocks save with message; unsaved-changes guard works on Android back and on web.
 - **Tests:** `src/features/book/__tests__/useBookForm.test.tsx`, `src/components/book/__tests__/BookForm.test.tsx`, `src/db/repositories/__tests__/books.write.test.ts`.
 
-### P01-08 Authors editor
+### P01-08 Authors editor — done
 
 - **Description:** Chip input: type a name, pick an existing author from suggestions (new `authorsRepo.searchAuthors(db, prefix)`) or create a new one (`findOrCreateAuthor`, already case-insensitive); reorder with move-up/move-down buttons; role selector (author, illustrator, translator, editor). `sort_name` derived with `toSortName()` (`src/domain/author.ts`) and editable in an "advanced" disclosure (for names like "Ursula K. Le Guin" → "Le Guin, Ursula K."). Orphaned authors are deleted when their last book is removed.
 - **Files:** `src/components/book/AuthorsInput.tsx`, `src/db/repositories/authors.ts`, `src/domain/author.ts`.
 - **Acceptance:** duplicate author names reuse the same row (case-insensitive); order persists; orphan cleanup verified.
 - **Tests:** `src/components/book/__tests__/AuthorsInput.test.tsx`, `src/db/repositories/__tests__/authors.test.ts`, `src/domain/__tests__/authors.test.ts` (particles such as van, de and Le are covered already; add any new cases).
+- **Delivered:** each credited author is a row (`bookForm.authorChip`) with move up/down (shown when there are two or more), a "Details" disclosure holding the role radio chips and the "Filed as" sort name, and remove. `searchAuthors` matches the start of the name or of any word ("prat" finds Terry Pratchett). The typed-but-not-added name is owned by the form, so Save includes it. `deleteOrphanAuthors(db)` runs inside `saveBookDraft` (P01-07) and the delete (P01-11). A typed sort name is stored on the shared author row. `addDraftAuthor` lives in `src/domain/bookDraft.ts`. `TextField` now takes a `ref` and supports `multiline`.
 
-### P01-09 Genres editor
+### P01-09 Genres editor — done
 
 - **Description:** Chip multi-select with suggestions from existing genres plus a curated starter list (`starterGenres` in `src/domain/genre.ts`: Fiction, Fantasy, Science Fiction, Mystery, Thriller, Romance, Historical Fiction, Horror, Literary Fiction, Young Adult, Children's, Graphic Novel, Poetry, Biography, Memoir, History, Science, Philosophy, Self-Help, Cookery, Travel, Art, Religion, Business, Reference). Any genre the user adds or keeps in the form is saved with `user_edited = 1`.
 - **Files:** `src/components/book/GenresInput.tsx`, `src/domain/genre.ts`, `src/db/repositories/genres.ts`.

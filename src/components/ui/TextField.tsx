@@ -1,4 +1,4 @@
-import { useId, useState } from 'react';
+import { useId, useState, type Ref } from 'react';
 import { TextInput, View, type TextInputProps } from 'react-native';
 
 import { useTheme } from '@/theme';
@@ -14,9 +14,11 @@ export interface TextFieldProps
   helperText?: string;
   errorText?: string;
   testID?: string;
+  /** The underlying input, e.g. to move focus to the first invalid field. */
+  ref?: Ref<TextInput>;
 }
 
-export function TextField({ label, value, onChangeText, helperText, errorText, testID, onFocus, onBlur, ...rest }: TextFieldProps) {
+export function TextField({ label, value, onChangeText, helperText, errorText, testID, onFocus, onBlur, ref, ...rest }: TextFieldProps) {
   const theme = useTheme();
   const { colors, spacing, radii } = theme;
   const [focused, setFocused] = useState(false);
@@ -32,6 +34,7 @@ export function TextField({ label, value, onChangeText, helperText, errorText, t
       </Text>
       <TextInput
         {...rest}
+        ref={ref}
         testID={testID}
         value={value}
         onChangeText={onChangeText}
@@ -51,7 +54,9 @@ export function TextField({ label, value, onChangeText, helperText, errorText, t
         style={[
           theme.typography.body,
           {
-            minHeight: theme.sizes.touchTarget,
+            minHeight: rest.multiline ? theme.sizes.touchTarget * 2.5 : theme.sizes.touchTarget,
+            paddingVertical: rest.multiline ? spacing.sm : undefined,
+            textAlignVertical: rest.multiline ? 'top' : undefined,
             color: colors.ink,
             backgroundColor: colors.surface,
             borderColor,

@@ -243,3 +243,17 @@ export function firstInvalidField(errors: BookDraftErrors): BookDraftField | nul
 export function draftsDiffer(a: BookDraft, b: BookDraft): boolean {
   return JSON.stringify(a) !== JSON.stringify(b);
 }
+
+/** Adds an author unless the name is blank or already credited (ignoring case). */
+export function addDraftAuthor(authors: DraftAuthor[], name: string): DraftAuthor[] {
+  const clean = name.trim().replace(/\s+/g, ' ');
+  if (!clean || authors.some((a) => a.name.toLowerCase() === clean.toLowerCase())) return authors;
+  return [...authors, { name: clean, role: 'author', sortName: null }];
+}
+
+/** Adds a genre unless blank or already chosen; a genre already in the library keeps its spelling. */
+export function addDraftGenre(genres: string[], name: string, existing: readonly string[] = []): string[] {
+  const clean = name.trim().replace(/\s+/g, ' ');
+  if (!clean || genres.some((g) => g.toLowerCase() === clean.toLowerCase())) return genres;
+  return [...genres, existing.find((e) => e.toLowerCase() === clean.toLowerCase()) ?? clean];
+}

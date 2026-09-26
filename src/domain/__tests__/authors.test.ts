@@ -8,6 +8,10 @@ describe('toSortName', () => {
     ['Ludwig van Beethoven', 'van Beethoven, Ludwig'],
     ['Martin Luther King Jr.', 'King, Martin Luther, Jr.'],
     ['Homer', 'Homer'],
+    ['Arthur Conan Doyle', 'Doyle, Arthur Conan'],
+    ['Daphne du Maurier', 'du Maurier, Daphne'],
+    ['Gabriel García Márquez', 'Márquez, Gabriel García'],
+    ['Walter M. Miller Jr', 'Miller, Walter M., Jr'],
     ['', ''],
   ])('%j -> %j', (name, sort) => {
     expect(toSortName(name)).toBe(sort);
