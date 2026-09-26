@@ -108,6 +108,10 @@ export const Testids = {
     missing: 'borrower-missing',
     missingBack: 'borrower-missing-back',
   },
+  reminders: {
+    toggle: 'reminders-toggle',
+    note: 'reminders-note',
+  },
   groups: {
     root: 'groups-root',
     title: 'groups-title',

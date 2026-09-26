@@ -9,6 +9,7 @@ import { BookyProvider } from '@/components/booky';
 import { SnackbarProvider } from '@/components/ui';
 import { DatabaseProvider, type DatabaseStatus } from '@/db';
 import { openAppDatabase } from '@/db/expo';
+import { LoanWatchers } from '@/features/loans/LoanWatchers';
 import { AppSnackbarHost } from '@/features/navigation/AppSnackbarHost';
 import { DatabaseErrorScreen } from '@/features/navigation/DatabaseErrorScreen';
 import { LoadingScreen } from '@/features/navigation/LoadingScreen';
@@ -35,6 +36,7 @@ function RootStack() {
           {/* Booky's series gap tip and completion celebration, wherever a save lands. */}
           <SeriesEventHost />
         </View>
+        <LoanWatchers />
       </SnackbarProvider>
     </BookyProvider>
   );

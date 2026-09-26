@@ -14,6 +14,8 @@ export interface AppSettings {
   googleBooksEnabled: boolean;
   /** Days from lending to the default due date (P05-02); configurable in Settings (P08-07). */
   loanDays: number;
+  /** Local notifications at 10:00 on each open loan's due date (P05-08). Off until the user turns it on. */
+  loanReminders: boolean;
   /** The Shelf's sort order, remembered across restarts. */
   shelfSort: ShelfSort;
   /** Books whose auto-detected series the user said was wrong ("Not a series"): never re-added (P04-03). */
@@ -38,6 +40,7 @@ export const settingDefaults: Readonly<AppSettings> = Object.freeze<AppSettings>
   mutedTips: [],
   googleBooksEnabled: true,
   loanDays: 28,
+  loanReminders: false,
   shelfSort: { sort: 'title', direction: 'asc' },
   'series.dismissedBookIds': [],
   'series.pendingConfirmBookIds': [],
