@@ -6,6 +6,7 @@ import { useTheme } from '@/theme';
 
 import { useBlockingLayer } from './layers';
 import { menuKeyProps, modalProps, useReturnFocus } from './modalA11y';
+import { Scrim } from './Scrim';
 import { Text } from './Text';
 
 import type { IconName } from './IconButton';
@@ -89,16 +90,7 @@ export function Menu({ visible, onClose, items, accessibilityLabel, top = 56, te
         ))}
       </View>
       {/* After the menu in the DOM, so the web focus trap starts on the first item. */}
-      <Pressable
-        accessibilityElementsHidden
-        importantForAccessibility="no-hide-descendants"
-        aria-hidden
-        focusable={false}
-        // Not a Tab stop on web either (react-native-web gives every Pressable tabIndex 0).
-        tabIndex={-1}
-        style={[StyleSheet.absoluteFill, { backgroundColor: colors.scrim, opacity: 0.4 }]}
-        onPress={onClose}
-      />
+      <Scrim style={{ backgroundColor: colors.scrim, opacity: 0.4 }} onPress={onClose} />
     </Modal>
   );
 }

@@ -5,7 +5,7 @@ import { BookHeader } from '@/components/book/BookHeader';
 import type { CandidateCardData } from '@/components/book/CandidateCard';
 import { CandidateList } from '@/components/book/CandidateList';
 import { editionLabel } from '@/components/scan/EditionRow';
-import { Button, ConfirmDialog, Menu, Sheet, Stamp } from '@/components/ui';
+import { Button, Sheet, Stamp } from '@/components/ui';
 import type { BookDetail } from '@/domain';
 import { hostsWithRole, renderWithTheme } from '@/testing/render';
 import { Testids } from '@/testing/testids.gen';
@@ -53,18 +53,20 @@ describe('edition picker', () => {
 });
 
 describe('modals', () => {
-  it('keep the scrim out of the keyboard order', () => {
+  it('have a scrim that closes them on a tap but is never focusable (on web a Pressable always is)', () => {
+    const onClose = jest.fn();
     renderWithTheme(
-      <>
-        <Sheet visible title="Lend" onClose={jest.fn()}>
-          {null}
-        </Sheet>
-        <ConfirmDialog visible title="Remove?" onConfirm={jest.fn()} onCancel={jest.fn()} />
-        <Menu visible onClose={jest.fn()} accessibilityLabel="More" items={[{ label: 'Edit', onPress: jest.fn() }]} />
-      </>,
+      <Sheet visible title="Lend" onClose={onClose}>
+        {null}
+      </Sheet>,
     );
-    const scrims = screen.UNSAFE_root.findAll((n) => n.props.tabIndex === -1 && n.props['aria-hidden'] === true && typeof n.props.onPress === 'function');
-    expect(scrims.length).toBeGreaterThanOrEqual(3);
+    const [scrim, ...others] = screen.UNSAFE_root.findAll((n) => typeof n.type === 'string' && n.props['aria-hidden'] === true && typeof n.props.onResponderRelease === 'function');
+    expect(others).toHaveLength(0);
+    expect(scrim!.props.tabIndex).toBeUndefined();
+    expect(scrim!.props.focusable).toBeUndefined();
+    expect(scrim!.props.role).toBeUndefined();
+    scrim!.props.onResponderRelease();
+    expect(onClose).toHaveBeenCalledTimes(1);
   });
 });
 

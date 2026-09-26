@@ -1,5 +1,5 @@
 import { useId } from 'react';
-import { Modal, Pressable, StyleSheet, View } from 'react-native';
+import { Modal, StyleSheet, View } from 'react-native';
 
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { Testids } from '@/testing/testids.gen';
@@ -10,6 +10,7 @@ import { Heading } from './Heading';
 import { useBlockingLayer } from './layers';
 import { modalProps, useReturnFocus } from './modalA11y';
 import { MODAL_ANIMATION } from './modalAnimation';
+import { Scrim } from './Scrim';
 import { Text } from './Text';
 
 import type { ReactNode } from 'react';
@@ -113,16 +114,7 @@ export function ConfirmDialog({
           </View>
         </View>
         {/* After the dialog in the DOM, so the web focus trap starts on Cancel, not the backdrop. */}
-        <Pressable
-          accessibilityElementsHidden
-          importantForAccessibility="no-hide-descendants"
-          aria-hidden
-          focusable={false}
-          // Not a Tab stop on web either (react-native-web gives every Pressable tabIndex 0).
-          tabIndex={-1}
-          style={StyleSheet.absoluteFill}
-          onPress={busy ? undefined : onCancel}
-        />
+        <Scrim onPress={busy ? undefined : onCancel} />
       </View>
     </Modal>
   );

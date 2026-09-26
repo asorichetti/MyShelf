@@ -112,7 +112,7 @@ export function CatalogueCard({
       <View style={[styles.rule, { backgroundColor: colors.cardRule, marginBottom: header ? spacing.md : spacing.sm }]} />
       <View style={[styles.row, { gap: header ? spacing.lg : spacing.md }, header && styles.wrap]}>
         {cover ? <View>{cover}</View> : null}
-        <View style={[styles.text, { gap: spacing.xxs }, header && { minWidth: HEADER_TEXT_MIN_WIDTH * fontScale }]}>
+        <View style={[styles.text, { gap: spacing.xxs }, header && { flexBasis: HEADER_TEXT_MIN_WIDTH * fontScale }]}>
           {callNumber ? (
             <Text variant="stamp" color="accent" testID={callNumberTestID}>
               {callNumber}

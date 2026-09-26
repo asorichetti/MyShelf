@@ -1,4 +1,4 @@
-import { Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Modal, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useReducedMotion } from '@/hooks/useReducedMotion';
@@ -8,6 +8,7 @@ import { Heading } from './Heading';
 import { useBlockingLayer } from './layers';
 import { modalProps, useReturnFocus } from './modalA11y';
 import { SHEET_ANIMATION } from './modalAnimation';
+import { Scrim } from './Scrim';
 import { Text } from './Text';
 
 import type { ReactNode } from 'react';
@@ -24,6 +25,8 @@ export interface SheetProps {
   /** While true (a save in progress), back, Escape and the scrim do not close it. */
   busy?: boolean;
   testID?: string;
+  /** Where focus goes when the sheet closes if the control that opened it has gone (web). */
+  returnFocusTo?: () => View | null;
 }
 
 /**
@@ -31,14 +34,14 @@ export interface SheetProps {
  * footer stays put. Android back, Escape on web and a tap on the scrim close
  * it; the web Modal traps focus inside and gives it back on close.
  */
-export function Sheet({ visible, title, subtitle, onClose, children, footer, busy = false, testID }: SheetProps) {
+export function Sheet({ visible, title, subtitle, onClose, children, footer, busy = false, testID, returnFocusTo }: SheetProps) {
   const theme = useTheme();
   const { colors, spacing, radii, sizes } = theme;
   const insets = useSafeAreaInsets();
   const reduceMotion = useReducedMotion();
   const close = busy ? () => {} : onClose;
   useBlockingLayer(visible);
-  useReturnFocus(visible);
+  useReturnFocus(visible, returnFocusTo);
   return (
     <Modal {...modalProps(title)} visible={visible} transparent animationType={reduceMotion ? 'none' : SHEET_ANIMATION} onRequestClose={close} statusBarTranslucent>
       <View style={[styles.backdrop, { backgroundColor: colors.scrim }]}>
@@ -73,16 +76,7 @@ export function Sheet({ visible, title, subtitle, onClose, children, footer, bus
           ) : null}
         </View>
         {/* After the sheet in the DOM, so the web focus trap starts inside the sheet. */}
-        <Pressable
-          accessibilityElementsHidden
-          importantForAccessibility="no-hide-descendants"
-          aria-hidden
-          focusable={false}
-          // Not a Tab stop on web either (react-native-web gives every Pressable tabIndex 0).
-          tabIndex={-1}
-          style={StyleSheet.absoluteFill}
-          onPress={close}
-        />
+        <Scrim onPress={close} />
       </View>
     </Modal>
   );
