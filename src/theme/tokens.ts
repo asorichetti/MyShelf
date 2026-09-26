@@ -45,6 +45,9 @@ export const palette = {
   rose700: '#B3261E',
   rose900: '#7A1A14',
 
+  sky100: '#DCEBF7',
+  sky900: '#1D3F5E',
+
   brass300: '#D9B97A',
   brass500: '#B08D57',
 
