@@ -1,6 +1,7 @@
 import { render, type RenderOptions } from '@testing-library/react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
+import { SnackbarProvider } from '@/components/ui/Snackbar';
 import { ThemeProvider } from '@/theme';
 
 import type { ReactElement, ReactNode } from 'react';
@@ -13,7 +14,9 @@ const metrics = {
 export function AppTestProviders({ children }: { children: ReactNode }) {
   return (
     <SafeAreaProvider initialMetrics={metrics}>
-      <ThemeProvider>{children}</ThemeProvider>
+      <ThemeProvider>
+        <SnackbarProvider>{children}</SnackbarProvider>
+      </ThemeProvider>
     </SafeAreaProvider>
   );
 }

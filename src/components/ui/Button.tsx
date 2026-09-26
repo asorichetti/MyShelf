@@ -23,6 +23,8 @@ export interface ButtonProps {
   style?: StyleProp<ViewStyle>;
   /** Stretch to the container width. */
   block?: boolean;
+  /** For buttons that open and close something (a menu, a panel). */
+  expanded?: boolean;
 }
 
 interface VariantColors {
@@ -52,6 +54,7 @@ export function Button({
   testID,
   style,
   block = false,
+  expanded,
 }: ButtonProps) {
   const theme = useTheme();
   const v = variantColors[variant];
@@ -61,8 +64,9 @@ export function Button({
       role="button"
       accessibilityLabel={accessibilityLabel ?? label}
       accessibilityHint={accessibilityHint}
-      accessibilityState={{ disabled: inactive, busy: loading }}
+      accessibilityState={{ disabled: inactive, busy: loading, expanded }}
       aria-disabled={inactive}
+      aria-expanded={expanded}
       disabled={inactive}
       onPress={onPress}
       testID={testID}

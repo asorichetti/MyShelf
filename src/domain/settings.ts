@@ -1,3 +1,5 @@
+import type { ShelfSort } from './book';
+
 /** Booky's chattiness (PLAN §8): all tips, only essential ones, or hidden. */
 export type BookyMode = 'helpful' | 'quiet' | 'off';
 
@@ -10,14 +12,17 @@ export interface AppSettings {
   googleBooksEnabled: boolean;
   /** Days from lending to the default due date (P05-02); configurable in Settings (P08-07). */
   loanDays: number;
+  /** The Shelf's sort order, remembered across restarts. */
+  shelfSort: ShelfSort;
 }
 
 export type SettingKey = keyof AppSettings;
 
 /** Defaults used whenever a setting is unset (or unreadable). */
-export const settingDefaults: Readonly<AppSettings> = Object.freeze({
+export const settingDefaults: Readonly<AppSettings> = Object.freeze<AppSettings>({
   bookyMode: 'helpful',
   mutedTips: [],
   googleBooksEnabled: true,
   loanDays: 28,
+  shelfSort: { sort: 'title', direction: 'asc' },
 });

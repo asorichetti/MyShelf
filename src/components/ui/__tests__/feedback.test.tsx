@@ -1,4 +1,4 @@
-import { act, fireEvent, screen } from '@testing-library/react-native';
+import { act, fireEvent, render, screen } from '@testing-library/react-native';
 import { Pressable, Text as RNText } from 'react-native';
 
 import {
@@ -156,7 +156,7 @@ describe('SnackbarProvider and SnackbarHost', () => {
 
   it('throws a helpful error outside the provider', () => {
     const spy = jest.spyOn(console, 'error').mockImplementation(() => {});
-    expect(() => renderWithTheme(<Trigger options={{ message: 'x' }} />)).toThrow(/SnackbarProvider/);
+    expect(() => render(<Trigger options={{ message: 'x' }} />)).toThrow(/SnackbarProvider/);
     spy.mockRestore();
   });
 });

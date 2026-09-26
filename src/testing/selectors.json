@@ -5,7 +5,20 @@
     "title": "home-title",
     "bookCount": "home-book-count",
     "scanAction": "home-scan-action",
-    "askBooky": "home-ask-booky"
+    "askBooky": "home-ask-booky",
+    "list": "home-list",
+    "row": "home-row",
+    "addButton": "home-add-button",
+    "search": "home-search",
+    "searchClear": "home-search-clear",
+    "sortButton": "home-sort-button",
+    "sortTitle": "home-sort-title",
+    "sortAuthor": "home-sort-author",
+    "sortYear": "home-sort-year",
+    "sortAdded": "home-sort-added",
+    "sortDirection": "home-sort-direction",
+    "resultCount": "home-result-count",
+    "noMatches": "home-no-matches"
   },
   "tabs": {
     "shelf": "tab-shelf",

@@ -44,19 +44,21 @@ A usable, offline catalogue: the user can add a book by hand, see it on the Shel
 - **Tests:** `src/db/repositories/__tests__/books.list.test.ts`, `src/domain/__tests__/book.test.ts`.
 - **Delivered:** `BookListItem` carries every credited author (`authors: string[]`, the first is the primary one) rather than one name, and search also matches the series name ("earthsea"). Sorting runs in SQL (a `CASE` twin of `sortableTitle`); books without an author or year sort last in both directions. `BookListItem`, `BookDetail`, `ShelfSort` and the display helpers `seriesLabel`, `formatSeriesPosition` and `joinNames` live in `src/domain/book.ts`. ISBN matching only kicks in for digit-like queries of four or more digits.
 
-### P01-03 Shelf screen (list of catalogue cards)
+### P01-03 Shelf screen (list of catalogue cards) — done
 
 - **Description:** `useShelf()` feature hook (loads list, reloads on focus and on a `library-changed` event). The Shelf screen (`src/features/shelf/ShelfScreen.tsx`, re-exported by `src/app/(tabs)/index.tsx`) renders a `FlatList` of `BookRow` (compact catalogue card: cover thumb, title in Lora, author and year in Courier Prime, series badge "Discworld #5", "On loan" stamp). Tapping opens `/book/[id]`. Floating "Add book" button. Empty state: the existing one (Booky *happy*, "Your shelf is empty", Scan action) gains an "Add manually" action.
 - **Files:** `src/features/shelf/useShelf.ts`, `src/features/events.ts`, `src/components/book/BookRow.tsx`, `src/features/shelf/ShelfScreen.tsx`.
 - **Acceptance:** 12 rows with `demo`; empty state with `empty`; row accessible label "Title, by Author, Year"; list scrolls smoothly with `large`.
 - **Tests:** `src/features/shelf/__tests__/useShelf.test.tsx`, `src/components/book/__tests__/BookRow.test.tsx`, `src/__tests__/shelf.test.tsx`.
+- **Delivered:** `useShelf` reloads on mount and on `library-changed`; there is no separate focus listener because tab screens are unmounted when they lose focus (and also when a stack screen such as the book detail covers them), so every return to the Shelf is a mount. The row label adds ", on loan" when the book is out; rows carry every author ("Terry Pratchett and Neil Gaiman"). The list is a `FlatList` inside a non-scrolling `Screen`, with memoised rows and bounded render batches; rows have variable height (titles wrap to two lines), so there is no `getItemLayout`. The "Add book" floating button and the empty state's "Add manually" share `home.addButton` (only one is ever shown) and the button steps up while a snackbar is showing. `useBookCount` is gone (the count comes from `useShelf`). A root `SnackbarProvider` and `AppSnackbarHost` (`src/features/navigation/`) are added here; `renderApp` (`src/testing/renderApp.tsx`) renders the tab routes for app-level tests.
 
-### P01-04 Shelf search and sort controls
+### P01-04 Shelf search and sort controls — done
 
 - **Description:** Search field (debounced 200 ms, clear button) and a sort menu (Title, Author, Year, Recently added; direction toggle) above the list. Current sort persisted in `settings` (key `shelfSort`). "No matches" state with Booky (*thinking*) and a "Clear search" action.
 - **Files:** `src/components/book/ShelfToolbar.tsx`, `src/features/shelf/ShelfScreen.tsx`, `src/domain/settings.ts` (`shelfSort` in `AppSettings` and `settingDefaults`).
 - **Acceptance:** typing filters results; sort survives app restart; screen reader announces result count.
 - **Tests:** `src/components/book/__tests__/ShelfToolbar.test.tsx`, `src/__tests__/shelf.search.test.tsx`.
+- **Delivered:** the sort menu is a disclosure (`aria-expanded`) that opens an inline panel of radio chips plus a direction button (`home.sortDirection`: "A to Z" / "Z to A", "Oldest first" / "Newest first"); picking "Recently added" starts newest first. The result count is a polite live region under the toolbar (`home.resultCount`: "Showing all 12 books", "4 of 12 books match “prat”"). The debounce is `useDebouncedValue` in `src/hooks`.
 
 ### P01-05 Book form model and validation — done
 

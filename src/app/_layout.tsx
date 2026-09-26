@@ -3,10 +3,13 @@ import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
+import { View } from 'react-native';
 
 import { BookyProvider } from '@/components/booky';
+import { SnackbarProvider } from '@/components/ui';
 import { DatabaseProvider, type DatabaseStatus } from '@/db';
 import { openAppDatabase } from '@/db/expo';
+import { AppSnackbarHost } from '@/features/navigation/AppSnackbarHost';
 import { DatabaseErrorScreen } from '@/features/navigation/DatabaseErrorScreen';
 import { LoadingScreen } from '@/features/navigation/LoadingScreen';
 import { ThemeProvider, useTheme } from '@/theme';
@@ -19,11 +22,17 @@ function RootStack() {
   const theme = useTheme();
   return (
     <BookyProvider>
-      <StatusBar style="dark" />
-      <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: theme.colors.paper } }}>
-        <Stack.Screen name="(tabs)" />
-        <Stack.Screen name="+not-found" options={{ title: 'Not found' }} />
-      </Stack>
+      <SnackbarProvider>
+        <StatusBar style="dark" />
+        <View style={{ flex: 1 }}>
+          <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: theme.colors.paper } }}>
+            <Stack.Screen name="(tabs)" />
+            <Stack.Screen name="+not-found" options={{ title: 'Not found' }} />
+          </Stack>
+          {/* Above every screen, so an Undo survives leaving the screen that offered it. */}
+          <AppSnackbarHost />
+        </View>
+      </SnackbarProvider>
     </BookyProvider>
   );
 }
