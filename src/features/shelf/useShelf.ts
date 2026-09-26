@@ -55,6 +55,10 @@ export function useShelf(): ShelfState {
   const [filterOptions, setFilterOptions] = useState<FilterOptions | null>(null);
   const [version, setVersion] = useState(0);
   const request = useRef(0);
+  /** The newest request whose answer is on screen. */
+  const applied = useRef(0);
+  /** What the newest request asked for (search, sort, grouping, filters); null once unmounted. */
+  const asked = useRef<string | null>('');
   const sort = prefs?.sort;
   const groupBy = prefs?.groupBy;
   const filters = prefs?.filters;
@@ -62,10 +66,15 @@ export function useShelf(): ShelfState {
   useEffect(() => {
     if (!sort || !groupBy || !filters) return;
     const id = ++request.current;
+    const key = JSON.stringify([activeQuery, sort, groupBy, filters]);
+    asked.current = key;
     Promise.all([shelfSectionsRepo.listShelfSections(db, { groupBy, query: activeQuery, filters, ...sort }), booksRepo.countBooks(db)])
       .then(([result, count]) => {
-        // A newer request (typing, a preference change, another write) wins.
-        if (id !== request.current) return;
+        // An answer for an older search, sort or filter is dropped. For the same one, any answer newer than
+        // the one shown is shown: while writes keep coming (covers arriving after an import), each reload
+        // still reaches the screen instead of being overtaken by the next.
+        if (key !== asked.current || id < applied.current) return;
+        applied.current = id;
         setSections(result.sections);
         setTotal(count);
       })
@@ -83,8 +92,13 @@ export function useShelf(): ShelfState {
     };
   }, [db, version]);
 
-  // Stale responses are dropped by the request counter above.
-  useEffect(() => () => void request.current++, []);
+  // Answers arriving after unmount are dropped.
+  useEffect(
+    () => () => {
+      asked.current = null;
+    },
+    [],
+  );
 
   const reload = useCallback(() => setVersion((v) => v + 1), []);
   useLibraryEvent(['library-changed', 'groups-changed', 'loans-changed'], reload);
