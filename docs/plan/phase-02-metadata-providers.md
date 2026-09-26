@@ -35,12 +35,13 @@ Given an ISBN or a title/author query, fetch book metadata from Open Library and
 - **Tests:** `src/services/http/__tests__/client.test.ts`, `rateLimiter.test.ts`.
 - **Delivered:** the client is `createHttpClient({ fetch, userAgent, clock, limiter, timeoutMs, retryDelaysMs })` returning `getJson(url, { signal, giveUp })` and `getBinary(url, …)` (bytes + content type); `cacheTtl` arrived with the cache in P02-09. Following the platform-file convention in the code (`cssVars.ts` / `cssVars.web.ts`), the user agent is `userAgent.ts` (native, reads the version from `expo-constants`) and `userAgent.web.ts` (none), with the shared formatter in `userAgent.shared.ts`; the time source is `clock.ts`. `TimeoutError` extends `OfflineError` (a request that cannot finish is treated as offline for queueing). A `Retry-After` above 30 s fails at once instead of waiting, and a request can pass `giveUp(status, body)` to skip retries for limits that backing off cannot fix (Google Books' daily quota, see P02-05). `index.ts` re-exports the module.
 
-### P02-02 Provider interface and candidate model
+### P02-02 Provider interface and candidate model — done
 
 - **Description:** `MetadataProvider { id; lookupIsbn(isbn13, signal): Promise<BookCandidate[]>; search(q: { title?, author?, text? }, signal): Promise<BookCandidate[]> }`. `BookCandidate` = normalised edition: title, subtitle, authors[], publisher, publicationYear, pageCount, isbn13, isbn10, language, format, summary, coverUrl, subjects[] (raw), seriesHints[] (`{ name, position?, source }`), workKey, source, sourceId, confidence.
 - **Files:** `src/services/metadata/types.ts`.
 - **Acceptance:** types compile; documented with TSDoc.
 - **Tests:** type-level only (covered by provider tests).
+- **Delivered:** besides the listed fields, `BookCandidate` has `kind` (`edition` or `work`: Open Library search returns works), `edition` (edition statement, for `books.edition`) and `editionCount` (used in ranking). A `SeriesHint` name may be null because Google Books gives only a position. `ProviderWarning` and `MetadataResult` (candidates + warnings) are the service's return types; `candidate.ts` has `makeCandidate()` for mappers and tests.
 
 ### P02-03 Open Library: ISBN lookup
 
