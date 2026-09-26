@@ -65,6 +65,11 @@ export async function createBook(db: Db, input: NewBook): Promise<Book> {
   return (await getBook(db, lastInsertRowId))!;
 }
 
+/** Sets when a book was added (an import keeps the date from the old catalogue). */
+export async function setAddedAt(db: Db, id: number, createdAt: string): Promise<void> {
+  await db.run('UPDATE books SET created_at = ?, updated_at = ? WHERE id = ?', [createdAt, createdAt, id]);
+}
+
 export async function getBook(db: Db, id: number): Promise<Book | null> {
   const row = await db.get<BookRow>(`SELECT ${BOOK_COLUMNS} FROM books b WHERE b.id = ?`, [id]);
   return row ? toBook(row) : null;
