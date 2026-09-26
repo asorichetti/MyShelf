@@ -14,6 +14,12 @@ export interface AppSettings {
   loanDays: number;
   /** The Shelf's sort order, remembered across restarts. */
   shelfSort: ShelfSort;
+  /** Books whose auto-detected series the user said was wrong ("Not a series"): never re-added (P04-03). */
+  'series.dismissedBookIds': number[];
+  /** Books linked to a series from a low- or medium-confidence guess, awaiting "Is this Discworld #5?" (P04-03). */
+  'series.pendingConfirmBookIds': number[];
+  /** Series Booky has already pointed out a gap in (tip id `series-gap:<seriesId>`), so the tip shows once per series (P04-07). */
+  'series.gapTipSeriesIds': number[];
 }
 
 export type SettingKey = keyof AppSettings;
@@ -25,4 +31,7 @@ export const settingDefaults: Readonly<AppSettings> = Object.freeze<AppSettings>
   googleBooksEnabled: true,
   loanDays: 28,
   shelfSort: { sort: 'title', direction: 'asc' },
+  'series.dismissedBookIds': [],
+  'series.pendingConfirmBookIds': [],
+  'series.gapTipSeriesIds': [],
 });
