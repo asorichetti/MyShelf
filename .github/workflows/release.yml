@@ -1,0 +1,280 @@
+name: Release
+
+# Builds a release APK and AAB with Gradle on the runner (ADR 0011, P09-07).
+#
+# - Pushing a tag vX.Y.Z (or vX.Y.Z-rcN) runs the checks, builds with the
+#   tag's version and attaches the APK, AAB and SHA-256 checksums to a draft
+#   GitHub Release, with notes from CHANGELOG.md when it has that version.
+# - "Run workflow" (workflow_dispatch) builds any branch with the version in
+#   app.json and uploads the files as workflow artifacts only.
+#
+# Signing: with the four ANDROID_* secrets set (docs/release.md) the builds are
+# signed with the upload key. Without them, or with the "sign" input off, they
+# are signed with the debug key and named "debug-signed": fine for sideloading
+# and testing, not for Google Play. Secrets are only ever passed through env.
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      sign:
+        description: Sign with the upload keystore from the repository secrets (off = debug-signed test build)
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  checks:
+    name: Regression gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 23
+          cache: npm
+      - run: npm ci
+      - run: npm run check
+      - name: Playwright version
+        id: playwright
+        run: echo "version=$(node -p "require('playwright/package.json').version")" >> "$GITHUB_OUTPUT"
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.playwright.outputs.version }}
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - run: npm run autotest:check
+      - name: Gate self-tests
+        run: npm run autotest:selftest
+      # Typed routes come only from the dev server; see ci.yml.
+      - name: Generate typed routes
+        run: |
+          CI=1 npx expo start --web --port 8081 > expo-web.log 2>&1 &
+          pid=$!
+          for _ in $(seq 1 120); do
+            if [ -s .expo/types/router.d.ts ] && curl -sf http://localhost:8081/ > /dev/null; then break; fi
+            sleep 1
+          done
+          kill "$pid" || true
+          wait "$pid" 2> /dev/null || true
+          if [ ! -s .expo/types/router.d.ts ]; then echo "Typed routes were not generated"; cat expo-web.log; exit 1; fi
+      - name: Typecheck with generated route types
+        run: npm run typecheck
+      - name: Export the web build
+        run: npm run export:web > expo-export.log 2>&1 || { cat expo-export.log; exit 1; }
+      - name: Smoke (core suite, gates fail)
+        run: npm run -s autotest -- smoke --serve dist --ux-gates fail --headless=true
+      - name: Every other journey (gates fail)
+        run: npm run -s autotest -- journey --all --exclude-suite core --exclude-suite live --serve dist --ux-gates fail --headless=true
+      - name: Upload evidence bundles
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-checks-screenshots
+          path: |
+            screenshots/
+            expo-web.log
+            expo-export.log
+          if-no-files-found: warn
+          retention-days: 14
+
+  android:
+    name: Android release build
+    needs: checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      # Release builds never include the E2E fixture loader; set explicitly so
+      # no .env file can turn it on.
+      EXPO_PUBLIC_E2E: '0'
+      # Optional build-time Google Books key (docs/release.md). Empty = keyless.
+      EXPO_PUBLIC_GOOGLE_BOOKS_API_KEY: ${{ secrets.GOOGLE_BOOKS_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+
+      # The Android build (four ABIs, NDK, Gradle caches) needs more disk than
+      # a fresh runner has spare; these toolchains are not used here.
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/.ghcup /usr/share/swift /usr/local/share/boost
+          df -h /
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 23
+          cache: npm
+      - run: npm ci
+
+      # React Native 0.86's Gradle plugin is built with a Java 17 toolchain.
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      # Caches ~/.gradle (dependencies, wrapper) between runs.
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Version
+        id: version
+        run: |
+          if [ "$GITHUB_REF_TYPE" = tag ]; then
+            node scripts/release-version.mjs "$GITHUB_REF_NAME" --write >> "$GITHUB_OUTPUT"
+          else
+            node scripts/release-version.mjs >> "$GITHUB_OUTPUT"
+          fi
+          cat "$GITHUB_OUTPUT"
+
+      # The SDK packages the generated project asks for, read from React
+      # Native's version catalog so an SDK upgrade needs no workflow change.
+      - name: Install Android SDK packages
+        run: |
+          catalog=node_modules/react-native/gradle/libs.versions.toml
+          value() { sed -n "s/^$1 *= *\"\(.*\)\"/\1/p" "$catalog"; }
+          ndk=$(value ndkVersion); build_tools=$(value buildTools); compile_sdk=$(value compileSdk)
+          echo "NDK $ndk, build-tools $build_tools, platform android-$compile_sdk"
+          sdkmanager="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          yes | "$sdkmanager" --licenses > /dev/null || true
+          "$sdkmanager" --install "ndk;$ndk" "build-tools;$build_tools" "platforms;android-$compile_sdk" "cmake;3.22.1" > /dev/null
+          echo "BUILD_TOOLS_DIR=$ANDROID_HOME/build-tools/$build_tools" >> "$GITHUB_ENV"
+
+      - name: Signing
+        id: signing
+        env:
+          SIGN: ${{ github.event_name != 'workflow_dispatch' || inputs.sign }}
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          if [ "$SIGN" != true ]; then
+            echo "Signing turned off for this run: building a debug-signed test build."
+            echo "label=debug-signed" >> "$GITHUB_OUTPUT"
+          elif [ -z "$ANDROID_KEYSTORE_BASE64" ] || [ -z "$ANDROID_KEYSTORE_PASSWORD" ] || [ -z "$ANDROID_KEY_ALIAS" ] || [ -z "$ANDROID_KEY_PASSWORD" ]; then
+            echo "::warning::The ANDROID_KEYSTORE_BASE64, ANDROID_KEYSTORE_PASSWORD, ANDROID_KEY_ALIAS and ANDROID_KEY_PASSWORD secrets are not all set: building a debug-signed test build (docs/release.md)."
+            echo "label=debug-signed" >> "$GITHUB_OUTPUT"
+          else
+            keystore="$RUNNER_TEMP/upload.keystore"
+            printf '%s' "$ANDROID_KEYSTORE_BASE64" | base64 --decode > "$keystore"
+            {
+              echo "MYSHELF_UPLOAD_STORE_FILE=$keystore"
+              echo "MYSHELF_UPLOAD_STORE_PASSWORD=$ANDROID_KEYSTORE_PASSWORD"
+              echo "MYSHELF_UPLOAD_KEY_ALIAS=$ANDROID_KEY_ALIAS"
+              echo "MYSHELF_UPLOAD_KEY_PASSWORD=$ANDROID_KEY_PASSWORD"
+            } >> "$GITHUB_ENV"
+            echo "label=signed" >> "$GITHUB_OUTPUT"
+          fi
+
+      # Generates android/ from app.json and the config plugins (including
+      # plugins/withReleaseSigning.js). --no-install: npm ci already ran.
+      - name: Prebuild
+        env:
+          # app.json may carry the tag's version (above); that is expected.
+          EXPO_NO_GIT_STATUS: '1'
+        run: npx expo prebuild --platform android --clean --no-install
+
+      - name: Build release APK and AAB
+        working-directory: android
+        run: ./gradlew assembleRelease bundleRelease --no-daemon -Dorg.gradle.jvmargs="-Xmx4g -XX:MaxMetaspaceSize=1g"
+
+      - name: Collect the builds
+        id: collect
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          LABEL: ${{ steps.signing.outputs.label }}
+        run: |
+          mkdir -p release
+          name="myshelf-$VERSION-$LABEL"
+          cp android/app/build/outputs/apk/release/app-release.apk "release/$name.apk"
+          cp android/app/build/outputs/bundle/release/app-release.aab "release/$name.aab"
+          (cd release && sha256sum "$name.apk" "$name.aab" > "$name.sha256")
+          echo "name=$name" >> "$GITHUB_OUTPUT"
+          {
+            echo "### MyShelf $VERSION ($LABEL)"
+            echo
+            echo '```'
+            ls -l release
+            cat "release/$name.sha256"
+            echo '```'
+            echo
+            echo "**Signing certificate**"
+            echo '```'
+            "$BUILD_TOOLS_DIR/apksigner" verify --print-certs "release/$name.apk" | grep -E 'Signer #1 certificate (DN|SHA-256)' || true
+            echo '```'
+            echo "**Permissions in the APK**"
+            echo '```'
+            "$BUILD_TOOLS_DIR/aapt2" dump permissions "release/$name.apk" || "$BUILD_TOOLS_DIR/aapt" dump permissions "release/$name.apk" || true
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.collect.outputs.name }}.apk
+          path: release/${{ steps.collect.outputs.name }}.apk
+          if-no-files-found: error
+          retention-days: 30
+      - name: Upload AAB
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.collect.outputs.name }}.aab
+          path: release/${{ steps.collect.outputs.name }}.aab
+          if-no-files-found: error
+          retention-days: 30
+      - name: Upload checksums
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.collect.outputs.name }}.sha256
+          path: release/${{ steps.collect.outputs.name }}.sha256
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Remove the keystore
+        if: always()
+        run: rm -f "$RUNNER_TEMP/upload.keystore"
+
+  github-release:
+    name: GitHub Release
+    if: github.ref_type == 'tag'
+    needs: android
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download the builds
+        uses: actions/download-artifact@v4
+        with:
+          path: release
+          merge-multiple: true
+      - name: Release notes
+        run: |
+          # Annotated tag message, if any, as a fallback for the notes.
+          git fetch --force origin "refs/tags/$GITHUB_REF_NAME:refs/tags/$GITHUB_REF_NAME"
+          : > tag-message.txt
+          if [ "$(git cat-file -t "$GITHUB_REF_NAME")" = tag ]; then
+            git tag -l --format='%(contents)' "$GITHUB_REF_NAME" > tag-message.txt
+          fi
+          node scripts/release-notes.mjs "$GITHUB_REF_NAME" tag-message.txt release > notes.md
+          cat notes.md
+      - name: Create or update the draft release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          prerelease=()
+          case "$GITHUB_REF_NAME" in *-*) prerelease=(--prerelease) ;; esac
+          if gh release view "$GITHUB_REF_NAME" > /dev/null 2>&1; then
+            gh release upload "$GITHUB_REF_NAME" release/* --clobber
+            gh release edit "$GITHUB_REF_NAME" --notes-file notes.md
+          else
+            gh release create "$GITHUB_REF_NAME" release/* --draft --verify-tag --title "MyShelf ${GITHUB_REF_NAME#v}" --notes-file notes.md "${prerelease[@]}"
+          fi
