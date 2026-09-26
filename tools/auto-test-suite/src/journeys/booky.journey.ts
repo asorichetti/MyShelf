@@ -227,6 +227,7 @@ register({
     await waitVisible(c, emptyState, '/ (Booky off)');
     const bookys = await c.page.locator('[role="img"][aria-label^="Booky"]').count();
     expect(bookys === 0, `/ (Booky off): expected no Booky anywhere, found ${bookys}`);
+    expect((await c.page.locator(askBooky).count()) === 0, '/ (Booky off): expected no "What can Booky do?" with Booky off');
     await c.page.locator(vis(helpButton)).first().click();
     await waitVisible(c, helpSheet, '/ (Booky off) help');
     expect((await c.page.locator(bubble).count()) === 0, '/ (Booky off): expected help without a bubble');

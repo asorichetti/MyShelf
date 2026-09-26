@@ -82,7 +82,7 @@ function toRowSections(sections: ShelfSection[], perRow: number): RowSection[] {
 export function ShelfScreen() {
   const theme = useTheme();
   const { spacing, sizes, colors } = theme;
-  const { emit, memoryVersion } = useBooky();
+  const { emit, memoryVersion, mode: bookyMode } = useBooky();
   const { snack, show } = useSnackbar();
   const shelf = useShelf();
   const { sections, items, total, activeQuery, groupBy, viewMode, filters } = shelf;
@@ -262,13 +262,16 @@ export function ShelfScreen() {
         action={{ label: 'Scan a book', onPress: () => router.navigate('/scan'), testID: Testids.home.scanAction }}
         secondaryAction={{ label: 'Add manually', onPress: addBook, testID: Testids.home.addButton }}
       />
-      <Button
-        variant="ghost"
-        label="What can Booky do?"
-        testID={Testids.home.askBooky}
-        style={{ alignSelf: 'center' }}
-        onPress={() => void emit({ type: 'help-requested', screen: 'booky' })}
-      />
+      {/* Booky Off: no character to introduce. */}
+      {bookyMode === 'off' ? null : (
+        <Button
+          variant="ghost"
+          label="What can Booky do?"
+          testID={Testids.home.askBooky}
+          style={{ alignSelf: 'center' }}
+          onPress={() => void emit({ type: 'help-requested', screen: 'booky' })}
+        />
+      )}
     </View>
   );
 
