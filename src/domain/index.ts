@@ -15,6 +15,8 @@ export * from './loan';
 export * from './loans';
 export * from './series';
 export * from './seriesGaps';
+export * from './seriesMilestones';
+export * from './seriesNeighbours';
 export * from './seriesParser';
 export * from './seriesPosition';
 export * from './settings';

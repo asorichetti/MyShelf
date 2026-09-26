@@ -14,4 +14,4 @@ export type { BorrowerWithStats } from './loans';
 export type { ApiCacheEntry } from './apiCache';
 export type { BookNeedingCover, CoverAttempt } from './coverAttempts';
 export type { PendingLookup } from './pendingLookups';
-export type { SeriesSort, SeriesSummary } from './series';
+export type { BookSeriesPlace, SeriesSort, SeriesSummary } from './series';

@@ -1,4 +1,15 @@
-import { normaliseText, seriesGaps, seriesProgress, type Book, type BookGroup, type Series } from '@/domain';
+import {
+  neighboursInSeries,
+  normaliseText,
+  seriesGaps,
+  seriesProgress,
+  type Book,
+  type BookGroup,
+  type Series,
+  type SeriesNeighbours,
+  type SeriesProgress,
+  type SeriesState,
+} from '@/domain';
 
 import { BOOK_COLUMNS, foldBookGroups, NOW_SQL, toBook, type BookRow } from './shared';
 
@@ -106,6 +117,8 @@ export interface SeriesSummary extends Series {
   total: number | null;
   /** Number of whole positions missing up to `total`. */
   missing: number;
+  /** The missing whole positions, ascending (see `seriesGaps`). */
+  gaps: number[];
   /** When the newest book in the series was added (ISO timestamp). */
   lastAddedAt: string | null;
 }
@@ -134,6 +147,7 @@ export async function listSeriesWithStats(db: Db, { sort = 'name' }: { sort?: Se
       maxPosition: progress.maxPosition,
       total: progress.total,
       missing: progress.gaps.length,
+      gaps: progress.gaps,
       lastAddedAt: r.last_added_at,
     };
   });
@@ -177,4 +191,50 @@ export async function groupBooksBySeries(db: Db): Promise<BookGroup<Series>[]> {
      ORDER BY s.id IS NULL, s.name COLLATE NOCASE, s.id, ${SERIES_ORDER}`,
   );
   return foldBookGroups(rows, (r) => (r.s_id == null ? null : { id: r.s_id, name: r.s_name!, totalCount: r.s_total_count }));
+}
+
+/** A book's place in its series: the series, its progress and the book's neighbours. */
+export interface BookSeriesPlace {
+  series: Series;
+  position: number | null;
+  progress: SeriesProgress;
+  /** Books linked to the series, numbered or not. */
+  bookCount: number;
+  neighbours: SeriesNeighbours<Book>;
+}
+
+/**
+ * Where a book sits in its series (P04-06): previous and next (owned books,
+ * or missing whole positions), plus the series' progress. Null when the book
+ * does not exist or is in no series.
+ */
+export async function neighbours(db: Db, bookId: number): Promise<BookSeriesPlace | null> {
+  const row = await db.get<{ series_id: number | null; series_position: number | null }>(
+    'SELECT series_id, series_position FROM books WHERE id = ?',
+    [bookId],
+  );
+  if (row?.series_id == null) return null;
+  const found = await getSeriesWithBooks(db, row.series_id);
+  if (!found) return null;
+  const progress = seriesProgress({ positions: found.books.map((b) => b.seriesPosition), totalCount: found.series.totalCount });
+  const near = neighboursInSeries(
+    found.books.map((b) => ({ id: b.id, title: b.title, position: b.seriesPosition })),
+    bookId,
+    progress.total,
+  );
+  const byId = new Map(found.books.map((b) => [b.id, b]));
+  const unwrap = (n: (typeof near)['next']) => (n?.kind === 'owned' ? { kind: 'owned' as const, book: byId.get(n.book.id)! } : n);
+  return { series: found.series, position: row.series_position, progress, bookCount: found.books.length, neighbours: { previous: unwrap(near.previous), next: unwrap(near.next) } };
+}
+
+/** Series as they stand now (name, total and book positions), for before/after comparisons. Missing ids are left out. */
+export async function seriesStates(db: Db, ids: Iterable<number>): Promise<Map<number, SeriesState>> {
+  const out = new Map<number, SeriesState>();
+  for (const id of new Set(ids)) {
+    const series = await getSeries(db, id);
+    if (!series) continue;
+    const rows = await db.all<{ series_position: number | null }>('SELECT series_position FROM books WHERE series_id = ?', [id]);
+    out.set(id, { ...series, positions: rows.map((r) => r.series_position) });
+  }
+  return out;
 }
