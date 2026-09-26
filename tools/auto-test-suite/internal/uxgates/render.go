@@ -74,12 +74,14 @@ const renderJS = `async (cfg) => {
   // No sideways overflow. clientWidth, not innerWidth, so a scrollbar is not overflow.
   const de = document.documentElement;
   const cw = de.clientWidth;
-  const clipped = (el) => { for (let p = el.parentElement; p && p !== body && p !== de; p = p.parentElement) { const ox = getComputedStyle(p).overflowX; if (ox !== 'visible') return true; } return false; };
+  // Inside a horizontal scroll container, extending past the edge is the point.
+  // Anything else past the edge is either scrollable sideways or cut off.
+  const inScroller = (el) => { for (let p = el.parentElement; p && p !== body && p !== de; p = p.parentElement) { const ox = getComputedStyle(p).overflowX; if (ox === 'auto' || ox === 'scroll') return true; } return false; };
   const offenders = [];
   for (const el of body.querySelectorAll('*')) {
     const r = el.getBoundingClientRect();
     if (r.width === 0 || r.right <= cw + 1) continue;
-    if (clipped(el)) continue;
+    if (!visible(el) || inScroller(el)) continue;
     if (offenders.some(o => o.contains(el))) continue;
     offenders.push(el);
   }
