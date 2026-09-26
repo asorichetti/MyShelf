@@ -1,41 +1,116 @@
-This is an Expo/React Native mobile application. Prioritize mobile-first patterns, performance, and cross-platform compatibility.
+# Contributing to MyShelf
 
-## Expo has changed — do not trust your training data
+This guide is for everyone who works on MyShelf — people and automated coding agents alike. MyShelf is an Expo / React Native app written in TypeScript, Android-first, with a web build used for automated UI testing. Prioritise mobile-first patterns, accessibility and cross-platform compatibility.
 
-Expo ships breaking changes every SDK release. APIs you remember are likely renamed, moved, or removed. Before writing any code that touches an Expo, EAS, or React Native API:
+## 1. How to pick up work
 
-1. Read the major version of the `expo` package in `package.json`.
-2. Fetch the matching versioned docs: `https://docs.expo.dev/versions/v<major>.0.0/`
-3. For anything else, fetch https://docs.expo.dev/llms.txt — an index of all Expo docs with corrections to common LLM misconceptions. Follow its links to the specific page you need; never answer from memory.
+1. **Read [`PLAN.md`](PLAN.md)** — architecture, data model, APIs, design tokens, testing strategy, definition of done.
+2. **Read [`STATUS.md`](STATUS.md)** — find the first unticked card in the earliest unfinished phase whose prerequisites are met. Cards within a phase can run in parallel when they touch different files.
+3. **Read the phase document** in [`docs/plan/`](docs/plan/) for that card: description, files to touch, acceptance criteria, tests, test ids, journeys and Maestro flows.
+4. Check [`docs/adr/`](docs/adr/) before changing anything architectural. To change a decision, add a new ADR that supersedes the old one.
+5. Work on a branch named after the card (e.g. `p01-03-shelf-screen`). Keep the change to the card's scope.
+6. Finish with the **regression gate** (§4), tick the card in `STATUS.md`, and update any doc your change made stale — all in the same pull request.
 
-## Commands
+If the code on `main` disagrees with a plan document (a path, a function name), the code wins: follow it and fix the document in your pull request.
 
-Use `bunx` instead of `npx` if the project uses bun (`bun.lock` present).
+## 2. Commands
+
+Use `npx`, not `bunx` (this project uses npm; there is no `bun.lock`).
+
+| Command | What it does | Status |
+|---|---|---|
+| `npm install` | install dependencies | available |
+| `npx expo install <package>` | **always** use this to add a dependency — it resolves the SDK-compatible version | available |
+| `npm start` / `npx expo start` | Metro dev server | available |
+| `npm run android` | open on a connected device/emulator | available |
+| `npm run web` | run the web build (http://localhost:8081) | available |
+| `npm run export:web` | static web build into `dist/` | available |
+| `npm run typecheck` | `tsc --noEmit` | available |
+| `npm test` | Jest | available |
+| `npm run selectors:gen` | regenerate test ids from `src/testing/selectors.json` | available |
+| `npm run selectors:check` | fail if generated test id files are stale | available |
+| `npm run check` | `selectors:check` + `typecheck` + `test --ci` | available (lint added in P00-20) |
+| `npm run lint` / `npx expo lint` | ESLint | to be created in P00-20 |
+| `npm run ui -- <command>` | run the auto-test-suite (`go run -C tools/auto-test-suite .`) | to be created in P00-17 |
+| `maestro test .maestro/` | on-device flows | to be created in P00-18 |
+| `npx expo run:android` | local development build (needed from Phase 03 for ML Kit) | works now; dev client added in P03-01 |
+| `npx expo-doctor` | diagnose dependency/config issues | available |
+| `npx expo install --fix` | fix incompatible package versions | available |
+
+## 3. Conventions
+
+### Structure
+
+- **Routes only in `src/app/`** (Expo Router: every file is a screen; `_layout.tsx` defines navigators). Keep components, hooks and logic out of `src/app/`.
+- `src/components/ui` — themed primitives; `src/components/booky` — Booky; `src/components/<feature>` — feature components.
+- `src/features/<feature>` — hooks that connect screens to repositories/services.
+- `src/services` — network, recognition, backup (no React, no SQL).
+- `src/domain` — pure TypeScript models and helpers (no React, no Expo imports).
+- `src/db` — `Db` interface, adapters, migrations, repositories. **No SQL anywhere else.**
+- `src/theme` — design tokens. **No colour, font or spacing literals anywhere else.**
+- Platform differences go in `*.native.ts` / `*.web.ts` files, not scattered `Platform.OS` checks.
+- Import with the `@/` alias (`@/db/…`), not long relative paths.
+
+### Naming
+
+- Components `PascalCase.tsx`; hooks `useThing.ts`; other modules `camelCase.ts`; tests `*.test.ts(x)` next to the code or in a sibling `__tests__/`.
+- Database tables and columns `snake_case`; domain types `camelCase` fields; mapping happens in the repository.
+- Migrations are numbered `NNNN_description` and are **never edited once merged** — add a new one.
+- British English in user-facing copy (colour, catalogue), matching the design.
+
+### Test ids
+
+- Test ids are defined **only** in `src/testing/selectors.json` (groups and keys camelCase, ids kebab-case, globally unique). Run `npm run selectors:gen` and commit the generated files.
+- In app code and Jest use `Testids.group.key` from `@/testing/testids.gen`; in the auto-test-suite use the generated Go `selectors` package; in Maestro use the id string from `selectors.json`.
+- Never type a raw test id string anywhere else.
+- Every screen renders exactly one page-state marker (`pageState.loading`, `pageState.content` or `pageState.error`).
+
+### Dependencies
+
+- Add packages with `npx expo install <package>` so versions match Expo SDK 57. Prefer Expo modules over third-party libraries.
+- Libraries with native code (for example ML Kit OCR) need a development build (`npx expo run:android` or `eas build --profile development`); they do not run in Expo Go.
+- `android/` and `ios/` are generated (Continuous Native Generation) and git-ignored. Never create or edit them by hand — configure native behaviour through `app.json` and config plugins.
+
+### Accessibility and UX
+
+- Every interactive element has a role and an accessible name; touch targets ≥ 48 dp; text contrast meets WCAG AA using theme tokens; nothing is conveyed by colour alone; animations respect reduce-motion.
+- Booky's copy is short, warm and never blames the user (see `PLAN.md` §8).
+
+## 4. Testing and the regression gate
+
+Every card lists the tests it adds. Three levels (details in `PLAN.md` §10):
+
+- **Jest** for every module. Repository tests use `@jest-environment node` and a real in-memory SQLite database. Network is always mocked with recorded fixtures.
+- **auto-test-suite** (`tools/auto-test-suite`, Go + Playwright) drives the web build: `navigate`, `screenshot`, `interact`, `journey`, `smoke`. Each command prints JSON and writes an evidence bundle under `screenshots/` (git-ignored). Journeys self-register in `tools/auto-test-suite/internal/journeys/`, run in a fresh browser each, and start from a fixture via `/e2e?fixture=<name>&next=<route>`.
+- **Maestro** flows in `.maestro/` for camera, OCR and other native-only behaviour, run on an emulator or device.
+
+Before a card is done, both must be green:
 
 ```bash
-npx expo install <package>  # ALWAYS use instead of npm/yarn/pnpm/bun add — resolves SDK-compatible versions
-npx expo start              # start the dev server
-npx expo lint               # lint
-npx tsc --noEmit            # typecheck
-npx expo-doctor             # diagnose dependency and config issues
-npx expo install --fix      # fix incompatible package versions
+npm run check
+auto-test-suite smoke --ux-gates fail      # npm run ui -- smoke --ux-gates fail (from P00-17)
 ```
 
-Run lint and typecheck before declaring any task done.
+Verify behaviour by running it — tests, the web app, a device — rather than assuming it works. Look at the screenshots in the evidence bundle for any UI change.
 
-## Navigation & Routing
+## 5. Commits and pull requests
 
-- Use **Expo Router** for all navigation. Routes live in `src/app/` — every file there is a screen, `_layout.tsx` files define navigators. Keep non-route code (components, hooks, utils) outside `src/app/`.
-- Import `Link`, `router`, and `useLocalSearchParams` from `expo-router`.
-- Docs: https://docs.expo.dev/router/introduction.md
+- **Enable the hook once per clone:** `git config core.hooksPath .githooks`.
+- Commit small, logically grouped changes, often. Subject in the imperative mood, ≤ 72 characters ("Add loans repository with open-loan guard"); add a body when the reason is not obvious.
+- **No attribution to any AI tool, assistant or language model — anywhere.** No `Co-Authored-By` trailers naming one, no "generated with/by" footers, and no such mentions in pull request descriptions, code comments or docs. The `commit-msg` hook rejects offending commit messages; if it rejects a legitimate message, reword it rather than bypassing the hook.
+- Never commit secrets, keystores or local tool configuration (see `.gitignore`).
+- Pull requests: link the card ID(s), summarise what changed, list how it was verified (commands run, journeys, Maestro flows, screenshots), and include the `STATUS.md` tick.
 
-## Building with EAS
+## 6. Expo has changed — do not trust memory
 
-Use EAS to build, sign, and submit the app in the cloud (`eas build`, `eas submit`) and to ship over-the-air updates (`eas update`) — no local Xcode or Android Studio required. Run EAS CLI as `bunx eas-cli <command>` in Bun projects, or `npx eas-cli@latest <command>` otherwise; substitute that for bare `eas` in docs examples.
-Docs: https://docs.expo.dev/eas/index.md
+Expo ships breaking changes every SDK release. APIs you remember may be renamed, moved or removed. Before writing code that touches an Expo, EAS or React Native API:
 
-## Rules
+1. Check the major version of `expo` in `package.json` (currently 57).
+2. Read the matching versioned docs: `https://docs.expo.dev/versions/v57.0.0/`.
+3. For anything else, start from https://docs.expo.dev/llms.txt — an index of all Expo docs with corrections to common misconceptions — and follow its links to the specific page you need.
 
-- If `ios/` and `android/` directories do not exist, they are generated (Continuous Native Generation). Never create or edit them by hand — configure native behavior in `app.json` and config plugins.
-- Expo Go only includes its bundled native modules. After adding a library with native code, the app needs a development build: `npx expo run:ios|android` locally, or `eas build --profile development`.
-- Prefer recommended Expo modules over third-party libraries, and check your available skills before adding dependencies. Docs: https://docs.expo.dev/versions/latest/index.md
+Useful references:
+
+- Expo Router: https://docs.expo.dev/router/introduction.md — import `Link`, `router` and `useLocalSearchParams` from `expo-router`.
+- EAS (builds, submit, updates): https://docs.expo.dev/eas/index.md — run the CLI as `npx eas-cli@latest <command>` in place of bare `eas`. Local builds (`eas build --local`) keep releases free ([ADR 0011](docs/adr/0011-free-android-release-pipeline.md)).
+- Expo SDK modules: https://docs.expo.dev/versions/latest/index.md
