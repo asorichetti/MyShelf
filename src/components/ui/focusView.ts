@@ -8,3 +8,12 @@ import { AccessibilityInfo, type View } from 'react-native';
 export function focusView(view: View | null): void {
   if (view) AccessibilityInfo.sendAccessibilityEvent(view, 'focus');
 }
+
+/**
+ * Moves focus to `view` when the control that had it has just been swapped
+ * for this one (Lend becoming Mark returned). A phone cannot tell where
+ * TalkBack's focus was, so it always moves.
+ */
+export function focusViewIfLost(view: View | null): void {
+  focusView(view);
+}

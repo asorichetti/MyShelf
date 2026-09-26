@@ -21,17 +21,21 @@ describe('returnTarget (P09-01)', () => {
     expect(returnTarget(opener, [help, opener])).toBe(opener);
   });
 
-  it('falls back to the latest earlier focus still on the page and outside any modal', () => {
+  it('falls back to the modal’s named control, else the latest earlier focus still on the page and outside any modal', () => {
     const help = button('Help');
     const opener = button('More help');
     const modal = document.createElement('div');
     modal.setAttribute('aria-modal', 'true');
     document.body.appendChild(modal);
     const inside = button('Got it', modal);
+    const tab = button('Settings');
     opener.remove();
-    expect(returnTarget(opener, [help, opener, inside])).toBe(help);
+    expect(returnTarget(opener, [help, tab, opener, inside])).toBe(tab);
+    expect(returnTarget(opener, [help, tab, opener, inside], help)).toBe(help);
+    tab.remove();
+    expect(returnTarget(opener, [help, tab, opener, inside])).toBe(help);
     help.remove();
-    expect(returnTarget(opener, [help, opener, inside])).toBeNull();
+    expect(returnTarget(opener, [help, tab, opener, inside], help)).toBeNull();
   });
 });
 

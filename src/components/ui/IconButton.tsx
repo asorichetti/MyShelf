@@ -1,9 +1,9 @@
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import { Pressable, StyleSheet, type StyleProp, type ViewStyle } from 'react-native';
+import { Pressable, StyleSheet, type StyleProp, type View, type ViewStyle } from 'react-native';
 
 import { useTheme, type ColorRole } from '@/theme';
 
-import type { ComponentProps } from 'react';
+import type { ComponentProps, Ref } from 'react';
 
 export type IconName = ComponentProps<typeof MaterialCommunityIcons>['name'];
 
@@ -21,6 +21,7 @@ export interface IconButtonProps {
   accessibilityHint?: string;
   testID?: string;
   style?: StyleProp<ViewStyle>;
+  ref?: Ref<View>;
 }
 
 const variantColors: Record<IconButtonVariant, { bg: ColorRole | null; fg: ColorRole; pressed: ColorRole }> = {
@@ -41,11 +42,13 @@ export function IconButton({
   accessibilityHint,
   testID,
   style,
+  ref,
 }: IconButtonProps) {
   const theme = useTheme();
   const v = variantColors[variant];
   return (
     <Pressable
+      ref={ref}
       role="button"
       accessibilityLabel={accessibilityLabel}
       aria-label={accessibilityLabel}

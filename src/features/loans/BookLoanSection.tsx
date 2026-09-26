@@ -1,6 +1,6 @@
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { router } from 'expo-router';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { Booky } from '@/components/booky';
@@ -8,6 +8,7 @@ import { BookLoanHistory } from '@/components/loans/BookLoanHistory';
 import { LendSheet, type LendSubmitResult, type LendValues } from '@/components/loans/LendSheet';
 import { LoanStamp } from '@/components/loans/LoanStamp';
 import { Button, Stamp, Text, useSnackbar } from '@/components/ui';
+import { focusViewIfLost } from '@/components/ui/focusView';
 import { loansRepo, useDatabase } from '@/db';
 import { dayCount, daysOverdue, formatDate, loanStatus, today as todayOf, type BookDetail, type LoanWithDetails } from '@/domain';
 import { useLibraryEvent } from '@/features/events';
@@ -46,6 +47,16 @@ export function BookLoanSection({ book }: { book: BookDetail }) {
   const [welcome, setWelcome] = useState(false);
   const today = todayOf();
   const loan = book.openLoan;
+  // Lending swaps Lend for Mark returned, and returning swaps them back: the
+  // button that had focus is gone, so its replacement takes focus.
+  const primary = useRef<View>(null);
+  const out = loan != null;
+  const wasOut = useRef(out);
+  useEffect(() => {
+    if (wasOut.current === out) return;
+    wasOut.current = out;
+    focusViewIfLost(primary.current);
+  }, [out]);
 
   useEffect(() => {
     let active = true;
@@ -96,6 +107,7 @@ export function BookLoanSection({ book }: { book: BookDetail }) {
           {loan.note ? <Text color="inkMuted">{`Note: ${loan.note}`}</Text> : null}
           <View style={[styles.row, { gap: spacing.sm }]}>
             <Button
+              ref={primary}
               label="Mark returned"
               icon={<MaterialCommunityIcons name="book-arrow-left-outline" size={sizes.icon} color={colors.onPrimary} />}
               onPress={() => returning.start({ ...loan, bookTitle: book.title })}
@@ -122,6 +134,7 @@ export function BookLoanSection({ book }: { book: BookDetail }) {
             <Text color="inkMuted">On the shelf, not lent to anyone.</Text>
           )}
           <Button
+            ref={primary}
             label="Lend"
             variant="secondary"
             accessibilityLabel={`Lend ${book.title}`}

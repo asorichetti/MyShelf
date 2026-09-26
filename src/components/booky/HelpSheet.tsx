@@ -7,6 +7,7 @@ import { useTheme } from '@/theme';
 import { Booky } from './Booky';
 import { useBookyMode } from './BookyProvider';
 import { helpContent } from './helpContent';
+import { lastHelpButton } from './helpFocus';
 
 import type { HelpScreen } from './tips';
 
@@ -21,6 +22,8 @@ export function HelpSheet({ screen, onClose }: { screen: string | null; onClose:
       title={content?.title ?? 'Help'}
       subtitle="A little help from Booky"
       onClose={onClose}
+      // Opened from Booky's tip, which has gone by the time the sheet closes: focus goes back to the help button.
+      returnFocusTo={lastHelpButton}
       testID={Testids.booky.helpSheet}
       footer={<Button label="Got it" onPress={onClose} testID={Testids.booky.helpClose} />}
     >

@@ -4,7 +4,7 @@ import { useTheme, type ColorRole } from '@/theme';
 
 import { Text } from './Text';
 
-import type { ReactNode } from 'react';
+import type { ReactNode, Ref } from 'react';
 
 export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger';
 
@@ -25,6 +25,7 @@ export interface ButtonProps {
   block?: boolean;
   /** For buttons that open and close something (a menu, a panel). */
   expanded?: boolean;
+  ref?: Ref<View>;
 }
 
 interface VariantColors {
@@ -55,12 +56,14 @@ export function Button({
   style,
   block = false,
   expanded,
+  ref,
 }: ButtonProps) {
   const theme = useTheme();
   const v = variantColors[variant];
   const inactive = disabled || loading;
   return (
     <Pressable
+      ref={ref}
       role="button"
       accessibilityLabel={accessibilityLabel ?? label}
       accessibilityHint={accessibilityHint}
