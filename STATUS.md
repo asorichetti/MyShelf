@@ -14,11 +14,11 @@ On `main`: the scaffold (P00-01 to P00-07), the design system, Booky, tabs, data
 | [Phase 03](docs/plan/phase-03-scanning.md) | Scanning: barcode, OCR and edition picker | 0 / 14 |
 | [Phase 04](docs/plan/phase-04-series.md) | Series | 8 / 8 |
 | [Phase 05](docs/plan/phase-05-lending.md) | Lending | 1 / 10 |
-| [Phase 06](docs/plan/phase-06-grouping-and-shelf-views.md) | Grouping and shelf views | 0 / 11 |
+| [Phase 06](docs/plan/phase-06-grouping-and-shelf-views.md) | Grouping and shelf views | 9 / 11 |
 | [Phase 07](docs/plan/phase-07-booky-assistant.md) | Booky assistant | 0 / 9 |
 | [Phase 08](docs/plan/phase-08-settings-backup.md) | Settings, backup, export and import | 0 / 10 |
 | [Phase 09](docs/plan/phase-09-polish-a11y-release.md) | Polish, accessibility and release | 0 / 12 |
-| **Total** | | **63 / 132** |
+| **Total** | | **72 / 132** |
 
 ## Phase 00 — Foundation
 
@@ -144,17 +144,17 @@ On `main`: the scaffold (P00-01 to P00-07), the design system, Booky, tabs, data
 
 [Phase document](docs/plan/phase-06-grouping-and-shelf-views.md)
 
-- [ ] P06-01 Shelf group-by
-- [ ] P06-02 Genre management
-- [ ] P06-03 Author browse and detail
-- [ ] P06-04 User groups repository
-- [ ] P06-05 Groups tab
+- [x] P06-01 Shelf group-by
+- [x] P06-02 Genre management
+- [x] P06-03 Author browse and detail
+- [x] P06-04 User groups repository
+- [x] P06-05 Groups tab
 - [ ] P06-06 Group detail and ordering
-- [ ] P06-07 Multi-select and add to group
+- [x] P06-07 Multi-select and add to group
 - [ ] P06-08 Shelf display modes
-- [ ] P06-09 Persist shelf preferences
-- [ ] P06-10 Shelf filters
-- [ ] P06-11 Browse hub
+- [x] P06-09 Persist shelf preferences
+- [x] P06-10 Shelf filters
+- [x] P06-11 Browse hub
 
 ## Phase 07 — Booky assistant
 
