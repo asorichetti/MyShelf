@@ -1,4 +1,6 @@
 import type { ShelfSort } from './book';
+import type { ShelfFilters } from './shelfFilters';
+import type { ShelfGroupBy, ShelfViewMode } from './shelfView';
 
 /** Booky's chattiness (PLAN §8): all tips, only essential ones, or hidden. */
 export type BookyMode = 'helpful' | 'quiet' | 'off';
@@ -20,6 +22,12 @@ export interface AppSettings {
   'series.pendingConfirmBookIds': number[];
   /** Series Booky has already pointed out a gap in (tip id `series-gap:<seriesId>`), so the tip shows once per series (P04-07). */
   'series.gapTipSeriesIds': number[];
+  /** How the Shelf is split into sections (P06-01). */
+  shelfGroupBy: ShelfGroupBy;
+  /** List, covers or spines (P06-08). */
+  shelfViewMode: ShelfViewMode;
+  /** The Shelf's filters (P06-10). */
+  shelfFilters: ShelfFilters;
 }
 
 export type SettingKey = keyof AppSettings;
@@ -34,4 +42,7 @@ export const settingDefaults: Readonly<AppSettings> = Object.freeze<AppSettings>
   'series.dismissedBookIds': [],
   'series.pendingConfirmBookIds': [],
   'series.gapTipSeriesIds': [],
+  shelfGroupBy: 'none',
+  shelfViewMode: 'list',
+  shelfFilters: { genreIds: [], formats: [], languages: [], loan: 'any', series: 'any', yearFrom: null, yearTo: null, recentlyAdded: false },
 });

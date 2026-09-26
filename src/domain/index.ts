@@ -20,4 +20,6 @@ export * from './seriesNeighbours';
 export * from './seriesParser';
 export * from './seriesPosition';
 export * from './settings';
+export * from './shelfFilters';
+export * from './shelfView';
 export * from './text';
