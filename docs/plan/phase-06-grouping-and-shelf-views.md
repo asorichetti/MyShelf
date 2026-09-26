@@ -25,40 +25,45 @@ Let the user browse the collection the way they think about it: by genre, series
 
 ## Task cards
 
-### P06-01 Shelf group-by
+### P06-01 Shelf group-by — done
 
 - **Description:** Toolbar "Group by" menu: None, Genre, Series, Author, My groups. Implemented with `SectionList`; section headers styled as brass shelf edges with a count ("Fantasy · 23"). A book appears in every section it belongs to (e.g. two genres) with a stable key per section. Ungrouped books go under "No genre" / "Not in a series" / "Not in a group" at the end. The repositories already group the whole shelf (`genresRepo.groupBooksByGenre`, `seriesRepo.groupBooksBySeries`, `authorsRepo.groupBooksByAuthor`, `groupsRepo.groupBooksByGroup`, each returning `BookGroup<K>[]` with a `null` key for the ungrouped bucket); `shelfSections.ts` builds `{ sectionKey, sectionTitle, items }[]` on top of them, adding search and sort, in one or two queries per grouping.
 - **Files:** `src/db/repositories/shelfSections.ts`, `src/features/shelf/useShelf.ts`, `src/components/book/SectionHeader.tsx`, `src/features/shelf/ShelfScreen.tsx`; a `brass` colour role in `src/theme/tokens.ts` for the shelf edge.
 - **Acceptance:** section counts match `demo`; search and sort apply within sections; series sections ordered by position.
 - **Tests:** `src/db/repositories/__tests__/shelfSections.test.ts`, `src/__tests__/shelf.groupBy.test.tsx`.
+- **Delivered:** `listShelfSections` (`shelfSectionsRepo`) runs `listBookItems` (search, filters and sort in SQL, plus the author query) and one membership query per grouping, rather than calling the `groupBooksBy*` helpers, which load every book's full row and know nothing of search or filters: three queries whatever the grouping. Sections are `{ sectionKey, sectionTitle, groupBy, id, items }`; empty sections are left out; the ungrouped bucket is "No genre", "Not in a series", "No author" or "Not in a group". Books keep the Shelf's sort inside a section except series, which are in reading order. `SectionHeader` is a level-2 heading named "Fantasy, 23 books" with a chevron that opens the genre, series, author or group page. The `brass` role already existed (Phase 01 covers), so no token was added. The Shelf is a `SectionList` in every mode (one untitled section when not grouped).
 
-### P06-02 Genre management
+### P06-02 Genre management — done
 
 - **Description:** Route `src/app/genres/index.tsx`: list genres with counts; rename (collision → offer merge), merge (moves `book_genres`, keeps `user_edited = 1` if either was), delete (removes links only). Route `src/app/genres/[id].tsx` lists books in a genre.
 - **Files:** `src/app/genres/index.tsx`, `src/app/genres/[id].tsx`, `src/db/repositories/genres.ts`.
 - **Acceptance:** merge is a single transaction with no duplicate links; rename to an existing name triggers merge prompt.
 - **Tests:** `src/db/repositories/__tests__/genres.manage.test.ts`, `src/__tests__/genres.test.tsx`.
+- **Delivered:** screens in `src/features/genres/` (`GenresScreen`, `GenreDetailScreen`, `useGenres`, `useGenre`). `renameGenre` throws `GenreNameTakenError` (carrying the existing genre) when the name is taken ignoring case, and the screen turns that into the merge prompt; a change of case alone is a rename. `mergeGenres` and `listGenresWithCounts` are new. Each row has Rename, "Merge into…" and Delete buttons (48 dp, named "Rename Fantasy").
 
-### P06-03 Author browse and detail
+### P06-03 Author browse and detail — done
 
 - **Description:** Route `src/app/authors/index.tsx` (A–Z by `sort_name` with a fast-scroll letter index) and `src/app/authors/[id].tsx` (books by the author, grouped by series then standalone, sorted by year). Edit author name/sort name; merge duplicate authors ("J.R.R. Tolkien" + "J. R. R. Tolkien").
 - **Files:** `src/app/authors/index.tsx`, `src/app/authors/[id].tsx`, `src/db/repositories/authors.ts` (`listWithCounts`, `merge`), `src/components/ui/LetterIndex.tsx`.
 - **Acceptance:** merge moves `book_authors` without duplicates; letter index accessible (buttons with labels).
 - **Tests:** `src/db/repositories/__tests__/authors.merge.test.ts`, `src/__tests__/authors.test.tsx`.
+- **Delivered:** `authorsRepo.listAuthorsWithCounts` and `mergeAuthors` (source into target, keeping role and credit order); `authorLetter` in `src/domain/author.ts` files authors by the first letter of the sort name ("#" last). `LetterIndex` lives in `src/components/ui/` (buttons named "Jump to P"). Author detail groups books by series (A-Z, reading order) then "Standalone" by year, with edit (name and "filed under") and "Merge with another author" in the top bar. `BookListItem` gained an optional `seriesId` for this.
 
-### P06-04 User groups repository
+### P06-04 User groups repository — done
 
 - **Description:** `groups` repository: `create({ name, colour, icon })`, `update`, `delete` (removes memberships only), `list()` with counts and first 3 cover URIs, `addBooks(groupId, bookIds)` (appends positions), `removeBook`, `reorder(groupId, orderedBookIds)`, `groupsForBook(bookId)`. Colours are token names from a fixed set of 8 AA-safe swatches; icons from a fixed set (heart, star, bookmark, gift, moon, sun, pen, home).
 - **Files:** `src/db/repositories/groups.ts`, `src/theme/groupSwatches.ts`, `src/domain/groupIcons.ts`.
 - **Acceptance:** positions contiguous after remove/reorder; duplicate add is a no-op.
 - **Tests:** `src/db/repositories/__tests__/groups.test.ts`, `src/theme/__tests__/groupSwatches.test.ts` (contrast of label text on each swatch ≥ 4.5:1).
+- **Delivered:** the repository keeps its existing names: `createGroup`, `updateGroup`, `deleteGroup`, `listGroupsWithStats` (count and first three covers, two queries), `addBooksToGroup`, `removeBooksFromGroup` / `removeBookFromGroup`, `reorderGroup`, `listGroupBookIds` and `listGroupsForBook`. The swatches (Lavender, Rose, Sage, Honey, Sky, Plum, Berry, Moss) each have a band colour and an AA label colour; unknown stored colours and icons (the demo fixture's `beach`) fall back to Lavender and Bookmark. `validateGroupName` and `moveItem` are in `src/domain/groupIcons.ts`.
 
-### P06-05 Groups tab
+### P06-05 Groups tab — done
 
 - **Description:** Groups tab shows group cards (colour band, icon, name, count, cover collage) in a 2-column grid; "New group" button → sheet with name, colour swatches, icon picker. Empty state: Booky *happy* "Groups are like little shelves — try 'Favourites'."
 - **Files:** `src/features/groups/GroupsScreen.tsx`, `src/components/groups/GroupCard.tsx`, `src/components/groups/GroupEditorSheet.tsx`, `src/features/groups/useGroups.ts`.
 - **Acceptance:** create/edit/delete from the tab; swatch and icon pickers have accessible names ("Lavender", "Heart icon").
 - **Tests:** `src/features/groups/__tests__/useGroups.test.tsx`, `src/components/groups/__tests__/GroupEditorSheet.test.tsx`, `src/__tests__/groupsTab.test.tsx`.
+- **Delivered:** sheets use a new `Sheet` primitive (`src/components/ui/Sheet.tsx`). Edit and delete are on the group's own page (P06-06) rather than on the card.
 
 ### P06-06 Group detail and ordering
 
@@ -66,13 +71,15 @@ Let the user browse the collection the way they think about it: by genre, series
 - **Files:** `src/app/group/[id].tsx`, `src/features/groups/useGroup.ts`, `src/components/groups/ReorderList.tsx`.
 - **Acceptance:** order persists; reorder usable with a screen reader via buttons.
 - **Tests:** `src/features/groups/__tests__/useGroup.test.tsx`, `src/components/groups/__tests__/ReorderList.test.tsx`.
+- **Partly delivered:** the group page (`GroupDetailScreen`, `useGroup`) lists books in the group's order; "Reorder" swaps in `ReorderList`, whose move-up/move-down buttons ("Move Mort up") announce the new place ("Mort moved to 2 of 3") and keep keyboard focus with the book on web; the order is saved in one transaction. "Add books" opens the Shelf picking books for this group (`/?addTo=<id>`); selecting books offers "Remove from group". **Remaining:** long-press drag, which the card lists as an optional enhancement.
 
-### P06-07 Multi-select and add to group
+### P06-07 Multi-select and add to group — done
 
 - **Description:** Long-press a Shelf row (or "Select" in toolbar) enters selection mode: checkboxes, count in header, actions "Add to group…", "Remove from group" (in group view), "Delete" (with confirm). Book detail also has "Groups" chips with "Add to group".
 - **Files:** `src/features/shelf/useSelection.ts`, `src/components/book/SelectionBar.tsx`, `src/components/groups/GroupPickerSheet.tsx`, `src/app/book/[id].tsx`.
 - **Acceptance:** selecting 3 books and adding to a group adds 3 memberships; Android back exits selection mode.
 - **Tests:** `src/features/shelf/__tests__/useSelection.test.tsx`, `src/components/groups/__tests__/GroupPickerSheet.test.tsx`.
+- **Delivered:** selection works in all three display modes (items become checkboxes); the count is in `SelectionBar` at the bottom of the screen. Delete removes the books in one transaction with six seconds of Undo (`useDeleteBooks`). The book page's "Groups" section is `src/features/groups/BookGroupsSection.tsx` (group chips open the group). Android back is covered by `useSelection.test.tsx` through `BackHandler`; the Maestro flow waits for `.maestro/` (P00-18).
 
 ### P06-08 Shelf display modes
 
@@ -80,27 +87,31 @@ Let the user browse the collection the way they think about it: by genre, series
 - **Files:** `src/components/book/CoverGrid.tsx`, `src/components/book/SpineShelf.tsx`, `src/features/shelf/ShelfScreen.tsx`.
 - **Acceptance:** each mode renders `demo` without overflow at the `mobile` viewport (390 px wide) and at 200 % font scale (spines truncate with ellipsis and full title in accessible label).
 - **Tests:** `src/components/book/__tests__/CoverGrid.test.tsx`, `src/components/book/__tests__/SpineShelf.test.tsx`.
+- **Partly delivered:** List, Covers (3 columns on phones, real covers via `CoverImage`'s new `width`, the generated cover only as a fallback) and Spines (48–60 dp wide by title hash, Lora title turned 90° with an ellipsis, cover-palette colours, brass shelf edge) all support sections and selection, and pass the render gate at 390 px with `demo` (`shelf-view-modes`). **Remaining:** the 200 % font scale check on a device; the web build cannot scale fonts, and Jest only proves the one-line ellipsis and the full-title label.
 
-### P06-09 Persist shelf preferences
+### P06-09 Persist shelf preferences — done
 
 - **Description:** Settings keys `shelfGroupBy`, `shelfViewMode`, `shelfSort` (from P01-04) and `shelfFilters` read on load and written on change (debounced).
 - **Files:** `src/domain/settings.ts` (keys and defaults), `src/features/shelf/useShelfPrefs.ts`.
 - **Acceptance:** prefs survive restart; invalid stored values fall back to defaults.
 - **Tests:** `src/features/shelf/__tests__/useShelfPrefs.test.tsx`.
+- **Delivered:** sort, grouping and display mode are single taps and are saved at once; filters, which change tap by tap, are debounced (300 ms). Anything pending is saved when the app goes to the background or the Shelf unmounts. Invalid stored values fall back to defaults (`parseShelfSort`, `parseShelfGroupBy`, `parseShelfViewMode`, `parseShelfFilters`).
 
-### P06-10 Shelf filters
+### P06-10 Shelf filters — done
 
 - **Description:** Filter sheet: genres (multi), format, language, on loan / at home, has series, year range, "added in last 30 days". Active filters shown as removable chips under the toolbar; "Clear all".
 - **Files:** `src/components/book/FilterSheet.tsx`, `src/db/repositories/books.ts` (filter clause builder), `src/domain/shelfFilters.ts`.
 - **Acceptance:** filters combine with AND across types and OR within genres; SQL built with parameters only (no string concatenation of values).
 - **Tests:** `src/domain/__tests__/shelfFilters.test.ts`, `src/db/repositories/__tests__/books.filters.test.ts`.
+- **Delivered:** `booksRepo.filterClause` builds the WHERE condition with bound parameters only, and `listFilterOptions` offers only values some book has. The sheet shows genres with counts, on loan / at home, in a series / standalone, format, language, a year range and "added in the last 30 days"; changes apply at once. "Nothing matches these filters" has a "Clear filters" action.
 
-### P06-11 Browse hub
+### P06-11 Browse hub — done
 
 - **Description:** A "Browse" row at the top of the Shelf with chips to Genres, Series, Authors and Groups screens, so each index is one tap away.
 - **Files:** `src/components/book/BrowseChips.tsx`, `src/features/shelf/ShelfScreen.tsx`.
 - **Acceptance:** each chip navigates; hidden while searching.
 - **Tests:** `src/components/book/__tests__/BrowseChips.test.tsx`.
+- **Delivered:** Groups is the Groups tab; Series links to the Phase 04 routes.
 
 ---
 
@@ -130,19 +141,25 @@ Let the user browse the collection the way they think about it: by genre, series
 
 (`groups.root`/`groups.title` exist from P00-11 — extend the group.)
 
+As built, `selectors.json` also has the ids the screens needed beyond this list: `shelfView` (cover cells, spines, Select, the filter sheet's options and chip remove buttons), `selection.cancel`, `genres` (rename field, merge options, genre page), `authors` (edit sheet, merge options, detail sections) and `groups` (editor sheet, edit, delete, picker, reorder rows, book-page chips). The code is the reference.
+
 ## Auto test suite journeys
 
 Each journey is added by the card that builds its screen. Suite `core` journeys run in `smoke` (CI and the regression gate); the rest use suite `p06` (`npm run -s autotest -- journey --suite p06`).
 
 | Journey | Suite | Steps |
 |---|---|---|
-| `shelf-group-by-genre` | `core` | fixture `demo`; group by genre → 4 section headers with counts |
-| `shelf-view-modes` | `p06` | switch List → Covers → Spines; screenshot each; render gate checks overflow |
-| `group-create-add-books` | `core` | Groups tab → new group "Favourites" (heart, lavender) → Shelf select 3 → add to group → group shows 3 |
-| `group-reorder` | `p06` | open group → reorder → move last up twice → order persisted after reload |
-| `genre-merge` | `p06` | genres → rename "Sci-Fi" to "Science Fiction" → merge prompt → single genre with combined count |
+| `shelf-group-by-genre` | `p06` | fixture `demo`; group by genre → 4 section headers with counts; group by series → reading order |
+| `shelf-view-modes` | `p06` | switch List → Covers → Spines; screenshot each; render gate checks overflow; spines grouped by genre |
+| `shelf-filters` | `p06` | filter genre Fantasy + on loan → chips shown → remove one → clear all |
+| `shelf-prefs-persist` | `p06` | group by author, Covers, sort by year, a genre filter → all survive a reload |
+| `browse-hub` | `p06` | each Browse chip opens its index with one h1; the chips hide while searching |
+| `group-create-add-books` | `p06` | Groups tab → new group "Favourites" (heart, lavender) → Shelf select 3 → add to group → group shows 3 → book page lists it |
+| `group-reorder` | `p06` | open group → reorder → move last up twice (once by keyboard) → order persisted after reload → Add books from the Shelf |
+| `genre-merge` | `p06` | tag Dune "Sci-Fi" → genres → rename "Sci-Fi" to "Science Fiction" → merge prompt → single genre with combined count |
 | `author-browse` | `p06` | authors → letter P → Pratchett → books grouped by series |
-| `shelf-filters` | `p06` | filter genre Fantasy + on loan → chips shown → clear all |
+
+All nine are in suite `p06` (the two planned for `core` too, so the regression gate's `smoke` stays unchanged while the phase is in flight).
 
 ## Maestro flows
 
