@@ -258,7 +258,7 @@ explain the blank page.
 
 | Gate | Fails when |
 |---|---|
-| `pagestate` | The content marker (`page-content` testid, or `--marker`) is not visible within 15 s; the `page-error` testid is visible; or the visible `main` has fewer than 10 characters of text |
+| `pagestate` | No visible content marker (`page-content` testid, or `--marker`) within 15 s; a visible `page-error` testid; or the visible `main` has fewer than 10 characters of text. Only visible markers count, because a stack keeps the screens underneath in the DOM, hidden, with their own markers |
 | `render` | The page rendered but is not styled (rules below) |
 | `console` | A console error or uncaught exception that is not allowlisted |
 | `network` | Any response >= 400 or request that got no response |
@@ -408,6 +408,15 @@ Re-export after changing app code: `--serve` tests whatever is in `dist/`.
 | `tabs-navigate` | core | Clicking each tab (`Testids.tabs.*`) lands on its route with exactly one visible h1 naming the screen; `aria-selected="true"` on the active tab only (the web tab bar sets no `aria-current`); the page gates run on every tab screen; Booky is visible in the empty Shelf; one screenshot per tab |
 | `booky-empty-shelf` | core | Booky (`booky-avatar`, role img, "Booky..." label) is in the empty Shelf's `empty-state`; "What can Booky do?" opens `booky-bubble` with non-empty `booky-bubble-text`; the page gates run again with the bubble open (dismiss button included); `booky-dismiss` closes it; screenshot `booky-tip-open.png` |
 | `theme-tokens` | p00 | `--ms-color-primary` on `:root` is `#6B3FA8`; the computed body background equals `--ms-color-paper` and the body font starts with `--ms-font-body` |
+| `shelf-empty` | core | Fixture `empty`: `empty-state` with Booky (`booky-avatar`), its title and message, the Scan and Add manually actions, no rows and no search box; screenshot `shelf-empty.png` |
+| `shelf-demo-list` | core | Fixture `demo`: 12 `home-row`s, each a button named "Title, by Author, Year" (Dune's adds "on loan"), the "12 books catalogued" stamp and a polite live result count; screenshot `shelf-demo.png` |
+| `book-add-manual` | core | Fixture `empty`: Add manually, type title, author (Enter), year and genre (Enter), save; the detail page shows title, author, call number `FIC TOL 1937` and genre with a "Saved" snackbar (page gates run there); Back lists one row |
+| `shelf-search-sort` | p01 | Search "prat" leaves Pratchett's 4 books and announces "4 of 12 books match “prat”"; clear restores 12; the sort button reports `aria-expanded`, Year is checked and re-orders the list, and the order survives a reload |
+| `book-add-invalid-isbn` | p01 | ISBN `9780000000000` blocks saving: `book-form-error` is `role="alert"` and names ISBN, the field is `aria-invalid` and focused, the form stays open |
+| `book-edit` | p01 | Fixture `demo`: first book → Edit (year field holds 1983) → 1984 → save → the detail page shows `FIC PRA 1984` and "Saved your changes" |
+| `book-delete-undo` | p01 | Fixture `demo`: Dune → More (`role="menu"`) → Delete → `alertdialog` naming the book and its loan, with focus inside → Remove → 11 rows and an Undo snackbar (page gates run) → Undo → 12 rows, Dune still on loan |
+| `book-form-discard` | p01 | A dirty form asks before leaving: Escape closes the dialog, keeps the text and returns focus to Cancel; Discard goes back to the empty Shelf |
+| `book-detail-missing` | p01 | `/book/99999` shows `page-error` with the h1 "Book not found" and Booky; the `pagestate/error-marker` finding is waived because the error page is the point; Back to shelf goes to `/` |
 | `home-responsive` | responsive | Viewport meta has `width=device-width, initial-scale=1`; at mobile, tablet and desktop the title is fully on screen and the page does not scroll sideways; one screenshot per width |
 
 ### Adding a journey

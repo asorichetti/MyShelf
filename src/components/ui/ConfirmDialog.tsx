@@ -7,6 +7,7 @@ import { useTheme } from '@/theme';
 
 import { Button } from './Button';
 import { Heading } from './Heading';
+import { MODAL_ANIMATION } from './modalAnimation';
 import { Text } from './Text';
 
 import type { ReactNode } from 'react';
@@ -61,19 +62,11 @@ export function ConfirmDialog({
     <Modal
       visible={visible}
       transparent
-      animationType={reduceMotion ? 'none' : 'fade'}
+      animationType={reduceMotion ? 'none' : MODAL_ANIMATION}
       onRequestClose={busy ? () => {} : onCancel}
       statusBarTranslucent
     >
       <View style={[styles.backdrop, { backgroundColor: colors.scrim, padding: spacing.lg }]}>
-        <Pressable
-          accessibilityElementsHidden
-          importantForAccessibility="no-hide-descendants"
-          aria-hidden
-          focusable={false}
-          style={StyleSheet.absoluteFill}
-          onPress={busy ? undefined : onCancel}
-        />
         <View
           role="alertdialog"
           aria-modal
@@ -114,6 +107,15 @@ export function ConfirmDialog({
             />
           </View>
         </View>
+        {/* After the dialog in the DOM, so the web focus trap starts on Cancel, not the backdrop. */}
+        <Pressable
+          accessibilityElementsHidden
+          importantForAccessibility="no-hide-descendants"
+          aria-hidden
+          focusable={false}
+          style={StyleSheet.absoluteFill}
+          onPress={busy ? undefined : onCancel}
+        />
       </View>
     </Modal>
   );
@@ -121,7 +123,7 @@ export function ConfirmDialog({
 
 const styles = StyleSheet.create({
   backdrop: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  dialog: { width: '100%', borderWidth: 1 },
+  dialog: { width: '100%', borderWidth: 1, zIndex: 1 },
   illustration: { alignItems: 'center' },
   actions: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'flex-end' },
 });

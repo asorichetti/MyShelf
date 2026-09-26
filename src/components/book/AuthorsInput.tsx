@@ -163,7 +163,7 @@ export function AuthorsInput({ authors, onChange, text, onTextChange, suggest, e
           disabled={!typed}
           onPress={() => add(text)}
           testID={Testids.bookForm.authorAdd}
-          style={{ marginBottom: errorText ? spacing.xl : 0, paddingHorizontal: spacing.lg }}
+          style={{ alignSelf: 'flex-end', marginBottom: errorText ? spacing.xl : 0, paddingHorizontal: spacing.lg }}
         />
       </View>
       {typed && shown.length && !exact ? (

@@ -68,7 +68,7 @@ export function GenresInput({ genres, onChange, text, onTextChange, existing, er
           disabled={!typed}
           onPress={() => add(text)}
           testID={Testids.bookForm.genreAdd}
-          style={{ paddingHorizontal: spacing.lg }}
+          style={{ alignSelf: 'flex-end', marginBottom: errorText ? spacing.xl : 0, paddingHorizontal: spacing.lg }}
         />
       </View>
       {suggestions.length ? (

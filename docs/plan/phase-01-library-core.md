@@ -173,6 +173,9 @@ Each journey is added by the card that builds its screen. Suite `core` journeys 
 | `book-edit` | `p01` | fixture `demo`; open first row → edit → change year → save → detail updated |
 | `book-delete-undo` | `p01` | fixture `demo`; delete → confirm → 11 rows → undo → 12 rows |
 | `book-detail-missing` | `p01` | open `/book/99999`; expect `pageState.error`; the journey waives `pagestate`/`error-marker` with a reason, so render and a11y are skipped for that page |
+| `book-form-discard` | `p01` | fixture `empty`; type in the form → Cancel → the discard dialog; Escape keeps editing and returns focus to Cancel; Discard → Shelf (added with P01-07) |
+
+All of these are in `tools/auto-test-suite/src/journeys/shelf.journey.ts` and `book.journey.ts`; `openFixture`, `waitForCount`, `waitForPath`, `waitVisible` and `rowNames` are in `helpers.ts`. The pagestate gate now counts only visible markers, since a stack keeps the screens underneath in the DOM with their own markers.
 
 ## Maestro flows
 

@@ -28,7 +28,9 @@ export async function pageStateGate(page: Page, target: string, opts: PageStateO
   const findings: RawFinding[] = [];
 
   try {
-    await page.locator(`${marker}, ${errorMarker}`).first().waitFor({ state: 'visible', timeout: timeoutMs });
+    // Stack navigators keep the screens underneath in the DOM (hidden), each
+    // with its own marker, so look for a visible one.
+    await page.locator(`${marker}:visible, ${errorMarker}:visible`).first().waitFor({ state: 'visible', timeout: timeoutMs });
   } catch {
     const probe = await page
       .evaluate(() => ({
@@ -45,8 +47,8 @@ export async function pageStateGate(page: Page, target: string, opts: PageStateO
     return newResult('pagestate', target, start, findings);
   }
 
-  const err = page.locator(errorMarker).first();
-  if ((await page.locator(errorMarker).count().catch(() => 0)) > 0 && (await err.isVisible().catch(() => false))) {
+  const err = page.locator(`${errorMarker}:visible`).first();
+  if ((await page.locator(`${errorMarker}:visible`).count().catch(() => 0)) > 0 && (await err.isVisible().catch(() => false))) {
     const txt = await err.innerText().catch(() => '');
     findings.push({
       rule: 'error-marker',

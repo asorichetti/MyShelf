@@ -29,7 +29,9 @@ export interface MenuProps {
 
 /**
  * A small overflow menu anchored to the top-right corner, over a light scrim.
- * Items are 48 dp tall; choosing one closes the menu first. Android back,
+ * Items are 48 dp tall; choosing one closes the menu first and runs the item
+ * on the next frame, once focus is back on the menu button (so a dialog the
+ * item opens can take focus cleanly). Android back,
  * Escape on web and a tap outside close it (the web Modal also traps focus
  * and returns it to the button that opened the menu).
  */
@@ -39,14 +41,6 @@ export function Menu({ visible, onClose, items, accessibilityLabel, top = 56, te
   const insets = useSafeAreaInsets();
   return (
     <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>
-      <Pressable
-        accessibilityElementsHidden
-        importantForAccessibility="no-hide-descendants"
-        aria-hidden
-        focusable={false}
-        style={[StyleSheet.absoluteFill, { backgroundColor: colors.scrim, opacity: 0.4 }]}
-        onPress={onClose}
-      />
       <View
         role="menu"
         aria-label={accessibilityLabel}
@@ -72,7 +66,7 @@ export function Menu({ visible, onClose, items, accessibilityLabel, top = 56, te
             testID={item.testID}
             onPress={() => {
               onClose();
-              item.onPress();
+              requestAnimationFrame(() => item.onPress());
             }}
             style={({ pressed }) => [
               styles.item,
@@ -89,11 +83,20 @@ export function Menu({ visible, onClose, items, accessibilityLabel, top = 56, te
           </Pressable>
         ))}
       </View>
+      {/* After the menu in the DOM, so the web focus trap starts on the first item. */}
+      <Pressable
+        accessibilityElementsHidden
+        importantForAccessibility="no-hide-descendants"
+        aria-hidden
+        focusable={false}
+        style={[StyleSheet.absoluteFill, { backgroundColor: colors.scrim, opacity: 0.4 }]}
+        onPress={onClose}
+      />
     </Modal>
   );
 }
 
 const styles = StyleSheet.create({
-  menu: { position: 'absolute', minWidth: 200, borderWidth: 1 },
+  menu: { position: 'absolute', minWidth: 200, borderWidth: 1, zIndex: 1 },
   item: { flexDirection: 'row', alignItems: 'center' },
 });
