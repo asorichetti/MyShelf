@@ -1,5 +1,5 @@
 import { Testids, tid } from '../selectors.ts';
-import { coverState, openFixture, waitForCount, waitForPath, waitVisible } from './helpers.ts';
+import { coverState, openFixture, rowNames, waitForCount, waitForPath, waitVisible } from './helpers.ts';
 import { expect, q, register, type Context } from './registry.ts';
 
 // Loan dates in the demo fixture are relative to today; freeze it so stamps are exact.
@@ -241,5 +241,27 @@ register({
     expect(/sleepy/i.test(label), `/loans (empty): expected a sleepy Booky, found ${q(label)}`);
     expect((await c.page.locator(loanRow).count()) === 0, '/loans (empty): expected no loan rows');
     await c.snap('loans-empty');
+  },
+});
+
+register({
+  name: 'shelf-loan-badge',
+  suite: 'p05',
+  desc: 'Fixture "demo": Dune\'s Shelf row is stamped "On loan" and named "on loan to Sam"; Roger Ackroyd\'s is stamped "Overdue" and named "on loan to Priya, overdue"; the same books as the Loans tab',
+  async run(c) {
+    await openFixture(c, 'demo', '/', TODAY);
+    await waitForCount(c, shelfRow, 12, '/');
+    const names = await rowNames(c);
+    const onLoan = names.filter((n) => n.includes('on loan'));
+    expect(
+      onLoan.join('|') === 'Dune, by Frank Herbert, 1965, on loan to Sam|The Murder of Roger Ackroyd, by Agatha Christie, 1926, on loan to Priya, overdue',
+      `/: expected Dune and Roger Ackroyd to be named as on loan, found ${q(onLoan)}`,
+    );
+    const badges = await c.page.locator(`${shelfRow} ${tid(Testids.bookLoan.badge)}`).evaluateAll((els) =>
+      els.map((el) => [el.closest('[aria-label]')?.getAttribute('aria-label')?.split(',')[0], (el as HTMLElement).innerText.trim()].join(': ')),
+    );
+    expect(badges.join('|') === 'Dune: ON LOAN|The Murder of Roger Ackroyd: OVERDUE', `/: expected the loan stamps on Dune and Roger Ackroyd, found ${q(badges)}`);
+    await c.page.locator(`${shelfRow}[aria-label^="The Murder of Roger Ackroyd,"]`).scrollIntoViewIfNeeded();
+    await c.snap('shelf-loan-badges');
   },
 });

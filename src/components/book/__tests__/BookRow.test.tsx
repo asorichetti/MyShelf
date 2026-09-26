@@ -1,7 +1,8 @@
 import { act, fireEvent, screen } from '@testing-library/react-native';
 
 import { BookRow, bookRowLabel } from '@/components/book/BookRow';
-import type { BookListItem } from '@/domain';
+import { ShelfLoanStamp } from '@/components/loans/ShelfLoanStamp';
+import { setToday, today, type BookListItem } from '@/domain';
 import { renderWithTheme } from '@/testing/render';
 import { Testids } from '@/testing/testids.gen';
 import { lightTheme } from '@/theme';
@@ -18,8 +19,9 @@ const mort: BookListItem = {
   onLoan: false,
 };
 
+/** As the Shelf renders it: the loan stamp goes in the row's badges slot. */
 async function renderRow(item: BookListItem, onPress = jest.fn()) {
-  renderWithTheme(<BookRow item={item} onPress={onPress} />);
+  renderWithTheme(<BookRow item={item} onPress={onPress} badges={item.onLoan ? <ShelfLoanStamp item={item} today={today()} /> : undefined} />);
   await act(async () => {});
   return onPress;
 }
@@ -32,6 +34,12 @@ describe('bookRowLabel', () => {
   it('joins several authors, skips what is missing and mentions a loan', () => {
     expect(bookRowLabel({ ...mort, authors: ['Terry Pratchett', 'Neil Gaiman'], onLoan: true })).toBe(
       'Mort, by Terry Pratchett and Neil Gaiman, 1987, on loan',
+    );
+    expect(bookRowLabel({ ...mort, onLoan: true, loanBorrower: 'Sam', loanDueOn: '2026-06-26' }, '2026-06-15')).toBe(
+      'Mort, by Terry Pratchett, 1987, on loan to Sam',
+    );
+    expect(bookRowLabel({ ...mort, onLoan: true, loanBorrower: 'Priya', loanDueOn: '2026-06-10' }, '2026-06-15')).toBe(
+      'Mort, by Terry Pratchett, 1987, on loan to Priya, overdue',
     );
     expect(bookRowLabel({ ...mort, authors: [], publicationYear: null })).toBe('Mort');
   });
@@ -55,9 +63,42 @@ describe('BookRow', () => {
     expect(screen.queryByText('On loan')).toBeNull();
   });
 
-  it('stamps books that are on loan', async () => {
+  it('shows the loan stamp from its badges slot', async () => {
     await renderRow({ ...mort, onLoan: true });
     expect(screen.getByText('On loan')).toHaveStyle({ fontFamily: lightTheme.typography.stamp.fontFamily });
+  });
+
+  describe('loan variants (P05-09)', () => {
+    beforeEach(() => setToday('2026-06-15'));
+    afterEach(() => setToday(null));
+
+    it('on loan: an "On loan" stamp, and the row says who has it', async () => {
+      await renderRow({ ...mort, onLoan: true, loanBorrower: 'Sam', loanDueOn: '2026-06-26' });
+      expect(screen.getByRole('button', { name: 'Mort, by Terry Pratchett, 1987, on loan to Sam' })).toBeOnTheScreen();
+      expect(screen.getByTestId(Testids.bookLoan.badge)).toHaveTextContent('On loan');
+      expect(screen.getByText('On loan')).toHaveStyle({ color: lightTheme.colors.accent });
+    });
+
+    it('due today is still "On loan", not overdue', async () => {
+      await renderRow({ ...mort, onLoan: true, loanBorrower: 'Sam', loanDueOn: '2026-06-15' });
+      expect(screen.getByTestId(Testids.bookLoan.badge)).toHaveTextContent('On loan');
+    });
+
+    it('overdue: an "Overdue" stamp in danger ink, and the row says so', async () => {
+      await renderRow({ ...mort, onLoan: true, loanBorrower: 'Priya', loanDueOn: '2026-06-10' });
+      expect(screen.getByRole('button', { name: 'Mort, by Terry Pratchett, 1987, on loan to Priya, overdue' })).toBeOnTheScreen();
+      expect(screen.getByText('Overdue')).toHaveStyle({ color: lightTheme.colors.danger });
+    });
+
+    it('no due date: never overdue', async () => {
+      await renderRow({ ...mort, onLoan: true, loanBorrower: 'Kim', loanDueOn: null });
+      expect(screen.getByRole('button', { name: 'Mort, by Terry Pratchett, 1987, on loan to Kim' })).toBeOnTheScreen();
+    });
+
+    it('at home: no stamp', async () => {
+      await renderRow({ ...mort, loanBorrower: null, loanDueOn: null });
+      expect(screen.queryByTestId(Testids.bookLoan.badge)).toBeNull();
+    });
   });
 
   it('leaves out the year and series when unknown', async () => {

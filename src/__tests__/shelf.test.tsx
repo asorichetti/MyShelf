@@ -22,7 +22,8 @@ describe('Shelf screen', () => {
     await waitFor(() => expect(screen.getAllByTestId(Testids.home.row)).toHaveLength(12));
     expect(screen.getByTestId(Testids.home.bookCount)).toHaveTextContent('12 books catalogued');
     expect(screen.getByRole('button', { name: 'Mort, by Terry Pratchett, 1987' })).toBeOnTheScreen();
-    expect(screen.getByRole('button', { name: 'Dune, by Frank Herbert, 1965, on loan' })).toBeOnTheScreen();
+    expect(screen.getByRole('button', { name: 'Dune, by Frank Herbert, 1965, on loan to Sam' })).toBeOnTheScreen();
+    expect(screen.getByRole('button', { name: 'The Murder of Roger Ackroyd, by Agatha Christie, 1926, on loan to Priya, overdue' })).toBeOnTheScreen();
     expect(screen.getByTestId(Testids.home.resultCount)).toHaveTextContent('Showing all 12 books');
     expect(screen.queryByTestId(Testids.emptyState.root)).toBeNull();
     expect(screen.getAllByRole('heading').filter((h) => h.props['aria-level'] === 1)).toHaveLength(1);

@@ -37,7 +37,7 @@ register({
     expect(names[0] === 'The Colour of Magic, by Terry Pratchett, 1983', `/ (demo): expected the first row ${q('The Colour of Magic, by Terry Pratchett, 1983')}, found ${q(names[0])}`);
     const unnamed = names.filter((n) => !/^.+, by .+, \d{4}/.test(n));
     expect(unnamed.length === 0, `/ (demo): rows without a "Title, by Author, Year" name: ${q(unnamed)}`);
-    expect(names.includes('Dune, by Frank Herbert, 1965, on loan'), `/ (demo): expected Dune's row to say it is on loan, rows are ${q(names)}`);
+    expect(names.includes('Dune, by Frank Herbert, 1965, on loan to Sam'), `/ (demo): expected Dune's row to say it is on loan, rows are ${q(names)}`);
     const roles = await c.page.locator(row).evaluateAll((els) => els.map((el) => el.getAttribute('role')));
     expect(roles.every((r) => r === 'button'), `/ (demo): expected every row to be a button, found roles ${q(roles)}`);
     const count = (await c.page.locator(tid(Testids.home.bookCount)).innerText()).trim();

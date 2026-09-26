@@ -14,9 +14,10 @@ import { SpineShelf, spinesPerShelf } from '@/components/book/SpineShelf';
 import { Booky, useBooky } from '@/components/booky';
 import { GroupEditorSheet, type GroupDraft } from '@/components/groups/GroupEditorSheet';
 import { GroupPickerSheet } from '@/components/groups/GroupPickerSheet';
+import { ShelfLoanStamp } from '@/components/loans/ShelfLoanStamp';
 import { Button, Chip, ConfirmDialog, EmptyState, Heading, Screen, Text, useSnackbar } from '@/components/ui';
 import type { ShelfSection } from '@/db';
-import { activeFilterCount, filterChips, languages, noFilters, type BookListItem, type ShelfGroupBy } from '@/domain';
+import { activeFilterCount, filterChips, languages, noFilters, today, type BookListItem, type ShelfGroupBy } from '@/domain';
 import { useGroups } from '@/features/groups/useGroups';
 import { goBackOr } from '@/features/navigation/goBack';
 import { parseId } from '@/features/navigation/parseId';
@@ -118,7 +119,15 @@ export function ShelfScreen() {
       if (viewMode === 'covers') return <CoverGridRow items={item.items} columns={perRow} width={width} onPress={onPress} onLongPress={onLongPress} isSelected={selectedCheck} />;
       if (viewMode === 'spines') return <SpineShelf items={item.items} onPress={onPress} onLongPress={onLongPress} isSelected={selectedCheck} />;
       const book = item.items[0];
-      return <BookRow item={book} onPress={onPress} onLongPress={onLongPress} selected={selectedCheck?.(book.id)} />;
+      return (
+        <BookRow
+          item={book}
+          onPress={onPress}
+          onLongPress={onLongPress}
+          selected={selectedCheck?.(book.id)}
+          badges={book.onLoan ? <ShelfLoanStamp item={book} today={today()} /> : undefined}
+        />
+      );
     },
     [viewMode, perRow, width, onPress, onLongPress, selectedCheck],
   );

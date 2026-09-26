@@ -102,7 +102,7 @@ register({
     const tops = await c.page.locator(tid(sv.coverCell)).evaluateAll((els) => els.slice(0, 4).map((el) => Math.round(el.getBoundingClientRect().top)));
     expect(tops[0] === tops[1] && tops[1] === tops[2] && tops[3] > tops[0], `/ covers: expected 3 covers per row on a phone, found tops ${q(tops)}`);
     const cellNames = await names(c, tid(sv.coverCell));
-    expect(cellNames.includes('Dune, by Frank Herbert, 1965, on loan'), `/ covers: expected cells named like list rows, found ${q(cellNames)}`);
+    expect(cellNames.includes('Dune, by Frank Herbert, 1965, on loan to Sam'), `/ covers: expected cells named like list rows, found ${q(cellNames)}`);
     const images = await c.page.locator(`${tid(sv.coverCell)} ${tid(Testids.cover.image)}`).count();
     expect(images >= 10, `/ covers: expected real cover images front and centre, found ${images}`);
     await c.checkGates('/ (covers)');

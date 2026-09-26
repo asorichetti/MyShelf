@@ -60,6 +60,10 @@ export interface BookListItem {
   seriesName: string | null;
   seriesPosition: number | null;
   onLoan: boolean;
+  /** Who has it now, when on loan (the Shelf's loan stamp). */
+  loanBorrower?: string | null;
+  /** When the open loan is due back, if it has a due date. */
+  loanDueOn?: string | null;
 }
 
 /** Everything the book detail page shows. */

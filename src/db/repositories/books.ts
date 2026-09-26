@@ -147,6 +147,11 @@ function orderBy(sort: ShelfSortKey, dir: SortDirection): string {
   }
 }
 
+/** Who has the book and when it is due, for the Shelf's loan stamp (P05-09). */
+const OPEN_LOAN_BORROWER = `(SELECT p.name FROM loans l JOIN borrowers p ON p.id = l.borrower_id
+  WHERE l.book_id = b.id AND l.returned_on IS NULL)`;
+const OPEN_LOAN_DUE = '(SELECT l.due_on FROM loans l WHERE l.book_id = b.id AND l.returned_on IS NULL)';
+
 export interface ListBookItemsOptions {
   /** Matches title, subtitle, author names, series name and (normalised) ISBN, case-insensitively. */
   query?: string;
@@ -220,6 +225,8 @@ interface ListRow {
   series_name: string | null;
   series_position: number | null;
   on_loan: number;
+  loan_borrower: string | null;
+  loan_due_on: string | null;
 }
 
 const likeEscape = (text: string) => text.replace(/[\\%_]/g, (c) => `\\${c}`);
@@ -278,6 +285,7 @@ export async function listBookItems(db: Db, options: ListBookItemsOptions = {}):
   const rows = await db.all<ListRow & { author_sort: string | null }>(
     `SELECT b.id, b.title, b.subtitle, b.cover_uri, b.publication_year, b.series_id, s.name AS series_name, b.series_position,
        EXISTS (SELECT 1 FROM loans l WHERE l.book_id = b.id AND l.returned_on IS NULL) AS on_loan,
+       ${OPEN_LOAN_BORROWER} AS loan_borrower, ${OPEN_LOAN_DUE} AS loan_due_on,
        ${PRIMARY_AUTHOR_SORT} AS author_sort
      FROM books b ${joins.join(' ')} LEFT JOIN series s ON s.id = b.series_id
      ${where.length ? `WHERE ${where.join(' AND ')}` : ''}
@@ -298,6 +306,8 @@ export async function listBookItems(db: Db, options: ListBookItemsOptions = {}):
     seriesName: r.series_name,
     seriesPosition: r.series_position,
     onLoan: r.on_loan === 1,
+    loanBorrower: r.loan_borrower,
+    loanDueOn: r.loan_due_on,
   }));
 }
 

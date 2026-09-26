@@ -2,19 +2,24 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { memo, type ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import { CatalogueCard, Stamp, Text } from '@/components/ui';
-import { formatSeriesLabel, joinNames, type BookListItem } from '@/domain';
+import { shelfLoanLabel } from '@/components/loans/ShelfLoanStamp';
+import { CatalogueCard, Text } from '@/components/ui';
+import { formatSeriesLabel, joinNames, today as todayOf, type BookListItem } from '@/domain';
 import { Testids } from '@/testing/testids.gen';
 import { useTheme } from '@/theme';
 
 import { CoverImage } from './CoverImage';
 
-/** "Mort, by Terry Pratchett, 1987" (+ ", on loan"): what a screen reader says for a row. */
-export function bookRowLabel(item: Pick<BookListItem, 'title' | 'authors' | 'publicationYear' | 'onLoan'>): string {
+/** "Mort, by Terry Pratchett, 1987" (+ ", on loan to Sam"): what a screen reader says for a row. */
+export function bookRowLabel(
+  item: Pick<BookListItem, 'title' | 'authors' | 'publicationYear' | 'onLoan' | 'loanBorrower' | 'loanDueOn'>,
+  today: string = todayOf(),
+): string {
   const parts = [item.title];
   if (item.authors.length) parts.push(`by ${joinNames(item.authors)}`);
   if (item.publicationYear != null) parts.push(String(item.publicationYear));
-  if (item.onLoan) parts.push('on loan');
+  const loan = shelfLoanLabel(item, today);
+  if (loan) parts.push(loan);
   return parts.join(', ');
 }
 
@@ -31,8 +36,8 @@ export interface BookRowProps {
 
 /**
  * One book on the Shelf, as a compact catalogue card: cover thumbnail, title
- * in Lora, author and year typed in Courier Prime, a series badge and an
- * "On loan" stamp.
+ * in Lora, author and year typed in Courier Prime, a series badge and any
+ * `badges` (the Shelf passes the loan stamp).
  */
 export const BookRow = memo(function BookRow({ item, onPress, onLongPress, selected, badges }: BookRowProps) {
   const { colors, spacing, radii, sizes } = useTheme();
@@ -56,7 +61,6 @@ export const BookRow = memo(function BookRow({ item, onPress, onLongPress, selec
           ) : null}
         </View>
       }
-      aside={item.onLoan ? <Stamp label="On loan" tone="accent" rotate={-6} /> : undefined}
       onPress={() => onPress(item.id)}
       onLongPress={onLongPress ? () => onLongPress(item.id) : undefined}
       checked={selected}
