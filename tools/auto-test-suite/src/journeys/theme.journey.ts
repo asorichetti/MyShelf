@@ -6,8 +6,10 @@ import { expect, q, register, type Context } from './registry.ts';
 register({
   name: 'theme-tokens',
   suite: 'p00',
-  desc: 'The theme writes its --ms-* tokens onto :root, and the body background and font come from them',
+  desc: 'The theme writes its --ms-* tokens onto :root, and the body background and font come from them (light scheme)',
   async run(c) {
+    // The light theme's primary is checked below, whatever --color-scheme the run was given.
+    await c.page.emulateMedia({ colorScheme: 'light' });
     await c.goto('/');
     const got = await c.page.evaluate(() => {
       const root = getComputedStyle(document.documentElement);
