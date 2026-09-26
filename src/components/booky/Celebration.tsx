@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useState } from 'react';
-import { Animated, Easing, StyleSheet, useWindowDimensions, View, type StyleProp, type ViewStyle } from 'react-native';
+import { useCallback, useEffect, useState, type Ref } from 'react';
+import { Animated, Easing, StyleSheet, useWindowDimensions, View, type LayoutChangeEvent, type StyleProp, type ViewStyle } from 'react-native';
 
 import { hashString } from '@/domain';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
@@ -105,6 +105,12 @@ export interface CelebrationProps {
   confettiTestID?: string;
   /** Announce the message politely (default); false when someone else announces it. */
   live?: boolean;
+  /** The bubble's box (the overlay measures it, so screens make room for it). */
+  bubbleRef?: Ref<View>;
+  onBubbleLayout?: (e: LayoutChangeEvent) => void;
+  /** Compact, capped at `maxHeight` (large text): see `BookyBubble`. */
+  compact?: boolean;
+  maxHeight?: number;
 }
 
 /**
@@ -114,7 +120,23 @@ export interface CelebrationProps {
  * is announced politely; the confetti is hidden from assistive tech and never
  * catches a tap.
  */
-export function Celebration({ message, title, onDismiss, actions, bottom, style, testID, messageTestID, dismissTestID, confettiTestID, live = true }: CelebrationProps) {
+export function Celebration({
+  message,
+  title,
+  onDismiss,
+  actions,
+  bottom,
+  style,
+  testID,
+  messageTestID,
+  dismissTestID,
+  confettiTestID,
+  live = true,
+  bubbleRef,
+  onBubbleLayout,
+  compact,
+  maxHeight,
+}: CelebrationProps) {
   const { spacing, sizes } = useTheme();
   const reduceMotion = useReducedMotion();
   const [falling, setFalling] = useState<'waiting' | 'falling' | 'done'>('waiting');
@@ -126,8 +148,23 @@ export function Celebration({ message, title, onDismiss, actions, bottom, style,
   return (
     <View style={[StyleSheet.absoluteFill, styles.noTouch, style]} testID={testID}>
       {falling === 'falling' && !reduceMotion ? <Confetti onDone={done} testID={confettiTestID} /> : null}
-      <View style={[styles.bubble, styles.boxNone, { left: spacing.md, right: spacing.md, bottom: bottom ?? spacing.md, maxWidth: sizes.bubbleMaxWidth }]}>
-        <BookyBubble expression="excited" title={title} message={message} actions={actions} onDismiss={onDismiss} messageTestID={messageTestID} dismissTestID={dismissTestID} live={live} />
+      <View
+        ref={bubbleRef}
+        onLayout={onBubbleLayout}
+        style={[styles.bubble, styles.boxNone, { left: compact ? spacing.sm : spacing.md, right: compact ? spacing.sm : spacing.md, bottom: bottom ?? spacing.md, maxWidth: sizes.bubbleMaxWidth }]}
+      >
+        <BookyBubble
+          expression="excited"
+          title={title}
+          message={message}
+          actions={actions}
+          onDismiss={onDismiss}
+          messageTestID={messageTestID}
+          dismissTestID={dismissTestID}
+          live={live}
+          compact={compact}
+          maxHeight={maxHeight}
+        />
       </View>
     </View>
   );

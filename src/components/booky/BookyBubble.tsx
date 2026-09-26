@@ -1,6 +1,6 @@
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import { useEffect, useState } from 'react';
-import { Animated, Easing, Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
+import { useEffect, useState, type ReactNode } from 'react';
+import { Animated, Easing, Pressable, ScrollView, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { Button, Text, type ButtonVariant } from '@/components/ui';
 import { useReducedMotionState } from '@/hooks/useReducedMotion';
@@ -36,12 +36,27 @@ export interface BookyBubbleProps {
   /** Pop in (a 150 ms fade and 6 px rise) when it appears; skipped with reduced motion. */
   pop?: boolean;
   /**
+   * Compact (large text, short windows): a small Booky beside the words
+   * inside the bubble instead of a big one beside it, and no tail, so the
+   * words get the width and the bubble stays as short as it can.
+   */
+  compact?: boolean;
+  /**
+   * The tallest the bubble may get; longer words scroll inside it, with ✕
+   * always in reach. Used with `compact`, so a tip at large text never takes
+   * more than half the screen.
+   */
+  maxHeight?: number;
+  /**
    * Announce the text politely (default). Booky's floating tips pass false:
    * the overlay announces them once through its own live region.
    */
   live?: boolean;
   style?: StyleProp<ViewStyle>;
 }
+
+/** Booky's size inside a compact bubble. */
+const COMPACT_AVATAR = 32;
 
 /** The bubble's pop-in (P07-08). */
 export const POP_MS = 150;
@@ -72,6 +87,8 @@ export function BookyBubble({
   dismissTestID,
   avatarTestID,
   pop = false,
+  compact = false,
+  maxHeight,
   live = true,
   style,
 }: BookyBubbleProps) {
@@ -80,16 +97,56 @@ export function BookyBubble({
   // Off: Booky's words still show where they matter (a lookup found nothing), without the character.
   const mode = useBookyMode();
   const withAvatar = showAvatar && mode !== 'off';
+  const beside = withAvatar && !compact;
+  const inside = withAvatar && compact;
   const popping = usePop(pop);
   const motion = popping
     ? // Fade and rise rather than scale: a scaled bubble would briefly shrink its buttons below 48 dp.
       { opacity: popping, transform: [{ translateY: popping.interpolate({ inputRange: [0, 1], outputRange: [6, 0] }) }] }
     : null;
+  // Room on the right for ✕ (it stays put when the words scroll): beside every line, or in compact only beside the first.
+  const closeRoom = onDismiss ? theme.sizes.touchTarget - spacing.md : 0;
+  const pad = { padding: spacing.md, paddingRight: spacing.md + (inside ? 0 : closeRoom) };
+  const avatar = <Booky expression={expression} size={COMPACT_AVATAR} testID={avatarTestID} />;
+  const titleText = title ? (
+    <Text variant="bodyStrong" color="primary">
+      {title}
+    </Text>
+  ) : null;
+  const messageText = <Text testID={messageTestID}>{message}</Text>;
+  const actionRow = actions?.length ? (
+    <View style={[styles.actions, { gap: spacing.sm }]}>
+      {actions.map((a, i) => (
+        <Button
+          key={a.label}
+          label={a.label}
+          onPress={a.onPress}
+          testID={a.testID}
+          variant={a.variant ?? (i === 0 ? 'secondary' : 'ghost')}
+        />
+      ))}
+    </View>
+  ) : null;
+  // Compact: a small Booky leads the title, or else the buttons, or else the words; everything else takes the full width.
+  const lead = !inside ? null : title ? 'title' : actionRow ? 'actions' : 'message';
+  const withLead = (node: ReactNode, style?: StyleProp<ViewStyle>) => (
+    <View style={[styles.lead, { gap: spacing.sm }, style]}>
+      {avatar}
+      <View style={styles.leadRest}>{node}</View>
+    </View>
+  );
+  const body = (
+    <>
+      {lead === 'title' ? withLead(titleText, { marginRight: closeRoom }) : titleText}
+      {lead === 'message' ? withLead(messageText, { marginRight: closeRoom }) : lead === 'actions' ? <View style={{ marginRight: closeRoom }}>{messageText}</View> : messageText}
+      {actionRow ? <View style={{ marginTop: spacing.xs }}>{lead === 'actions' ? withLead(actionRow) : actionRow}</View> : null}
+    </>
+  );
   return (
     <Animated.View testID={testID} style={[styles.row, { gap: spacing.sm }, motion, style]}>
-      {withAvatar ? <Booky expression={expression} size={56} testID={avatarTestID} /> : null}
+      {beside ? <Booky expression={expression} size={56} testID={avatarTestID} /> : null}
       <View style={styles.bubbleWrap}>
-        {withAvatar ? (
+        {beside ? (
           <View
             aria-hidden
             style={[styles.tail, { backgroundColor: colors.surface, borderColor: colors.primary }]}
@@ -104,32 +161,18 @@ export function BookyBubble({
               backgroundColor: colors.surface,
               borderColor: colors.primary,
               borderRadius: radii.lg,
-              padding: spacing.md,
-              paddingRight: onDismiss ? theme.sizes.touchTarget : spacing.md,
-              gap: spacing.xs,
               boxShadow: theme.elevation.raised,
             },
+            maxHeight != null ? { maxHeight, overflow: 'hidden' } : [pad, { gap: spacing.xs }],
           ]}
         >
-          {title ? (
-            <Text variant="bodyStrong" color="primary">
-              {title}
-            </Text>
-          ) : null}
-          <Text testID={messageTestID}>{message}</Text>
-          {actions?.length ? (
-            <View style={[styles.actions, { gap: spacing.sm, marginTop: spacing.xs }]}>
-              {actions.map((a, i) => (
-                <Button
-                  key={a.label}
-                  label={a.label}
-                  onPress={a.onPress}
-                  testID={a.testID}
-                  variant={a.variant ?? (i === 0 ? 'secondary' : 'ghost')}
-                />
-              ))}
-            </View>
-          ) : null}
+          {maxHeight != null ? (
+            <ScrollView style={styles.scroll} contentContainerStyle={[pad, { gap: spacing.xs }]}>
+              {body}
+            </ScrollView>
+          ) : (
+            body
+          )}
           {onDismiss ? (
             // The hit area is a full touch target; only the circle inside it is
             // drawn at the smaller icon-button size. (react-native-web ignores
@@ -180,6 +223,9 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   actions: { flexDirection: 'row', flexWrap: 'wrap' },
+  lead: { flexDirection: 'row', alignItems: 'center' },
+  leadRest: { flex: 1, flexShrink: 1 },
+  scroll: { flexShrink: 1 },
   close: { position: 'absolute', top: 0, right: 0, alignItems: 'center', justifyContent: 'center' },
   closeCircle: { alignItems: 'center', justifyContent: 'center' },
 });

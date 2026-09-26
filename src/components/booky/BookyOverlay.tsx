@@ -9,7 +9,7 @@ import { useKeyboardHeight } from '@/hooks/useKeyboardHeight';
 import { useScreenReader } from '@/hooks/useScreenReader';
 import { t } from '@/i18n';
 import { Testids } from '@/testing/testids.gen';
-import { useTheme } from '@/theme';
+import { useFontScale, useTheme } from '@/theme';
 
 import { BookyBubble, type BookyAction } from './BookyBubble';
 import { useBooky, type ShownTip } from './BookyProvider';
@@ -30,6 +30,20 @@ const BOTTOM_BARS = new Set(['book/new', 'book/[id]/edit', 'scan/pick', 'scan/re
 
 /** The narrowest a bubble may get when it steps aside for a button. */
 const MIN_BUBBLE_WIDTH = 260;
+
+/**
+ * From this text size up (150 %), or on a window this short, the bubble
+ * docks compact: the full width, with a small Booky beside its words rather
+ * than a big one beside the bubble, so it takes as little height as it can.
+ */
+export const COMPACT_FONT_SCALE = 1.5;
+export const COMPACT_WINDOW_HEIGHT = 560;
+/** A compact bubble takes at most this share of the window's height; longer words scroll inside it. */
+export const COMPACT_MAX_SHARE = 0.5;
+
+export function isCompact(fontScale: number, windowHeight: number): boolean {
+  return fontScale >= COMPACT_FONT_SCALE || windowHeight < COMPACT_WINDOW_HEIGHT;
+}
 
 interface TipTestIds {
   root: string;
@@ -72,13 +86,13 @@ export function tipWaits(segments: readonly string[], tip: Pick<ShownTip, 'tip' 
  * snackbar and the keyboard (`placement`). Hidden while a dialog or sheet is
  * open, on the onboarding, on screens whose bottom bar holds the primary
  * action and over a screen that already shows what the tip is about; the tip
- * waits and shows when it can. A screen-bound tip is put away
- * when the user moves to another screen.
+ * waits and shows when it can. A screen-bound tip is put away when the user
+ * moves to another screen.
  *
  * Nothing stays stuck under the tip (PLAN §8): while it floats, the screen's
  * scroller makes room below its content (`useFloatClearance`, from the box
- * published with `setFloatingBox`), and a control focused under it is
- * scrolled clear (web).
+ * published with `setFloatingBox`), a control focused under it is scrolled
+ * clear (web), and at large text sizes it docks compact.
  */
 export function BookyOverlay() {
   const { tip, dismissTip, help, closeHelp } = useBooky();
@@ -114,15 +128,17 @@ function PlacedTip({ tip, onTabs }: { tip: ShownTip; onTabs: boolean }) {
   const win = useWindowDimensions();
   const layers = useLayers();
   const keyboardHeight = useKeyboardHeight();
+  const fontScale = useFontScale();
   const [bubbleHeight, setBubbleHeight] = useState(0);
   const [box, setBox] = useState<TipBox | null>(null);
   const host = useRef<View | null>(null);
 
+  const compact = isCompact(fontScale, win.height);
   const blocked = layers.blocking > 0;
   const place = placement({
     window: win,
-    dock: insets.bottom + spacing.md + (onTabs ? sizes.tabBar : 0),
-    margin: spacing.md,
+    dock: insets.bottom + (compact ? spacing.sm : spacing.md) + (onTabs ? sizes.tabBar : 0),
+    margin: compact ? spacing.sm : spacing.md,
     maxWidth: sizes.bubbleMaxWidth,
     minWidth: MIN_BUBBLE_WIDTH,
     bubbleHeight,
@@ -160,6 +176,7 @@ function PlacedTip({ tip, onTabs }: { tip: ShownTip; onTabs: boolean }) {
   if (tip.tip.kind !== 'help' && !tip.tip.celebration) {
     actions.push({ label: t('booky.overlay.mute'), variant: 'ghost', onPress: () => muteTip(tip.tip.id), testID: Testids.booky.mute });
   }
+  const maxHeight = compact ? Math.round(win.height * COMPACT_MAX_SHARE) : undefined;
   const onLayout = (e: LayoutChangeEvent) => {
     setBubbleHeight(Math.round(e.nativeEvent.layout.height));
     host.current?.measureInWindow?.((x, y, width, height) => {
@@ -185,6 +202,10 @@ function PlacedTip({ tip, onTabs }: { tip: ShownTip; onTabs: boolean }) {
         dismissTestID={ids.dismiss}
         confettiTestID={ids.confetti}
         live={false}
+        bubbleRef={host}
+        onBubbleLayout={onLayout}
+        compact={compact}
+        maxHeight={maxHeight}
       />
     );
   }
@@ -204,6 +225,8 @@ function PlacedTip({ tip, onTabs }: { tip: ShownTip; onTabs: boolean }) {
         dismissTestID={ids.dismiss}
         avatarTestID={Testids.booky.avatar}
         pop
+        compact={compact}
+        maxHeight={maxHeight}
         live={false}
       />
     </View>
