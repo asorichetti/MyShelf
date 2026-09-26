@@ -1,0 +1,52 @@
+import { parseIsoDate, toIsoDate, type IsoDate } from './dates';
+
+import type { DateFormat } from './settings';
+
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+/** What each date format looks like, for the Settings choice (P08-07). */
+export const dateFormatLabels: Record<DateFormat, string> = {
+  locale: 'Your phone’s style',
+  medium: 'Day month year (12 Oct 2026)',
+  iso: 'Year-month-day (2026-10-12)',
+};
+
+let current: DateFormat = 'medium';
+
+/**
+ * Sets the format every `formatDate` call uses from now on. The app applies
+ * the `dateFormat` setting at start-up and whenever it changes; held in
+ * memory only, like the E2E clock.
+ */
+export function setDateFormat(format: DateFormat): void {
+  current = format;
+}
+
+export function getDateFormat(): DateFormat {
+  return current;
+}
+
+/**
+ * A calendar date in the given format:
+ * - `medium`: "12 Oct 2026" (British order, short month; the default)
+ * - `iso`: "2026-10-12"
+ * - `locale`: the phone's own medium style through `Intl.DateTimeFormat`
+ *   ("Oct 12, 2026" in the US), falling back to `medium` without Intl.
+ */
+export function formatDateAs(value: IsoDate, format: DateFormat, locale?: string): string {
+  const d = parseIsoDate(value);
+  if (format === 'iso') return toIsoDate(d);
+  if (format === 'locale' && typeof Intl !== 'undefined' && typeof Intl.DateTimeFormat === 'function') {
+    try {
+      return new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'short', year: 'numeric' }).format(d);
+    } catch {
+      // An unknown locale tag: fall through to the app's own style.
+    }
+  }
+  return `${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+}
+
+/** "2026-10-12" in the user's chosen format ("12 Oct 2026" unless they picked another). */
+export function formatDate(value: IsoDate): string {
+  return formatDateAs(value, current);
+}

@@ -15,6 +15,7 @@ import { DatabaseErrorScreen } from '@/features/navigation/DatabaseErrorScreen';
 import { LoadingScreen } from '@/features/navigation/LoadingScreen';
 import { StackBookyTipHost } from '@/features/navigation/StackBookyTipHost';
 import { SeriesEventHost } from '@/features/series/SeriesEventHost';
+import { SettingsWatchers } from '@/features/settings/SettingsWatchers';
 import { ThemeProvider, useTheme } from '@/theme';
 import { appFonts } from '@/theme/fonts';
 
@@ -39,6 +40,7 @@ function RootStack() {
           <SeriesEventHost />
         </View>
         <LoanWatchers />
+        <SettingsWatchers />
       </SnackbarProvider>
     </BookyProvider>
   );

@@ -7,6 +7,7 @@ export * from './coverBackoff';
 export * from './dateInput';
 export * from './dates';
 export * from './draftDiff';
+export * from './formatDate';
 export * from './genre';
 export * from './genreNormaliser';
 export * from './genres';
