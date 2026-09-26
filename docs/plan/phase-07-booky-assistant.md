@@ -25,12 +25,13 @@ Turn Booky from a component (P00-10) into a genuinely helpful, never-annoying as
 
 ## Task cards
 
-### P07-01 Tip catalogue
+### P07-01 Tip catalogue — done
 
 - **Description:** `src/components/booky/tips.ts`: a typed list of tips `{ id, trigger, expression, text, action?, priority, frequency: 'once' | 'session' | 'daily' | 'always', modes: ('helpful' | 'quiet')[] }` covering every trigger in `PLAN.md` §8 plus screen help texts. Copy guidelines in a header comment: ≤ 2 lines, friendly, no blame, no jargon. Text supports `{placeholders}` filled at runtime.
 - **Files:** `src/components/booky/tips.ts`, `src/components/booky/format.ts`.
 - **Acceptance:** every tip id unique; every text ≤ 120 characters after placeholder substitution with test data; every trigger in the PLAN table has a tip.
 - **Tests:** `src/components/booky/__tests__/tips.test.ts` (uniqueness, length, placeholder coverage).
+- **Delivered:** `tips.ts` lists every tip as data: `{ id, trigger, when?, expression, title?, text, action?, priority, frequency, modes, kind }` plus a few presentation flags (`placement`, `screenBound`, `welcome`, `minIntervalMs`, `celebration`, `testGroup`) and `sample` values for the test. `kind` separates *nudges* (unprompted: they share the cooldown), *feedback* (a reply to what the user just did, such as "Shelved!") and *help* (asked for). `when` narrows a trigger to a help screen or a variant (`book-added` has `milestone` and `batch`; `lookup-none` has `scan` and `offline`). Actions either navigate (`href`, placeholders allowed) or carry an id the emitter handles (`help-more`, `read-cover`). Besides the PLAN triggers there are `lookup-arrived` (details found for books added offline) and `backup-due` (copy only; Phase 08 adds the backup that emits it). `format.ts` fills `{placeholders}` (a missing value becomes empty, never a raw placeholder) and has `bookCount`. The test checks unique ids, a tip for every PLAN trigger and every help screen, sample data for every placeholder, at most 120 characters after substitution, and a few copy rules (no blame words, no shouting, British spelling, curly apostrophes).
 
 ### P07-02 Trigger engine
 
