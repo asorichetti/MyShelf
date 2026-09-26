@@ -37,7 +37,12 @@
     "test": "jest",
     "selectors:gen": "node scripts/gen-selectors.mjs",
     "selectors:check": "node scripts/gen-selectors.mjs --check",
-    "check": "npm run selectors:check && npm run typecheck && npm test -- --ci"
+    "check": "npm run selectors:check && npm run typecheck && npm test -- --ci",
+    "autotest:build": "cd tools/auto-test-suite && GOWORK=off go build -o bin/auto-test-suite .",
+    "autotest:check": "cd tools/auto-test-suite && test -z \"$(gofmt -l .)\" || { gofmt -l . >&2; exit 1; } && GOWORK=off go vet ./... && GOWORK=off go test ./...",
+    "autotest:install-browser": "cd tools/auto-test-suite && GOWORK=off go run github.com/mxschmitt/playwright-go/cmd/playwright install chromium",
+    "autotest:smoke": "npm run -s autotest:build && tools/auto-test-suite/bin/auto-test-suite smoke",
+    "autotest:journeys": "npm run -s autotest:build && tools/auto-test-suite/bin/auto-test-suite journey --all"
   },
   "private": true,
   "jest": {
