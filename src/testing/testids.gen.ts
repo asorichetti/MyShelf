@@ -607,4 +607,12 @@ export const Testids = {
     light: 'theme-light',
     dark: 'theme-dark',
   },
+  errorBoundary: {
+    root: 'error-boundary-root',
+    title: 'error-boundary-title',
+    retry: 'error-boundary-retry',
+    copy: 'error-boundary-copy',
+    copied: 'error-boundary-copied',
+    details: 'error-boundary-details',
+  },
 } as const;

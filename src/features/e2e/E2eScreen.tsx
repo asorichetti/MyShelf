@@ -10,10 +10,11 @@ import { NotFoundScreen } from '@/features/navigation/NotFoundScreen';
 import { fixtureNames, isFixtureName } from '@/testing/fixtures';
 import { loadFixture } from '@/testing/loadFixture';
 
+import { armCrash } from './crashSwitch';
 import { isE2eEnabled, safeNextPath } from './e2eFlag';
 import { settleFixtureCovers } from './settleFixtureCovers';
 
-type Params = { fixture?: string; next?: string; today?: string };
+type Params = { fixture?: string; next?: string; today?: string; crash?: string };
 
 function first(v: string | string[] | undefined): string | undefined {
   return Array.isArray(v) ? v[0] : v;
@@ -25,6 +26,7 @@ function FixtureLoader() {
   const fixture = first(params.fixture) ?? '';
   const next = safeNextPath(first(params.next));
   const frozen = first(params.today);
+  const crash = first(params.crash);
   const problem = !isFixtureName(fixture)
     ? `Unknown fixture "${fixture}". Try one of: ${fixtureNames.join(', ')}.`
     : frozen != null && !isIsoDate(frozen)
@@ -41,13 +43,15 @@ function FixtureLoader() {
       .then(() => {
         // Settings such as Booky's memory and the first-run flag changed underneath.
         emit('settings-changed');
+        // `crash=<route>`: that screen throws while rendering until its error boundary has caught it (P09-04).
+        if (crash) armCrash(crash);
         if (active) router.replace(next as Href);
       })
       .catch((e: unknown) => active && setError(e instanceof Error ? e.message : String(e)));
     return () => {
       active = false;
     };
-  }, [db, fixture, next, frozen, problem]);
+  }, [db, fixture, next, frozen, crash, problem]);
 
   const message = problem ?? error;
   if (message) {
@@ -68,8 +72,9 @@ function FixtureLoader() {
 }
 
 /**
- * `/e2e?fixture=<name>&next=<route>[&today=YYYY-MM-DD]`: wipes the library,
- * loads a fixture and redirects. Only in builds with EXPO_PUBLIC_E2E=1; in
+ * `/e2e?fixture=<name>&next=<route>[&today=YYYY-MM-DD][&crash=<route name>]`:
+ * wipes the library, loads a fixture, optionally arms a render error in one
+ * screen (`crashSwitch.ts`) and redirects. Only in builds with EXPO_PUBLIC_E2E=1; in
  * every other build it is the not-found screen and touches nothing.
  */
 export function E2eScreen() {

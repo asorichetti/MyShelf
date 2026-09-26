@@ -5,6 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useOverdueCount } from '@/features/loans/useLoans';
 import { PendingLookupsProvider } from '@/features/lookup/PendingLookupsProvider';
+import { ScreenErrorBoundary } from '@/features/navigation/ScreenErrorBoundary';
 import { Testids } from '@/testing/testids.gen';
 import { useTheme } from '@/theme';
 
@@ -47,7 +48,12 @@ function TabsShell() {
   return (
     <View style={styles.fill}>
       <Tabs
-        screenLayout={({ children }) => <FocusedTabScene>{children}</FocusedTabScene>}
+        // Each tab has its own error boundary, inside the focus gate so a crashed tab starts afresh when revisited.
+        screenLayout={({ route, children }) => (
+          <FocusedTabScene>
+            <ScreenErrorBoundary name={route.name}>{children}</ScreenErrorBoundary>
+          </FocusedTabScene>
+        )}
         screenOptions={{
           headerShown: false,
           tabBarActiveTintColor: colors.primary,

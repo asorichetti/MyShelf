@@ -505,5 +505,13 @@
   },
   "borrowers": { "root": "borrowers-root", "back": "borrowers-back", "row": "borrowers-row", "edit": "borrowers-edit", "delete": "borrowers-delete", "empty": "borrowers-empty" },
   "pendingList": { "root": "pending-list-root", "back": "pending-list-back", "row": "pending-list-row", "retry": "pending-list-retry", "remove": "pending-list-remove", "empty": "pending-list-empty" },
-  "themeSetting": { "root": "theme-setting", "system": "theme-system", "light": "theme-light", "dark": "theme-dark" }
+  "themeSetting": { "root": "theme-setting", "system": "theme-system", "light": "theme-light", "dark": "theme-dark" },
+  "errorBoundary": {
+    "root": "error-boundary-root",
+    "title": "error-boundary-title",
+    "retry": "error-boundary-retry",
+    "copy": "error-boundary-copy",
+    "copied": "error-boundary-copied",
+    "details": "error-boundary-details"
+  }
 }

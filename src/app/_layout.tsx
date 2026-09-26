@@ -13,6 +13,7 @@ import { LoanWatchers } from '@/features/loans/LoanWatchers';
 import { AppSnackbarHost } from '@/features/navigation/AppSnackbarHost';
 import { DatabaseErrorScreen } from '@/features/navigation/DatabaseErrorScreen';
 import { LoadingScreen } from '@/features/navigation/LoadingScreen';
+import { AppErrorBoundary, screenErrorLayout } from '@/features/navigation/ScreenErrorBoundary';
 import { OnboardingGate } from '@/features/onboarding/OnboardingGate';
 import { SettingsWatchers } from '@/features/settings/SettingsWatchers';
 import { ThemeProvider, useTheme } from '@/theme';
@@ -30,7 +31,8 @@ function RootStack() {
         <StatusBar style={theme.scheme === 'dark' ? 'light' : 'dark'} />
         {/* A tap anywhere outside Booky's tip puts it away. */}
         <BookyTouchArea style={{ flex: 1 }}>
-          <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: theme.colors.paper } }}>
+          {/* Every screen has its own error boundary: one crash never blanks the app (P09-04). */}
+          <Stack screenLayout={screenErrorLayout} screenOptions={{ headerShown: false, contentStyle: { backgroundColor: theme.colors.paper } }}>
             <Stack.Screen name="(tabs)" />
             <Stack.Screen name="+not-found" options={{ title: 'Not found' }} />
           </Stack>
@@ -69,7 +71,11 @@ export default function RootLayout() {
         fallback={fontsReady ? <LoadingScreen /> : null}
         renderError={(error, retry) => (fontsReady ? <DatabaseErrorScreen error={error} onRetry={retry} /> : null)}
       >
-        {fontsReady ? <RootStack /> : null}
+        {fontsReady ? (
+          <AppErrorBoundary>
+            <RootStack />
+          </AppErrorBoundary>
+        ) : null}
       </DatabaseProvider>
     </ThemeProvider>
   );

@@ -9,6 +9,7 @@ import { GroupsScreen } from '@/features/groups/GroupsScreen';
 import { LoansScreen } from '@/features/loans/LoansScreen';
 import { AppSnackbarHost } from '@/features/navigation/AppSnackbarHost';
 import { NotFoundScreen } from '@/features/navigation/NotFoundScreen';
+import { screenErrorLayout } from '@/features/navigation/ScreenErrorBoundary';
 import { TabsLayout } from '@/features/navigation/TabsLayout';
 import { ScanScreen } from '@/features/scan/ScanScreen';
 import { SettingsScreen } from '@/features/settings/SettingsScreen';
@@ -42,11 +43,11 @@ export const stubScreen = (name: string): ComponentType =>
     return <Text>{`stub:${name}`}</Text>;
   };
 
-/** Mirrors the root layout: a stack with the app's snackbar host and Booky's overlay above it. */
+/** Mirrors the root layout: a stack (each screen in its own error boundary) with the app's snackbar host and Booky's overlay above it. */
 function RootStack() {
   return (
     <BookyTouchArea style={{ flex: 1 }}>
-      <Stack screenOptions={{ headerShown: false }} />
+      <Stack screenLayout={screenErrorLayout} screenOptions={{ headerShown: false }} />
       <AppSnackbarHost />
       <BookyOverlay />
     </BookyTouchArea>
