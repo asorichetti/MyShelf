@@ -27,7 +27,42 @@
     "groups": "tab-groups",
     "settings": "tab-settings"
   },
-  "scan": { "root": "scan-root", "title": "scan-title" },
+  "scan": {
+    "root": "scan-root",
+    "title": "scan-title",
+    "permissionPrompt": "scan-permission-prompt",
+    "permissionAllow": "scan-permission-allow",
+    "permissionDenied": "scan-permission-denied",
+    "openSettings": "scan-open-settings",
+    "typeIsbnInstead": "scan-type-isbn-instead",
+    "camera": "scan-camera",
+    "torch": "scan-torch",
+    "modeBarcode": "scan-mode-barcode",
+    "modeCover": "scan-mode-cover",
+    "capture": "scan-capture",
+    "usePhoto": "scan-use-photo",
+    "retake": "scan-retake",
+    "webIsbn": "scan-web-isbn",
+    "webIsbnSubmit": "scan-web-isbn-submit",
+    "webText": "scan-web-text",
+    "webTextSubmit": "scan-web-text-submit",
+    "lookupSheet": "scan-lookup-sheet",
+    "lookupCancel": "scan-lookup-cancel",
+    "notBookBarcode": "scan-not-book-barcode",
+    "readCoverInstead": "scan-read-cover-instead",
+    "notFound": "scan-not-found",
+    "addManually": "scan-add-manually",
+    "error": "scan-error",
+    "resume": "scan-resume",
+    "notice": "scan-notice",
+    "batchToggle": "scan-batch-toggle",
+    "trayCount": "scan-tray-count",
+    "reviewOpen": "scan-review-open",
+    "lastScanned": "scan-last-scanned",
+    "help": "scan-help",
+    "helpSheet": "scan-help-sheet",
+    "helpClose": "scan-help-close"
+  },
   "loans": {
     "root": "loans-root",
     "title": "loans-title",
@@ -344,5 +379,27 @@
     "apply": "refresh-apply",
     "cancel": "refresh-cancel",
     "noChanges": "refresh-no-changes"
-  }
+  },
+  "picker": {
+    "root": "picker-root",
+    "work": "picker-work",
+    "edition": "picker-edition",
+    "skeleton": "picker-skeleton",
+    "filterFormat": "picker-filter-format",
+    "filterLanguage": "picker-filter-language",
+    "confirm": "picker-confirm",
+    "none": "picker-none",
+    "review": "picker-review",
+    "expired": "picker-expired"
+  },
+  "duplicate": { "sheet": "duplicate-sheet", "open": "duplicate-open", "addCopy": "duplicate-add-copy", "cancel": "duplicate-cancel" },
+  "scanReview": {
+    "root": "scan-review-root",
+    "item": "scan-review-item",
+    "choose": "scan-review-choose",
+    "drop": "scan-review-drop",
+    "saveAll": "scan-review-save-all",
+    "empty": "scan-review-empty"
+  },
+  "prefill": { "notice": "prefill-notice" }
 }
