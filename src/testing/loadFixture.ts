@@ -69,10 +69,11 @@ export async function loadFixture(db: Db, name: FixtureName): Promise<void> {
       if (loan.returnedDaysAgo != null) await loansRepo.returnLoan(tx, created.id, addDays(now, -loan.returnedDaysAgo));
     }
 
-    // Settings survive the wipe, but these name books and series by id: start them afresh.
+    // Settings survive the wipe, but these name books, series and loans by id: start them afresh.
     await settingsRepo.setSetting(tx, 'series.pendingConfirmBookIds', pendingSeries);
     await settingsRepo.setSetting(tx, 'series.dismissedBookIds', []);
     await settingsRepo.setSetting(tx, 'series.gapTipSeriesIds', []);
+    await settingsRepo.setSetting(tx, 'overdueNudgesShown', []);
 
     for (const group of fixture.groups ?? []) {
       const { id } = await groupsRepo.createGroup(tx, { name: group.name, colour: group.colour, icon: group.icon });

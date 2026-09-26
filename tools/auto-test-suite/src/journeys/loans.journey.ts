@@ -265,3 +265,34 @@ register({
     await c.snap('shelf-loan-badges');
   },
 });
+
+register({
+  name: 'loan-overdue-nudge',
+  suite: 'p05',
+  desc: 'Fixture "demo": opening the app with an overdue loan has Booky (concerned) say it was due back from Priya 5 days ago, once; "Open loans" goes to the Loans tab',
+  async run(c) {
+    // No frozen date here: the reload below would drop it (the fixture's dates are relative to today anyway).
+    await openFixture(c, 'demo', '/');
+    await waitForCount(c, shelfRow, 12, '/');
+    // The nudge comes when the app starts (or returns to the foreground): reload to start it again.
+    // The page gates run below, once the covers have loaded.
+    await c.page.reload();
+    const bubble = tid(Testids.booky.bubble);
+    await waitVisible(c, bubble, '/ (after start)');
+    const text = await textOf(c, tid(Testids.booky.bubbleText));
+    expect(text === '“The Murder of Roger Ackroyd” was due back from Priya 5 days ago.', `/: expected the overdue nudge, found ${q(text)}`);
+    const face = (await c.page.locator(`${bubble} [role="img"][aria-label^="Booky"]`).first().getAttribute('aria-label')) ?? '';
+    expect(/concerned/i.test(face), `/: expected a concerned Booky, found ${q(face)}`);
+    await coverState(c, tid(Testids.home.list));
+    await c.checkGates('/ (overdue nudge)');
+    await c.snap('overdue-nudge');
+    await c.page.locator(tid(Testids.booky.action)).click();
+    await waitForPath(c, '/loans', 'nudge -> Open loans');
+
+    // Once a day per loan: starting again today says nothing.
+    await c.page.goto(c.url('/'));
+    await waitForCount(c, shelfRow, 12, '/ (second start)');
+    await c.page.waitForTimeout(1_000);
+    expect((await c.page.locator(bubble).count()) === 0, '/ (second start): expected no second nudge for the same loan today');
+  },
+});

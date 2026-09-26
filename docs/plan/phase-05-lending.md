@@ -97,12 +97,13 @@ Never lose a book to a friend again. The user records who borrowed a book and wh
 - **Tests:** `src/components/book/__tests__/BookRow.test.tsx` (loan variants).
 - **Delivered:** `listBookItems` adds two subquery columns (the open loan's borrower and due date) to each row: `BookListItem.loanBorrower` / `loanDueOn` (optional). The Shelf passes `ShelfLoanStamp` (`src/components/loans/`, `bookLoan.badge`) into `BookRow`'s `badges` slot: "On loan", or "Overdue" in stamp red, decided by the same `loanStatus` as the Loans tab; the row's own "On loan" stamp gave way to it. `bookRowLabel` (also used by the cover and spine views) names the borrower: "Dune, by Frank Herbert, 1965, on loan to Sam" (", overdue" when late). The "On loan only" filter is the Shelf filter sheet's "On loan" choice from P06 (`filters.loan = 'onLoan'`), so no separate option was added. `src/db/repositories/__tests__/books.loanStatus.test.ts` checks that the Shelf, its filter and the Loans tab agree.
 
-### P05-10 Overdue Booky nudge
+### P05-10 Overdue Booky nudge — done
 
 - **Description:** On app foreground, if any loan is overdue and the nudge for that loan has not been shown today, Booky (*concerned*) shows "'Dune' was due back from Sam 3 days ago." with action "Open loans". Rule registered with the engine in P07-02 (tip id `loan-overdue:<loanId>:<date>`).
 - **Files:** `src/features/loans/overdueNudge.ts`.
 - **Acceptance:** at most once per loan per day; respects Booky mode.
 - **Tests:** `src/features/loans/__tests__/overdueNudge.test.ts`.
+- **Delivered:** `pickOverdueNudge` (pure) chooses the most overdue open loan not nudged today, only in Booky mode *helpful* and unless `loan-overdue` is in `mutedTips`; `markNudgeShown` keeps only today's ids in the new `overdueNudgesShown` setting, so "once per loan per day" survives restarts. `useOverdueNudge` (in `LoanWatchers`, at the root) checks on start and on return to the foreground and shows Booky *concerned*, "“Dune” was due back from Sam 3 days ago." with "Open loans"; moving to another screen puts it away, so it never covers that screen's actions (PLAN §8); it skips the E2E fixture loader route, so journeys only see it after a restart. The tips engine (P07-02) does not exist yet: when it does, it registers `pickOverdueNudge` as a rule and replaces the hook's trigger (`src/features/loans/__tests__/useOverdueNudge.test.tsx` covers the hook).
 
 ---
 
@@ -129,17 +130,23 @@ Never lose a book to a friend again. The user records who borrowed a book and wh
 
 (`loans.root` and `loans.title` exist from P00-11 — extend the group.)
 
+As built, `src/testing/selectors.json` has these groups with a few more ids each (for example `lend.borrowerExisting`, `lend.error`, `returnLoan.error`, `loans.rowBook`, `loans.rowBorrower`, `loans.empty`, `bookLoan.summary`, `bookLoan.welcome`, `bookLoan.badge`, `borrower.blocked`, `borrower.edit*`, `reminders.note`); that file is the list.
+
 ## Auto test suite journeys
 
 Each journey is added by the card that builds its screen. Suite `core` journeys run in `smoke` (CI and the regression gate); the rest use suite `p05` (`npm run -s autotest -- journey --suite p05`).
 
 | Journey | Suite | Steps |
 |---|---|---|
-| `loans-overview` | `core` | fixture `demo` with `today` fixed; Loans tab → 2 rows, overdue first with "OVERDUE" stamp |
-| `loan-lend-return` | `core` | fixture `demo`; open a home book → lend to new borrower "Sam" due in 14 days → stamp on detail → Loans tab shows it → mark returned → History contains it |
+| `loans-overview` | `p05` | fixture `demo` with `today` fixed; Loans tab → 2 rows, overdue first with "OVERDUE · 5 DAYS" stamp; tab badge "Loans, 1 overdue"; History; borrower filter; the overdue book's page |
+| `loan-lend-return` | `p05` | fixture `demo`; open a home book → lend to "sam" (the duplicate check offers the existing Sam) due in 14 days → stamp on detail → Loans tab shows it → mark returned → History contains it → Undo |
 | `loan-double-lend-blocked` | `p05` | open a book already on loan → no Lend button, "Mark returned" visible |
-| `borrower-detail` | `p05` | open loan row borrower → current and past lists |
+| `borrower-detail` | `p05` | open loan row borrower → current and past lists; delete blocked while a book is out |
 | `loans-empty` | `p05` | fixture `empty` → Booky sleepy empty state |
+| `shelf-loan-badge` | `p05` | fixture `demo`; Shelf rows for Dune ("on loan to Sam", ON LOAN) and Roger Ackroyd ("on loan to Priya, overdue", OVERDUE) |
+| `loan-overdue-nudge` | `p05` | fixture `demo`; restart → Booky (concerned) nudges about Roger Ackroyd → Open loans; a second restart the same day says nothing |
+
+`loans-overview` and `loan-lend-return` were planned for `core`; they run in `p05` for now and can move to `core` (and `smoke`) when the phase closes.
 
 ## Maestro flows
 

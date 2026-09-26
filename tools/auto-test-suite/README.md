@@ -436,6 +436,7 @@ Re-export after changing app code: `--serve` tests whatever is in `dist/`.
 | `borrower-detail` | p05 | Sam from Dune's loan row → `/borrower/<id>`: h1 Sam, Dune under Currently has, Mort under Has borrowed before, stats line; Remove shows a `role="alert"` explaining Sam still has a book, and no dialog; screenshot `borrower-detail.png` |
 | `loans-empty` | p05 | Fixture `empty`: `/loans` shows sleepy Booky and "Every book is home. Lovely." with no rows; screenshot `loans-empty.png` |
 | `shelf-loan-badge` | p05 | Fixture `demo`, today fixed: only Dune ("on loan to Sam") and Roger Ackroyd ("on loan to Priya, overdue") are named as on loan, stamped ON LOAN and OVERDUE; screenshot `shelf-loan-badges.png` |
+| `loan-overdue-nudge` | p05 | Fixture `demo`, then a restart: Booky (concerned) says "“The Murder of Roger Ackroyd” was due back from Priya 5 days ago." (page gates run with the bubble open) → Open loans → `/loans`; a second restart the same day shows no nudge; screenshot `overdue-nudge.png` |
 | `home-responsive` | responsive | Viewport meta has `width=device-width, initial-scale=1`; at mobile, tablet and desktop the title is fully on screen and the page does not scroll sideways; one screenshot per width |
 
 ### Adding a journey

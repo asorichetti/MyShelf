@@ -16,6 +16,8 @@ export interface AppSettings {
   loanDays: number;
   /** Local notifications at 10:00 on each open loan's due date (P05-08). Off until the user turns it on. */
   loanReminders: boolean;
+  /** Overdue nudge tip ids (`loan-overdue:<loanId>:<date>`) already shown, so each loan is nudged at most once a day (P05-10). */
+  overdueNudgesShown: string[];
   /** The Shelf's sort order, remembered across restarts. */
   shelfSort: ShelfSort;
   /** Books whose auto-detected series the user said was wrong ("Not a series"): never re-added (P04-03). */
@@ -41,6 +43,7 @@ export const settingDefaults: Readonly<AppSettings> = Object.freeze<AppSettings>
   googleBooksEnabled: true,
   loanDays: 28,
   loanReminders: false,
+  overdueNudgesShown: [],
   shelfSort: { sort: 'title', direction: 'asc' },
   'series.dismissedBookIds': [],
   'series.pendingConfirmBookIds': [],
