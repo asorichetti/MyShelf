@@ -2,6 +2,8 @@ export * from './author';
 export * from './book';
 export * from './dates';
 export * from './genre';
+export * from './genreNormaliser';
+export * from './genres';
 export * from './group';
 export * from './isbn';
 export * from './languages';
