@@ -165,7 +165,7 @@ register({
 register({
   name: 'cover-backfill-mocked',
   suite: 'p02',
-  desc: 'A book typed in by hand with an ISBN has no cover; on the next start the tab shell runs the cover backfill, which looks it up through the mocked APIs and stores its real cover: the Shelf row shows the image, not the fallback',
+  desc: 'A book typed in by hand with an ISBN has no cover; on the next start the tab shell runs the cover backfill, which finds its cover id with the batch ISBN search through the mocked APIs and stores its real cover: the Shelf row shows the image, not the fallback',
   async run(c) {
     await openFixture(c, 'empty', '/book/new');
     await waitVisible(c, tid(f.title), '/book/new');
@@ -178,12 +178,12 @@ register({
     expect(before.images === 0 && before.fallbacks >= 1, `${path}: expected the typed-in book to start with the generated cover, found ${q(before)}`);
 
     // A fresh start: the tab shell mounts and starts the backfill.
-    const lookedUp = c.page.waitForRequest((r) => r.url() === 'https://openlibrary.org/isbn/9780552166591.json', { timeout: 20_000 });
+    const lookedUp = c.page.waitForRequest((r) => r.url().startsWith('https://openlibrary.org/search.json?q=isbn') && r.url().includes('9780552166591'), { timeout: 20_000 });
     await c.goto('/');
     try {
       await lookedUp;
     } catch {
-      expect(false, '/: expected the cover backfill to look the book up through the mocked Open Library');
+      expect(false, '/: expected the cover backfill to ask the mocked Open Library search for the book’s cover id');
     }
     await expectRealCover(c, `${tid(Testids.home.row)}[aria-label^="The Colour of Magic"]`, '/ (after the backfill)');
     await c.snap('cover-backfilled');

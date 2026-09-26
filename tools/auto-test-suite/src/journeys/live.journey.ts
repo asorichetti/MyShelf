@@ -173,10 +173,72 @@ register({
   },
 });
 
+/** Every book in the Goodreads export fixture, by the title the Shelf shows. */
+const GOODREADS_TITLES = [
+  'Good Omens',
+  'The Hobbit',
+  '1984',
+  'The Name of the Wind',
+  'The Final Empire',
+  'Project Hail Mary',
+  'Circe',
+  'The Thursday Murder Club',
+  'Leviathan Wakes',
+  'The Left Hand of Darkness',
+  'Norse Mythology',
+  '"Surely You\'re Joking, Mr. Feynman!"',
+  'The Science of Discworld',
+  'Les Misérables',
+  'Dune',
+  'The Martian',
+  'The Fellowship of the Ring',
+  'Pride and Prejudice',
+  'The Colour of Magic',
+  "Harry Potter and the Philosopher's Stone",
+];
+
+/**
+ * Imported books Open Library has no cover for, with the reason; only these
+ * may keep the generated cover. Empty: checked against the live APIs in
+ * September 2026, Open Library has a cover of at least 400 px for all 20
+ * (the one without an ISBN, The Colour of Magic, through its title and
+ * author search).
+ */
+const GOODREADS_WITHOUT_OL_COVER: Record<string, string> = {};
+
+/** How long the whole import may take to show its covers. Measured at about 13 s for the 20 books. */
+const COVERS_SETTLE_MS = 90_000;
+
+interface CellCover {
+  label: string;
+  src: string | null;
+  complete: boolean;
+  height: number;
+  fallback: boolean;
+}
+
+/** Every covers-grid cell as it is now: its label, its cover image (if any) and whether it shows the generated cover. */
+async function gridCovers(c: Context): Promise<CellCover[]> {
+  return c.page.locator(tid(Testids.shelfView.coverCell)).evaluateAll(
+    (els, [img, fallback]) =>
+      els.map((e) => {
+        const i = e.querySelector<HTMLImageElement>(img!);
+        return {
+          label: (e.getAttribute('aria-label') ?? e.textContent ?? '').trim(),
+          src: i?.getAttribute('src') ?? null,
+          complete: !!i?.complete,
+          height: i?.naturalHeight ?? 0,
+          fallback: !!e.querySelector(fallback!),
+        };
+      }),
+    [`${tid(Testids.cover.image)} img`, tid(Testids.cover.fallback)],
+  );
+}
+
 register({
   name: 'live-goodreads-import-covers',
   suite: 'live',
-  desc: 'Real Open Library and real covers: import the Goodreads export fixture (20 books) → the cover backfill finds real portrait covers for the imported books, newest additions first (The Final Empire, The Name of the Wind, Leviathan Wakes)',
+  desc: 'Real Open Library and real covers: import the Goodreads export fixture (20 books) → the cover backfill (one batch search, then covers by id) settles with every imported book showing a real portrait cover at least 400 px tall; only books proven to have no Open Library cover may keep the generated one (none today)',
   async run(c) {
     await loadRealCovers(c);
     sendToRealNetwork(c.page.context(), ['openlibrary.org']);
@@ -188,27 +250,75 @@ register({
     await upload(c, tid(Testids.csvImport.pick), GOODREADS_CSV, '/settings/import-csv');
     await waitVisible(c, tid(Testids.csvImport.confirm), '/settings/import-csv (preview)');
     await c.page.locator(tid(Testids.csvImport.confirm)).click();
+    const started = Date.now();
     await waitVisible(c, tid(Testids.csvImport.report), '/settings/import-csv (report)');
     await c.page.locator(tid(Testids.csvImport.done)).click();
     await waitForPath(c, '/', '/settings/import-csv -> shelf');
 
-    for (const title of ['The Final Empire', 'The Name of the Wind', 'Leviathan Wakes']) {
-      const sel = `${row}[aria-label^="${title},"]`;
-      await c.page
-        .waitForFunction(
-          ([s, min]) => [...(document.querySelector(s as string)?.querySelectorAll('img') ?? [])].some((i) => i.complete && i.naturalHeight >= (min as number)),
-          [sel, REAL_MIN_HEIGHT] as const,
-          { timeout: 60_000 },
-        )
-        .catch(() => {});
-      const cover = await coverState(c, sel);
+    // The covers grid holds all 20 books at once (no scrolling), so one condition can watch every cover arrive.
+    await c.page.locator(tid(Testids.shelfView.modeCovers)).click();
+    await waitForCount(c, tid(Testids.shelfView.coverCell), GOODREADS_TITLES.length, '/ (covers grid)');
+    const excluded = Object.keys(GOODREADS_WITHOUT_OL_COVER);
+    const settled = await c.page
+      .waitForFunction(
+        ([cell, img, min, skip]) =>
+          [...document.querySelectorAll(cell as string)].every((e) => {
+            const label = e.getAttribute('aria-label') ?? e.textContent ?? '';
+            if ((skip as string[]).some((t) => label.includes(t))) return true;
+            const i = e.querySelector<HTMLImageElement>(img as string);
+            return !!i && i.complete && i.naturalHeight >= (min as number);
+          }),
+        [tid(Testids.shelfView.coverCell), `${tid(Testids.cover.image)} img`, REAL_MIN_HEIGHT, excluded] as const,
+        { timeout: COVERS_SETTLE_MS, polling: 250 },
+      )
+      .then(() => true)
+      .catch(() => false);
+    const elapsed = ((Date.now() - started) / 1000).toFixed(1);
+    const cells = await gridCovers(c);
+    const real = cells.filter((x) => !x.fallback && x.complete && x.height >= REAL_MIN_HEIGHT);
+    c.logf(`covers ${settled ? 'settled' : 'not settled'} ${elapsed}s after the import: ${real.length}/${cells.length} real covers`);
+
+    expect(cells.length === GOODREADS_TITLES.length, `/ (covers grid): expected ${GOODREADS_TITLES.length} books, found ${cells.length}`);
+    for (const title of GOODREADS_TITLES) {
+      const cell = cells.find((x) => x.label.includes(title));
+      expect(!!cell, `/ (covers grid): expected a cell for ${q(title)}, found ${q(cells.map((x) => x.label))}`);
+      if (!cell) continue;
+      if (GOODREADS_WITHOUT_OL_COVER[title]) {
+        expect(cell.fallback, `/ (covers grid): ${q(title)} has no Open Library cover (${GOODREADS_WITHOUT_OL_COVER[title]}), so expected the generated cover, found ${q(cell)}`);
+        continue;
+      }
       expect(
-        cover.loaded === 1 && cover.fallbacks === 0 && (cover.natural?.height ?? 0) >= REAL_MIN_HEIGHT,
-        `/ (${title}): expected the backfill to bring a real portrait cover (>= ${REAL_MIN_HEIGHT}px tall), found ${q(cover)}`,
+        !cell.fallback && cell.complete && cell.height >= REAL_MIN_HEIGHT && /^https:\/\/covers\.openlibrary\.org\//.test(cell.src ?? ''),
+        `/ (covers grid): expected ${q(title)} to show a real Open Library cover at least ${REAL_MIN_HEIGHT}px tall within ${COVERS_SETTLE_MS / 1000}s, found ${q(cell)}`,
       );
     }
-    await c.page.locator(`${row}[aria-label^="The Final Empire,"]`).scrollIntoViewIfNeeded();
-    await c.snap('live-import-covers');
+
+    // Settled: wait for the covers to finish fading in over their placeholders, then look.
+    await c.page
+      .waitForFunction(([cell, ph]) => [...document.querySelectorAll(cell)].every((e) => !e.querySelector(ph)), [tid(Testids.shelfView.coverCell), tid(Testids.cover.placeholder)], {
+        timeout: 20_000,
+      })
+      .catch(() => {});
+    // Three screenshots cover the whole grid: the top rows, the middle and the end.
+    await c.snap('live-import-covers-grid');
+    await c.page.mouse.wheel(0, 900);
+    await c.page.waitForTimeout(500);
+    await c.snap('live-import-covers-grid-middle');
+    await c.page.mouse.wheel(0, 5000);
+    await c.page.waitForTimeout(500);
+    await c.snap('live-import-covers-grid-end');
     await c.checkGates('/ (imported books with real covers)');
+
+    // The list view shows the same covers (newest additions at the top).
+    await c.page.locator(tid(Testids.shelfView.modeList)).click();
+    const sel = `${row}[aria-label^="The Final Empire,"]`;
+    await waitVisible(c, sel, '/ (list)');
+    const cover = await coverState(c, sel);
+    expect(
+      cover.loaded === 1 && cover.fallbacks === 0 && (cover.natural?.height ?? 0) >= REAL_MIN_HEIGHT,
+      `/ (list, The Final Empire): expected a real portrait cover (>= ${REAL_MIN_HEIGHT}px tall), found ${q(cover)}`,
+    );
+    await c.page.mouse.wheel(0, -5000);
+    await c.snap('live-import-covers');
   },
 });
