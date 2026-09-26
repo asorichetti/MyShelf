@@ -2,14 +2,14 @@
 
 Checklist of every task card in [`docs/plan/`](docs/plan/). Tick a card (`[x]`) in the same pull request that completes it, and only when it meets the [definition of done](PLAN.md#12-definition-of-done). Cards are ticked only once the work is on `main`.
 
-On `main`: the scaffold (P00-01 to P00-07), the design system, Booky, tabs, database layer and domain (P00-08 to P00-14), the auto test suite (P00-15 to P00-17), CI (P00-19), linting (P00-20), and the follow-ups P00-21 to P00-29 (`--serve`, commit-message and all-journeys CI, touch targets, gate self-tests, Booky and theme journeys). Still open in Phase 00: Maestro (P00-18, needs an Android emulator) and the remaining UI primitives (P00-30).
+On `main`: the scaffold (P00-01 to P00-07), the design system, Booky, tabs, database layer and domain (P00-08 to P00-14), the auto test suite (P00-15 to P00-17), CI (P00-19), linting (P00-20), and the follow-ups P00-21 to P00-29 (`--serve`, commit-message and all-journeys CI, touch targets, gate self-tests, Booky and theme journeys). Still open in Phase 00: Maestro (P00-18, needs an Android emulator). Phase 01 (library core) is complete.
 
 ## Summary
 
 | Phase | Name | Done |
 |---|---|---|
-| [Phase 00](docs/plan/phase-00-foundation.md) | Foundation | 28 / 30 |
-| [Phase 01](docs/plan/phase-01-library-core.md) | Library core: CRUD and book detail | 0 / 12 |
+| [Phase 00](docs/plan/phase-00-foundation.md) | Foundation | 29 / 30 |
+| [Phase 01](docs/plan/phase-01-library-core.md) | Library core: CRUD and book detail | 12 / 12 |
 | [Phase 02](docs/plan/phase-02-metadata-providers.md) | Metadata providers | 10 / 13 |
 | [Phase 03](docs/plan/phase-03-scanning.md) | Scanning: barcode, OCR and edition picker | 0 / 13 |
 | [Phase 04](docs/plan/phase-04-series.md) | Series | 1 / 8 |
@@ -18,7 +18,7 @@ On `main`: the scaffold (P00-01 to P00-07), the design system, Booky, tabs, data
 | [Phase 07](docs/plan/phase-07-booky-assistant.md) | Booky assistant | 0 / 9 |
 | [Phase 08](docs/plan/phase-08-settings-backup.md) | Settings, backup, export and import | 0 / 10 |
 | [Phase 09](docs/plan/phase-09-polish-a11y-release.md) | Polish, accessibility and release | 0 / 12 |
-| **Total** | | **40 / 128** |
+| **Total** | | **53 / 128** |
 
 ## Phase 00 — Foundation
 
@@ -53,24 +53,24 @@ On `main`: the scaffold (P00-01 to P00-07), the design system, Booky, tabs, data
 - [x] P00-27 Touch-target rule in the a11y gate
 - [x] P00-28 Automated gate self-tests
 - [x] P00-29 Booky and theme journeys
-- [ ] P00-30 Remaining UI primitives
+- [x] P00-30 Remaining UI primitives
 
 ## Phase 01 — Library core: CRUD and book detail
 
 [Phase document](docs/plan/phase-01-library-core.md)
 
-- [ ] P01-01 E2E fixture loader
-- [ ] P01-02 Books repository: list, search and sort queries
-- [ ] P01-03 Shelf screen (list of catalogue cards)
-- [ ] P01-04 Shelf search and sort controls
-- [ ] P01-05 Book form model and validation
-- [ ] P01-06 Book detail screen
-- [ ] P01-07 Add and edit book form
-- [ ] P01-08 Authors editor
-- [ ] P01-09 Genres editor
-- [ ] P01-10 Cover image and generated fallback
-- [ ] P01-11 Delete book with confirmation and undo
-- [ ] P01-12 Library change events and screen refresh
+- [x] P01-01 E2E fixture loader
+- [x] P01-02 Books repository: list, search and sort queries
+- [x] P01-03 Shelf screen (list of catalogue cards)
+- [x] P01-04 Shelf search and sort controls
+- [x] P01-05 Book form model and validation
+- [x] P01-06 Book detail screen
+- [x] P01-07 Add and edit book form
+- [x] P01-08 Authors editor
+- [x] P01-09 Genres editor
+- [x] P01-10 Cover image and generated fallback
+- [x] P01-11 Delete book with confirmation and undo
+- [x] P01-12 Library change events and screen refresh
 
 ## Phase 02 — Metadata providers
 

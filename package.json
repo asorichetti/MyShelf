@@ -49,7 +49,7 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "export:web": "expo export --platform web",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "node scripts/typecheck.mjs",
     "test": "jest",
     "selectors:gen": "node scripts/gen-selectors.mjs",
     "selectors:check": "node scripts/gen-selectors.mjs --check",
