@@ -17,6 +17,8 @@ export interface CoverImageProps {
   title: string;
   author?: string | null;
   size?: CoverSize;
+  /** A width that overrides `size`'s (the height keeps the 2:3 shape), e.g. to fill a grid cell. */
+  width?: number;
   /**
    * True (the default) when adjacent text already names the book, so the
    * cover is hidden from assistive tech. Otherwise it is an image labelled
@@ -36,13 +38,13 @@ export interface CoverImageProps {
  * when there is no cover, or it fails to load, does the generated cloth
  * binding take its place.
  */
-export function CoverImage({ uri, title, author, size = 'thumb', decorative = true, testID }: CoverImageProps) {
+export function CoverImage({ uri, title, author, size = 'thumb', width: fitWidth, decorative = true, testID }: CoverImageProps) {
   const theme = useTheme();
   const { colors, radii, sizes } = theme;
   const reduceMotion = useReducedMotion();
   const [failedUri, setFailedUri] = useState<string | null>(null);
   const [loadedUri, setLoadedUri] = useState<string | null>(null);
-  const { width, height } = theme.coverSizes[size];
+  const { width, height } = fitWidth ? { width: fitWidth, height: Math.round(fitWidth * 1.5) } : theme.coverSizes[size];
   const showImage = Boolean(uri) && failedUri !== uri;
   const loaded = showImage && loadedUri === uri;
   const label = `Cover of ${title}`;
@@ -87,7 +89,7 @@ export function CoverImage({ uri, title, author, size = 'thumb', decorative = tr
           />
         </>
       ) : (
-        <GeneratedCover title={title} author={author} size={size} testID={Testids.cover.fallback} />
+        <GeneratedCover title={title} author={author} size={size} width={width} height={height} testID={Testids.cover.fallback} />
       )}
     </View>
   );

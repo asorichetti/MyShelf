@@ -8,6 +8,9 @@ export interface GeneratedCoverProps {
   title: string;
   author?: string | null;
   size?: CoverSize;
+  /** Overrides `size`'s width and height (the text still follows `size`). */
+  width?: number;
+  height?: number;
   testID?: string;
 }
 
@@ -17,13 +20,16 @@ export interface GeneratedCoverProps {
  * and a spine hinge, and the title and author set in Lora. Always decorative:
  * whoever places it names the book in adjacent text.
  */
-export function GeneratedCover({ title, author, size = 'thumb', testID }: GeneratedCoverProps) {
+export function GeneratedCover({ title, author, size = 'thumb', width: w, height: h, testID }: GeneratedCoverProps) {
   const theme = useTheme();
-  const { width, height } = theme.coverSizes[size];
+  const width = w ?? theme.coverSizes[size].width;
+  const height = h ?? theme.coverSizes[size].height;
   const colors = theme.covers[hashColour(title, theme.covers.length)];
   const thumb = size === 'thumb';
   const inset = thumb ? 5 : size === 'medium' ? 10 : 16;
-  const titleType = size === 'large' ? theme.typography.h2 : theme.typography.h3;
+  // Narrower than its size's usual width (a grid cell): a smaller title so words are not broken.
+  const narrow = width < theme.coverSizes[size].width;
+  const titleType = size === 'large' ? theme.typography.h2 : narrow ? theme.typography.label : theme.typography.h3;
   const initial = sortableTitle(title).charAt(0).toUpperCase();
 
   return (
@@ -48,7 +54,7 @@ export function GeneratedCover({ title, author, size = 'thumb', testID }: Genera
         <RNText style={[theme.typography.h2, styles.center, { color: colors.ink }]}>{initial}</RNText>
       ) : (
         <View style={[styles.text, { paddingLeft: inset * 1.8, paddingRight: inset, gap: theme.spacing.sm }]}>
-          <RNText numberOfLines={size === 'large' ? 6 : 5} style={[titleType, styles.center, { color: colors.ink }]}>
+          <RNText numberOfLines={size === 'large' ? 6 : 5} style={[titleType, narrow && { fontFamily: theme.fonts.heading }, styles.center, { color: colors.ink }]}>
             {title}
           </RNText>
           {author ? (
