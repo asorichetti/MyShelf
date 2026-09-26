@@ -4,6 +4,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Text } from '@/components/ui';
 import type { SeriesSummary } from '@/db';
+import { t } from '@/i18n';
 import { Testids } from '@/testing/testids.gen';
 import { useTheme } from '@/theme';
 
@@ -53,7 +54,7 @@ export const SeriesRow = memo(function SeriesRow({ series, onPress }: SeriesRowP
         </View>
         <MiniSpines name={series.name} total={series.total} gaps={series.gaps} />
         <Text variant="caption" color="inkMuted">
-          {complete ? 'Complete!' : progressSentence(series)}
+          {complete ? t('series.row.complete') : progressSentence(series)}
         </Text>
       </View>
       <MaterialCommunityIcons name="chevron-right" size={sizes.icon + 4} color={colors.inkMuted} aria-hidden />

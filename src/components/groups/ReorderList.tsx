@@ -4,6 +4,7 @@ import { StyleSheet, View } from 'react-native';
 import { CoverImage } from '@/components/book/CoverImage';
 import { IconButton, Text } from '@/components/ui';
 import { joinNames, type BookListItem } from '@/domain';
+import { t } from '@/i18n';
 import { Testids } from '@/testing/testids.gen';
 import { useTheme } from '@/theme';
 
@@ -33,7 +34,7 @@ export function ReorderList({ items, onMove }: ReorderListProps) {
     if (to < 0 || to >= items.length) return;
     const item = items[index];
     onMove(index, to);
-    setAnnouncement(`${item.title} moved to ${to + 1} of ${items.length}`);
+    setAnnouncement(t('groups.reorder.moved', { title: item.title, position: to + 1, total: items.length }));
     // Keep focus with the book; at an end the other button is the useful one.
     const atEnd = to === 0 || to === items.length - 1;
     const key = `${item.id}:${atEnd ? (delta < 0 ? 'down' : 'up') : delta < 0 ? 'up' : 'down'}`;
@@ -43,15 +44,15 @@ export function ReorderList({ items, onMove }: ReorderListProps) {
   return (
     <View style={{ gap: spacing.sm }}>
       <Text role="status" aria-live="polite" accessibilityLiveRegion="polite" variant="caption" color="inkMuted">
-        {announcement || 'Use the arrows to change the order.'}
+        {announcement || t('groups.reorder.hint')}
       </Text>
-      <View role="list" aria-label="Books in this group" style={{ gap: spacing.sm }}>
+      <View role="list" aria-label={t('groups.reorder.listLabel')} style={{ gap: spacing.sm }}>
         {items.map((item, index) => (
           <View
             key={item.id}
             role="listitem"
             testID={Testids.groups.reorderRow}
-            aria-label={`${index + 1}. ${item.title}`}
+            aria-label={t('groups.reorder.rowLabel', { index: index + 1, title: item.title })}
             style={[styles.row, { gap: spacing.md, padding: spacing.sm, borderRadius: radii.md, backgroundColor: colors.surface, borderColor: colors.border }]}
           >
             <Text variant="mono" color="inkMuted" aria-hidden>
@@ -72,7 +73,7 @@ export function ReorderList({ items, onMove }: ReorderListProps) {
               <View ref={(el) => void buttons.current.set(`${item.id}:up`, el)}>
                 <IconButton
                   icon="arrow-up"
-                  accessibilityLabel={`Move ${item.title} up`}
+                  accessibilityLabel={t('groups.reorder.moveUp', { title: item.title })}
                   disabled={index === 0}
                   onPress={() => move(index, -1)}
                   testID={Testids.groups.moveUp}
@@ -81,7 +82,7 @@ export function ReorderList({ items, onMove }: ReorderListProps) {
               <View ref={(el) => void buttons.current.set(`${item.id}:down`, el)}>
                 <IconButton
                   icon="arrow-down"
-                  accessibilityLabel={`Move ${item.title} down`}
+                  accessibilityLabel={t('groups.reorder.moveDown', { title: item.title })}
                   disabled={index === items.length - 1}
                   onPress={() => move(index, 1)}
                   testID={Testids.groups.moveDown}

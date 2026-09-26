@@ -2,6 +2,7 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Button, Sheet, Text } from '@/components/ui';
+import { t } from '@/i18n';
 import { Testids } from '@/testing/testids.gen';
 import { groupSwatch, useTheme } from '@/theme';
 
@@ -36,15 +37,15 @@ export function GroupPickerSheet({ visible, title, groups, disabledIds, onPick, 
     <Sheet
       visible={visible}
       title={title}
-      subtitle={groups.length ? undefined : 'You have no groups yet. Make one and I’ll put the books in it.'}
+      subtitle={groups.length ? undefined : t('groups.picker.empty')}
       onClose={onClose}
       testID={Testids.groups.pickerSheet}
       footer={
         <>
-          <Button variant="ghost" label="Cancel" onPress={onClose} testID={Testids.groups.pickerClose} />
+          <Button variant="ghost" label={t('common.cancel')} onPress={onClose} testID={Testids.groups.pickerClose} />
           <Button
             variant="secondary"
-            label="New group…"
+            label={t('groups.picker.newGroup')}
             onPress={onNew}
             testID={Testids.groups.pickerNew}
             icon={<MaterialCommunityIcons name="plus" size={sizes.icon} color={colors.onPrimaryContainer} />}
@@ -52,16 +53,16 @@ export function GroupPickerSheet({ visible, title, groups, disabledIds, onPick, 
         </>
       }
     >
-      <View role="list" aria-label="Your groups" style={{ gap: spacing.xs }}>
+      <View role="list" aria-label={t('groups.picker.listLabel')} style={{ gap: spacing.xs }}>
         {groups.map((g) => {
           const swatch = groupSwatch(g.colour, theme.scheme);
           const already = disabledIds?.has(g.id) ?? false;
-          const count = g.count === 1 ? '1 book' : `${g.count} books`;
+          const count = t('common.books', { count: g.count });
           return (
             <View role="listitem" key={g.id}>
               <Pressable
                 role="button"
-                accessibilityLabel={already ? `${g.name}, already added` : `${g.name}, ${count}`}
+                accessibilityLabel={already ? t('groups.picker.alreadyAddedLabel', { name: g.name }) : t('groups.picker.optionLabel', { name: g.name, books: count })}
                 aria-disabled={already}
                 disabled={already}
                 onPress={() => onPick(g.id)}
@@ -85,7 +86,7 @@ export function GroupPickerSheet({ visible, title, groups, disabledIds, onPick, 
                   {g.name}
                 </Text>
                 <Text variant="caption" color="inkMuted">
-                  {already ? 'Already here' : count}
+                  {already ? t('groups.picker.alreadyHere') : count}
                 </Text>
               </Pressable>
             </View>

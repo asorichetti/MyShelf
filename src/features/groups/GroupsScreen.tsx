@@ -8,6 +8,7 @@ import { Booky, HelpButton } from '@/components/booky';
 import { GroupCard } from '@/components/groups/GroupCard';
 import { GroupEditorSheet, type GroupDraft } from '@/components/groups/GroupEditorSheet';
 import { Button, EmptyState, Heading, Screen, Text, useSnackbar } from '@/components/ui';
+import { t } from '@/i18n';
 import { Testids } from '@/testing/testids.gen';
 import { useTheme } from '@/theme';
 
@@ -28,7 +29,7 @@ export function GroupsScreen() {
   const save = async (draft: GroupDraft) => {
     const group = await create(draft);
     setCreating(false);
-    show({ message: `Made “${group.name}”. Add some books to it from the Shelf.` });
+    show({ message: t('groups.screen.created', { name: group.name }) });
   };
 
   return (
@@ -37,15 +38,15 @@ export function GroupsScreen() {
         <View style={[styles.flex, { gap: spacing.xs }]}>
           <View style={[styles.titleRow, { gap: spacing.sm }]}>
             <Heading level={1} testID={Testids.groups.title} style={styles.grow}>
-              Groups
+              {t('groups.screen.title')}
             </Heading>
             <HelpButton screen="groups" />
           </View>
-          <Text color="inkMuted">Your own little shelves, in any order you like.</Text>
+          <Text color="inkMuted">{t('groups.screen.intro')}</Text>
         </View>
         {groups?.length ? (
           <Button
-            label="New group"
+            label={t('groups.screen.newGroup')}
             onPress={() => setCreating(true)}
             testID={Testids.groups.new}
             icon={<MaterialCommunityIcons name="plus" size={sizes.icon} color={colors.onPrimary} />}
@@ -56,13 +57,13 @@ export function GroupsScreen() {
         <EmptyState
           testID={Testids.emptyState.root}
           illustration={<Booky expression="happy" size={112} />}
-          title="No groups yet"
-          message="Groups are like little shelves — try “Favourites”."
-          action={{ label: 'New group', onPress: () => setCreating(true), testID: Testids.groups.new }}
+          title={t('groups.screen.emptyTitle')}
+          message={t('groups.screen.emptyMessage')}
+          action={{ label: t('groups.screen.newGroup'), onPress: () => setCreating(true), testID: Testids.groups.new }}
         />
       ) : null}
       {groups?.length ? (
-        <View role="list" aria-label="Your groups" style={{ gap: spacing.md }}>
+        <View role="list" aria-label={t('groups.screen.listLabel')} style={{ gap: spacing.md }}>
           {chunk(groups, 2).map((pair) => (
             <View key={pair.map((g) => g.id).join('-')} style={[styles.row, { gap: spacing.md }]}>
               {pair.map((g) => (

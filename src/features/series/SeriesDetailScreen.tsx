@@ -9,6 +9,7 @@ import { SeriesShelf, seriesSlots } from '@/components/series/SeriesShelf';
 import { booksText, progressSentence } from '@/components/series/seriesText';
 import { Button, ConfirmDialog, EmptyState, Heading, IconButton, Menu, Screen, Text, TextField, useSnackbar } from '@/components/ui';
 import type { Book, Series, SeriesProgress } from '@/domain';
+import { t } from '@/i18n';
 import { Testids } from '@/testing/testids.gen';
 import { useTheme } from '@/theme';
 
@@ -25,10 +26,10 @@ function goBackOrSeries() {
 
 /** A whole number from 1 to 10,000, '' for "not sure", or an error message. */
 export function parseTotalCount(text: string): { ok: true; value: number | null } | { ok: false; message: string } {
-  const t = text.trim();
-  if (!t) return { ok: true, value: null };
-  if (!/^\d+$/.test(t) || Number(t) < 1 || Number(t) > 10_000) return { ok: false, message: 'Use a whole number, like 9.' };
-  return { ok: true, value: Number(t) };
+  const clean = text.trim();
+  if (!clean) return { ok: true, value: null };
+  if (!/^\d+$/.test(clean) || Number(clean) < 1 || Number(clean) > 10_000) return { ok: false, message: t('series.total.notWhole') };
+  return { ok: true, value: Number(clean) };
 }
 
 function ProgressBar({ owned, total }: { owned: number; total: number }) {
@@ -38,7 +39,7 @@ function ProgressBar({ owned, total }: { owned: number; total: number }) {
     <View
       accessible
       role="progressbar"
-      aria-label="Books owned"
+      aria-label={t('series.detail.progressBar')}
       aria-valuemin={0}
       aria-valuemax={total}
       aria-valuenow={owned}
@@ -61,15 +62,16 @@ function TotalEditor({ series, progress, onSave }: { series: Series; progress: S
     const parsed = parseTotalCount(text);
     if (!parsed.ok) return setError(parsed.message);
     if (parsed.value != null && progress.maxPosition != null && parsed.value < Math.floor(progress.maxPosition)) {
-      return setError(`You already have #${Math.floor(progress.maxPosition)}, so it has at least ${Math.floor(progress.maxPosition)}.`);
+      const highest = Math.floor(progress.maxPosition);
+      return setError(t('series.total.tooSmall', { position: highest, min: highest }));
     }
     setSaving(true);
     try {
       await onSave(parsed.value);
-      show({ message: parsed.value == null ? `I’ll work out the length of ${series.name} from your books` : `Saved: ${series.name} has ${booksText(parsed.value)}` });
+      show({ message: parsed.value == null ? t('series.total.cleared', { name: series.name }) : t('series.total.saved', { name: series.name, books: booksText(parsed.value) }) });
     } catch (e) {
       console.error('Could not save the series total', e);
-      show({ message: 'Sorry, I couldn’t save that. Please try again.' });
+      show({ message: t('common.saveFailed') });
     } finally {
       setSaving(false);
     }
@@ -78,7 +80,7 @@ function TotalEditor({ series, progress, onSave }: { series: Series; progress: S
     <View style={[styles.totalRow, { gap: spacing.sm }]}>
       <View style={styles.flex}>
         <TextField
-          label="How many books are in this series?"
+          label={t('series.total.label')}
           value={text}
           onChangeText={(v) => {
             setText(v);
@@ -87,14 +89,14 @@ function TotalEditor({ series, progress, onSave }: { series: Series; progress: S
           keyboardType="number-pad"
           inputMode="numeric"
           maxLength={5}
-          placeholder="Not sure"
-          helperText="Leave it empty if you’re not sure. Gaps then run up to your highest number."
+          placeholder={t('series.total.placeholder')}
+          helperText={t('series.total.helper')}
           errorText={error ?? undefined}
           onSubmitEditing={save}
           testID={Testids.seriesDetail.totalCount}
         />
       </View>
-      <Button variant="secondary" label="Save" accessibilityLabel="Save the number of books" onPress={save} loading={saving} disabled={unchanged} testID={Testids.seriesDetail.totalSave} style={{ marginTop: spacing.xl }} />
+      <Button variant="secondary" label={t('common.save')} accessibilityLabel={t('series.total.saveLabel')} onPress={save} loading={saving} disabled={unchanged} testID={Testids.seriesDetail.totalSave} style={{ marginTop: spacing.xl }} />
     </View>
   );
 }
@@ -104,7 +106,7 @@ function RenameDialog({ visible, current, onCancel, onRename }: { visible: boole
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const confirm = async () => {
-    if (!name.trim()) return setError('A series needs a name.');
+    if (!name.trim()) return setError(t('series.renameDialog.nameRequired'));
     setBusy(true);
     try {
       await onRename(name.trim());
@@ -113,9 +115,9 @@ function RenameDialog({ visible, current, onCancel, onRename }: { visible: boole
     }
   };
   return (
-    <ConfirmDialog visible={visible} title="Rename series" message="The new name shows on every book in the series." confirmLabel="Rename" busy={busy} onConfirm={confirm} onCancel={onCancel}>
+    <ConfirmDialog visible={visible} title={t('series.renameDialog.title')} message={t('series.renameDialog.message')} confirmLabel={t('series.renameDialog.confirm')} busy={busy} onConfirm={confirm} onCancel={onCancel}>
       <TextField
-        label="Series name"
+        label={t('series.renameDialog.nameLabel')}
         value={name}
         onChangeText={(v) => {
           setName(v);
@@ -147,20 +149,20 @@ function MergeDialog({ visible, series, bookCount, onCancel, onMerge }: { visibl
   return (
     <ConfirmDialog
       visible={visible}
-      title={`Merge “${series.name}” into…`}
+      title={t('series.mergeDialog.title', { name: series.name })}
       message={
         chosen
-          ? `Move ${booksText(bookCount)} into ${chosen.name}, keeping their numbers, and remove “${series.name}”?`
+          ? t('series.mergeDialog.confirmMessage', { books: booksText(bookCount), target: chosen.name, name: series.name })
           : others.length
-            ? 'Pick the series these books really belong to.'
-            : 'There’s no other series to merge into yet.'
+            ? t('series.mergeDialog.pick')
+            : t('series.mergeDialog.noOthers')
       }
-      confirmLabel="Merge"
+      confirmLabel={t('common.merge')}
       busy={busy}
       onConfirm={chosen ? confirm : () => {}}
       onCancel={onCancel}
     >
-      <View role="radiogroup" aria-label="Series to merge into" style={{ gap: spacing.xs }}>
+      <View role="radiogroup" aria-label={t('series.mergeDialog.optionsLabel')} style={{ gap: spacing.xs }}>
         {others.map((s) => {
           const selected = s.id === target;
           return (
@@ -169,7 +171,7 @@ function MergeDialog({ visible, series, bookCount, onCancel, onMerge }: { visibl
               role="radio"
               aria-checked={selected}
               accessibilityState={{ checked: selected }}
-              accessibilityLabel={`${s.name}, ${booksText(s.bookCount)}`}
+              accessibilityLabel={t('series.mergeDialog.optionLabel', { name: s.name, books: booksText(s.bookCount) })}
               onPress={() => setTarget(s.id)}
               testID={Testids.seriesDetail.mergeOption}
               style={[
@@ -215,27 +217,27 @@ function SeriesContent({ series, books, progress, actions }: { series: Series; b
   return (
     <Screen testID={Testids.seriesDetail.root} edges={[...EDGES]}>
       <View style={[styles.bar, { gap: spacing.xs, marginTop: -spacing.sm, marginHorizontal: -spacing.sm }]}>
-        <IconButton icon="arrow-left" accessibilityLabel="Back" onPress={goBackOrSeries} testID={Testids.seriesDetail.back} />
+        <IconButton icon="arrow-left" accessibilityLabel={t('common.back')} onPress={goBackOrSeries} testID={Testids.seriesDetail.back} />
         <View style={styles.flex} />
-        <Button variant="ghost" label="All series" onPress={() => router.navigate('/series')} testID={Testids.seriesDetail.allSeries} style={{ paddingHorizontal: spacing.md }} />
+        <Button variant="ghost" label={t('series.detail.allSeries')} onPress={() => router.navigate('/series')} testID={Testids.seriesDetail.allSeries} style={{ paddingHorizontal: spacing.md }} />
         <HelpButton screen="series" />
-        <IconButton icon="dots-vertical" accessibilityLabel="More actions" expanded={menuOpen} onPress={() => setMenuOpen(true)} testID={Testids.seriesDetail.more} />
+        <IconButton icon="dots-vertical" accessibilityLabel={t('series.detail.moreActions')} expanded={menuOpen} onPress={() => setMenuOpen(true)} testID={Testids.seriesDetail.more} />
       </View>
       <Menu
         visible={menuOpen}
         onClose={() => setMenuOpen(false)}
-        accessibilityLabel={`More actions for ${series.name}`}
+        accessibilityLabel={t('series.detail.moreActionsFor', { name: series.name })}
         testID={Testids.menu.root}
         items={[
-          { label: 'Rename series', icon: 'pencil-outline', onPress: () => setDialog('rename'), testID: Testids.seriesDetail.rename },
-          { label: 'Merge into another series', icon: 'call-merge', onPress: () => setDialog('merge'), testID: Testids.seriesDetail.merge },
-          { label: 'Delete series', icon: 'trash-can-outline', destructive: true, onPress: () => setDialog('delete'), testID: Testids.seriesDetail.delete },
+          { label: t('series.detail.rename'), icon: 'pencil-outline', onPress: () => setDialog('rename'), testID: Testids.seriesDetail.rename },
+          { label: t('series.detail.merge'), icon: 'call-merge', onPress: () => setDialog('merge'), testID: Testids.seriesDetail.merge },
+          { label: t('series.detail.delete'), icon: 'trash-can-outline', destructive: true, onPress: () => setDialog('delete'), testID: Testids.seriesDetail.delete },
         ]}
       />
 
       <View style={{ gap: spacing.sm }}>
         <Text variant="stamp" color="accent">
-          Series
+          {t('series.detail.eyebrow')}
         </Text>
         <Heading level={1} testID={Testids.seriesDetail.title}>
           {series.name}
@@ -249,26 +251,26 @@ function SeriesContent({ series, books, progress, actions }: { series: Series; b
       {slots.length ? <SeriesShelf slots={slots} /> : null}
 
       <View style={{ gap: spacing.sm }}>
-        <Heading level={2}>In reading order</Heading>
+        <Heading level={2}>{t('series.detail.readingOrder')}</Heading>
         {slots.length ? (
           <SeriesBookList seriesName={series.name} slots={slots} onOpenBook={(id) => router.push({ pathname: '/book/[id]', params: { id: String(id) } })} onAddGap={addAt} />
         ) : (
           <EmptyState
             illustration={<Booky expression="sleepy" size={80} />}
-            title="No books here yet"
-            message="Add the first book and it takes its place on this shelf."
-            action={{ label: 'Add #1', onPress: () => addAt(1) }}
+            title={t('series.detail.emptyTitle')}
+            message={t('series.detail.emptyMessage')}
+            action={{ label: t('series.detail.addFirst'), onPress: () => addAt(1) }}
           />
         )}
         {firstMissing == null && progress.total != null && series.totalCount == null ? (
           <Text variant="caption" color="inkMuted">
-            No gaps so far. Tell me how many books the series has to see what’s still to come.
+            {t('series.detail.noGapsYet')}
           </Text>
         ) : null}
       </View>
 
       <View style={{ gap: spacing.sm }}>
-        <Heading level={2}>Length</Heading>
+        <Heading level={2}>{t('series.detail.length')}</Heading>
         <TotalEditor key={series.totalCount ?? 'none'} series={series} progress={progress} onSave={actions.setTotal} />
       </View>
 
@@ -280,7 +282,7 @@ function SeriesContent({ series, books, progress, actions }: { series: Series; b
         onRename={async (name) => {
           await actions.rename(name);
           setDialog(null);
-          show({ message: `Renamed to ${name}` });
+          show({ message: t('series.detail.renamed', { name }) });
         }}
       />
       <MergeDialog
@@ -294,17 +296,17 @@ function SeriesContent({ series, books, progress, actions }: { series: Series; b
           setDialog(null);
           if (target) {
             router.replace({ pathname: '/series/[id]', params: { id: String(target.id) } });
-            show({ message: `Merged into ${target.name}` });
+            show({ message: t('series.detail.merged', { name: target.name }) });
           }
         }}
       />
       <ConfirmDialog
         visible={dialog === 'delete'}
         illustration={<Booky expression="concerned" size={72} animated={false} />}
-        title="Delete this series?"
-        message={books.length ? `The ${booksText(books.length)} stay on your shelf, just not as “${series.name}”.` : `“${series.name}” has no books; it just goes.`}
-        confirmLabel="Delete"
-        cancelLabel="Keep it"
+        title={t('series.deleteDialog.title')}
+        message={books.length ? t('series.deleteDialog.message', { books: booksText(books.length), name: series.name }) : t('series.deleteDialog.messageEmpty', { name: series.name })}
+        confirmLabel={t('common.delete')}
+        cancelLabel={t('series.deleteDialog.keep')}
         destructive
         busy={deleting}
         onCancel={() => setDialog(null)}
@@ -314,11 +316,11 @@ function SeriesContent({ series, books, progress, actions }: { series: Series; b
             await actions.remove();
             setDialog(null);
             router.replace('/series');
-            show({ message: `Deleted the series ${series.name}` });
+            show({ message: t('series.detail.deleted', { name: series.name }) });
           } catch (e) {
             console.error('Could not delete the series', e);
             setDeleting(false);
-            show({ message: 'Sorry, I couldn’t delete that. Please try again.' });
+            show({ message: t('series.detail.deleteFailed') });
           }
         }}
       />
@@ -333,9 +335,9 @@ function SeriesMissing() {
       <EmptyState
         illustration={<Booky expression="concerned" size={120} />}
         headingLevel={1}
-        title="Series not found"
-        message="I couldn’t find that series. It may have been merged or deleted."
-        action={{ label: 'All series', onPress: () => router.replace('/series') }}
+        title={t('series.detail.notFoundTitle')}
+        message={t('series.detail.notFoundMessage')}
+        action={{ label: t('series.detail.allSeries'), onPress: () => router.replace('/series') }}
       />
     </Screen>
   );
@@ -350,7 +352,7 @@ export function SeriesDetailScreen() {
     return (
       <Screen pageState="loading" centered edges={[...EDGES]}>
         <Text color="inkMuted" align="center">
-          Taking the series down from the shelf…
+          {t('series.detail.loading')}
         </Text>
       </Screen>
     );

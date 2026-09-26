@@ -1,16 +1,19 @@
+import { t, type MessageKey } from '@/i18n';
+
 /** The icons a user group can wear. Stored by id in `groups.icon`. */
 export const groupIcons = ['heart', 'star', 'bookmark', 'gift', 'moon', 'sun', 'pen', 'home'] as const;
 export type GroupIcon = (typeof groupIcons)[number];
 
-export const groupIconLabels: Record<GroupIcon, string> = {
-  heart: 'Heart',
-  star: 'Star',
-  bookmark: 'Bookmark',
-  gift: 'Gift',
-  moon: 'Moon',
-  sun: 'Sun',
-  pen: 'Pen',
-  home: 'Home',
+/** Catalogue keys for each icon's name ("Heart"), read as "Heart icon". */
+export const groupIconLabelKeys: Record<GroupIcon, MessageKey> = {
+  heart: 'groups.icons.heart',
+  star: 'groups.icons.star',
+  bookmark: 'groups.icons.bookmark',
+  gift: 'groups.icons.gift',
+  moon: 'groups.icons.moon',
+  sun: 'groups.icons.sun',
+  pen: 'groups.icons.pen',
+  home: 'groups.icons.home',
 };
 
 export const DEFAULT_GROUP_ICON: GroupIcon = 'bookmark';
@@ -29,8 +32,8 @@ export const GROUP_NAME_MAX = 40;
 
 export function validateGroupName(name: string): string | null {
   const clean = name.trim();
-  if (!clean) return 'Give the group a name.';
-  if (clean.length > GROUP_NAME_MAX) return `Keep it under ${GROUP_NAME_MAX + 1} characters.`;
+  if (!clean) return t('groups.validation.nameRequired');
+  if (clean.length > GROUP_NAME_MAX) return t('groups.validation.nameTooLong', { max: GROUP_NAME_MAX + 1 });
   return null;
 }
 

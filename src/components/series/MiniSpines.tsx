@@ -2,6 +2,7 @@ import { StyleSheet, View } from 'react-native';
 
 import { Spine } from '@/components/book/Spine';
 import { Text } from '@/components/ui';
+import { t } from '@/i18n';
 import { useTheme } from '@/theme';
 
 export interface MiniSpinesProps {
@@ -31,7 +32,7 @@ export function MiniSpines({ name, total, gaps, max = 16 }: MiniSpinesProps) {
       ))}
       {total > shown ? (
         <Text variant="caption" color="inkMuted" style={{ marginLeft: spacing.xs }}>
-          {`+${total - shown}`}
+          {t('series.miniSpines.more', { count: total - shown })}
         </Text>
       ) : null}
     </View>

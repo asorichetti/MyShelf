@@ -181,4 +181,235 @@ export const en = {
       isbn: 'ISBN {isbn}',
     },
   },
+
+  // Series and groups
+  /** Series: the list, a series' page and the words that summarise one (P04). */
+  series: {
+    /** A place in a series, e.g. "#3" (a gap, a book's number). */
+    number: '#{position}',
+    /** How a series' progress reads in lists and on its page. */
+    progress: {
+      /** Short form beside a series' name: "5 of 9". */
+      short: '{owned} of {total}',
+      noBooksYet: 'No books yet',
+      /** "2 books, not numbered": {books} is the book count ("2 books"). */
+      notNumbered: '{books}, not numbered',
+      /** "5 of 9 owned, 2 missing": {tail} is one of the three endings below. */
+      sentence: '{owned} of {total} owned, {tail}',
+      missing: { one: '{count} missing', other: '{count} missing' },
+      complete: 'complete',
+      noneMissing: 'none missing so far',
+      /** What a screen reader says for a series: "Discworld, 5 of 9 owned, 2 missing". */
+      label: '{name}, {progress}',
+    },
+    row: {
+      complete: 'Complete!',
+    },
+    miniSpines: {
+      /** More spines than fit on the mini shelf: "+4". */
+      more: '+{count}',
+    },
+    bookList: {
+      label: '{name} in reading order',
+      /** Shown in the number column for a book with no place in the series. */
+      unnumbered: '—',
+      /** Screen reader's name for a book's place: "Number 3". */
+      numberLabel: 'Number {position}',
+      notNumbered: 'Not numbered',
+      /** "Number 1, The Colour of Magic": {number} is "Number 1" or "Not numbered". */
+      bookLabel: '{number}, {title}',
+      /** "Number 1, The Colour of Magic, 1983". */
+      bookLabelWithYear: '{number}, {title}, {year}',
+      gapMissing: '#{position} missing',
+      addGap: 'Add #{position}',
+      addGapLabel: 'Add number {position} of {name}',
+    },
+    list: {
+      loading: 'Lining up your series…',
+      errorTitle: 'Couldn’t open your series',
+      errorMessage: 'Something went wrong reading the catalogue. Please try again.',
+      title: 'Series',
+      intro: 'Every series on your shelf, with the gaps showing.',
+      introEmpty: 'Books that belong together, in order.',
+      sortLabel: 'Sort series',
+      sortName: 'A to Z',
+      sortRecent: 'Recently added',
+      listLabel: 'Your series',
+      emptyTitle: 'No series yet',
+      emptyMessage: 'When a book is part of a series, add the series on its card and it lines up here, in order, with any gaps showing.',
+    },
+    detail: {
+      loading: 'Taking the series down from the shelf…',
+      allSeries: 'All series',
+      moreActions: 'More actions',
+      moreActionsFor: 'More actions for {name}',
+      rename: 'Rename series',
+      merge: 'Merge into another series',
+      delete: 'Delete series',
+      /** Small label above the series' name. */
+      eyebrow: 'Series',
+      progressBar: 'Books owned',
+      readingOrder: 'In reading order',
+      emptyTitle: 'No books here yet',
+      emptyMessage: 'Add the first book and it takes its place on this shelf.',
+      addFirst: 'Add #1',
+      noGapsYet: 'No gaps so far. Tell me how many books the series has to see what’s still to come.',
+      length: 'Length',
+      renamed: 'Renamed to {name}',
+      merged: 'Merged into {name}',
+      deleted: 'Deleted the series {name}',
+      deleteFailed: 'Sorry, I couldn’t delete that. Please try again.',
+      notFoundTitle: 'Series not found',
+      notFoundMessage: 'I couldn’t find that series. It may have been merged or deleted.',
+    },
+    /** The "How many books are in this series?" field on a series' page. */
+    total: {
+      label: 'How many books are in this series?',
+      placeholder: 'Not sure',
+      helper: 'Leave it empty if you’re not sure. Gaps then run up to your highest number.',
+      saveLabel: 'Save the number of books',
+      notWhole: 'Use a whole number, like 9.',
+      /** The user typed a total below a number they own: "You already have #12, so it has at least 12." */
+      tooSmall: 'You already have #{position}, so it has at least {min}.',
+      cleared: 'I’ll work out the length of {name} from your books',
+      /** {books} is the count, e.g. "9 books". */
+      saved: 'Saved: {name} has {books}',
+    },
+    renameDialog: {
+      title: 'Rename series',
+      message: 'The new name shows on every book in the series.',
+      confirm: 'Rename',
+      nameLabel: 'Series name',
+      nameRequired: 'A series needs a name.',
+    },
+    mergeDialog: {
+      title: 'Merge “{name}” into…',
+      /** {books} is the count, e.g. "3 books"; {target} is the series they move to. */
+      confirmMessage: 'Move {books} into {target}, keeping their numbers, and remove “{name}”?',
+      pick: 'Pick the series these books really belong to.',
+      noOthers: 'There’s no other series to merge into yet.',
+      optionsLabel: 'Series to merge into',
+      /** A series to merge into: "Discworld, 41 books". */
+      optionLabel: '{name}, {books}',
+    },
+    deleteDialog: {
+      title: 'Delete this series?',
+      /** {books} is the count, e.g. "3 books". */
+      message: 'The {books} stay on your shelf, just not as “{name}”.',
+      messageEmpty: '“{name}” has no books; it just goes.',
+      keep: 'Keep it',
+    },
+  },
+  /** Booky's series tips (P04-07, P04-08): "You have #1 and #3 of Discworld — #2 is missing." */
+  seriesMilestones: {
+    /** {positions} is a list like "#1, #2 and #4". */
+    have: 'You have {positions} of {name}',
+    /** Used when the user owns many books of the series: "You have 6 Discworld books". */
+    haveMany: { one: 'You have {count} {name} book', other: 'You have {count} {name} books' },
+    /** {positions} is a list like "#3" or "#3 and #5". */
+    missing: { one: '{positions} is missing.', other: '{positions} are missing.' },
+    missingMany: { one: '{count} is missing, starting with #{first}.', other: '{count} are missing, starting with #{first}.' },
+    /** The gap tip: the two sentences above joined. */
+    gapTip: '{have} — {missing}',
+    /** "All 9 Discworld books", or "You have the Solo book" for a series of one. */
+    whole: { one: 'You have the {name} book', other: 'All {count} {name} books' },
+    complete: 'Series complete! {whole}.',
+  },
+  /** Groups: the user's own little shelves ("Favourites"). */
+  groups: {
+    /** Names of the icons a group can wear (read as "Heart icon"). */
+    icons: {
+      heart: 'Heart',
+      star: 'Star',
+      bookmark: 'Bookmark',
+      gift: 'Gift',
+      moon: 'Moon',
+      sun: 'Sun',
+      pen: 'Pen',
+      home: 'Home',
+    },
+    validation: {
+      nameRequired: 'Give the group a name.',
+      nameTooLong: 'Keep it under {max} characters.',
+    },
+    card: {
+      /** A group card's name for a screen reader: "Favourites, 3 books". */
+      label: '{name}, {books}',
+    },
+    screen: {
+      title: 'Groups',
+      intro: 'Your own little shelves, in any order you like.',
+      newGroup: 'New group',
+      created: 'Made “{name}”. Add some books to it from the Shelf.',
+      emptyTitle: 'No groups yet',
+      emptyMessage: 'Groups are like little shelves — try “Favourites”.',
+      listLabel: 'Your groups',
+    },
+    detail: {
+      notFoundTitle: 'Group not found',
+      notFoundMessage: 'That group isn’t here any more. It may have been deleted.',
+      /** {books} is the count, e.g. "2 books". */
+      removed: 'Took {books} out of {name}',
+      deleted: 'Deleted “{name}”. Its books are still on your shelf.',
+      edit: 'Edit {name}',
+      delete: 'Delete {name}',
+      reorder: 'Reorder',
+      reorderLabel: 'Reorder books',
+      doneReorderingLabel: 'Done reordering',
+      addBooks: 'Add books',
+      select: 'Select',
+      selectLabel: 'Select books',
+      emptyTitle: 'No books here yet',
+      emptyMessage: 'Pick some from your shelf and they’ll line up here in any order you like.',
+      listLabel: 'Books in {name}',
+      deleteTitle: 'Delete “{name}”?',
+      deleteMessage: 'The group goes, but its books stay on your shelf.',
+      deleteConfirm: 'Delete group',
+    },
+    editor: {
+      editTitle: 'Edit group',
+      newTitle: 'New group',
+      subtitle: 'A little shelf of your own, like “Favourites” or “Signed copies”.',
+      create: 'Create group',
+      nameLabel: 'Name',
+      /** Example group name shown in the empty name field. */
+      namePlaceholder: 'Favourites',
+      colour: 'Colour',
+      icon: 'Icon',
+      /** {icon} is an icon's name, e.g. "Heart". */
+      iconLabel: '{icon} icon',
+      /** The preview's name before one is typed. */
+      previewName: 'Your group',
+      saveFailed: 'Sorry, I couldn’t save that group. Please try again.',
+    },
+    picker: {
+      empty: 'You have no groups yet. Make one and I’ll put the books in it.',
+      newGroup: 'New group…',
+      listLabel: 'Your groups',
+      /** "Favourites, 3 books". */
+      optionLabel: '{name}, {books}',
+      alreadyAddedLabel: '{name}, already added',
+      alreadyHere: 'Already here',
+    },
+    bookSection: {
+      heading: 'Groups',
+      added: 'Added “{title}” to {name}',
+      addFailed: 'Sorry, I couldn’t add it to that group. Please try again.',
+      openGroup: 'Open group {name}',
+      none: 'Not in any of your groups yet.',
+      add: 'Add to group',
+      pickerTitle: 'Add “{title}” to a group',
+      /** Stands in for a group's name when it can't be found: "Added “Mort” to the group". */
+      fallbackName: 'the group',
+    },
+    reorder: {
+      hint: 'Use the arrows to change the order.',
+      listLabel: 'Books in this group',
+      /** A row's name: "2. Mort". */
+      rowLabel: '{index}. {title}',
+      moved: '{title} moved to {position} of {total}',
+      moveUp: 'Move {title} up',
+      moveDown: 'Move {title} down',
+    },
+  },
 } as const;

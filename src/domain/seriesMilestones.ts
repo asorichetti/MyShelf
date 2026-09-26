@@ -1,3 +1,5 @@
+import { t } from '@/i18n';
+
 import { joinNames } from './book';
 import { seriesProgress, type SeriesProgress } from './seriesGaps';
 import { formatSeriesPosition } from './seriesPosition';
@@ -28,17 +30,15 @@ export function ownedWholePositions(positions: readonly (number | null)[]): numb
   return [...new Set(positions.filter((p): p is number => p != null && Number.isInteger(p) && p > 0))].sort((a, b) => a - b);
 }
 
-const hash = (p: number) => `#${formatSeriesPosition(p)}`;
+const hash = (p: number) => t('series.number', { position: formatSeriesPosition(p) });
 
 /** The two halves of the gap tip, "You have #1 and #3 of Discworld" and "#2 is missing." (Booky's catalogue joins them.) */
 export function gapTipParts(name: string, owned: readonly number[], gaps: readonly number[]): { have: string; missing: string } {
-  const have = owned.length <= 4 ? `You have ${joinNames(owned.map(hash))} of ${name}` : `You have ${owned.length} ${name} books`;
+  const have = owned.length <= 4 ? t('seriesMilestones.have', { positions: joinNames(owned.map(hash)), name }) : t('seriesMilestones.haveMany', { count: owned.length, name });
   const missing =
-    gaps.length === 1
-      ? `${hash(gaps[0])} is missing.`
-      : gaps.length <= 3
-        ? `${joinNames(gaps.map(hash))} are missing.`
-        : `${gaps.length} are missing, starting with ${hash(gaps[0])}.`;
+    gaps.length <= 3
+      ? t('seriesMilestones.missing', { count: gaps.length, positions: joinNames(gaps.map(hash)) })
+      : t('seriesMilestones.missingMany', { count: gaps.length, first: formatSeriesPosition(gaps[0]) });
   return { have, missing };
 }
 
@@ -47,18 +47,17 @@ export function gapTipParts(name: string, owned: readonly number[], gaps: readon
  * summarised: "You have 6 Discworld books — #3 and #5 are missing."
  */
 export function gapTipMessage(name: string, owned: readonly number[], gaps: readonly number[]): string {
-  const { have, missing } = gapTipParts(name, owned, gaps);
-  return `${have} — ${missing}`;
+  return t('seriesMilestones.gapTip', gapTipParts(name, owned, gaps));
 }
 
 /** "All 9 Discworld books", or "You have the Discworld book" for a series of one. */
 export function completionWhole(name: string, total: number): string {
-  return total === 1 ? `You have the ${name} book` : `All ${total} ${name} books`;
+  return t('seriesMilestones.whole', { count: total, name });
 }
 
 /** "Series complete! All 9 Discworld books." */
 export function completionMessage(name: string, total: number): string {
-  return `Series complete! ${completionWhole(name, total)}.`;
+  return t('seriesMilestones.complete', { whole: completionWhole(name, total) });
 }
 
 /**

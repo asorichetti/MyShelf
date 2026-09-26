@@ -3,7 +3,8 @@ import { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Button, Heading, Sheet, Text, TextField } from '@/components/ui';
-import { DEFAULT_GROUP_ICON, groupIconLabels, groupIconOf, groupIcons, GROUP_NAME_MAX, validateGroupName, type GroupIcon } from '@/domain';
+import { DEFAULT_GROUP_ICON, groupIconLabelKeys, groupIconOf, groupIcons, GROUP_NAME_MAX, validateGroupName, type GroupIcon } from '@/domain';
+import { t, translate } from '@/i18n';
 import { Testids } from '@/testing/testids.gen';
 import { DEFAULT_GROUP_SWATCH, groupSwatch, groupSwatchesFor, useTheme } from '@/theme';
 
@@ -54,7 +55,7 @@ function OpenGroupEditor({ visible, initial, onSave, onCancel }: GroupEditorShee
       await onSave({ name: name.trim(), colour, icon });
     } catch (e) {
       console.error('Could not save the group', e);
-      setError('Sorry, I couldn’t save that group. Please try again.');
+      setError(t('groups.editor.saveFailed'));
     } finally {
       setSaving(false);
     }
@@ -64,26 +65,26 @@ function OpenGroupEditor({ visible, initial, onSave, onCancel }: GroupEditorShee
   return (
     <Sheet
       visible={visible}
-      title={initial ? 'Edit group' : 'New group'}
-      subtitle={initial ? undefined : 'A little shelf of your own, like “Favourites” or “Signed copies”.'}
+      title={initial ? t('groups.editor.editTitle') : t('groups.editor.newTitle')}
+      subtitle={initial ? undefined : t('groups.editor.subtitle')}
       onClose={onCancel}
       testID={Testids.groups.editorSheet}
       footer={
         <>
-          <Button variant="secondary" label="Cancel" onPress={onCancel} disabled={saving} testID={Testids.groups.editorCancel} />
-          <Button label={initial ? 'Save' : 'Create group'} onPress={save} loading={saving} testID={Testids.groups.editorSave} />
+          <Button variant="secondary" label={t('common.cancel')} onPress={onCancel} disabled={saving} testID={Testids.groups.editorCancel} />
+          <Button label={initial ? t('common.save') : t('groups.editor.create')} onPress={save} loading={saving} testID={Testids.groups.editorSave} />
         </>
       }
     >
       <TextField
-        label="Name"
+        label={t('groups.editor.nameLabel')}
         value={name}
-        onChangeText={(t) => {
-          setName(t);
+        onChangeText={(v) => {
+          setName(v);
           if (error) setError(null);
         }}
         maxLength={GROUP_NAME_MAX}
-        placeholder="Favourites"
+        placeholder={t('groups.editor.namePlaceholder')}
         autoFocus={!initial}
         returnKeyType="done"
         onSubmitEditing={save}
@@ -91,8 +92,8 @@ function OpenGroupEditor({ visible, initial, onSave, onCancel }: GroupEditorShee
         testID={Testids.groups.editorName}
       />
       <View style={{ gap: spacing.xs }}>
-        <Heading level={3}>Colour</Heading>
-        <View role="radiogroup" aria-label="Colour" style={[styles.wrap, { gap: spacing.xs }]}>
+        <Heading level={3}>{t('groups.editor.colour')}</Heading>
+        <View role="radiogroup" aria-label={t('groups.editor.colour')} style={[styles.wrap, { gap: spacing.xs }]}>
           {groupSwatchesFor(theme.scheme).map((s) => {
             const selected = s.name === colour;
             return (
@@ -115,15 +116,15 @@ function OpenGroupEditor({ visible, initial, onSave, onCancel }: GroupEditorShee
         </View>
       </View>
       <View style={{ gap: spacing.xs }}>
-        <Heading level={3}>Icon</Heading>
-        <View role="radiogroup" aria-label="Icon" style={[styles.wrap, { gap: spacing.xs }]}>
+        <Heading level={3}>{t('groups.editor.icon')}</Heading>
+        <View role="radiogroup" aria-label={t('groups.editor.icon')} style={[styles.wrap, { gap: spacing.xs }]}>
           {groupIcons.map((id) => {
             const selected = id === icon;
             return (
               <Pressable
                 key={id}
                 role="radio"
-                accessibilityLabel={`${groupIconLabels[id]} icon`}
+                accessibilityLabel={t('groups.editor.iconLabel', { icon: translate(groupIconLabelKeys[id]) })}
                 aria-checked={selected}
                 accessibilityState={{ checked: selected }}
                 onPress={() => setIcon(id)}
@@ -151,7 +152,7 @@ function OpenGroupEditor({ visible, initial, onSave, onCancel }: GroupEditorShee
       >
         <MaterialCommunityIcons name={groupIconNames[icon]} size={sizes.icon} color={swatch.onBand} />
         <Text variant="bodyStrong" numberOfLines={1} style={{ color: swatch.onBand, fontFamily: theme.fonts.heading, flex: 1 }}>
-          {name.trim() || 'Your group'}
+          {name.trim() || t('groups.editor.previewName')}
         </Text>
       </View>
     </Sheet>

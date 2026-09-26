@@ -4,6 +4,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { CoverImage } from '@/components/book/CoverImage';
 import { Text } from '@/components/ui';
+import { t } from '@/i18n';
 import { Testids } from '@/testing/testids.gen';
 import { groupSwatch, useTheme } from '@/theme';
 
@@ -18,7 +19,7 @@ export interface GroupCardData {
   covers: { id: number; title: string; coverUri: string | null }[];
 }
 
-export const groupCardLabel = (g: Pick<GroupCardData, 'name' | 'count'>) => `${g.name}, ${g.count === 1 ? '1 book' : `${g.count} books`}`;
+export const groupCardLabel = (g: Pick<GroupCardData, 'name' | 'count'>) => t('groups.card.label', { name: g.name, books: t('common.books', { count: g.count }) });
 
 export interface GroupCardProps {
   group: GroupCardData;
@@ -72,7 +73,7 @@ export const GroupCard = memo(function GroupCard({ group, onPress }: GroupCardPr
           )}
         </View>
         <Text variant="stamp" color="accent">
-          {group.count === 1 ? '1 book' : `${group.count} books`}
+          {t('common.books', { count: group.count })}
         </Text>
       </View>
     </Pressable>

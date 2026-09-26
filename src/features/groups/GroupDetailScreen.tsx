@@ -15,13 +15,14 @@ import { LoadingPage } from '@/features/navigation/LoadingPage';
 import { MissingScreen } from '@/features/navigation/MissingScreen';
 import { parseId } from '@/features/navigation/parseId';
 import { useSelection } from '@/features/shelf/useSelection';
+import { t } from '@/i18n';
 import { Testids } from '@/testing/testids.gen';
 import { groupSwatch, useTheme } from '@/theme';
 
 import { useGroup } from './useGroup';
 import { useGroups } from './useGroups';
 
-const books = (n: number) => (n === 1 ? '1 book' : `${n} books`);
+const books = (n: number) => t('common.books', { count: n });
 
 /**
  * `/group/[id]`: a group's books in the group's own order. "Reorder" swaps
@@ -49,7 +50,7 @@ export function GroupDetailScreen() {
 
   if (state.status === 'loading') return <LoadingPage />;
   if (state.status === 'missing') {
-    return <MissingScreen title="Group not found" message="That group isn’t here any more. It may have been deleted." fallback="/groups" />;
+    return <MissingScreen title={t('groups.detail.notFoundTitle')} message={t('groups.detail.notFoundMessage')} fallback="/groups" />;
   }
   const { group, items } = state;
   const swatch = groupSwatch(group.colour, theme.scheme);
@@ -62,21 +63,21 @@ export function GroupDetailScreen() {
   const removeSelected = async () => {
     const removed = await removeBooks(selection.ids);
     selection.exit();
-    show({ message: `Took ${books(removed)} out of ${group.name}` });
+    show({ message: t('groups.detail.removed', { books: books(removed), name: group.name }) });
   };
 
   const deleteGroup = async () => {
     await remove(group.id);
     setConfirmingDelete(false);
-    show({ message: `Deleted “${group.name}”. Its books are still on your shelf.` });
+    show({ message: t('groups.detail.deleted', { name: group.name }) });
     goBackOr('/groups');
   };
 
   return (
     <Screen testID={Testids.groups.detail} edges={['top', 'bottom', 'left', 'right']}>
       <TopBar onBack={() => goBackOr('/groups')}>
-        <IconButton icon="pencil-outline" variant="tonal" accessibilityLabel={`Edit ${group.name}`} onPress={() => setEditing(true)} testID={Testids.groups.edit} />
-        <IconButton icon="trash-can-outline" variant="danger" accessibilityLabel={`Delete ${group.name}`} onPress={() => setConfirmingDelete(true)} testID={Testids.groups.delete} />
+        <IconButton icon="pencil-outline" variant="tonal" accessibilityLabel={t('groups.detail.edit', { name: group.name })} onPress={() => setEditing(true)} testID={Testids.groups.edit} />
+        <IconButton icon="trash-can-outline" variant="danger" accessibilityLabel={t('groups.detail.delete', { name: group.name })} onPress={() => setConfirmingDelete(true)} testID={Testids.groups.delete} />
       </TopBar>
       <View style={[styles.band, { backgroundColor: swatch.band, borderRadius: radii.lg, padding: spacing.lg, gap: spacing.md }]}>
         <MaterialCommunityIcons name={groupIconName(group.icon)} size={sizes.icon * 1.6} color={swatch.onBand} />
@@ -93,8 +94,8 @@ export function GroupDetailScreen() {
         <View style={[styles.actions, { gap: spacing.sm }]}>
           <Button
             variant={reordering ? 'primary' : 'secondary'}
-            label={reordering ? 'Done' : 'Reorder'}
-            accessibilityLabel={reordering ? 'Done reordering' : 'Reorder books'}
+            label={reordering ? t('common.done') : t('groups.detail.reorder')}
+            accessibilityLabel={reordering ? t('groups.detail.doneReorderingLabel') : t('groups.detail.reorderLabel')}
             onPress={() => {
               selection.exit();
               setReordering((r) => !r);
@@ -106,12 +107,12 @@ export function GroupDetailScreen() {
             <>
               <Button
                 variant="secondary"
-                label="Add books"
+                label={t('groups.detail.addBooks')}
                 onPress={() => router.push({ pathname: '/', params: { addTo: String(group.id) } })}
                 testID={Testids.groups.addBooks}
                 icon={<MaterialCommunityIcons name="book-plus-outline" size={sizes.icon} color={colors.onPrimaryContainer} />}
               />
-              {selecting ? null : <Button variant="ghost" label="Select" accessibilityLabel="Select books" onPress={() => start()} testID={Testids.shelfView.selectButton} />}
+              {selecting ? null : <Button variant="ghost" label={t('groups.detail.select')} accessibilityLabel={t('groups.detail.selectLabel')} onPress={() => start()} testID={Testids.shelfView.selectButton} />}
             </>
           )}
         </View>
@@ -120,14 +121,14 @@ export function GroupDetailScreen() {
         <EmptyState
           testID={Testids.emptyState.root}
           illustration={<Booky expression="happy" size={96} />}
-          title="No books here yet"
-          message="Pick some from your shelf and they’ll line up here in any order you like."
-          action={{ label: 'Add books', onPress: () => router.push({ pathname: '/', params: { addTo: String(group.id) } }), testID: Testids.groups.addBooks }}
+          title={t('groups.detail.emptyTitle')}
+          message={t('groups.detail.emptyMessage')}
+          action={{ label: t('groups.detail.addBooks'), onPress: () => router.push({ pathname: '/', params: { addTo: String(group.id) } }), testID: Testids.groups.addBooks }}
         />
       ) : reordering ? (
         <ReorderList items={items} onMove={move} />
       ) : (
-        <View role="list" aria-label={`Books in ${group.name}`} style={{ gap: spacing.md, paddingBottom: selecting ? sizes.touchTarget * 3 : 0 }}>
+        <View role="list" aria-label={t('groups.detail.listLabel', { name: group.name })} style={{ gap: spacing.md, paddingBottom: selecting ? sizes.touchTarget * 3 : 0 }}>
           {items.map((item) => (
             <View key={item.id} role="listitem">
               <BookRow item={item} onPress={onPress} onLongPress={start} selected={selecting ? isSelected(item.id) : undefined} />
@@ -147,9 +148,9 @@ export function GroupDetailScreen() {
       <ConfirmDialog
         visible={confirmingDelete}
         illustration={<Booky expression="concerned" size={72} animated={false} />}
-        title={`Delete “${group.name}”?`}
-        message="The group goes, but its books stay on your shelf."
-        confirmLabel="Delete group"
+        title={t('groups.detail.deleteTitle', { name: group.name })}
+        message={t('groups.detail.deleteMessage')}
+        confirmLabel={t('groups.detail.deleteConfirm')}
         destructive
         onConfirm={deleteGroup}
         onCancel={() => setConfirmingDelete(false)}

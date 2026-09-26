@@ -9,6 +9,7 @@ import { Button, Chip, Heading, Text, useSnackbar } from '@/components/ui';
 import { groupsRepo, useDatabase } from '@/db';
 import type { Group } from '@/domain';
 import { useLibraryEvent } from '@/features/events';
+import { t } from '@/i18n';
 import { Testids } from '@/testing/testids.gen';
 import { useTheme } from '@/theme';
 
@@ -45,10 +46,10 @@ export function BookGroupsSection({ bookId, title }: { bookId: number; title: st
     setPicking(false);
     try {
       await addBooks(groupId, [bookId]);
-      show({ message: `Added “${title}” to ${name}` });
+      show({ message: t('groups.bookSection.added', { title, name }) });
     } catch (e) {
       console.error('Could not add the book to the group', e);
-      show({ message: 'Sorry, I couldn’t add it to that group. Please try again.' });
+      show({ message: t('groups.bookSection.addFailed') });
     }
   };
   const createAndAdd = async (draft: GroupDraft) => {
@@ -61,35 +62,35 @@ export function BookGroupsSection({ bookId, title }: { bookId: number; title: st
   const members = new Set(memberOf.map((g) => g.id));
   return (
     <View style={{ gap: spacing.sm }}>
-      <Heading level={2}>Groups</Heading>
+      <Heading level={2}>{t('groups.bookSection.heading')}</Heading>
       {memberOf.length ? (
         <View testID={Testids.groups.bookChips} style={[styles.chips, { columnGap: spacing.sm }]}>
           {memberOf.map((g) => (
             <Chip
               key={g.id}
               label={g.name}
-              accessibilityLabel={`Open group ${g.name}`}
+              accessibilityLabel={t('groups.bookSection.openGroup', { name: g.name })}
               icon="tag-outline"
               onPress={() => router.navigate({ pathname: '/group/[id]', params: { id: String(g.id) } })}
             />
           ))}
         </View>
       ) : (
-        <Text color="inkMuted">Not in any of your groups yet.</Text>
+        <Text color="inkMuted">{t('groups.bookSection.none')}</Text>
       )}
       <Button
         variant="secondary"
-        label="Add to group"
+        label={t('groups.bookSection.add')}
         onPress={() => setPicking(true)}
         testID={Testids.groups.bookAdd}
         icon={<MaterialCommunityIcons name="tag-plus-outline" size={sizes.icon} color={colors.onPrimaryContainer} />}
       />
       <GroupPickerSheet
         visible={picking}
-        title={`Add “${title}” to a group`}
+        title={t('groups.bookSection.pickerTitle', { title })}
         groups={groups ?? []}
         disabledIds={members}
-        onPick={(id) => add(id, groups?.find((g) => g.id === id)?.name ?? 'the group')}
+        onPick={(id) => add(id, groups?.find((g) => g.id === id)?.name ?? t('groups.bookSection.fallbackName'))}
         onNew={() => {
           setPicking(false);
           setCreating(true);

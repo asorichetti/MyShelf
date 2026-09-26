@@ -4,6 +4,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { CoverImage } from '@/components/book/CoverImage';
 import { Button, Text } from '@/components/ui';
 import { formatSeriesPosition, type Book } from '@/domain';
+import { t } from '@/i18n';
 import { Testids } from '@/testing/testids.gen';
 import { useFontScale, useTheme } from '@/theme';
 
@@ -16,13 +17,14 @@ export interface SeriesBookListProps {
   onAddGap: (position: number) => void;
 }
 
-const numberLabel = (book: Book) => (book.seriesPosition != null ? `#${formatSeriesPosition(book.seriesPosition)}` : '—');
+const numberLabel = (book: Book) => (book.seriesPosition != null ? t('series.number', { position: formatSeriesPosition(book.seriesPosition) }) : t('series.bookList.unnumbered'));
 
 /** "#1, The Colour of Magic, 1983": what a screen reader says for a book in the series. */
 export function seriesBookLabel(book: Book): string {
-  const parts = [book.seriesPosition != null ? `Number ${formatSeriesPosition(book.seriesPosition)}` : 'Not numbered', book.title];
-  if (book.publicationYear != null) parts.push(String(book.publicationYear));
-  return parts.join(', ');
+  const number = book.seriesPosition != null ? t('series.bookList.numberLabel', { position: formatSeriesPosition(book.seriesPosition) }) : t('series.bookList.notNumbered');
+  return book.publicationYear != null
+    ? t('series.bookList.bookLabelWithYear', { number, title: book.title, year: String(book.publicationYear) })
+    : t('series.bookList.bookLabel', { number, title: book.title });
 }
 
 /**
@@ -35,7 +37,7 @@ export function SeriesBookList({ seriesName, slots, onOpenBook, onAddGap }: Seri
   const { colors, spacing, radii, sizes } = theme;
   const fontScale = useFontScale();
   return (
-    <View role="list" aria-label={`${seriesName} in reading order`} style={{ gap: spacing.sm }}>
+    <View role="list" aria-label={t('series.bookList.label', { name: seriesName })} style={{ gap: spacing.sm }}>
       {slots.map((slot) =>
         slot.kind === 'book' ? (
           <View role="listitem" key={`b${slot.book.id}`}>
@@ -84,13 +86,13 @@ export function SeriesBookList({ seriesName, slots, onOpenBook, onAddGap }: Seri
             ]}
           >
             <Text variant="mono" color="inkMuted" style={[styles.number, { minWidth: spacing.xxxl }]}>
-              {`#${formatSeriesPosition(slot.position)}`}
+              {t('series.number', { position: formatSeriesPosition(slot.position) })}
             </Text>
-            <Text color="inkMuted" style={[styles.missing, { flexBasis: 100 * fontScale }]}>{`#${formatSeriesPosition(slot.position)} missing`}</Text>
+            <Text color="inkMuted" style={[styles.missing, { flexBasis: 100 * fontScale }]}>{t('series.bookList.gapMissing', { position: formatSeriesPosition(slot.position) })}</Text>
             <Button
               variant="secondary"
-              label={`Add #${formatSeriesPosition(slot.position)}`}
-              accessibilityLabel={`Add number ${formatSeriesPosition(slot.position)} of ${seriesName}`}
+              label={t('series.bookList.addGap', { position: formatSeriesPosition(slot.position) })}
+              accessibilityLabel={t('series.bookList.addGapLabel', { position: formatSeriesPosition(slot.position), name: seriesName })}
               icon={<MaterialCommunityIcons name="plus" size={sizes.icon} color={colors.onPrimaryContainer} />}
               onPress={() => onAddGap(slot.position)}
               testID={Testids.seriesDetail.addGap}
