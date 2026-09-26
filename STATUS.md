@@ -2,13 +2,13 @@
 
 Checklist of every task card in [`docs/plan/`](docs/plan/). Tick a card (`[x]`) in the same pull request that completes it, and only when it meets the [definition of done](PLAN.md#12-definition-of-done). Cards are ticked only once the work is on `main`.
 
-On `main`: the scaffold (P00-01 to P00-07), the design system, Booky, tabs, database layer and domain (P00-08 to P00-14), the auto test suite (P00-15 to P00-17), CI (P00-19), linting (P00-20), and the follow-ups P00-24 to P00-26. Still open in Phase 00: Maestro (P00-18), the follow-ups P00-21 to P00-23 and P00-27 to P00-29, and the UI primitives not built in P00-09 (P00-30).
+On `main`: the scaffold (P00-01 to P00-07), the design system, Booky, tabs, database layer and domain (P00-08 to P00-14), the auto test suite (P00-15 to P00-17), CI (P00-19), linting (P00-20), and the follow-ups P00-21 to P00-29 (`--serve`, commit-message and all-journeys CI, touch targets, gate self-tests, Booky and theme journeys). Still open in Phase 00: Maestro (P00-18, needs an Android emulator) and the remaining UI primitives (P00-30).
 
 ## Summary
 
 | Phase | Name | Done |
 |---|---|---|
-| [Phase 00](docs/plan/phase-00-foundation.md) | Foundation | 22 / 30 |
+| [Phase 00](docs/plan/phase-00-foundation.md) | Foundation | 28 / 30 |
 | [Phase 01](docs/plan/phase-01-library-core.md) | Library core: CRUD and book detail | 0 / 12 |
 | [Phase 02](docs/plan/phase-02-metadata-providers.md) | Metadata providers | 0 / 13 |
 | [Phase 03](docs/plan/phase-03-scanning.md) | Scanning: barcode, OCR and edition picker | 0 / 13 |
@@ -18,7 +18,7 @@ On `main`: the scaffold (P00-01 to P00-07), the design system, Booky, tabs, data
 | [Phase 07](docs/plan/phase-07-booky-assistant.md) | Booky assistant | 0 / 9 |
 | [Phase 08](docs/plan/phase-08-settings-backup.md) | Settings, backup, export and import | 0 / 10 |
 | [Phase 09](docs/plan/phase-09-polish-a11y-release.md) | Polish, accessibility and release | 0 / 12 |
-| **Total** | | **22 / 128** |
+| **Total** | | **28 / 128** |
 
 ## Phase 00 — Foundation
 
@@ -44,15 +44,15 @@ On `main`: the scaffold (P00-01 to P00-07), the design system, Booky, tabs, data
 - [ ] P00-18 Maestro setup
 - [x] P00-19 GitHub Actions CI
 - [x] P00-20 Linting
-- [ ] P00-21 `--serve <dir>` for the exported web build
-- [ ] P00-22 CI check of commit messages
-- [ ] P00-23 CI runs every journey
+- [x] P00-21 `--serve <dir>` for the exported web build
+- [x] P00-22 CI check of commit messages
+- [x] P00-23 CI runs every journey
 - [x] P00-24 Re-enable the temporary render rules and require the design tokens
 - [x] P00-25 Tab journeys
 - [x] P00-26 App-owned not-found screen
-- [ ] P00-27 Touch-target rule in the a11y gate
-- [ ] P00-28 Automated gate self-tests
-- [ ] P00-29 Booky and theme journeys
+- [x] P00-27 Touch-target rule in the a11y gate
+- [x] P00-28 Automated gate self-tests
+- [x] P00-29 Booky and theme journeys
 - [ ] P00-30 Remaining UI primitives
 
 ## Phase 01 — Library core: CRUD and book detail
