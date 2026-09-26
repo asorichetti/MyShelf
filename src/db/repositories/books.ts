@@ -7,11 +7,12 @@ import {
   type NewBook,
   type ShelfSortKey,
   type SortDirection,
+  type ValidBookDraft,
 } from '@/domain';
 
-import { listAuthorsForBook } from './authors';
-import { listGenresForBook } from './genres';
-import { getSeries } from './series';
+import { deleteOrphanAuthors, findOrCreateAuthor, listAuthorsForBook, setBookAuthors, updateAuthor } from './authors';
+import { findOrCreateGenre, listGenresForBook, setBookGenres } from './genres';
+import { findOrCreateSeries, getSeries } from './series';
 import { BOOK_COLUMNS, NOW_SQL, sqlValue, toBook, type BookRow } from './shared';
 
 import type { Db } from '../types';
@@ -272,4 +273,58 @@ export async function getBookDetail(db: Db, id: number): Promise<BookDetail | nu
         }
       : null,
   };
+}
+
+// ---- Saving from the book form ----
+
+/**
+ * Saves a validated form draft in one transaction: the book (new books get
+ * `source = 'manual'`), its series, its authors in order (reusing existing
+ * authors case-insensitively; a typed sort name updates the author) and its
+ * genres (marked as the user's choice). Authors left without books are
+ * removed. Returns the book id.
+ */
+export async function saveBookDraft(db: Db, draft: ValidBookDraft, id?: number): Promise<number> {
+  return db.transaction(async (tx) => {
+    const series = draft.series ? await findOrCreateSeries(tx, draft.series.name) : null;
+    const fields: BookPatch = {
+      title: draft.title,
+      subtitle: draft.subtitle,
+      isbn13: draft.isbn13,
+      isbn10: draft.isbn10,
+      publisher: draft.publisher,
+      publicationYear: draft.publicationYear,
+      edition: draft.edition,
+      format: draft.format,
+      pageCount: draft.pageCount,
+      language: draft.language,
+      summary: draft.summary,
+      notes: draft.notes,
+      coverUri: draft.coverUri,
+      seriesId: series?.id ?? null,
+      seriesPosition: series ? (draft.series?.position ?? null) : null,
+    };
+    let bookId: number;
+    if (id == null) {
+      bookId = (await createBook(tx, { ...fields, title: draft.title, source: 'manual' })).id;
+    } else {
+      if (!(await updateBook(tx, id, fields))) throw new Error(`Book ${id} no longer exists`);
+      bookId = id;
+    }
+
+    const links = [];
+    for (const a of draft.authors) {
+      const author = await findOrCreateAuthor(tx, a.name);
+      if (a.sortName && a.sortName !== author.sortName) await updateAuthor(tx, author.id, { sortName: a.sortName });
+      links.push({ authorId: author.id, role: a.role });
+    }
+    await setBookAuthors(tx, bookId, links);
+
+    const genreIds = [];
+    for (const name of draft.genres) genreIds.push((await findOrCreateGenre(tx, name)).id);
+    await setBookGenres(tx, bookId, genreIds, { userEdited: true });
+
+    await deleteOrphanAuthors(tx);
+    return bookId;
+  });
 }

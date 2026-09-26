@@ -8,6 +8,7 @@ export { Heading, type HeadingLevel, type HeadingProps } from './Heading';
 export { IconButton, type IconButtonProps, type IconButtonVariant, type IconName } from './IconButton';
 export { Menu, type MenuItem, type MenuProps } from './Menu';
 export { Screen, type ScreenProps } from './Screen';
+export { SelectField, type SelectFieldProps, type SelectOption } from './SelectField';
 export {
   Snackbar,
   SNACKBAR_ACTION_DURATION,

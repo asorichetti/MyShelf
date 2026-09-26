@@ -1,10 +1,12 @@
+import { Stack } from 'expo-router';
 import { act, renderRouter } from 'expo-router/testing-library';
-import { Text } from 'react-native';
+import { Text, View } from 'react-native';
 
 import { BookyProvider } from '@/components/booky';
 import { StaticDatabaseProvider, type Db } from '@/db';
 import { GroupsScreen } from '@/features/groups/GroupsScreen';
 import { LoansScreen } from '@/features/loans/LoansScreen';
+import { AppSnackbarHost } from '@/features/navigation/AppSnackbarHost';
 import { NotFoundScreen } from '@/features/navigation/NotFoundScreen';
 import { TabsLayout } from '@/features/navigation/TabsLayout';
 import { ScanScreen } from '@/features/scan/ScanScreen';
@@ -34,10 +36,21 @@ export const stubScreen = (name: string): ComponentType =>
     return <Text>{`stub:${name}`}</Text>;
   };
 
+/** Mirrors the root layout: a stack with the app's snackbar host above it. */
+function RootStack() {
+  return (
+    <View style={{ flex: 1 }}>
+      <Stack screenOptions={{ headerShown: false }} />
+      <AppSnackbarHost />
+    </View>
+  );
+}
+
 /** Renders the app's tab routes plus any extra ones, starting at `url`. */
 export function renderApp(db: Db, url: string, routes: Record<string, ComponentType> = {}) {
   const result = renderRouter(
     {
+      _layout: RootStack,
       '(tabs)/_layout': TabsLayout,
       '(tabs)/index': ShelfScreen,
       '(tabs)/scan': ScanScreen,

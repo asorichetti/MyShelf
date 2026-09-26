@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, screen, waitFor } from '@testing-library/react-native';
 
 
 import { BookyProvider, BookyTipHost } from '@/components/booky';
@@ -33,7 +33,11 @@ function renderScreen(Component: ComponentType) {
 }
 
 /** Lets async effects (the Shelf's book count) finish inside act(). */
-const settle = () => waitFor(() => expect(screen.getAllByRole('heading').length).toBeGreaterThan(0));
+const settle = async () => {
+  await waitFor(() => expect(screen.getAllByRole('heading').length).toBeGreaterThan(0));
+  // The Shelf reads its sort, then its books: let both queries land.
+  for (let i = 0; i < 3; i++) await act(async () => new Promise((resolve) => setTimeout(resolve, 0)));
+};
 
 const h1s = () => screen.getAllByRole('heading').filter((h) => h.props['aria-level'] === 1);
 
