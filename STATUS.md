@@ -2,13 +2,13 @@
 
 Checklist of every task card in [`docs/plan/`](docs/plan/). Tick a card (`[x]`) in the same pull request that completes it, and only when it meets the [definition of done](PLAN.md#12-definition-of-done). Cards are ticked only once the work is on `main`.
 
-The auto test suite (P00-15, P00-16, P00-17) and CI (P00-19) are on `main`. Phase 00 cards P00-08 to P00-14, P00-18 and P00-20 are in progress on parallel branches and stay unticked until merged; P00-21 to P00-28 are follow-ups.
+The auto test suite (P00-15, P00-16, P00-17) and CI (P00-19) are on `main`. Phase 00 cards P00-08 to P00-14, P00-18 and P00-20 are in progress on parallel branches and stay unticked until merged; P00-21 to P00-29 are follow-ups, and P00-30 holds the UI primitives not built in P00-09.
 
 ## Summary
 
 | Phase | Name | Done |
 |---|---|---|
-| [Phase 00](docs/plan/phase-00-foundation.md) | Foundation | 11 / 28 |
+| [Phase 00](docs/plan/phase-00-foundation.md) | Foundation | 11 / 30 |
 | [Phase 01](docs/plan/phase-01-library-core.md) | Library core: CRUD and book detail | 0 / 12 |
 | [Phase 02](docs/plan/phase-02-metadata-providers.md) | Metadata providers | 0 / 13 |
 | [Phase 03](docs/plan/phase-03-scanning.md) | Scanning: barcode, OCR and edition picker | 0 / 13 |
@@ -18,7 +18,7 @@ The auto test suite (P00-15, P00-16, P00-17) and CI (P00-19) are on `main`. Phas
 | [Phase 07](docs/plan/phase-07-booky-assistant.md) | Booky assistant | 0 / 9 |
 | [Phase 08](docs/plan/phase-08-settings-backup.md) | Settings, backup, export and import | 0 / 10 |
 | [Phase 09](docs/plan/phase-09-polish-a11y-release.md) | Polish, accessibility and release | 0 / 12 |
-| **Total** | | **11 / 126** |
+| **Total** | | **11 / 128** |
 
 ## Phase 00 — Foundation
 
@@ -52,6 +52,8 @@ The auto test suite (P00-15, P00-16, P00-17) and CI (P00-19) are on `main`. Phas
 - [ ] P00-26 App-owned not-found screen
 - [ ] P00-27 Touch-target rule in the a11y gate
 - [ ] P00-28 Automated gate self-tests
+- [ ] P00-29 Booky and theme journeys
+- [ ] P00-30 Remaining UI primitives
 
 ## Phase 01 — Library core: CRUD and book detail
 

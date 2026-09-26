@@ -617,7 +617,7 @@ Each phase has a document in `docs/plan/` with task cards (`PNN-MM`). Phases are
 
 | Phase | Name | Goal | Depends on | Cards |
 |---|---|---|---|---|
-| [00](docs/plan/phase-00-foundation.md) | Foundation | Scaffold, theme, Booky, tabs, database, auto test suite, Maestro, CI | — | 28 |
+| [00](docs/plan/phase-00-foundation.md) | Foundation | Scaffold, theme, Booky, tabs, database, auto test suite, Maestro, CI | — | 30 |
 | [01](docs/plan/phase-01-library-core.md) | Library core | Shelf list, add/edit/delete books manually, book detail | 00 | 12 |
 | [02](docs/plan/phase-02-metadata-providers.md) | Metadata providers | Open Library + Google Books lookup/search, merge, cache, offline queue | 01 | 13 |
 | [03](docs/plan/phase-03-scanning.md) | Scanning | Barcode + OCR recognition, edition picker, save from candidate | 02 | 13 |
@@ -628,7 +628,7 @@ Each phase has a document in `docs/plan/` with task cards (`PNN-MM`). Phases are
 | [08](docs/plan/phase-08-settings-backup.md) | Settings, backup & import | Preferences, JSON backup/restore, CSV export/import, About | 01–06 | 10 |
 | [09](docs/plan/phase-09-polish-a11y-release.md) | Polish, a11y & release | Accessibility audit, dark theme, performance, release pipeline | all | 12 |
 
-Total: **126 task cards**. Progress is tracked in [`STATUS.md`](STATUS.md).
+Total: **128 task cards**. Progress is tracked in [`STATUS.md`](STATUS.md).
 
 ---
 
