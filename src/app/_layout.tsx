@@ -26,7 +26,8 @@ function RootStack() {
   return (
     <BookyRoot>
       <SnackbarProvider>
-        <StatusBar style="dark" />
+        {/* Dark icons on light paper, light icons on the night library. */}
+        <StatusBar style={theme.scheme === 'dark' ? 'light' : 'dark'} />
         {/* A tap anywhere outside Booky's tip puts it away. */}
         <BookyTouchArea style={{ flex: 1 }}>
           <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: theme.colors.paper } }}>

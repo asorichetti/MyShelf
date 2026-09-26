@@ -3,4 +3,4 @@ export * from './themes';
 export * from './contrast';
 export * from './groupSwatches';
 export * from './cssVariables';
-export { ThemeProvider, useTheme, type ThemeProviderProps } from './ThemeProvider';
+export { resolveScheme, ThemeProvider, themePreferences, useTheme, useThemePreference, type ThemePreference, type ThemeProviderProps } from './ThemeProvider';

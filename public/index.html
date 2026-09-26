@@ -27,6 +27,13 @@
         background-color: var(--ms-color-paper, #FBF6EC);
         color: var(--ms-color-ink, #271D38);
       }
+      @media (prefers-color-scheme: dark) {
+        /* The dark theme's paper and ink, so a dark browser does not flash white first. */
+        body {
+          background-color: var(--ms-color-paper, #1C1424);
+          color: var(--ms-color-ink, #F1E8DC);
+        }
+      }
       #root {
         display: flex;
         height: 100%;

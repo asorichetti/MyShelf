@@ -104,7 +104,7 @@ describe('typography', () => {
 });
 
 describe('ThemeProvider', () => {
-  it('provides the light theme by default and keeps a dark hook', () => {
+  it('provides the light theme by default, with a dark theme registered', () => {
     let seen: unknown;
     function Probe() {
       seen = useTheme();
