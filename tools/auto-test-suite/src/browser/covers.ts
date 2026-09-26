@@ -31,12 +31,24 @@ function load() {
 }
 
 /**
- * What a covers request gets: the padded scan for PADDED_COVER_IDS, a real
- * 404 for URLs carrying the expected-missing marker (the fixture's broken
- * cover), and the plain test cover for everything else.
+ * Open Library's answer for a cover it does not have, unless the URL asks for
+ * `default=false`: `200 OK` with a transparent 1x1 GIF. The stand-in answers
+ * the same way so the offline journeys meet what real users meet.
+ */
+export const NO_COVER_GIF = Buffer.from('R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7', 'base64');
+
+/**
+ * What a covers request gets, mirroring covers.openlibrary.org: for a URL
+ * carrying the expected-missing marker (the fixture's broken cover), a real
+ * 404 when it asks for `default=false` and the 1x1 "no cover" GIF otherwise;
+ * the padded scan for PADDED_COVER_IDS; the plain test cover for the rest.
  */
 export function coverResponse(url: string): { status: number; body: Buffer | string; contentType: string } {
-  if (isExpectedMissing(url)) return { status: 404, body: 'Not Found', contentType: 'text/plain' };
+  if (isExpectedMissing(url)) {
+    return /[?&]default=false\b/.test(url)
+      ? { status: 404, body: 'Not Found', contentType: 'text/plain' }
+      : { status: 200, body: NO_COVER_GIF, contentType: 'image/gif' };
+  }
   const { cover, padded } = load();
   const id = /\/b\/id\/(\d+)-/.exec(url)?.[1];
   return { status: 200, body: id && PADDED_COVER_IDS.includes(id) ? padded : cover, contentType: 'image/jpeg' };

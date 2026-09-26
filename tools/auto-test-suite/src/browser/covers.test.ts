@@ -19,7 +19,13 @@ test('the padded ids get the square scan, other covers the 2:3 one', () => {
   assert.notDeepEqual(padded, plain);
 });
 
-test('a URL carrying the expected-missing marker really 404s', () => {
-  const r = coverResponse(`https://covers.openlibrary.org/b/id/${ExpectedMissingMarker}-L.jpg`);
-  assert.equal(r.status, 404);
+test('a missing cover gets what Open Library really sends: a 1x1 GIF, or a 404 with default=false', () => {
+  const gif = coverResponse(`https://covers.openlibrary.org/b/id/${ExpectedMissingMarker}-L.jpg`);
+  assert.equal(gif.status, 200);
+  assert.equal(gif.contentType, 'image/gif');
+  const body = gif.body as Buffer;
+  assert.equal(body.subarray(0, 6).toString('latin1'), 'GIF89a');
+  assert.deepEqual([body.readUInt16LE(6), body.readUInt16LE(8)], [1, 1]);
+  const missing = coverResponse(`https://covers.openlibrary.org/b/id/${ExpectedMissingMarker}-L.jpg?default=false`);
+  assert.equal(missing.status, 404);
 });
