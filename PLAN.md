@@ -317,7 +317,7 @@ erDiagram
 - **`book_genres.user_edited = 1`** marks genres the user added or kept deliberately; a metadata refresh never removes those.
 - **Dates**: timestamps are ISO-8601 UTC strings; calendar dates (loans) are local `YYYY-MM-DD` strings so "due today" never shifts across timezones.
 - **`settings.value`** is JSON-encoded; typed access via a settings repository with defaults in code.
-- **Planned additions** (each via a new migration, never by editing an old one): `api_cache` and `pending_lookups` (P02-09/P02-10), `books_fts` full-text index (P09-03).
+- **Later additions** (each via a new migration, never by editing an old one): `api_cache(url, body, fetched_at)` (`0002_api_cache`, P02-09) caches provider responses and is left out of backups; `pending_lookups(isbn13, requested_at, attempts, last_error)` (`0003_pending_lookups`, P02-10) queues ISBNs looked up while offline. Planned: `books_fts` full-text index (P09-03).
 
 ---
 

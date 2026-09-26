@@ -20,6 +20,7 @@ const EXPECTED_TABLES = [
   'group_books',
   'groups',
   'loans',
+  'pending_lookups',
   'schema_migrations',
   'series',
   'settings',
