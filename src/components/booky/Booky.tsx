@@ -1,6 +1,7 @@
 import { Animated, type StyleProp, type ViewStyle } from 'react-native';
 import Svg, { Circle, Ellipse, G, Path } from 'react-native-svg';
 
+import { t } from '@/i18n';
 import { useTheme, type ColorTokens } from '@/theme';
 
 import { useBookyMode } from './BookyProvider';
@@ -29,7 +30,7 @@ export function Booky({ expression = 'happy', size = 120, animated = true, acces
   const { colors } = useTheme();
   const mode = useBookyMode();
   const { translateY, blinking } = useBookyMotion(animated && mode !== 'off');
-  const label = accessibilityLabel ?? `Booky the bookmark, ${expressionDescriptions[expression]}`;
+  const label = accessibilityLabel ?? t('booky.label', { expression: expressionDescriptions[expression] });
   // Booky Off (P07-06): the character stays out of sight everywhere.
   if (mode === 'off') return null;
 

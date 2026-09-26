@@ -7,6 +7,7 @@ import { useLayers } from '@/components/ui/layers';
 import { useEscapeKey } from '@/hooks/useEscapeKey';
 import { useKeyboardHeight } from '@/hooks/useKeyboardHeight';
 import { useScreenReader } from '@/hooks/useScreenReader';
+import { t } from '@/i18n';
 import { Testids } from '@/testing/testids.gen';
 import { useTheme } from '@/theme';
 
@@ -136,7 +137,7 @@ function PlacedTip({ tip, onTabs }: { tip: ShownTip; onTabs: boolean }) {
   if (tip.secondary) actions.push({ label: tip.secondary.label, variant: 'ghost', onPress: press(tip.secondary) });
   // Help is asked for, and a celebration is a moment: neither is a tip to mute.
   if (tip.tip.kind !== 'help' && !tip.tip.celebration) {
-    actions.push({ label: 'Don’t show tips like this', variant: 'ghost', onPress: () => muteTip(tip.tip.id), testID: Testids.booky.mute });
+    actions.push({ label: t('booky.overlay.mute'), variant: 'ghost', onPress: () => muteTip(tip.tip.id), testID: Testids.booky.mute });
   }
   const onLayout = (e: LayoutChangeEvent) => {
     setBubbleHeight(Math.round(e.nativeEvent.layout.height));
@@ -191,7 +192,7 @@ function PlacedTip({ tip, onTabs }: { tip: ShownTip; onTabs: boolean }) {
  */
 function Announcer({ tip }: { tip: ShownTip | null }) {
   const [said, setSaid] = useState<{ showId: number; text: string } | null>(null);
-  if (tip && said?.showId !== tip.showId) setSaid({ showId: tip.showId, text: tip.title ? `${tip.title} ${tip.text}` : tip.text });
+  if (tip && said?.showId !== tip.showId) setSaid({ showId: tip.showId, text: tip.title ? t('booky.overlay.announceWithTitle', { title: tip.title, text: tip.text }) : tip.text });
   if (!tip && said) setSaid(null);
   return (
     <View style={styles.visuallyHidden} aria-live="polite" accessibilityLiveRegion="polite" testID={Testids.booky.announcer}>

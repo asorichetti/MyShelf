@@ -4,6 +4,7 @@ import { Animated, Easing, Pressable, StyleSheet, View, type StyleProp, type Vie
 
 import { Button, Text, type ButtonVariant } from '@/components/ui';
 import { useReducedMotionState } from '@/hooks/useReducedMotion';
+import { t } from '@/i18n';
 import { useTheme } from '@/theme';
 
 import { Booky } from './Booky';
@@ -135,7 +136,7 @@ export function BookyBubble({
             // hitSlop, so the box itself must be big enough.)
             <Pressable
               role="button"
-              accessibilityLabel="Dismiss Booky's tip"
+              accessibilityLabel={t('booky.bubble.dismiss')}
               onPress={onDismiss}
               testID={dismissTestID}
               style={[styles.close, { width: theme.sizes.touchTarget, height: theme.sizes.touchTarget }]}

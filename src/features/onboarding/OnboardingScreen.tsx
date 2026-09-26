@@ -4,6 +4,7 @@ import { StyleSheet, View } from 'react-native';
 
 import { OnboardingCard } from '@/components/booky/OnboardingCard';
 import { Button, Screen } from '@/components/ui';
+import { t } from '@/i18n';
 import { Testids } from '@/testing/testids.gen';
 import { useTheme } from '@/theme';
 
@@ -20,8 +21,9 @@ export function OnboardingScreen() {
   const { spacing } = useTheme();
   const finish = useFinishOnboarding();
   const [page, setPage] = useState(0);
-  const card = onboardingPages[page];
-  const last = page === onboardingPages.length - 1;
+  const pages = onboardingPages();
+  const card = pages[page];
+  const last = page === pages.length - 1;
 
   const leave = async (to: Href) => {
     try {
@@ -35,7 +37,7 @@ export function OnboardingScreen() {
   return (
     <Screen testID={Testids.onboarding.root} centered edges={['top', 'bottom', 'left', 'right']}>
       <View style={styles.top}>
-        {last ? null : <Button variant="ghost" label="Skip" accessibilityLabel="Skip the introduction" onPress={() => void leave('/')} testID={Testids.onboarding.skip} />}
+        {last ? null : <Button variant="ghost" label={t('onboarding.skip')} accessibilityLabel={t('onboarding.skipLabel')} onPress={() => void leave('/')} testID={Testids.onboarding.skip} />}
       </View>
       <View style={[styles.fill, { gap: spacing.xl }]}>
         <OnboardingCard
@@ -44,19 +46,19 @@ export function OnboardingScreen() {
           title={card.title}
           text={card.text}
           page={page + 1}
-          pages={onboardingPages.length}
+          pages={pages.length}
           testID={Testids.onboarding.card}
           pageTestID={Testids.onboarding.page}
         />
         {last ? (
           <View style={[styles.actions, { gap: spacing.sm }]}>
-            <Button label="Let’s fill your shelf" onPress={() => void leave('/scan')} testID={Testids.onboarding.start} />
-            <Button variant="secondary" label="Look around first" onPress={() => void leave('/')} testID={Testids.onboarding.explore} />
+            <Button label={t('onboarding.start')} onPress={() => void leave('/scan')} testID={Testids.onboarding.start} />
+            <Button variant="secondary" label={t('onboarding.explore')} onPress={() => void leave('/')} testID={Testids.onboarding.explore} />
           </View>
         ) : null}
         <View style={[styles.actions, { gap: spacing.sm }]}>
-          {page > 0 ? <Button variant="ghost" label="Back" onPress={() => setPage(page - 1)} testID={Testids.onboarding.back} /> : null}
-          {last ? null : <Button label="Next" accessibilityLabel={`Next: page ${page + 2} of ${onboardingPages.length}`} onPress={() => setPage(page + 1)} testID={Testids.onboarding.next} />}
+          {page > 0 ? <Button variant="ghost" label={t('common.back')} onPress={() => setPage(page - 1)} testID={Testids.onboarding.back} /> : null}
+          {last ? null : <Button label={t('onboarding.next')} accessibilityLabel={t('onboarding.nextLabel', { page: page + 2, pages: pages.length })} onPress={() => setPage(page + 1)} testID={Testids.onboarding.next} />}
         </View>
       </View>
     </Screen>

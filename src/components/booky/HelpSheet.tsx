@@ -1,6 +1,7 @@
 import { StyleSheet, View } from 'react-native';
 
 import { Button, Heading, Sheet, Text } from '@/components/ui';
+import { t } from '@/i18n';
 import { Testids } from '@/testing/testids.gen';
 import { useTheme } from '@/theme';
 
@@ -19,13 +20,13 @@ export function HelpSheet({ screen, onClose }: { screen: string | null; onClose:
   return (
     <Sheet
       visible={content != null}
-      title={content?.title ?? 'Help'}
-      subtitle="A little help from Booky"
+      title={content?.title ?? t('booky.helpSheet.title')}
+      subtitle={t('booky.helpSheet.subtitle')}
       onClose={onClose}
       // Opened from Booky's tip, which has gone by the time the sheet closes: focus goes back to the help button.
       returnFocusTo={lastHelpButton}
       testID={Testids.booky.helpSheet}
-      footer={<Button label="Got it" onPress={onClose} testID={Testids.booky.helpClose} />}
+      footer={<Button label={t('booky.helpSheet.close')} onPress={onClose} testID={Testids.booky.helpClose} />}
     >
       {mode === 'off' ? null : (
         <View style={styles.booky}>

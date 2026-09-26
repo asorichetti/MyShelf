@@ -5,14 +5,18 @@ import { Booky, useBooky } from '@/components/booky';
 import { SettingsSection } from '@/components/settings/SettingsRow';
 import { Button, Chip, Text, useSnackbar } from '@/components/ui';
 import type { BookyMode } from '@/domain';
+import { t } from '@/i18n';
 import { Testids } from '@/testing/testids.gen';
 import { useTheme } from '@/theme';
 
-const modes: { mode: BookyMode; label: string; hint: string; testID: string }[] = [
-  { mode: 'helpful', label: 'Helpful', hint: 'All my tips, when they’re useful.', testID: Testids.bookySettings.modeHelpful },
-  { mode: 'quiet', label: 'Quiet', hint: 'Only problems, empty screens and help when you ask.', testID: Testids.bookySettings.modeQuiet },
-  { mode: 'off', label: 'Off', hint: 'I stay out of sight. The help buttons still work.', testID: Testids.bookySettings.modeOff },
+const modes: { mode: BookyMode; testID: string }[] = [
+  { mode: 'helpful', testID: Testids.bookySettings.modeHelpful },
+  { mode: 'quiet', testID: Testids.bookySettings.modeQuiet },
+  { mode: 'off', testID: Testids.bookySettings.modeOff },
 ];
+
+const modeLabel = (mode: BookyMode) => t(`booky.settings.modes.${mode}.label`);
+const modeHint = (mode: BookyMode) => t(`booky.settings.modes.${mode}.hint`);
 
 /**
  * Settings → Booky (P07-06): how chatty Booky is (Helpful, Quiet, Off; saved
@@ -27,31 +31,39 @@ export function BookySettingsSection() {
   const current = modes.find((m) => m.mode === mode) ?? modes[0];
   return (
     <View testID={Testids.bookySettings.root}>
-      <SettingsSection title="Booky" intro="How chatty your library helper is. Help buttons always work.">
+      <SettingsSection title={t('booky.settings.title')} intro={t('booky.settings.intro')}>
         <View style={{ gap: spacing.sm, padding: spacing.sm }}>
           <View style={[styles.row, { gap: spacing.sm }]}>
             <Booky expression={mode === 'quiet' ? 'sleepy' : 'happy'} size={36} animated={false} />
-            <View role="radiogroup" aria-label="How chatty Booky is" style={[styles.row, styles.wrap, styles.fill, { gap: spacing.sm }]}>
+            <View role="radiogroup" aria-label={t('booky.settings.modesLabel')} style={[styles.row, styles.wrap, styles.fill, { gap: spacing.sm }]}>
               {modes.map((m) => (
-                <Chip key={m.mode} label={m.label} role="radio" selected={m.mode === mode} onPress={() => setMode(m.mode)} testID={m.testID} accessibilityLabel={`${m.label}: ${m.hint}`} />
+                <Chip
+                  key={m.mode}
+                  label={modeLabel(m.mode)}
+                  role="radio"
+                  selected={m.mode === mode}
+                  onPress={() => setMode(m.mode)}
+                  testID={m.testID}
+                  accessibilityLabel={t('booky.settings.modeChip', { label: modeLabel(m.mode), hint: modeHint(m.mode) })}
+                />
               ))}
             </View>
           </View>
           <Text color="inkMuted" role="status" aria-live="polite" accessibilityLiveRegion="polite">
-            {current.hint}
+            {modeHint(current.mode)}
           </Text>
           <View style={[styles.row, styles.wrap, { gap: spacing.sm }]}>
             <Button
               variant="secondary"
-              label="Reset tips"
-              accessibilityHint="Shows tips you have seen or muted again"
+              label={t('booky.settings.resetTips')}
+              accessibilityHint={t('booky.settings.resetTipsHint')}
               onPress={() => {
                 resetTips();
-                show({ message: 'Done: I’ll show my tips again when they’re useful.' });
+                show({ message: t('booky.settings.resetDone') });
               }}
               testID={Testids.bookySettings.resetTips}
             />
-            <Button variant="ghost" label="Show the welcome tour" onPress={() => router.navigate('/onboarding')} testID={Testids.bookySettings.tour} />
+            <Button variant="ghost" label={t('booky.settings.tour')} onPress={() => router.navigate('/onboarding')} testID={Testids.bookySettings.tour} />
           </View>
         </View>
       </SettingsSection>

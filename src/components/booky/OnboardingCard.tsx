@@ -1,6 +1,7 @@
 import { StyleSheet, View } from 'react-native';
 
 import { Heading, Text } from '@/components/ui';
+import { t } from '@/i18n';
 import { useTheme } from '@/theme';
 
 import { Booky } from './Booky';
@@ -38,7 +39,7 @@ export function OnboardingCard({ expression, title, text, page, pages, testID, p
         </Text>
       </View>
       <Text variant="label" color="inkMuted" role="status" aria-live="polite" accessibilityLiveRegion="polite" testID={pageTestID}>
-        {`Page ${page} of ${pages}`}
+        {t('onboarding.page', { page, pages })}
       </Text>
       <View aria-hidden accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={[styles.dots, { gap: spacing.sm }]}>
         {Array.from({ length: pages }, (_, i) => (

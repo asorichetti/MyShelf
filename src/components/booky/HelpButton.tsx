@@ -1,6 +1,7 @@
 import { useRef } from 'react';
 
 import { IconButton } from '@/components/ui';
+import { t } from '@/i18n';
 import { Testids } from '@/testing/testids.gen';
 
 import { useOptionalBooky } from './BookyProvider';
@@ -30,5 +31,5 @@ export function HelpButton({ screen, onMore }: HelpButtonProps) {
     if (open) return booky.dismissTip();
     void booky.emit({ type: 'help-requested', screen, handlers: onMore ? { 'help-more': onMore } : undefined });
   };
-  return <IconButton ref={button} icon="help-circle-outline" accessibilityLabel="Help with this screen" expanded={open} onPress={onPress} testID={Testids.booky.helpButton} />;
+  return <IconButton ref={button} icon="help-circle-outline" accessibilityLabel={t('booky.helpButton.label')} expanded={open} onPress={onPress} testID={Testids.booky.helpButton} />;
 }

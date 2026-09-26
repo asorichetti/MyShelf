@@ -1,9 +1,15 @@
+import type { MessageKey } from '@/i18n';
+
+import { messageTemplate, type TipVars } from './format';
+
 import type { BookyExpression } from './expressions';
-import type { TipVars } from './format';
 
 /**
- * Booky's tip catalogue (P07-01): every word Booky says unprompted, or when
- * asked through a help button, is here. Nothing is generated.
+ * Booky's tip catalogue (P07-01): every tip Booky gives unprompted, or when
+ * asked through a help button, is here. Nothing is generated. The words
+ * themselves are in the i18n catalogue (`tips.*` in
+ * `src/i18n/en.ts`): each entry names its keys, and a tip's
+ * `text`, `title` and action `label` read the active language when read.
  *
  * Copy guidelines
  * - At most two short lines in a bubble: 120 characters once the
@@ -105,193 +111,215 @@ export interface TipDef {
 
 const both: readonly TipMode[] = ['helpful', 'quiet'];
 const helpfulOnly: readonly TipMode[] = ['helpful'];
-const more: TipAction = { label: 'More help', id: 'help-more' };
+/** A tip's button as the catalogue writes it: its label is a catalogue key. */
+type ActionSpec = { label: MessageKey; href: string } | { label: MessageKey; id: TipActionId };
+
+/** A catalogue entry: a `TipDef` whose words are catalogue keys. */
+type TipSpec = Omit<TipDef, 'text' | 'title' | 'action' | 'secondary'> & { text: MessageKey; title?: MessageKey; action?: ActionSpec; secondary?: ActionSpec };
+
+/** A field that reads its words from the catalogue whenever it is read (never at import). */
+const words = (key: MessageKey): PropertyDescriptor => ({ get: () => messageTemplate(key), enumerable: true });
+
+function action({ label, ...rest }: ActionSpec): TipAction {
+  return Object.defineProperty({ ...rest }, 'label', words(label)) as TipAction;
+}
+
+function tip({ text, title, action: act, secondary, ...rest }: TipSpec): TipDef {
+  const def = { ...rest } as TipDef;
+  Object.defineProperty(def, 'text', words(text));
+  if (title) Object.defineProperty(def, 'title', words(title));
+  if (act) def.action = action(act);
+  if (secondary) def.secondary = action(secondary);
+  return def;
+}
+
+const more: ActionSpec = { label: 'tips.actions.moreHelp', id: 'help-more' };
 
 /** The screens with a help button (P07-05), in tab order and then the rest. */
 export const helpScreens = ['shelf', 'scan', 'loans', 'groups', 'settings', 'book', 'editions', 'series'] as const;
 export type HelpScreen = (typeof helpScreens)[number];
 
-function help(screen: HelpScreen, text: string): TipDef {
-  return { id: `help-${screen}`, trigger: 'help-requested', when: { screen }, expression: 'thinking', text, action: more, priority: 100, frequency: 'always', modes: both, kind: 'help', screenBound: true };
+function help(screen: HelpScreen, text: MessageKey): TipDef {
+  return tip({ id: `help-${screen}`, trigger: 'help-requested', when: { screen }, expression: 'thinking', text, action: more, priority: 100, frequency: 'always', modes: both, kind: 'help', screenBound: true });
 }
 
 export const tips: readonly TipDef[] = [
   // First launch: the onboarding's first card says it.
-  {
+  tip({
     id: 'welcome',
     trigger: 'app-first-launch',
     expression: 'happy',
-    text: 'Hi, I’m Booky! Let’s fill your shelf.',
+    text: 'tips.welcome.text',
     priority: 100,
     frequency: 'once',
     modes: both,
     kind: 'nudge',
     placement: 'onboarding',
-  },
-  {
+  }),
+  tip({
     id: 'shelf-empty',
     trigger: 'shelf-empty',
     expression: 'happy',
-    text: 'Your shelf is empty. Tap Scan to add your first book.',
+    text: 'tips.shelfEmpty.text',
     priority: 30,
     frequency: 'session',
     modes: both,
     kind: 'nudge',
     screenBound: true,
     welcome: true,
-  },
-  {
+  }),
+  tip({
     id: 'scan-first-visit',
     trigger: 'scan-opened',
     expression: 'thinking',
-    text: 'Point me at the barcode on the back cover.',
+    text: 'tips.scanFirstVisit.text',
     priority: 40,
     frequency: 'once',
     modes: helpfulOnly,
     kind: 'nudge',
     screenBound: true,
     welcome: true,
-  },
-  {
+  }),
+  tip({
     id: 'scan-idle',
     trigger: 'scan-idle',
     expression: 'thinking',
-    text: 'No barcode? Try reading the cover instead.',
-    action: { label: 'Read the cover', id: 'read-cover' },
+    text: 'tips.scanIdle.text',
+    action: { label: 'tips.actions.readCover', id: 'read-cover' },
     priority: 40,
     frequency: 'session',
     modes: helpfulOnly,
     kind: 'nudge',
     placement: 'inline',
-  },
+  }),
   // Lookups that found nothing are shown in place, where the user is looking, in every mode.
-  {
+  tip({
     id: 'lookup-none',
     trigger: 'lookup-none',
     expression: 'concerned',
-    text: 'I couldn’t find that one. Let’s add it by hand — it only takes a minute.',
+    text: 'tips.lookupNone.text',
     priority: 80,
     frequency: 'always',
     modes: both,
     kind: 'feedback',
     placement: 'inline',
-  },
-  {
+  }),
+  tip({
     id: 'lookup-none-scan',
     trigger: 'lookup-none',
     when: { variant: 'scan' },
     expression: 'concerned',
-    text: 'I couldn’t find that one. Let’s add it by hand — I’ll fill in what I know.',
+    text: 'tips.lookupNoneScan.text',
     priority: 80,
     frequency: 'always',
     modes: both,
     kind: 'feedback',
     placement: 'inline',
-  },
-  {
+  }),
+  tip({
     id: 'lookup-gave-up',
     trigger: 'lookup-none',
     when: { variant: 'offline' },
     expression: 'concerned',
-    text: 'I couldn’t find details for {books}. You can add {them} by hand.',
+    text: 'tips.lookupGaveUp.text',
     priority: 55,
     frequency: 'always',
     modes: both,
     kind: 'feedback',
     sample: { books: '12 books', them: 'them' },
-  },
-  {
+  }),
+  tip({
     id: 'lookup-arrived',
     trigger: 'lookup-arrived',
     expression: 'excited',
-    text: 'Good news — I found details for {books} you added offline.',
+    text: 'tips.lookupArrived.text',
     priority: 55,
     frequency: 'always',
     modes: helpfulOnly,
     kind: 'feedback',
     sample: { books: '12 books' },
-  },
-  {
+  }),
+  tip({
     id: 'book-added',
     trigger: 'book-added',
     expression: 'excited',
-    text: 'Shelved! That’s {books}.',
+    text: 'tips.bookAdded.text',
     priority: 50,
     frequency: 'always',
     minIntervalMs: 10_000,
     modes: helpfulOnly,
     kind: 'feedback',
     sample: { books: '1,234 books' },
-  },
-  {
+  }),
+  tip({
     id: 'book-added-milestone',
     trigger: 'book-added',
     when: { variant: 'milestone' },
     expression: 'excited',
-    text: 'Shelved! That’s {books}. What a milestone!',
+    text: 'tips.bookAddedMilestone.text',
     priority: 52,
     frequency: 'always',
     minIntervalMs: 10_000,
     modes: helpfulOnly,
     kind: 'feedback',
     sample: { books: '1,000 books' },
-  },
-  {
+  }),
+  tip({
     id: 'book-added-batch',
     trigger: 'book-added',
     when: { variant: 'batch' },
     expression: 'excited',
-    text: 'Shelved {saved}! That’s {books} in all.',
+    text: 'tips.bookAddedBatch.text',
     priority: 50,
     frequency: 'always',
     modes: helpfulOnly,
     kind: 'feedback',
     sample: { saved: '25 books', books: '1,234 books' },
-  },
-  {
+  }),
+  tip({
     id: 'offline-queued',
     trigger: 'offline-queued',
     expression: 'sleepy',
-    text: 'Saved — I’ll look this up when you’re back online.',
+    text: 'tips.offlineQueued.text',
     priority: 60,
     frequency: 'always',
     modes: both,
     kind: 'feedback',
-  },
-  {
+  }),
+  tip({
     id: 'loan-overdue',
     trigger: 'loan-overdue',
     expression: 'concerned',
-    title: 'A gentle nudge',
-    text: '“{title}” was due back from {borrower} {when}.',
-    action: { label: 'Open loans', href: '/loans' },
+    title: 'tips.loanOverdue.title',
+    text: 'tips.loanOverdue.text',
+    action: { label: 'tips.actions.openLoans', href: '/loans' },
     priority: 60,
     frequency: 'daily',
     modes: helpfulOnly,
     kind: 'nudge',
     screenBound: true,
     sample: { title: 'The Curious Incident of the Dog in the Night-Time', borrower: 'Alexandra', when: '12 days ago' },
-  },
-  {
+  }),
+  tip({
     id: 'series-gap',
     trigger: 'series-gap',
     expression: 'thinking',
-    text: '{have} — {missing}',
-    action: { label: 'See the series', href: '/series/{seriesId}' },
+    text: 'tips.seriesGap.text',
+    action: { label: 'tips.actions.seeSeries', href: '/series/{seriesId}' },
     priority: 70,
     frequency: 'once',
     modes: helpfulOnly,
     kind: 'nudge',
     testGroup: 'seriesTip',
     sample: { have: 'You have #1, #2, #4 and #6 of A Series of Unfortunate Events', missing: '#3 and #5 are missing.', seriesId: 12 },
-  },
-  {
+  }),
+  tip({
     id: 'series-complete',
     trigger: 'series-complete',
     expression: 'excited',
-    title: 'Hooray!',
-    text: 'Series complete! {whole}.',
-    action: { label: 'See the series', href: '/series/{seriesId}' },
+    title: 'tips.seriesComplete.title',
+    text: 'tips.seriesComplete.text',
+    action: { label: 'tips.actions.seeSeries', href: '/series/{seriesId}' },
     priority: 90,
     frequency: 'always',
     modes: both,
@@ -299,15 +327,15 @@ export const tips: readonly TipDef[] = [
     celebration: true,
     testGroup: 'seriesCelebration',
     sample: { whole: 'All 13 A Series of Unfortunate Events books', seriesId: 12 },
-  },
-  {
+  }),
+  tip({
     id: 'backup-due',
     trigger: 'backup-due',
     expression: 'concerned',
-    title: 'A little safety net',
-    text: 'It’s been a while since your last backup — save one now?',
-    action: { label: 'Back up', href: '/settings/backup' },
-    secondary: { label: 'Later', id: 'backup-later' },
+    title: 'tips.backupDue.title',
+    text: 'tips.backupDue.text',
+    action: { label: 'tips.actions.backUp', href: '/settings/backup' },
+    secondary: { label: 'tips.actions.later', id: 'backup-later' },
     priority: 20,
     // The backup rule (P08-06) caps it at once a week and honours "Later"; Quiet still shows it,
     // since losing a library is the one thing worth interrupting for.
@@ -315,28 +343,28 @@ export const tips: readonly TipDef[] = [
     modes: both,
     kind: 'nudge',
     screenBound: true,
-  },
+  }),
   // Help buttons (P07-05): one tip per screen; "More help" opens the help sheet.
-  {
+  tip({
     id: 'help-booky',
     trigger: 'help-requested',
     when: { screen: 'booky' },
     expression: 'excited',
-    title: 'Hi, I’m Booky!',
-    text: 'I keep track of your books, who has borrowed them, and which series you’re part-way through.',
+    title: 'tips.helpBooky.title',
+    text: 'tips.helpBooky.text',
     priority: 100,
     frequency: 'always',
     modes: both,
     kind: 'help',
-  },
-  help('shelf', 'This is your shelf. Search, sort or group your books, and tap one to see its details.'),
-  help('scan', 'Scan the barcode on the back cover, or switch to Cover and I’ll read the title instead.'),
-  help('loans', 'Books you’ve lent out live here. Tap “Mark returned” when one comes home.'),
-  help('groups', 'Groups are your own shelves: favourites, a book club, anything you like.'),
-  help('settings', 'Choose how chatty I am, and set up reminders for books you’ve lent.'),
-  help('book', 'Everything about this book. Rate it, lend it, add it to a group or edit its details from here.'),
-  help('editions', 'Pick the edition that matches your copy: check the cover, the publisher and the year.'),
-  help('series', 'The whole series in order. Dashed spines are the books you don’t have yet.'),
+  }),
+  help('shelf', 'tips.help.shelf'),
+  help('scan', 'tips.help.scan'),
+  help('loans', 'tips.help.loans'),
+  help('groups', 'tips.help.groups'),
+  help('settings', 'tips.help.settings'),
+  help('book', 'tips.help.book'),
+  help('editions', 'tips.help.editions'),
+  help('series', 'tips.help.series'),
 ];
 
 const byId = new Map(tips.map((t) => [t.id, t]));

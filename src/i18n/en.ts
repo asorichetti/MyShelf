@@ -655,4 +655,231 @@ export const en = {
       moveDown: 'Move {title} down',
     },
   },
+
+  // Booky and onboarding
+  /**
+   * Booky, the bookmark who helps (P07): the character, its tips, the help
+   * sheet and the first-run onboarding. Booky speaks in the first person
+   * ("I’ll…"): warm, short, never blaming. Tips fit two short lines (about
+   * 120 characters once filled in).
+   */
+
+  /** Booky's own controls and screen-reader words. */
+  booky: {
+    /** Booky's accessible name: "Booky the bookmark, smiling happily". */
+    label: 'Booky the bookmark, {expression}',
+    expressions: {
+      happy: 'smiling happily',
+      thinking: 'thinking',
+      excited: 'looking excited',
+      sleepy: 'looking sleepy',
+      concerned: 'looking concerned',
+    },
+    bubble: {
+      dismiss: "Dismiss Booky's tip",
+    },
+    overlay: {
+      mute: 'Don’t show tips like this',
+      /** What a screen reader hears for a tip with a title: "Hooray! Series complete! …". */
+      announceWithTitle: '{title} {text}',
+    },
+    helpButton: {
+      label: 'Help with this screen',
+    },
+    helpSheet: {
+      /** The sheet's title when a screen has no help of its own (not normally seen). */
+      title: 'Help',
+      subtitle: 'A little help from Booky',
+      close: 'Got it',
+    },
+    settings: {
+      title: 'Booky',
+      intro: 'How chatty your library helper is. Help buttons always work.',
+      modesLabel: 'How chatty Booky is',
+      modes: {
+        helpful: { label: 'Helpful', hint: 'All my tips, when they’re useful.' },
+        quiet: { label: 'Quiet', hint: 'Only problems, empty screens and help when you ask.' },
+        off: { label: 'Off', hint: 'I stay out of sight. The help buttons still work.' },
+      },
+      /** A mode chip's accessible name: "Quiet: Only problems, …". */
+      modeChip: '{label}: {hint}',
+      resetTips: 'Reset tips',
+      resetTipsHint: 'Shows tips you have seen or muted again',
+      resetDone: 'Done: I’ll show my tips again when they’re useful.',
+      tour: 'Show the welcome tour',
+    },
+  },
+  /**
+   * Booky's tips. `{placeholders}` are filled when the tip shows; `{books}`
+   * and `{saved}` are already counted ("12 books"), `{them}` is "it" or "them".
+   */
+  tips: {
+    actions: {
+      moreHelp: 'More help',
+      readCover: 'Read the cover',
+      openLoans: 'Open loans',
+      seeSeries: 'See the series',
+      backUp: 'Back up',
+      later: 'Later',
+    },
+    welcome: { text: 'Hi, I’m Booky! Let’s fill your shelf.' },
+    shelfEmpty: { text: 'Your shelf is empty. Tap Scan to add your first book.' },
+    scanFirstVisit: { text: 'Point me at the barcode on the back cover.' },
+    scanIdle: { text: 'No barcode? Try reading the cover instead.' },
+    lookupNone: { text: 'I couldn’t find that one. Let’s add it by hand — it only takes a minute.' },
+    lookupNoneScan: { text: 'I couldn’t find that one. Let’s add it by hand — I’ll fill in what I know.' },
+    lookupGaveUp: { text: 'I couldn’t find details for {books}. You can add {them} by hand.' },
+    lookupArrived: { text: 'Good news — I found details for {books} you added offline.' },
+    bookAdded: { text: 'Shelved! That’s {books}.' },
+    bookAddedMilestone: { text: 'Shelved! That’s {books}. What a milestone!' },
+    bookAddedBatch: { text: 'Shelved {saved}! That’s {books} in all.' },
+    offlineQueued: { text: 'Saved — I’ll look this up when you’re back online.' },
+    loanOverdue: {
+      title: 'A gentle nudge',
+      /** {when} is relative: "3 days ago", "yesterday". */
+      text: '“{title}” was due back from {borrower} {when}.',
+    },
+    /** {have} and {missing} are whole sentences from the series screen: "You have #1 and #3 of Discworld", "#2 is missing." */
+    seriesGap: { text: '{have} — {missing}' },
+    seriesComplete: {
+      title: 'Hooray!',
+      /** {whole}: "All 13 A Series of Unfortunate Events books". */
+      text: 'Series complete! {whole}.',
+    },
+    backupDue: {
+      title: 'A little safety net',
+      text: 'It’s been a while since your last backup — save one now?',
+    },
+    helpBooky: {
+      title: 'Hi, I’m Booky!',
+      text: 'I keep track of your books, who has borrowed them, and which series you’re part-way through.',
+    },
+    /** What Booky says when a screen's help button is pressed. */
+    help: {
+      shelf: 'This is your shelf. Search, sort or group your books, and tap one to see its details.',
+      scan: 'Scan the barcode on the back cover, or switch to Cover and I’ll read the title instead.',
+      loans: 'Books you’ve lent out live here. Tap “Mark returned” when one comes home.',
+      groups: 'Groups are your own shelves: favourites, a book club, anything you like.',
+      settings: 'Choose how chatty I am, and set up reminders for books you’ve lent.',
+      book: 'Everything about this book. Rate it, lend it, add it to a group or edit its details from here.',
+      editions: 'Pick the edition that matches your copy: check the cover, the publisher and the year.',
+      series: 'The whole series in order. Dashed spines are the books you don’t have yet.',
+    },
+  },
+  /** The help sheet ("More help"): a title and a few short sections per screen. */
+  help: {
+    /** Shared by the book's card and the editions screen. */
+    edition: {
+      heading: 'What is an edition?',
+      body: 'The same book printed by a different publisher, in a different year or format. Each edition has its own ISBN.',
+    },
+    shelf: {
+      title: 'Your shelf',
+      finding: { heading: 'Finding a book', body: 'Type in the search box: a title, an author, a series or an ISBN all work.' },
+      sorting: {
+        heading: 'Sort, group and view',
+        body: 'Sort by title, author or date added, group by genre, series, author or group, and switch between a list, covers and spines.',
+      },
+      selecting: {
+        heading: 'Several at once',
+        body: 'Tap Select (or press and hold a book) to pick several, then add them to a group or remove them. You can undo a removal for a few seconds.',
+      },
+    },
+    scan: {
+      title: 'Scanning a book',
+      isbn: {
+        heading: 'Where is the ISBN?',
+        body: 'Turn the book over: the ISBN barcode is usually at the bottom of the back cover, starting 978 or 979. On a dust jacket, look on the back flap too.',
+      },
+      noBarcode: {
+        heading: 'No barcode?',
+        body: 'Older books often have none. Switch to Cover and photograph the front: I’ll read the title and author and show you the editions.',
+      },
+      pile: { heading: 'Scanning a pile', body: 'Turn on “Scan several” and every book waits in a tray, so you can check them all at the end.' },
+    },
+    loans: {
+      title: 'Loans',
+      lending: { heading: 'Lending a book', body: 'Open the book on your shelf and tap Lend. Pick who has it and when it’s due back.' },
+      returned: { heading: 'When it comes back', body: 'Tap “Mark returned”. The loan moves to History, so you can see who borrowed what.' },
+      reminders: {
+        heading: 'Reminders',
+        body: 'Turn on reminders in Settings and I’ll send a gentle note on the due date. I also mention overdue books when you open the app.',
+      },
+    },
+    groups: {
+      title: 'Groups',
+      what: {
+        heading: 'What is a group?',
+        body: 'Your own little shelf: favourites, a book club, books to read next. A book can be in as many groups as you like.',
+      },
+      adding: { heading: 'Adding books', body: 'Open a group and tap “Add books”, or select books on the Shelf and choose “Add to group”.' },
+      order: { heading: 'Changing the order', body: 'In a group, choose Reorder and move books up or down.' },
+    },
+    settings: {
+      title: 'Settings',
+      chatty: {
+        heading: 'How chatty is Booky?',
+        body: 'Helpful: all my tips. Quiet: only problems, empty screens and help when you ask. Off: I stay out of sight, but the help buttons still work.',
+      },
+      muted: { heading: 'Tips you’ve muted', body: '“Reset tips” brings back every tip you’ve seen or asked me not to show again.' },
+    },
+    book: {
+      title: 'A book’s card',
+      editing: { heading: 'Editing details', body: 'Tap the pencil to change anything: title, authors, genres, series or your own notes.' },
+      rating: {
+        heading: 'Your rating',
+        body: 'Tap a star to rate the book, from 1 to 5. Tap the same star again, or Clear rating, to take it away. It’s only yours: looking up the book’s details never changes it.',
+      },
+      lending: { heading: 'Lending', body: 'Lend the book from here, and mark it returned when it comes home.' },
+    },
+    editions: {
+      title: 'Choosing an edition',
+      mine: {
+        heading: 'Which one is mine?',
+        body: 'Compare the cover, the publisher and the year with the book in your hands. The ISBN on the back is the surest match.',
+      },
+      unsure: { heading: 'Not sure?', body: 'Pick the closest one. You can change any detail later from the book’s card.' },
+    },
+    series: {
+      title: 'Series',
+      gaps: {
+        heading: 'How do series gaps work?',
+        body: 'I line the books up by their number. A dashed spine is a number you don’t have yet: tap it to add that book.',
+      },
+      total: {
+        heading: 'Setting the total',
+        body: 'Tell me how many books the series has, and I’ll show the ones missing at the end too, and cheer when it’s complete.',
+      },
+      tidying: { heading: 'Tidying up', body: 'Rename a series, or merge two that are really one, from the menu at the top.' },
+    },
+  },
+  /** The first-run cards (`/onboarding`). */
+  onboarding: {
+    /** Read out as the user moves between cards. */
+    page: 'Page {page} of {pages}',
+    skip: 'Skip',
+    skipLabel: 'Skip the introduction',
+    next: 'Next',
+    /** The Next button's accessible name: "Next: page 2 of 4". */
+    nextLabel: 'Next: page {page} of {pages}',
+    start: 'Let’s fill your shelf',
+    explore: 'Look around first',
+    welcome: {
+      title: 'Welcome to MyShelf',
+      /** {hello} is Booky's hello: "Hi, I’m Booky! Let’s fill your shelf." */
+      text: '{hello} I’ll help you catalogue every book you own.',
+    },
+    scan: {
+      title: 'Scan to add a book',
+      text: 'Scan the barcode on the back, or let me read the cover. I’ll fill in the title, author and series.',
+    },
+    lend: {
+      title: 'Lend without worry',
+      text: 'Lend a book to a friend and I’ll keep track of who has it and when it’s due back.',
+    },
+    private: {
+      title: 'Yours, and only yours',
+      text: 'Everything stays on your phone. No account, no cloud, just your books.',
+    },
+  },
 } as const;
