@@ -85,3 +85,20 @@ func TestExpectedMissingMarker(t *testing.T) {
 }
 
 func timeZero() (t0 time.Time) { return time.Now() }
+
+func TestWaiverDowngradesButKeepsFinding(t *testing.T) {
+	rec := NewRecorder(ModeFail)
+	rec.Waive("a11y", "one-main", "framework screen")
+	res := newResult("a11y", "/x", time.Now(), []Finding{{Rule: "one-main", Message: "no main"}})
+	if err := rec.Add(res); err != nil {
+		t.Fatalf("waived finding still failed: %v", err)
+	}
+	got := rec.Results()[0]
+	if len(got.Findings) != 1 || got.Findings[0].Severity != SeverityWarn {
+		t.Fatalf("waived finding should be kept as a warning, got %+v", got.Findings)
+	}
+	other := newResult("a11y", "/x", time.Now(), []Finding{{Rule: "one-h1", Message: "two h1"}})
+	if err := rec.Add(other); err == nil {
+		t.Fatal("a different rule must not be waived")
+	}
+}

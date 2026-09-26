@@ -98,6 +98,48 @@ type Recorder struct {
 	mu      sync.Mutex
 	mode    Mode
 	results []Result
+	waivers []Waiver
+}
+
+// Waiver downgrades one gate rule to a warning for one journey. The finding is
+// still recorded, marked as waived with the reason; nothing disappears.
+type Waiver struct {
+	Gate   string `json:"gate"`
+	Rule   string `json:"rule"`
+	Reason string `json:"reason"`
+}
+
+// Waive registers a waiver. A reason is mandatory.
+func (r *Recorder) Waive(gate, rule, reason string) {
+	if strings.TrimSpace(reason) == "" {
+		panic("uxgates: a waiver needs a reason")
+	}
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	r.waivers = append(r.waivers, Waiver{gate, rule, reason})
+}
+
+func (r *Recorder) applyWaivers(res Result) Result {
+	r.mu.Lock()
+	ws := append([]Waiver(nil), r.waivers...)
+	r.mu.Unlock()
+	if len(ws) == 0 {
+		return res
+	}
+	pass := true
+	for i, f := range res.Findings {
+		for _, w := range ws {
+			if w.Gate == f.Gate && w.Rule == f.Rule && f.Severity == SeverityError {
+				res.Findings[i].Severity = SeverityWarn
+				res.Findings[i].Message = "[waived: " + w.Reason + "] " + f.Message
+			}
+		}
+		if res.Findings[i].Severity == SeverityError {
+			pass = false
+		}
+	}
+	res.Pass = pass
+	return res
 }
 
 // NewRecorder returns a recorder for the given mode.
@@ -115,6 +157,7 @@ func (r *Recorder) Add(res Result) error {
 	if r == nil {
 		return nil
 	}
+	res = r.applyWaivers(res)
 	r.mu.Lock()
 	r.results = append(r.results, res)
 	r.mu.Unlock()
@@ -176,11 +219,15 @@ func (r *Recorder) WriteJSON(dir string) (string, error) {
 	if res == nil {
 		res = []Result{}
 	}
+	r.mu.Lock()
+	ws := append([]Waiver{}, r.waivers...)
+	r.mu.Unlock()
 	return p, browser.WriteJSONFile(p, struct {
 		Mode    string   `json:"mode"`
 		Failed  bool     `json:"failed"`
+		Waivers []Waiver `json:"waivers"`
 		Results []Result `json:"results"`
-	}{r.mode.String(), r.Failed(), res})
+	}{r.mode.String(), r.Failed(), ws, res})
 }
 
 // GateError is returned by Recorder.Add in ModeFail.

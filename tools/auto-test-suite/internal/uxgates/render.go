@@ -49,14 +49,14 @@ const renderJS = `async (cfg) => {
 
   // Not rendering in the default serif: body, and a real text element in main.
   const serif = /^\s*("?)(Times|serif|-webkit-standard)/i;
-  if (serif.test(bs.fontFamily)) add('font-family', 'body renders in the default serif: ' + bs.fontFamily, {element: 'body', fontFamily: bs.fontFamily});
+  if (serif.test(bs.fontFamily)) add('body-font', 'body renders in the default serif: ' + bs.fontFamily, {element: 'body', fontFamily: bs.fontFamily});
   const main = [...document.querySelectorAll('main, [role="main"]')].find(visible);
   if (main) {
     const walker = document.createTreeWalker(main, NodeFilter.SHOW_TEXT, {acceptNode: n => n.textContent.trim().length > 3 ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_SKIP});
     const node = walker.nextNode();
     if (node && node.parentElement) {
       const ff = getComputedStyle(node.parentElement).fontFamily;
-      if (serif.test(ff)) add('font-family', 'text in main renders in the default serif: ' + ff, {element: describe(node.parentElement), fontFamily: ff});
+      if (serif.test(ff)) add('text-font', 'text in main renders in the default serif: ' + ff, {element: describe(node.parentElement), fontFamily: ff});
     }
   }
 

@@ -42,7 +42,7 @@ type A11yConfig struct {
 
 // RenderRules and A11yRules list every rule id, so config typos are caught.
 var (
-	RenderRules = []string{"stylesheets", "tokens", "body-margin", "body-background", "font-family", "fonts-loaded", "fonts-error", "images", "overflow", "landmarks"}
+	RenderRules = []string{"stylesheets", "tokens", "body-margin", "body-background", "body-font", "text-font", "fonts-loaded", "fonts-error", "images", "overflow", "landmarks"}
 	A11yRules   = []string{"one-h1", "heading-order", "img-alt", "accessible-name", "skip-link", "one-main", "nav-labels", "html-lang"}
 )
 

@@ -46,3 +46,4 @@ yarn-error.*
 
 # test output
 /coverage/
+/tools/auto-test-suite/bin/
