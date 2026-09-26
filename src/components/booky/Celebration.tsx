@@ -103,6 +103,8 @@ export interface CelebrationProps {
   messageTestID?: string;
   dismissTestID?: string;
   confettiTestID?: string;
+  /** Announce the message politely (default); false when someone else announces it. */
+  live?: boolean;
 }
 
 /**
@@ -112,7 +114,7 @@ export interface CelebrationProps {
  * is announced politely; the confetti is hidden from assistive tech and never
  * catches a tap.
  */
-export function Celebration({ message, title, onDismiss, actions, bottom, style, testID, messageTestID, dismissTestID, confettiTestID }: CelebrationProps) {
+export function Celebration({ message, title, onDismiss, actions, bottom, style, testID, messageTestID, dismissTestID, confettiTestID, live = true }: CelebrationProps) {
   const { spacing, sizes } = useTheme();
   const reduceMotion = useReducedMotion();
   const [falling, setFalling] = useState<'waiting' | 'falling' | 'done'>('waiting');
@@ -125,7 +127,7 @@ export function Celebration({ message, title, onDismiss, actions, bottom, style,
     <View style={[StyleSheet.absoluteFill, styles.noTouch, style]} testID={testID}>
       {falling === 'falling' && !reduceMotion ? <Confetti onDone={done} testID={confettiTestID} /> : null}
       <View style={[styles.bubble, styles.boxNone, { left: spacing.md, right: spacing.md, bottom: bottom ?? spacing.md, maxWidth: sizes.bubbleMaxWidth }]}>
-        <BookyBubble expression="excited" title={title} message={message} actions={actions} onDismiss={onDismiss} messageTestID={messageTestID} dismissTestID={dismissTestID} />
+        <BookyBubble expression="excited" title={title} message={message} actions={actions} onDismiss={onDismiss} messageTestID={messageTestID} dismissTestID={dismissTestID} live={live} />
       </View>
     </View>
   );

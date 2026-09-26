@@ -286,3 +286,34 @@ register({
     await c.checkGates('/ (reduced motion, help open)');
   },
 });
+
+register({
+  name: 'booky-keyboard',
+  suite: 'p07',
+  desc: 'Keyboard only: the help button opens a tip without taking focus, the tip is announced once in a polite live region, its buttons are reachable with Tab and Enter on ✕ closes it',
+  async run(c) {
+    await openFixture(c, 'demo', '/groups');
+    await waitVisible(c, tid(Testids.groups.root), '/groups');
+    await c.page.locator(vis(helpButton)).first().focus();
+    await c.page.keyboard.press('Enter');
+    await waitVisible(c, bubble, '/groups (help by keyboard)');
+    const focused = await c.page.evaluate(() => document.activeElement?.getAttribute('data-testid') ?? '');
+    expect(focused === Testids.booky.helpButton, `/groups: expected focus to stay on the help button, found ${q(focused)}`);
+    const announcer = c.page.locator(tid(Testids.booky.announcer));
+    const live = await announcer.getAttribute('aria-live');
+    const said = (await announcer.innerText()).trim();
+    const text = (await c.page.locator(bubbleText).innerText()).trim();
+    expect(live === 'polite' && said === text, `/groups: expected the tip in the polite announcer, found aria-live=${q(live)} text=${q(said)}`);
+    const regions = await c.page.locator(`${bubble} [aria-live]`).count();
+    expect(regions === 0, `/groups: expected no second live region inside the bubble, found ${regions}`);
+
+    const reached = new Set<string>();
+    for (let i = 0; i < 120 && !reached.has(Testids.booky.dismiss); i++) {
+      await c.page.keyboard.press('Tab');
+      reached.add(await c.page.evaluate(() => document.activeElement?.getAttribute('data-testid') ?? ''));
+    }
+    expect(reached.has(Testids.booky.helpMore) && reached.has(Testids.booky.dismiss), `/groups: expected "More help" and ✕ reachable with Tab, reached ${q([...reached].filter((t) => t.startsWith('booky')))}`);
+    await c.page.keyboard.press('Enter');
+    await closed(c, bubble, '/groups (Enter on ✕)');
+  },
+});

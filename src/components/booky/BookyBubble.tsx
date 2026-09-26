@@ -34,6 +34,11 @@ export interface BookyBubbleProps {
   avatarTestID?: string;
   /** Pop in (150 ms scale and fade) when it appears; skipped with reduced motion. */
   pop?: boolean;
+  /**
+   * Announce the text politely (default). Booky's floating tips pass false:
+   * the overlay announces them once through its own live region.
+   */
+  live?: boolean;
   style?: StyleProp<ViewStyle>;
 }
 
@@ -66,6 +71,7 @@ export function BookyBubble({
   dismissTestID,
   avatarTestID,
   pop = false,
+  live = true,
   style,
 }: BookyBubbleProps) {
   const theme = useTheme();
@@ -88,8 +94,8 @@ export function BookyBubble({
           />
         ) : null}
         <View
-          aria-live="polite"
-          accessibilityLiveRegion="polite"
+          aria-live={live ? 'polite' : undefined}
+          accessibilityLiveRegion={live ? 'polite' : undefined}
           style={[
             styles.bubble,
             {

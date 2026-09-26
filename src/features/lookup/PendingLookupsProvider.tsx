@@ -1,6 +1,9 @@
 import { createContext, useCallback, useContext, type ReactNode } from 'react';
+import { StyleSheet, View } from 'react-native';
 
 import { PendingBanner } from '@/components/book/PendingBanner';
+import { bookCount, tipById, formatTip } from '@/components/booky';
+import { Button, Text } from '@/components/ui';
 import { useDatabase } from '@/db';
 import { backfillCoversNow } from '@/features/covers';
 import { emit } from '@/features/events';
@@ -38,5 +41,24 @@ export function usePendingLookupsContext(): PendingLookups | null {
 export function ShelfPendingBanner() {
   const pending = usePendingLookupsContext();
   if (!pending) return null;
-  return <PendingBanner count={pending.pending.length} retrying={pending.retrying} onRetry={() => void pending.retryNow()} />;
+  const failed = pending.failed;
+  return (
+    <>
+      <PendingBanner count={pending.pending.length} retrying={pending.retrying} onRetry={() => void pending.retryNow()} />
+      {failed.length ? (
+        // Booky says this in a tip too; it stays here, in the screen, until the user has read it (P07-09).
+        <View style={styles.row}>
+          <Text role="status" color="inkMuted" style={styles.fill}>
+            {formatTip(tipById('lookup-gave-up').text, { books: bookCount(failed.length), them: failed.length === 1 ? 'it' : 'them' })}
+          </Text>
+          <Button variant="ghost" label="OK" accessibilityLabel="OK, forget those lookups" onPress={() => failed.forEach((f) => void pending.remove(f.isbn13))} />
+        </View>
+      ) : null}
+    </>
+  );
 }
+
+const styles = StyleSheet.create({
+  row: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap' },
+  fill: { flex: 1, minWidth: 200 },
+});

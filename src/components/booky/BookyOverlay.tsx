@@ -1,6 +1,6 @@
 import { router, usePathname, useSegments, type Href } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import { StyleSheet, useWindowDimensions, View, type LayoutChangeEvent } from 'react-native';
+import { StyleSheet, Text, useWindowDimensions, View, type LayoutChangeEvent } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useLayers } from '@/components/ui/layers';
@@ -83,9 +83,11 @@ export function BookyOverlay() {
     else if (bound.current.path !== pathname) dismissTip();
   }, [tip, pathname, dismissTip]);
 
+  const showing = tip && !tipWaits(segments, tip) ? tip : null;
   return (
     <>
-      {tip && !tipWaits(segments, tip) ? <PlacedTip tip={tip} onTabs={segments[0] === '(tabs)' || segments.length === 0} /> : null}
+      <Announcer tip={showing} />
+      {showing ? <PlacedTip tip={showing} onTabs={segments[0] === '(tabs)' || segments.length === 0} /> : null}
       <HelpSheet screen={help?.screen ?? null} onClose={closeHelp} />
     </>
   );
@@ -159,6 +161,7 @@ function PlacedTip({ tip, onTabs }: { tip: ShownTip; onTabs: boolean }) {
         messageTestID={ids.text}
         dismissTestID={ids.dismiss}
         confettiTestID={ids.confetti}
+        live={false}
       />
     );
   }
@@ -178,7 +181,26 @@ function PlacedTip({ tip, onTabs }: { tip: ShownTip; onTabs: boolean }) {
         dismissTestID={ids.dismiss}
         avatarTestID={Testids.booky.avatar}
         pop
+        live={false}
       />
+    </View>
+  );
+}
+
+/**
+ * Screen readers hear each tip once, politely (P07-09): one live region that
+ * is always there (a region that appears together with its text is often not
+ * read), holding the current tip's words. It changes only for a new showing,
+ * so a tip that waits behind a sheet and comes back is not read twice, and it
+ * never takes focus. Visually hidden; the bubble shows the same words.
+ */
+function Announcer({ tip }: { tip: ShownTip | null }) {
+  const [said, setSaid] = useState<{ showId: number; text: string } | null>(null);
+  if (tip && said?.showId !== tip.showId) setSaid({ showId: tip.showId, text: tip.title ? `${tip.title} ${tip.text}` : tip.text });
+  if (!tip && said) setSaid(null);
+  return (
+    <View style={styles.visuallyHidden} aria-live="polite" accessibilityLiveRegion="polite" testID={Testids.booky.announcer}>
+      <Text>{said?.text ?? ''}</Text>
     </View>
   );
 }
@@ -199,4 +221,5 @@ function AutoDismiss({ onDismiss }: { onDismiss: () => void }) {
 
 const styles = StyleSheet.create({
   host: { pointerEvents: 'box-none', position: 'absolute' },
+  visuallyHidden: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', pointerEvents: 'none', left: 0, bottom: 0 },
 });

@@ -95,6 +95,7 @@ Turn Booky from a component (P00-10) into a genuinely helpful, never-annoying as
 - **Files:** `src/components/booky/*`.
 - **Acceptance:** the auto test suite's `a11y` gate clean on screens with a bubble open; TalkBack manual check noted in PR.
 - **Tests:** `src/components/booky/__tests__/a11y.test.tsx`.
+- **Partly delivered:** checked and fixed: Booky is one labelled `role="img"` naming the expression, artwork hidden; floating tips are announced once, politely, from a live region that is always mounted in the overlay (`booky.announcer`, visually hidden), which changes only for a new showing, so a tip that waits behind a sheet and returns is not read twice; the floating bubble is no longer a second live region (inline bubbles keep theirs); nothing takes focus (the `booky-keyboard` journey checks focus stays on the help button, that "More help" and ✕ are reachable with Tab and that Enter on ✕ closes the tip; Escape closes it too); ✕ is labelled "Dismiss Booky's tip" with a 48 dp box; bubble text is `ink`/`primary` on `surface`, both AA in `textPairs`. The one Booky error that lived only in a tip, "I couldn’t find details for N books", now also shows under the Shelf's pending banner until acknowledged. The a11y gate runs with a bubble open in `booky-help-each-tab`, `booky-placement`, `booky-mute-tip`, `booky-modes` and `booky-motion`. **Not done:** the TalkBack check on a device (no device or emulator was available), so the Android announcement is verified only through the props in Jest.
 
 ---
 
