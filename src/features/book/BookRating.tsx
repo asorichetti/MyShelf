@@ -18,27 +18,35 @@ export function BookRating({ bookId, rating }: { bookId: number; rating: number 
   const db = useDatabase();
   const { spacing } = useTheme();
   const { show } = useSnackbar();
-  const [value, setValue] = useState<number | null>(rating);
+  // The reader's latest choice on this visit, shown at once while it saves (undefined: show the stored rating).
+  const [mine, setMine] = useState<number | null | undefined>(undefined);
+  const [saving, setSaving] = useState(0);
   const [stored, setStored] = useState<number | null>(rating);
   const [status, setStatus] = useState('');
+  const value = mine === undefined ? rating : mine;
 
-  // The stored rating wins whenever it changes underneath (another screen, a restore).
+  // Reloads that were already on their way while ratings were saving carry older values: ignore them. Once
+  // nothing is saving, a stored rating that differs from the reader's choice was changed elsewhere (the edit
+  // form), and wins.
   if (rating !== stored) {
     setStored(rating);
-    setValue(rating);
+    if (saving === 0 && mine !== undefined && rating !== mine) setMine(undefined);
   }
 
   const change = async (next: Rating | null) => {
-    const before = value;
-    setValue(next);
+    const before = mine;
+    setMine(next);
+    setSaving((n) => n + 1);
     try {
       await booksRepo.setRating(db, bookId, next);
       setStatus(ratingAnnouncement(next));
       emit('library-changed');
     } catch (e) {
       console.error('Could not save the rating', e);
-      setValue(before);
+      setMine(before);
       show({ message: 'Sorry, I couldn’t save that rating. Please try again.' });
+    } finally {
+      setSaving((n) => n - 1);
     }
   };
 
