@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <!--
+    Monochrome layer for Android 13+ themed icons. The launcher keeps only the
+    alpha channel and tints it, so Booky is one solid shape with the eyes and
+    smile cut out (pupils left in). Same placement as the foreground.
+  -->
+  <defs>
+    <mask id="face" maskUnits="userSpaceOnUse" x="0" y="0" width="120" height="170">
+      <rect width="120" height="170" fill="#FFFFFF"/>
+      <ellipse cx="46" cy="60" rx="11" ry="12.5" fill="#000000"/>
+      <ellipse cx="74" cy="60" rx="11" ry="12.5" fill="#000000"/>
+      <circle cx="46" cy="61" r="6.5" fill="#FFFFFF"/>
+      <circle cx="74" cy="61" r="6.5" fill="#FFFFFF"/>
+      <circle cx="48.5" cy="58" r="2.4" fill="#000000"/>
+      <circle cx="76.5" cy="58" r="2.4" fill="#000000"/>
+      <path d="M51 79 Q60 88 69 79" stroke="#000000" stroke-width="4" stroke-linecap="round" fill="none"/>
+    </mask>
+    <g id="booky-mono" fill="#000000">
+      <path d="M60 18 C 60 8, 70 3, 76 9" stroke="#000000" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <circle cx="77" cy="11" r="4.5"/>
+      <path d="M24 26 Q24 17 33 17 H87 Q96 17 96 26 V160 L60 134 L24 160 Z" mask="url(#face)"/>
+    </g>
+  </defs>
+  <use href="#booky-mono" transform="translate(290 190.1) scale(3.7)"/>
+</svg>

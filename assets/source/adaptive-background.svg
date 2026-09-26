@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <!--
+    Adaptive icon background: lavender (plum50 to a shade between plum200 and plum300), lighter behind
+    Booky. Full bleed: launchers crop it to their own mask.
+  -->
+  <defs>
+    <radialGradient id="glow" cx="50%" cy="46%" r="62%">
+      <stop offset="0" stop-color="#F6F1FC"/>
+      <stop offset="0.5" stop-color="#E6DAF6"/>
+      <stop offset="1" stop-color="#CDB6EC"/>
+    </radialGradient>
+  </defs>
+  <rect width="1024" height="1024" fill="url(#glow)"/>
+</svg>

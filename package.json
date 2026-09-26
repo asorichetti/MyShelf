@@ -70,7 +70,8 @@
     "autotest:smoke": "tsx tools/auto-test-suite/src/cli.ts smoke",
     "autotest:journeys": "tsx tools/auto-test-suite/src/cli.ts journey --all",
     "lint": "eslint .",
-    "test:live": "node --import tsx --test --test-concurrency=1 \"src/**/__live__/*.live.ts\""
+    "test:live": "node --import tsx --test --test-concurrency=1 \"src/**/__live__/*.live.ts\"",
+    "icons:render": "node scripts/render-icons.mjs"
   },
   "private": true,
   "jest": {
