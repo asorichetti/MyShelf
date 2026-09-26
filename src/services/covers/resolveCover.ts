@@ -3,6 +3,8 @@ import { HttpError, isAbortError, NotFoundError, OfflineError, RateLimitedError,
 import { coverCandidates, GOOGLE_COVER_WIDTH, type CoverCandidate, type CoverOrigin, type CoverSource } from './coverUrls';
 import { compareCovers, isGoodCover, validateCover, type CoverRejection, type CoverShape } from './validateCover';
 
+const isIsbnOrigin = (origin: CoverOrigin) => origin === 'openlibrary-isbn13' || origin === 'openlibrary-isbn10';
+
 /** A real cover, checked and ready to store. */
 export interface ResolvedCover {
   url: string;
@@ -49,7 +51,8 @@ export interface ResolveCoverOptions {
  * HTTP client (same etiquette as metadata) and validating the bytes. Stops
  * at the first good cover (portrait, ≥ 400 px tall); otherwise downloads up
  * to `maxFetches` images and keeps the best acceptable one (portrait over
- * square over odd, then taller).
+ * square over odd, then taller). The rate-limited covers by ISBN are only
+ * fetched while no portrait cover has turned up.
  *
  * Resolves with `cover: null` when no source has a usable cover. Rejects
  * with `AbortError` when cancelled, `OfflineError` when no request got a
@@ -66,6 +69,9 @@ export async function resolveCover(source: CoverSource, options: ResolveCoverOpt
 
   for (const candidate of coverCandidates(source, { includeGoogle })) {
     if (skipUrls?.has(candidate.url)) continue;
+    // Covers by ISBN are rate-limited (100 per 5 minutes) and show the edition's own cover, which a cover
+    // id already fetched: once an id gave a usable portrait cover, they are not worth the wait.
+    if (isIsbnOrigin(candidate.origin) && accepted.some((c) => c.shape === 'portrait')) continue;
     if (fetches >= maxFetches) break;
     fetches++;
     const trial = await tryCandidate(candidate);

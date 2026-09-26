@@ -150,4 +150,13 @@ describe('resolveCover', () => {
     expect(fixtures.calls).toEqual([isbn13]);
     expect(tried.map((t) => t.url)).toEqual([isbn13]);
   });
+
+  it('does not wait for the rate-limited ISBN covers once a cover id gave a portrait cover', async () => {
+    const { http, fixtures } = setup({ [edition]: jpeg(images.thumb128), [work]: missing, [google]: jpeg(images.large800) });
+    const { cover } = await resolveCover(source, { http, maxFetches: 5 });
+    // A small portrait from the edition id: the work id and Google are still tried, the ISBN URLs are not.
+    expect(fixtures.calls).toEqual([edition, work, google]);
+    expect(cover).toMatchObject({ url: google, height: 1200 });
+  });
 });
+
