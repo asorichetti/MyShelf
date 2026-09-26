@@ -18,7 +18,8 @@ On `main`: the scaffold (P00-01 to P00-07), the design system, Booky, tabs, data
 | [Phase 07](docs/plan/phase-07-booky-assistant.md) | Booky assistant | 8 / 9 |
 | [Phase 08](docs/plan/phase-08-settings-backup.md) | Settings, backup, export and import | 8 / 10 |
 | [Phase 09](docs/plan/phase-09-polish-a11y-release.md) | Polish, accessibility and release | 5 / 12 |
-| **Total** | | **113 / 132** |
+| [Phase 10](docs/plan/phase-10-ratings.md) | Ratings | 9 / 9 |
+| **Total** | | **122 / 141** |
 
 ## Phase 00 — Foundation
 
@@ -201,3 +202,17 @@ On `main`: the scaffold (P00-01 to P00-07), the design system, Booky, tabs, data
 - [ ] P09-10 Final device regression
 - [ ] P09-11 Localisation readiness
 - [ ] P09-12 v1.0 release
+
+## Phase 10 — Ratings
+
+[Phase document](docs/plan/phase-10-ratings.md)
+
+- [x] P10-01 Rating column, model and repository
+- [x] P10-02 Star rating control
+- [x] P10-03 Rate from book detail
+- [x] P10-04 Rate in the add/edit form
+- [x] P10-05 Ratings on the Shelf
+- [x] P10-06 Sort, filter and group by rating
+- [x] P10-07 Ratings in CSV export and import
+- [x] P10-08 Ratings in backups
+- [x] P10-09 Booky: how to rate

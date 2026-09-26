@@ -247,6 +247,7 @@ erDiagram
     TEXT source "openlibrary|googlebooks|manual|import"
     TEXT source_id
     TEXT notes
+    INTEGER rating "1-5, NULL = not rated (0007)"
     TEXT created_at "ISO-8601 UTC"
     TEXT updated_at "ISO-8601 UTC"
   }
@@ -318,7 +319,7 @@ erDiagram
 - **`book_genres.user_edited = 1`** marks genres the user added or kept deliberately; a metadata refresh never removes those.
 - **Dates**: timestamps are ISO-8601 UTC strings; calendar dates (loans) are local `YYYY-MM-DD` strings so "due today" never shifts across timezones.
 - **`settings.value`** is JSON-encoded; typed access via a settings repository with defaults in code.
-- **Later additions** (each via a new migration, never by editing an old one): `api_cache(url, body, fetched_at)` (`0002_api_cache`, P02-09) caches provider responses and is left out of backups; `pending_lookups(isbn13, requested_at, attempts, last_error)` (`0003_pending_lookups`, P02-10) queues ISBNs looked up while offline; `cover_attempts(book_id, attempts, last_attempt_at, retry_after, last_result, last_error)` (`0004_cover_attempts`, P02-16) records cover searches that found nothing, so the cover backfill backs off, and like `api_cache` is derived data left out of backups; `backup_snapshots(id, reason, created_at, book_count, body)` (`0005_backup_snapshots`, P08-03) keeps one safety copy of the library, taken just before a backup is restored over it, for "Undo restore" (never itself backed up; "Erase library" deletes it). The search index (`0006_book_search`, P09-03): the view `book_search_source` gathers each book's title, subtitle, authors, series, genres, notes and ISBNs, and triggers on `books`, `book_authors`, `authors`, `book_genres`, `genres` and `series` keep one search row per book current. Where SQLite has FTS5 (expo-sqlite on Android) the row is in the FTS5 table `books_fts` (`unicode61 remove_diacritics 2`: prefix and accent-insensitive matching); where it does not (the web build's wa-sqlite and Node's `node:sqlite`) the migration creates the plain table `books_search(book_id, body, ascii)` instead, and the repository matches the start of words there with `instr` or accent-folding `GLOB` patterns. Both are derived data, left out of backups.
+- **Later additions** (each via a new migration, never by editing an old one): `api_cache(url, body, fetched_at)` (`0002_api_cache`, P02-09) caches provider responses and is left out of backups; `pending_lookups(isbn13, requested_at, attempts, last_error)` (`0003_pending_lookups`, P02-10) queues ISBNs looked up while offline; `cover_attempts(book_id, attempts, last_attempt_at, retry_after, last_result, last_error)` (`0004_cover_attempts`, P02-16) records cover searches that found nothing, so the cover backfill backs off, and like `api_cache` is derived data left out of backups; `backup_snapshots(id, reason, created_at, book_count, body)` (`0005_backup_snapshots`, P08-03) keeps one safety copy of the library, taken just before a backup is restored over it, for "Undo restore" (never itself backed up; "Erase library" deletes it). The search index (`0006_book_search`, P09-03): the view `book_search_source` gathers each book's title, subtitle, authors, series, genres, notes and ISBNs, and triggers on `books`, `book_authors`, `authors`, `book_genres`, `genres` and `series` keep one search row per book current. Where SQLite has FTS5 (expo-sqlite on Android) the row is in the FTS5 table `books_fts` (`unicode61 remove_diacritics 2`: prefix and accent-insensitive matching); where it does not (the web build's wa-sqlite and Node's `node:sqlite`) the migration creates the plain table `books_search(book_id, body, ascii)` instead, and the repository matches the start of words there with `instr` or accent-folding `GLOB` patterns. Both are derived data, left out of backups. The reader's rating (`0007_book_rating`, P10-01): `books.rating INTEGER NULL`, whole stars 1–5 (`CHECK (rating IS NULL OR (rating BETWEEN 1 AND 5 AND typeof(rating) = 'integer'))`), `NULL` meaning not rated, indexed for the Shelf's rating sort and filter. It is the user's opinion: lookups and "Refresh details" never write it (only the book form, the book page, CSV import and restore do). It is not part of the search index, whose triggers ignore it. Backups carry it from schema 7; the backup format marks it `since: 7`, so older files are checked without it and migrated forward.
 
 ---
 
@@ -651,8 +652,9 @@ Each phase has a document in `docs/plan/` with task cards (`PNN-MM`). Phases are
 | [07](docs/plan/phase-07-booky-assistant.md) | Booky assistant | Tips engine, onboarding, empty states, contextual help, Booky modes | 00–06 | 9 |
 | [08](docs/plan/phase-08-settings-backup.md) | Settings, backup & import | Preferences, JSON backup/restore, CSV export/import, About | 01–06 | 10 |
 | [09](docs/plan/phase-09-polish-a11y-release.md) | Polish, a11y & release | Accessibility audit, dark theme, performance, release pipeline | all | 12 |
+| [10](docs/plan/phase-10-ratings.md) | Ratings | The reader's own 1–5 star rating: rate, show, sort, filter, import, export, back up | 01, 06, 08 | 9 |
 
-Total: **132 task cards**. Progress is tracked in [`STATUS.md`](STATUS.md).
+Total: **141 task cards**. Progress is tracked in [`STATUS.md`](STATUS.md).
 
 ---
 
