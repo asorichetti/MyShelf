@@ -1,0 +1,4 @@
+{
+  "pageState": { "content": "page-content", "error": "page-error" },
+  "home": { "root": "home-root", "title": "home-title" }
+}
