@@ -2,13 +2,13 @@
 
 Checklist of every task card in [`docs/plan/`](docs/plan/). Tick a card (`[x]`) in the same pull request that completes it, and only when it meets the [definition of done](PLAN.md#12-definition-of-done). Cards are ticked only once the work is on `main`.
 
-Phase 00 cards P00-08 to P00-20 are in progress on parallel branches and stay unticked until merged.
+The auto test suite (P00-15, P00-16, P00-17) and CI (P00-19) are on `main`. Phase 00 cards P00-08 to P00-14, P00-18 and P00-20 are in progress on parallel branches and stay unticked until merged; P00-21 to P00-29 are follow-ups.
 
 ## Summary
 
 | Phase | Name | Done |
 |---|---|---|
-| [Phase 00](docs/plan/phase-00-foundation.md) | Foundation | 7 / 20 |
+| [Phase 00](docs/plan/phase-00-foundation.md) | Foundation | 11 / 29 |
 | [Phase 01](docs/plan/phase-01-library-core.md) | Library core: CRUD and book detail | 0 / 12 |
 | [Phase 02](docs/plan/phase-02-metadata-providers.md) | Metadata providers | 0 / 13 |
 | [Phase 03](docs/plan/phase-03-scanning.md) | Scanning: barcode, OCR and edition picker | 0 / 13 |
@@ -18,7 +18,7 @@ Phase 00 cards P00-08 to P00-20 are in progress on parallel branches and stay un
 | [Phase 07](docs/plan/phase-07-booky-assistant.md) | Booky assistant | 0 / 9 |
 | [Phase 08](docs/plan/phase-08-settings-backup.md) | Settings, backup, export and import | 0 / 10 |
 | [Phase 09](docs/plan/phase-09-polish-a11y-release.md) | Polish, accessibility and release | 0 / 12 |
-| **Total** | | **7 / 118** |
+| **Total** | | **11 / 127** |
 
 ## Phase 00 — Foundation
 
@@ -38,12 +38,21 @@ Phase 00 cards P00-08 to P00-20 are in progress on parallel branches and stay un
 - [ ] P00-12 `Db` interface and adapters
 - [ ] P00-13 Migration runner and initial schema
 - [ ] P00-14 Domain models and base repositories
-- [ ] P00-15 auto-test-suite core
-- [ ] P00-16 auto-test-suite UX gates
-- [ ] P00-17 auto-test-suite commands, journeys and npm wrapper
+- [x] P00-15 Auto test suite core
+- [x] P00-16 Auto test suite UX gates
+- [x] P00-17 Auto test suite commands, journeys and package scripts
 - [ ] P00-18 Maestro setup
-- [ ] P00-19 GitHub Actions CI
+- [x] P00-19 GitHub Actions CI
 - [ ] P00-20 Linting
+- [ ] P00-21 `autotest` passthrough script
+- [ ] P00-22 `--serve <dir>` for the exported web build
+- [ ] P00-23 CI check of commit messages
+- [ ] P00-24 CI runs every journey
+- [ ] P00-25 Re-enable the temporary render rules and require the design tokens
+- [ ] P00-26 Tab journeys
+- [ ] P00-27 App-owned not-found screen
+- [ ] P00-28 Touch-target rule in the a11y gate
+- [ ] P00-29 Automated gate self-tests
 
 ## Phase 01 — Library core: CRUD and book detail
 
@@ -78,7 +87,7 @@ Phase 00 cards P00-08 to P00-20 are in progress on parallel branches and stay un
 - [ ] P02-10 Offline handling and pending lookups
 - [ ] P02-11 "Look up by ISBN" and "Search online" in the add flow
 - [ ] P02-12 Refresh details for an existing book
-- [ ] P02-13 auto-test-suite API mocking and recorded fixtures
+- [ ] P02-13 Auto test suite API mocking and recorded fixtures
 
 ## Phase 03 — Scanning: barcode, OCR and edition picker
 

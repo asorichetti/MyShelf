@@ -174,7 +174,7 @@ Removing the `home` selector group also removes `selectors.Home` from the genera
 
 - **Description:** `.github/workflows/ci.yml` on push to `main` and on every pull request, with read-only permissions and one run per ref (older runs cancelled). Job **App checks**: Node 23 with npm cache, `npm ci`, `npm run check`. Job **auto-test-suite smoke** (`GOWORK=off`, Go from `go.mod` with module cache): gofmt, `go vet ./...`, `go test ./...`, `go build`, install Chromium with system dependencies, `npm ci`, start the Expo web server on 8081 (`CI=1 npx expo start --web`) and wait for it, run `auto-test-suite smoke --ux-gates fail --headless=true` and `auto-test-suite journey --suite responsive --ux-gates fail --headless=true`, and on failure upload `screenshots/` plus the Expo log as the `auto-test-suite-screenshots` artifact (14-day retention).
 - **Files:** `.github/workflows/ci.yml`.
-- **Acceptance (met):** both jobs run on every push to `main` and every pull request; a gate failure or failing journey fails the job and uploads the evidence bundles; the same steps pass locally (`npm run check`, `npm run autotest:check`, `npm run -s autotest:smoke`).
+- **Acceptance (met):** both jobs run on every push to `main` and every pull request, and both passed on `main`; a gate failure or failing journey makes the command exit 1, which fails the step and triggers the evidence upload; the same steps pass locally (`npm run check`, `npm run autotest:check`, `npm run -s autotest:smoke`).
 - **Tests:** CI itself. Follow-ups: checking pushed commit messages (P00-23), running every journey rather than named suites (P00-24), and running against the exported build with `--serve` (P00-22).
 
 ### P00-20 Linting
