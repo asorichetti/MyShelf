@@ -1,7 +1,8 @@
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import { Tabs } from 'expo-router';
-import type { ComponentProps } from 'react';
+import { Tabs, useIsFocused } from 'expo-router';
+import type { ComponentProps, ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { BookyTipHost } from '@/components/booky';
 import { Testids } from '@/testing/testids.gen';
@@ -17,19 +18,38 @@ export const tabs: { name: string; title: string; icon: IconName; testID: string
   { name: 'settings', title: 'Settings', icon: 'cog-outline', testID: Testids.nav.tabSettings },
 ];
 
+/**
+ * Renders a tab's screen only while it is focused. Inactive tabs are otherwise
+ * kept mounted (on web: in the DOM, merely stacked behind), which would leave
+ * several h1s and page-state markers in the document at once. Tab screens hold
+ * no state worth keeping yet; revisit if one needs to preserve scroll position.
+ */
+function FocusedTabScene({ children }: { children: ReactNode }) {
+  return useIsFocused() ? <>{children}</> : null;
+}
+
 export function TabsLayout() {
   const theme = useTheme();
   const { colors, fonts } = theme;
+  const insets = useSafeAreaInsets();
   return (
     <View style={styles.fill}>
       <Tabs
+        screenLayout={({ children }) => <FocusedTabScene>{children}</FocusedTabScene>}
         screenOptions={{
           headerShown: false,
           tabBarActiveTintColor: colors.primary,
           tabBarInactiveTintColor: colors.inkMuted,
           tabBarActiveBackgroundColor: colors.surfaceTint,
-          tabBarStyle: { backgroundColor: colors.surface, borderTopColor: colors.border, borderTopWidth: 1 },
-          tabBarLabelStyle: { fontFamily: fonts.bodySemiBold, fontSize: 12 },
+          tabBarStyle: {
+            backgroundColor: colors.surface,
+            borderTopColor: colors.border,
+            borderTopWidth: 1,
+            height: 64 + insets.bottom,
+            paddingTop: 4,
+            paddingBottom: 6 + insets.bottom,
+          },
+          tabBarLabelStyle: { fontFamily: fonts.bodySemiBold, fontSize: 12, lineHeight: 16 },
           sceneStyle: { backgroundColor: colors.paper },
         }}
       >
@@ -54,5 +74,5 @@ export function TabsLayout() {
 const styles = StyleSheet.create({
   fill: { flex: 1 },
   // Float the tip above the tab bar.
-  tipHost: { bottom: 72 },
+  tipHost: { bottom: 76 },
 });

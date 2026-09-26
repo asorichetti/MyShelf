@@ -59,6 +59,10 @@ describe('tab navigation', () => {
     await act(async () => fireEvent.press(screen.getByTestId(tabId)));
     expect(r.getPathname()).toBe(path);
     expect(screen.getByTestId(titleId)).toBeOnTheScreen();
+    // The Shelf is no longer mounted: only one screen's h1 and page marker exist at a time.
+    expect(screen.queryByTestId(Testids.home.title)).toBeNull();
+    expect(screen.getAllByTestId(Testids.pageState.content)).toHaveLength(1);
+    expect(screen.getAllByRole('heading').filter((h) => h.props['aria-level'] === 1)).toHaveLength(1);
   });
 
   it('the Shelf scan action goes to the Scan tab', async () => {

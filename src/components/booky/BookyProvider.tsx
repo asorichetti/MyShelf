@@ -50,7 +50,7 @@ export function BookyTipHost({ style }: { style?: StyleProp<ViewStyle> }) {
     },
   }));
   return (
-    <View pointerEvents="box-none" style={[styles.host, style]} testID={Testids.booky.tipHost}>
+    <View style={[styles.host, style]} testID={Testids.booky.tipHost}>
       <BookyBubble
         message={tip.message}
         title={tip.title}
@@ -67,5 +67,5 @@ export function BookyTipHost({ style }: { style?: StyleProp<ViewStyle> }) {
 }
 
 const styles = StyleSheet.create({
-  host: { position: 'absolute', left: 12, right: 12, bottom: 12, maxWidth: 560, alignSelf: 'center' },
+  host: { pointerEvents: 'box-none', position: 'absolute', left: 12, right: 12, bottom: 12, maxWidth: 560, alignSelf: 'center' },
 });
