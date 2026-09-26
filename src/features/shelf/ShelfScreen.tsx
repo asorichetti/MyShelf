@@ -1,6 +1,6 @@
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { router, useLocalSearchParams, type Href } from 'expo-router';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { SectionList, StyleSheet, useWindowDimensions, View, type LayoutChangeEvent, type SectionListRenderItem } from 'react-native';
 
 import { BookRow } from '@/components/book/BookRow';
@@ -81,7 +81,7 @@ function toRowSections(sections: ShelfSection[], perRow: number): RowSection[] {
 export function ShelfScreen() {
   const theme = useTheme();
   const { spacing, sizes, colors } = theme;
-  const { showTip } = useBooky();
+  const { emit } = useBooky();
   const { snack, show } = useSnackbar();
   const shelf = useShelf();
   const { sections, items, total, activeQuery, groupBy, viewMode, filters } = shelf;
@@ -99,6 +99,10 @@ export function ShelfScreen() {
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const isEmpty = total === 0;
+  // Booky's empty-shelf tip (a welcome tip: at most once a session, never over the onboarding).
+  useEffect(() => {
+    if (isEmpty) void emit({ type: 'shelf-empty' });
+  }, [isEmpty, emit]);
   const filterCount = activeFilterCount(filters);
   const genreNames = useMemo(() => new Map(shelf.filterOptions?.genres.map((g) => [g.id, g.name]) ?? []), [shelf.filterOptions]);
   const chips = filterChips(filters, (id) => genreNames.get(id), languageName);
@@ -256,13 +260,7 @@ export function ShelfScreen() {
         label="What can Booky do?"
         testID={Testids.home.askBooky}
         style={{ alignSelf: 'center' }}
-        onPress={() =>
-          showTip({
-            title: 'Hi, I’m Booky!',
-            message: 'I keep track of your books, who has borrowed them, and which series you’re part-way through.',
-            expression: 'excited',
-          })
-        }
+        onPress={() => void emit({ type: 'help-requested', screen: 'booky' })}
       />
     </View>
   );

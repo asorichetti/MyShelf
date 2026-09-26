@@ -5,6 +5,7 @@ import { Booky } from '@/components/booky';
 import { EmptyState, Screen, Text } from '@/components/ui';
 import { useDatabase } from '@/db';
 import { isIsoDate, setToday } from '@/domain';
+import { emit } from '@/features/events';
 import { NotFoundScreen } from '@/features/navigation/NotFoundScreen';
 import { fixtureNames, isFixtureName } from '@/testing/fixtures';
 import { loadFixture } from '@/testing/loadFixture';
@@ -37,7 +38,11 @@ function FixtureLoader() {
     if (frozen != null) setToday(frozen);
     loadFixture(db, fixture)
       .then(() => settleFixtureCovers(db))
-      .then(() => active && router.replace(next as Href))
+      .then(() => {
+        // Settings such as Booky's memory and the first-run flag changed underneath.
+        emit('settings-changed');
+        if (active) router.replace(next as Href);
+      })
       .catch((e: unknown) => active && setError(e instanceof Error ? e.message : String(e)));
     return () => {
       active = false;

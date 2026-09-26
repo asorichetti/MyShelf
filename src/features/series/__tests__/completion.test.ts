@@ -1,9 +1,10 @@
 /**
  * @jest-environment node
  */
-import { booksRepo, seriesRepo, settingsRepo, type Db } from '@/db';
+import { initialEngineState, selectTip } from '@/components/booky/engine';
+import { booksRepo, seriesRepo, type Db } from '@/db';
 import type { SeriesMilestone } from '@/domain';
-import { beginSeriesSave, subscribeSeriesMilestones } from '@/features/series/seriesEvents';
+import { beginSeriesSave, milestoneEvent, subscribeSeriesMilestones } from '@/features/series/seriesEvents';
 import { createTestDb } from '@/testing/createTestDb';
 
 let db: Db;
@@ -66,14 +67,14 @@ describe('series completion', () => {
     expect(heard).toEqual([]);
   });
 
-  it('still celebrates in Quiet mode, but not with Booky off', async () => {
-    await settingsRepo.setSetting(db, 'bookyMode', 'quiet');
+  it('Booky celebrates in Helpful and Quiet mode, but not when off', async () => {
     const s = await earthsea([1, 2]);
     await save(s.id, () => booksRepo.createBook(db, { title: 'Three', seriesId: s.id, seriesPosition: 3 }));
-    expect(heard).toHaveLength(1);
-    await settingsRepo.setSetting(db, 'bookyMode', 'off');
-    const t = await seriesRepo.createSeries(db, 'Solo', 1);
-    await save(t.id, () => booksRepo.createBook(db, { title: 'Only', seriesId: t.id, seriesPosition: 1 }));
-    expect(heard).toHaveLength(1);
+    const event = milestoneEvent(heard[0]);
+    expect(event).toMatchObject({ type: 'series-complete', key: s.id, vars: { whole: 'All 3 Earthsea books' } });
+    const say = (mode: 'helpful' | 'quiet' | 'off') => selectTip(initialEngineState('2026-06-15', { mode }), event, 0);
+    expect(say('helpful')).toMatchObject({ title: 'Hooray!', text: 'Series complete! All 3 Earthsea books.' });
+    expect(say('quiet')?.tip.celebration).toBe(true);
+    expect(say('off')).toBeNull();
   });
 });

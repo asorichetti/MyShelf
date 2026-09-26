@@ -1,78 +1,212 @@
-import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
-import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 
-import { Testids } from '@/testing/testids.gen';
-import { useTheme } from '@/theme';
+import { isBlocked } from '@/components/ui/layers';
+import { today as todayOf, type BookyMode } from '@/domain';
 
-import { BookyBubble, type BookyAction } from './BookyBubble';
+import { subscribeBooky, type BookyEmission } from './bus';
+import {
+  initialEngineState,
+  markDismissed,
+  markShown,
+  mute as muteIn,
+  resetTips as resetIn,
+  selectFirst,
+  type BookyEvent,
+  type EngineState,
+  type SelectedTip,
+} from './engine';
 
-import type { BookyExpression } from './expressions';
-
-export interface BookyTip {
-  message: string;
-  title?: string;
-  expression?: BookyExpression;
-  actions?: BookyAction[];
-  /** Whether the user can close the tip (default true). */
-  dismissible?: boolean;
+/** What Booky remembers between sessions (the app keeps it in `settings`). */
+export interface BookyStoreData {
+  mode: BookyMode;
+  muted: string[];
+  seen: string[];
+  /** First-run guidance (welcome tips) is on. */
+  welcome: boolean;
 }
 
-interface BookyContextValue {
-  tip: BookyTip | null;
-  showTip: (tip: BookyTip) => void;
+/** Where Booky's memory lives. The app passes one backed by the settings table; tests may pass none. */
+export interface BookyStore {
+  load: () => Promise<BookyStoreData>;
+  save: (patch: Partial<Pick<BookyStoreData, 'mode' | 'muted' | 'seen'>>) => Promise<void>;
+}
+
+/** A tip on its way to the screen. */
+export interface ShownTip extends SelectedTip {
+  /** Unique per showing, so the same tip shown twice is a new bubble (and a new announcement). */
+  showId: number;
+}
+
+/** The help sheet (P07-05): which screen's help is open. */
+export interface HelpRequest {
+  screen: string;
+}
+
+export interface BookyContextValue {
+  /** The tip floating over the app (inline tips are drawn by their screens). */
+  tip: ShownTip | null;
+  mode: BookyMode;
+  /** Sends an event (or alternatives) to the engine; resolves to the tip shown, if any. */
+  emit: (emission: BookyEmission) => Promise<ShownTip | null>;
   dismissTip: () => void;
+  /** "Don't show tips like this": mutes the tip (default: the one showing) and puts it away. */
+  muteTip: (tipId?: string) => void;
+  setMode: (mode: BookyMode) => void;
+  /** Clears what Booky has shown and muted. */
+  resetTips: () => void;
+  /** Puts the tip away and runs its action if that has an id (`help-more`). */
+  runAction: (tip: ShownTip) => void;
+  help: HelpRequest | null;
+  openHelp: (screen: string) => void;
+  closeHelp: () => void;
 }
 
 const BookyContext = createContext<BookyContextValue | null>(null);
 
-export function BookyProvider({ children, initialTip = null }: { children: ReactNode; initialTip?: BookyTip | null }) {
-  const [tip, setTip] = useState<BookyTip | null>(initialTip);
-  const showTip = useCallback((next: BookyTip) => setTip(next), []);
-  const dismissTip = useCallback(() => setTip(null), []);
-  const value = useMemo(() => ({ tip, showTip, dismissTip }), [tip, showTip, dismissTip]);
+export interface BookyProviderProps {
+  children: ReactNode;
+  store?: BookyStore;
+  /** Bump to reload from the store (settings changed underneath, e.g. an E2E fixture). */
+  reloadKey?: number;
+  /** Clock and calendar, for tests. */
+  now?: () => number;
+  today?: () => string;
+}
+
+/** Holds Booky's state, runs the engine for every event and remembers what was shown. */
+export function BookyProvider({ children, store, reloadKey = 0, now = Date.now, today = todayOf }: BookyProviderProps) {
+  const engine = useRef<EngineState>(initialEngineState(today()));
+  const [tip, setTip] = useState<ShownTip | null>(null);
+  const [mode, setModeState] = useState<BookyMode>('helpful');
+  const [help, setHelp] = useState<HelpRequest | null>(null);
+  const nextShowId = useRef(1);
+  const loaded = useRef<Promise<void>>(Promise.resolve());
+  // Saves run one after another, and a reload waits for them, so it never reads stale memory.
+  const saving = useRef<Promise<void>>(Promise.resolve());
+  const clock = useRef({ now, today });
+  useEffect(() => {
+    clock.current = { now, today };
+  }, [now, today]);
+
+  useEffect(() => {
+    if (!store) return;
+    let active = true;
+    loaded.current = saving.current
+      .then(() => store.load())
+      .then((data) => {
+        if (!active) return;
+        engine.current = { ...engine.current, mode: data.mode, muted: data.muted, seen: data.seen, welcome: data.welcome };
+        setModeState(data.mode);
+      })
+      .catch((e) => console.warn('Booky could not read its settings', e));
+    return () => {
+      active = false;
+    };
+  }, [store, reloadKey]);
+
+  const persist = useCallback(
+    (patch: Parameters<BookyStore['save']>[0]) => {
+      if (!store) return;
+      saving.current = saving.current.then(() => store.save(patch)).catch((e) => console.warn('Booky could not save its settings', e));
+    },
+    [store],
+  );
+
+  const dismissTip = useCallback(() => {
+    engine.current = markDismissed(engine.current);
+    setTip(null);
+  }, []);
+
+  const openHelp = useCallback((screen: string) => setHelp({ screen }), []);
+  const closeHelp = useCallback(() => setHelp(null), []);
+
+  const emit = useCallback(
+    async (emission: BookyEmission): Promise<ShownTip | null> => {
+      await loaded.current;
+      const events: readonly BookyEvent[] = Array.isArray(emission) ? emission : [emission as BookyEvent];
+      const t = clock.current.now();
+      const state = { ...engine.current, blocked: isBlocked(), today: clock.current.today() };
+      const chosen = selectFirst(state, events, t);
+      if (!chosen) return null;
+      const next = markShown(state, chosen, t);
+      if (next.seen !== state.seen) persist({ seen: [...next.seen] });
+      engine.current = next;
+      const shown: ShownTip = { ...chosen, showId: nextShowId.current++ };
+      if ((chosen.tip.placement ?? 'overlay') !== 'overlay') return shown;
+      // Off: help comes without the character, straight to the help sheet.
+      if (state.mode === 'off' && chosen.tip.kind === 'help') {
+        engine.current = markDismissed(engine.current);
+        const more = chosen.event.handlers?.['help-more'];
+        if (more) more();
+        else if (chosen.event.screen && chosen.action?.id === 'help-more') openHelp(chosen.event.screen);
+        return shown;
+      }
+      setTip(shown);
+      return shown;
+    },
+    [persist, openHelp],
+  );
+
+  useEffect(() => subscribeBooky((emission) => void emit(emission)), [emit]);
+
+  const muteTip = useCallback(
+    (tipId?: string) => {
+      const id = tipId ?? tip?.tip.id;
+      if (!id) return;
+      engine.current = muteIn(engine.current, id);
+      persist({ muted: [...engine.current.muted] });
+      if (tip?.tip.id === id) dismissTip();
+    },
+    [tip, persist, dismissTip],
+  );
+
+  const setMode = useCallback(
+    (next: BookyMode) => {
+      engine.current = { ...engine.current, mode: next };
+      setModeState(next);
+      persist({ mode: next });
+      if (next === 'off') dismissTip();
+    },
+    [persist, dismissTip],
+  );
+
+  const resetTips = useCallback(() => {
+    engine.current = resetIn(engine.current);
+    persist({ seen: [], muted: [] });
+  }, [persist]);
+
+  const runAction = useCallback(
+    (shown: ShownTip) => {
+      const id = shown.action?.id;
+      dismissTip();
+      if (!id) return;
+      const handler = shown.event.handlers?.[id];
+      if (handler) handler();
+      else if (id === 'help-more' && shown.event.screen) openHelp(shown.event.screen);
+    },
+    [dismissTip, openHelp],
+  );
+
+  const value = useMemo(
+    () => ({ tip, mode, emit, dismissTip, muteTip, setMode, resetTips, runAction, help, openHelp, closeHelp }),
+    [tip, mode, emit, dismissTip, muteTip, setMode, resetTips, runAction, help, openHelp, closeHelp],
+  );
   return <BookyContext.Provider value={value}>{children}</BookyContext.Provider>;
 }
 
-/** Show or dismiss Booky's tips from anywhere below a BookyProvider. */
+/** Booky's state and controls, from anywhere below a BookyProvider. */
 export function useBooky(): BookyContextValue {
   const ctx = useContext(BookyContext);
   if (!ctx) throw new Error('useBooky must be used inside a BookyProvider');
   return ctx;
 }
 
-/** Renders the current tip, floating over the content. Place once per layout. */
-export function BookyTipHost({ style }: { style?: StyleProp<ViewStyle> }) {
-  const { tip, dismissTip } = useBooky();
-  const { spacing, sizes } = useTheme();
-  if (!tip) return null;
-  const actions = tip.actions?.map((a, i) => ({
-    ...a,
-    testID: a.testID ?? (i === 0 ? Testids.booky.action : undefined),
-    onPress: () => {
-      a.onPress();
-      dismissTip();
-    },
-  }));
-  return (
-    <View
-      style={[styles.host, { left: spacing.md, right: spacing.md, bottom: spacing.md, maxWidth: sizes.bubbleMaxWidth }, style]}
-      testID={Testids.booky.tipHost}
-    >
-      <BookyBubble
-        message={tip.message}
-        title={tip.title}
-        expression={tip.expression}
-        actions={actions}
-        onDismiss={tip.dismissible === false ? undefined : dismissTip}
-        testID={Testids.booky.bubble}
-        messageTestID={Testids.booky.bubbleText}
-        dismissTestID={Testids.booky.dismiss}
-        avatarTestID={Testids.booky.avatar}
-      />
-    </View>
-  );
+/** Like useBooky, but null outside a provider (components that also render on their own, e.g. in tests). */
+export function useOptionalBooky(): BookyContextValue | null {
+  return useContext(BookyContext);
 }
 
-const styles = StyleSheet.create({
-  host: { pointerEvents: 'box-none', position: 'absolute', alignSelf: 'center' },
-});
+/** Booky's mode; Helpful outside a provider. */
+export function useBookyMode(): BookyMode {
+  return useContext(BookyContext)?.mode ?? 'helpful';
+}

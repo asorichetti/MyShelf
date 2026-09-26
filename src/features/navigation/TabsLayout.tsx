@@ -3,7 +3,6 @@ import { Tabs, useIsFocused } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { BookyTipHost } from '@/components/booky';
 import { useOverdueCount } from '@/features/loans/useLoans';
 import { PendingLookupsProvider } from '@/features/lookup/PendingLookupsProvider';
 import { Testids } from '@/testing/testids.gen';
@@ -82,8 +81,6 @@ function TabsShell() {
           />
         ))}
       </Tabs>
-      {/* Float Booky's tips just above the tab bar. */}
-      <BookyTipHost style={{ bottom: sizes.tabBar + insets.bottom + spacing.md }} />
     </View>
   );
 }

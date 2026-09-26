@@ -30,11 +30,8 @@ export function ownedWholePositions(positions: readonly (number | null)[]): numb
 
 const hash = (p: number) => `#${formatSeriesPosition(p)}`;
 
-/**
- * "You have #1 and #3 of Discworld — #2 is missing." Long runs are
- * summarised: "You have 6 Discworld books — #3 and #5 are missing."
- */
-export function gapTipMessage(name: string, owned: readonly number[], gaps: readonly number[]): string {
+/** The two halves of the gap tip, "You have #1 and #3 of Discworld" and "#2 is missing." (Booky's catalogue joins them.) */
+export function gapTipParts(name: string, owned: readonly number[], gaps: readonly number[]): { have: string; missing: string } {
   const have = owned.length <= 4 ? `You have ${joinNames(owned.map(hash))} of ${name}` : `You have ${owned.length} ${name} books`;
   const missing =
     gaps.length === 1
@@ -42,12 +39,26 @@ export function gapTipMessage(name: string, owned: readonly number[], gaps: read
       : gaps.length <= 3
         ? `${joinNames(gaps.map(hash))} are missing.`
         : `${gaps.length} are missing, starting with ${hash(gaps[0])}.`;
+  return { have, missing };
+}
+
+/**
+ * "You have #1 and #3 of Discworld — #2 is missing." Long runs are
+ * summarised: "You have 6 Discworld books — #3 and #5 are missing."
+ */
+export function gapTipMessage(name: string, owned: readonly number[], gaps: readonly number[]): string {
+  const { have, missing } = gapTipParts(name, owned, gaps);
   return `${have} — ${missing}`;
+}
+
+/** "All 9 Discworld books", or "You have the Discworld book" for a series of one. */
+export function completionWhole(name: string, total: number): string {
+  return total === 1 ? `You have the ${name} book` : `All ${total} ${name} books`;
 }
 
 /** "Series complete! All 9 Discworld books." */
 export function completionMessage(name: string, total: number): string {
-  return total === 1 ? `Series complete! You have the ${name} book.` : `Series complete! All ${total} ${name} books.`;
+  return `Series complete! ${completionWhole(name, total)}.`;
 }
 
 /**

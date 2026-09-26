@@ -1,52 +1,34 @@
-import { dayCount, daysOverdue, type BookyMode, type IsoDate, type LoanWithDetails } from '@/domain';
+import type { BookyEvent } from '@/components/booky';
+import { dayCount, daysOverdue, type IsoDate, type LoanWithDetails } from '@/domain';
 
 /**
  * Booky's overdue nudge (P05-10): "“Dune” was due back from Sam 3 days
- * ago." At most once per loan per day, only in Booky's Helpful mode, and
- * never when the user muted this kind of tip. Written as a pure rule so the
- * tips engine (P07-02) can register it as is.
+ * ago." The words are the `loan-overdue` tip in Booky's catalogue; the rules
+ * (at most once per loan per day, only in Helpful mode, never when muted) are
+ * the engine's (P07-02). This module turns overdue loans into events.
  */
 
-/** Muting this id ("Don't show tips like this", P07) turns the nudge off. */
+/** Booky's tip id; muting it ("Don't show tips like this") turns the nudge off. */
 export const OVERDUE_NUDGE_KIND = 'loan-overdue';
 
-/** `loan-overdue:<loanId>:<date>`: one id per loan per day. */
-export const overdueNudgeId = (loanId: number, today: IsoDate) => `${OVERDUE_NUDGE_KIND}:${loanId}:${today}`;
-
-export function overdueNudgeMessage(loan: Pick<LoanWithDetails, 'bookTitle' | 'borrowerName' | 'dueOn' | 'returnedOn'>, today: IsoDate): string {
+/** "yesterday", "3 days ago". */
+export function overdueWhen(loan: Pick<LoanWithDetails, 'dueOn' | 'returnedOn'>, today: IsoDate): string {
   const days = daysOverdue(loan, today);
-  const when = days === 1 ? 'yesterday' : `${dayCount(days)} ago`;
-  return `“${loan.bookTitle}” was due back from ${loan.borrowerName} ${when}.`;
+  return days === 1 ? 'yesterday' : `${dayCount(days)} ago`;
 }
 
-export interface OverdueNudgeInput {
-  /** Open loans past their due date. */
-  overdue: readonly LoanWithDetails[];
-  today: IsoDate;
-  bookyMode: BookyMode;
-  mutedTips: readonly string[];
-  /** Nudge ids already shown (see `overdueNudgeId`). */
-  shown: readonly string[];
+/** The nudge's words for one loan, as Booky's catalogue fills them in. */
+export function overdueNudgeMessage(loan: Pick<LoanWithDetails, 'bookTitle' | 'borrowerName' | 'dueOn' | 'returnedOn'>, today: IsoDate): string {
+  return `“${loan.bookTitle}” was due back from ${loan.borrowerName} ${overdueWhen(loan, today)}.`;
 }
 
-export interface OverdueNudge {
-  id: string;
-  loan: LoanWithDetails;
-  message: string;
-}
-
-/** The nudge to show now (the most overdue loan not nudged today), or null. */
-export function pickOverdueNudge({ overdue, today, bookyMode, mutedTips, shown }: OverdueNudgeInput): OverdueNudge | null {
-  if (bookyMode !== 'helpful' || mutedTips.includes(OVERDUE_NUDGE_KIND)) return null;
-  const seen = new Set(shown);
-  const candidates = overdue
-    .filter((l) => l.returnedOn == null && daysOverdue(l, today) > 0 && !seen.has(overdueNudgeId(l.id, today)))
-    .sort((a, b) => daysOverdue(b, today) - daysOverdue(a, today) || a.id - b.id);
-  const loan = candidates[0];
-  return loan ? { id: overdueNudgeId(loan.id, today), loan, message: overdueNudgeMessage(loan, today) } : null;
-}
-
-/** The shown-list after showing `id`: only today's ids are kept, so it never grows. */
-export function markNudgeShown(shown: readonly string[], id: string, today: IsoDate): string[] {
-  return [...shown.filter((s) => s.endsWith(`:${today}`) && s !== id), id];
+/**
+ * One `loan-overdue` event per open overdue loan, most overdue first: the
+ * engine shows the first it has not yet shown today (keyed by loan id).
+ */
+export function overdueNudgeEvents(overdue: readonly LoanWithDetails[], today: IsoDate): BookyEvent[] {
+  return overdue
+    .filter((l) => l.returnedOn == null && daysOverdue(l, today) > 0)
+    .sort((a, b) => daysOverdue(b, today) - daysOverdue(a, today) || a.id - b.id)
+    .map((loan) => ({ type: 'loan-overdue', key: loan.id, vars: { title: loan.bookTitle, borrower: loan.borrowerName, when: overdueWhen(loan, today) } }));
 }

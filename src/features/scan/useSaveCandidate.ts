@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 
-import { useBooky } from '@/components/booky';
+import { bookCount, useBooky, type BookyEvent } from '@/components/booky';
 import { booksRepo, useDatabase, type Db } from '@/db';
 import { candidateSeries } from '@/domain';
 import { attachCoverFromCandidate, type AttachCoverResult } from '@/features/covers';
@@ -54,22 +54,25 @@ export async function saveCandidate(db: Db, candidate: BookCandidate, { onNoOnli
   return { id, title: candidate.title, count, cover };
 }
 
-/** "Shelved! That's 12 books." (PLAN §8: the book-added trigger). */
-export function shelvedMessage(count: number): string {
-  return `Shelved! That’s ${count === 1 ? '1 book' : `${count} books`}.`;
+/** Shelf sizes worth a little extra sparkle from Booky: 10, 50, then every hundred. */
+export const isBookMilestone = (count: number) => count === 10 || count === 50 || (count > 0 && count % 100 === 0);
+
+/** Booky's `book-added` event: "Shelved! That's 12 books." (PLAN §8), with a milestone variant. */
+export function bookAddedEvent(count: number): BookyEvent {
+  return { type: 'book-added', variant: isBookMilestone(count) ? 'milestone' : undefined, vars: { books: bookCount(count) } };
 }
 
 /** `save(candidate)` with Booky's excited "Shelved! That's N books." */
 export function useSaveCandidate(): { save: (candidate: BookCandidate, options?: SaveCandidateOptions) => Promise<SavedCandidate> } {
   const db = useDatabase();
-  const { showTip } = useBooky();
+  const { emit } = useBooky();
   const save = useCallback(
     async (candidate: BookCandidate, options: SaveCandidateOptions = {}) => {
       const saved = await saveCandidate(db, candidate, options);
-      if (!options.quiet) showTip({ expression: 'excited', message: shelvedMessage(saved.count) });
+      if (!options.quiet) void emit(bookAddedEvent(saved.count));
       return saved;
     },
-    [db, showTip],
+    [db, emit],
   );
   return { save };
 }

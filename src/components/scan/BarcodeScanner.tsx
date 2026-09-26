@@ -2,7 +2,7 @@ import { CameraView, type BarcodeScanningResult } from 'expo-camera';
 import { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import { BookyBubble } from '@/components/booky';
+import { BookyBubble, useInlineTip } from '@/components/booky';
 import { IconButton } from '@/components/ui';
 import { bookBarcodeTypes } from '@/domain';
 import { Testids } from '@/testing/testids.gen';
@@ -34,6 +34,8 @@ export function BarcodeScanner({ onBarcode, paused, onReadCover }: BarcodeScanne
   const stretch = `${paused}:${reads}`;
   const [slowStretch, setSlowStretch] = useState<string | null>(null);
   const slow = slowStretch === stretch;
+  // Booky's "No barcode?" tip: once a session, and only while Booky is Helpful.
+  const tip = useInlineTip({ type: 'scan-idle' }, slow && !paused);
 
   useEffect(() => {
     if (paused) return;
@@ -69,11 +71,11 @@ export function BarcodeScanner({ onBarcode, paused, onReadCover }: BarcodeScanne
           />
         </View>
       </View>
-      {slow && !paused ? (
+      {tip ? (
         <BookyBubble
-          expression="thinking"
-          message="No barcode? Try reading the cover instead."
-          actions={[{ label: 'Read the cover', onPress: onReadCover, testID: Testids.scan.readCoverInstead }]}
+          expression={tip.tip.expression}
+          message={tip.text}
+          actions={[{ label: tip.action?.label ?? 'Read the cover', onPress: onReadCover, testID: Testids.scan.readCoverInstead }]}
         />
       ) : null}
     </View>

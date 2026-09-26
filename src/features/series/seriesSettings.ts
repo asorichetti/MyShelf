@@ -1,7 +1,7 @@
 import { settingsRepo, type Db } from '@/db';
 
 /** The settings that hold lists of ids for the series features. */
-export type SeriesIdListKey = 'series.dismissedBookIds' | 'series.pendingConfirmBookIds' | 'series.gapTipSeriesIds';
+export type SeriesIdListKey = 'series.dismissedBookIds' | 'series.pendingConfirmBookIds';
 
 export async function idListHas(db: Db, key: SeriesIdListKey, id: number): Promise<boolean> {
   return (await settingsRepo.getSetting(db, key)).includes(id);

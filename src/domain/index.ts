@@ -22,6 +22,7 @@ export * from './loan';
 export * from './loanStamp';
 export * from './loans';
 export * from './ocrQuery';
+export * from './onboarding';
 export * from './scannedCode';
 export * from './series';
 export * from './seriesGaps';

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AppState } from 'react-native';
 
-import { useBooky } from '@/components/booky';
+import { bookCount, useBooky } from '@/components/booky';
 import { pendingLookupsRepo, useDatabase, type PendingLookup } from '@/db';
 import { backfillCoversNow } from '@/features/covers';
 import { useLibraryEvent } from '@/features/events';
@@ -45,7 +45,6 @@ export interface PendingLookups {
   remove(isbn13: string): Promise<void>;
 }
 
-const plural = (n: number) => (n === 1 ? '1 book' : `${n} books`);
 
 /**
  * The offline lookup queue (P02-10). Retries when the app comes back to the
@@ -57,7 +56,7 @@ const plural = (n: number) => (n === 1 ? '1 book' : `${n} books`);
 export function usePendingLookups({ lookup, backfillCovers }: UsePendingLookupsOptions = {}): PendingLookups {
   const db = useDatabase();
   const service = useMetadataService();
-  const { showTip } = useBooky();
+  const { emit } = useBooky();
   const [pending, setPending] = useState<PendingLookup[]>([]);
   const [failed, setFailed] = useState<PendingLookup[]>([]);
   const [results, setResults] = useState<PendingResult[]>([]);
@@ -141,23 +140,20 @@ export function usePendingLookups({ lookup, backfillCovers }: UsePendingLookupsO
     if (!offline) startBackfill();
     if (arrived.length) {
       setResults((current) => [...current.filter((r) => !arrived.some((a) => a.isbn13 === r.isbn13)), ...arrived]);
-      showTip({ expression: 'excited', message: `Good news — I found details for ${plural(arrived.length)} you added offline.` });
+      void emit({ type: 'lookup-arrived', vars: { books: bookCount(arrived.length) } });
     } else if (gaveUp.length) {
-      showTip({
-        expression: 'concerned',
-        message: `I couldn't find details for ${plural(gaveUp.length)}. You can add ${gaveUp.length === 1 ? 'it' : 'them'} by hand.`,
-      });
+      void emit({ type: 'lookup-none', variant: 'offline', vars: { books: bookCount(gaveUp.length), them: gaveUp.length === 1 ? 'it' : 'them' } });
     }
-  }, [db, doLookup, reload, showTip, startBackfill]);
+  }, [db, doLookup, reload, emit, startBackfill]);
 
   const queue = useCallback(
     async (isbn13: string) => {
       const added = await pendingLookupsRepo.enqueue(db, isbn13);
       await reload();
-      showTip({ expression: 'sleepy', message: "Saved — I'll look this up when you're back online." });
+      void emit({ type: 'offline-queued' });
       return added;
     },
-    [db, reload, showTip],
+    [db, reload, emit],
   );
 
   const remove = useCallback(

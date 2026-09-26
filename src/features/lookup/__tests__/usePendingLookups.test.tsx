@@ -70,7 +70,7 @@ describe('usePendingLookups', () => {
     expect([first, second]).toEqual([true, false]);
     expect(result.current.lookups.pending.map((p) => p.isbn13)).toEqual([A]);
     expect(await pendingLookupsRepo.list(db)).toHaveLength(1);
-    expect(result.current.booky.tip).toMatchObject({ expression: 'sleepy', message: "Saved — I'll look this up when you're back online." });
+    expect(result.current.booky.tip).toMatchObject({ tip: { expression: 'sleepy' }, text: 'Saved — I’ll look this up when you’re back online.' });
     expect(lookup).not.toHaveBeenCalled();
   });
 
@@ -102,7 +102,7 @@ describe('usePendingLookups', () => {
     expect(result.current.lookups.results.map((r) => r.isbn13).sort()).toEqual([A, B].sort());
     expect(result.current.lookups.pending).toEqual([]);
     expect(await pendingLookupsRepo.list(db)).toEqual([]);
-    expect(result.current.booky.tip).toMatchObject({ expression: 'excited', message: expect.stringContaining('2 books') });
+    await waitFor(() => expect(result.current.booky.tip).toMatchObject({ tip: { expression: 'excited' }, text: expect.stringContaining('2 books') }));
 
     act(() => result.current.lookups.dismissResult(A));
     expect(result.current.lookups.results.map((r) => r.isbn13)).toEqual([B]);
@@ -131,10 +131,12 @@ describe('usePendingLookups', () => {
     await waitFor(() => expect(result.current.lookups.failed.map((f) => f.isbn13)).toEqual([A]));
     expect(result.current.lookups.pending).toEqual([]);
     expect(await pendingLookupsRepo.get(db, A)).toMatchObject({ attempts: 5, lastError: 'HTTP 503 for https://openlibrary.org' });
-    expect(result.current.booky.tip).toMatchObject({
-      expression: 'concerned',
-      message: "I couldn't find details for 1 book. You can add it by hand.",
-    });
+    await waitFor(() =>
+      expect(result.current.booky.tip).toMatchObject({
+        tip: { expression: 'concerned' },
+        text: 'I couldn’t find details for 1 book. You can add it by hand.',
+      }),
+    );
 
     await foreground();
     expect(lookup).toHaveBeenCalledTimes(5);
@@ -146,7 +148,7 @@ describe('usePendingLookups', () => {
     const { result } = renderLookups({ lookup });
     await waitFor(() => expect(result.current.lookups.failed).toHaveLength(1));
     expect(await pendingLookupsRepo.get(db, A)).toMatchObject({ attempts: 5, lastError: 'not-found' });
-    expect(result.current.booky.tip?.expression).toBe('concerned');
+    await waitFor(() => expect(result.current.booky.tip?.tip.expression).toBe('concerned'));
   });
 
   it('removes a queued lookup', async () => {

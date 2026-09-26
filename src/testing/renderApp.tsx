@@ -2,8 +2,9 @@ import { Stack } from 'expo-router';
 import { act, renderRouter } from 'expo-router/testing-library';
 import { Text, View } from 'react-native';
 
-import { BookyProvider } from '@/components/booky';
+import { BookyOverlay, BookyProvider } from '@/components/booky';
 import { StaticDatabaseProvider, type Db } from '@/db';
+import { settingsBookyStore } from '@/features/booky/bookyStore';
 import { GroupsScreen } from '@/features/groups/GroupsScreen';
 import { LoansScreen } from '@/features/loans/LoansScreen';
 import { AppSnackbarHost } from '@/features/navigation/AppSnackbarHost';
@@ -17,13 +18,18 @@ import { AppTestProviders } from './render';
 
 import type { ComponentType, ReactNode } from 'react';
 
-/** Wraps a routed test app in the app's providers, with `db` as the database. */
+/**
+ * Wraps a routed test app in the app's providers, with `db` as the database.
+ * Booky keeps its memory in `db` as in an E2E build: no welcome tips unless
+ * the test sets `onboarding.done`.
+ */
 export function appWrapper(db: Db) {
+  const store = settingsBookyStore(db, true);
   return function Wrapper({ children }: { children: ReactNode }) {
     return (
       <AppTestProviders>
         <StaticDatabaseProvider db={db}>
-          <BookyProvider>{children}</BookyProvider>
+          <BookyProvider store={store}>{children}</BookyProvider>
         </StaticDatabaseProvider>
       </AppTestProviders>
     );
@@ -36,12 +42,13 @@ export const stubScreen = (name: string): ComponentType =>
     return <Text>{`stub:${name}`}</Text>;
   };
 
-/** Mirrors the root layout: a stack with the app's snackbar host above it. */
+/** Mirrors the root layout: a stack with the app's snackbar host and Booky's overlay above it. */
 function RootStack() {
   return (
     <View style={{ flex: 1 }}>
       <Stack screenOptions={{ headerShown: false }} />
       <AppSnackbarHost />
+      <BookyOverlay />
     </View>
   );
 }

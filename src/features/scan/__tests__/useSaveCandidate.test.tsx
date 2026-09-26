@@ -9,7 +9,7 @@ import { makeCandidate } from '@/services/metadata/candidate';
 import { createTestDb } from '@/testing/createTestDb';
 import { createFixtureMetadata } from '@/testing/fixtureMetadata';
 
-import { saveCandidate, shelvedMessage, useSaveCandidate } from '../useSaveCandidate';
+import { bookAddedEvent, isBookMilestone, saveCandidate, useSaveCandidate } from '../useSaveCandidate';
 
 import type { ReactNode } from 'react';
 
@@ -90,7 +90,10 @@ describe('useSaveCandidate', () => {
     await act(async () => {
       await result.current.save(candidate);
     });
-    expect(result.current.booky.tip).toEqual({ expression: 'excited', message: 'Shelved! That’s 1 book.' });
-    expect(shelvedMessage(12)).toBe('Shelved! That’s 12 books.');
+    expect(result.current.booky.tip).toMatchObject({ tip: { id: 'book-added', expression: 'excited' }, text: 'Shelved! That’s 1 book.' });
+    expect(bookAddedEvent(12)).toEqual({ type: 'book-added', variant: undefined, vars: { books: '12 books' } });
+    expect(bookAddedEvent(50).variant).toBe('milestone');
+    expect([10, 50, 100, 300].every(isBookMilestone)).toBe(true);
+    expect([1, 11, 150].some(isBookMilestone)).toBe(false);
   });
 });

@@ -30,6 +30,12 @@ export interface FixtureGroup {
 
 export interface Fixture {
   books: FixtureBook[];
+  /**
+   * The first-run experience (P07-03): `false` shows the onboarding and turns
+   * on Booky's welcome tips, `true` means it was finished (welcome tips on,
+   * no onboarding). Unset, a fixture gets neither, so journeys start quietly.
+   */
+  onboarding?: boolean;
   loans?: FixtureLoan[];
   groups?: FixtureGroup[];
 }

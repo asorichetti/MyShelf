@@ -1,7 +1,8 @@
+import { initialEngineState, markShown, selectFirst, type EngineState } from '@/components/booky/engine';
 import { loansRepo, settingsRepo, type Db } from '@/db';
 import { setToday, type LoanWithDetails } from '@/domain';
-import { markNudgeShown, overdueNudgeId, overdueNudgeMessage, pickOverdueNudge, type OverdueNudgeInput } from '@/features/loans/overdueNudge';
-import { takeOverdueNudge } from '@/features/loans/useOverdueNudge';
+import { overdueNudgeEvents, overdueNudgeMessage } from '@/features/loans/overdueNudge';
+import { overdueEvents } from '@/features/loans/useOverdueNudge';
 import { createTestDb } from '@/testing/createTestDb';
 import { loadFixture } from '@/testing/loadFixture';
 
@@ -20,53 +21,50 @@ const loan = (id: number, bookTitle: string, borrowerName: string, dueOn: string
 const TODAY = '2026-06-15';
 const dune = loan(1, 'Dune', 'Sam', '2026-06-12');
 const emma = loan(2, 'Emma', 'Priya', '2026-06-14');
-const input = (patch: Partial<OverdueNudgeInput> = {}): OverdueNudgeInput => ({
-  overdue: [emma, dune],
-  today: TODAY,
-  bookyMode: 'helpful',
-  mutedTips: [],
-  shown: [],
-  ...patch,
-});
+const state = (patch: Partial<EngineState> = {}) => initialEngineState(TODAY, patch);
+const pick = (s: EngineState, overdue = [emma, dune], today = TODAY) => selectFirst({ ...s, today }, overdueNudgeEvents(overdue, today), 0);
+/** The next app start: nothing on screen, no cooldown running. */
+const restart = (s: EngineState) => ({ ...s, current: null, lastNudge: null, session: [] });
 
-describe('pickOverdueNudge', () => {
-  it('nudges about the most overdue loan first, in Booky’s words', () => {
-    expect(pickOverdueNudge(input())).toEqual({ id: 'loan-overdue:1:2026-06-15', loan: dune, message: '“Dune” was due back from Sam 3 days ago.' });
+describe('overdueNudgeEvents', () => {
+  it('lists the most overdue loan first, in Booky’s words', () => {
+    const events = overdueNudgeEvents([emma, dune], TODAY);
+    expect(events.map((e) => e.key)).toEqual([1, 2]);
+    expect(pick(state())).toMatchObject({ key: 'loan-overdue:1', text: '“Dune” was due back from Sam 3 days ago.', title: 'A gentle nudge', action: { label: 'Open loans', href: '/loans' } });
   });
 
   it('says "yesterday" for one day', () => {
     expect(overdueNudgeMessage(emma, TODAY)).toBe('“Emma” was due back from Priya yesterday.');
+    expect(selectFirst(state(), overdueNudgeEvents([emma], TODAY), 0)?.text).toBe(overdueNudgeMessage(emma, TODAY));
   });
 
-  it('at most once per loan per day', () => {
-    const shown = [overdueNudgeId(1, TODAY)];
-    expect(pickOverdueNudge(input({ shown }))?.loan).toBe(emma);
-    expect(pickOverdueNudge(input({ shown: [...shown, overdueNudgeId(2, TODAY)] }))).toBeNull();
+  it('skips returned loans and loans not yet due', () => {
+    expect(overdueNudgeEvents([{ ...dune, returnedOn: '2026-06-14' }, loan(3, 'Mort', 'Kim', TODAY)], TODAY)).toEqual([]);
+  });
+});
+
+describe('the engine and the overdue nudge (P05-10 rules)', () => {
+  it('nudges at most once per loan per day', () => {
+    let s = markShown(state(), pick(state())!, 0);
+    const second = pick(restart(s))!;
+    expect(second.key).toBe('loan-overdue:2');
+    s = markShown(restart(s), second, 0);
+    expect(pick(restart(s))).toBeNull();
     // A new day, a new nudge.
-    expect(pickOverdueNudge(input({ shown, today: '2026-06-16' }))?.id).toBe('loan-overdue:1:2026-06-16');
+    expect(pick(restart(s), [emma, dune], '2026-06-16')?.key).toBe('loan-overdue:1');
   });
 
-  it.each(['quiet', 'off'] as const)('stays silent in Booky mode "%s"', (bookyMode) => {
-    expect(pickOverdueNudge(input({ bookyMode }))).toBeNull();
+  it.each(['quiet', 'off'] as const)('stays silent in Booky mode "%s"', (mode) => {
+    expect(pick(state({ mode }))).toBeNull();
   });
 
   it('stays silent when overdue tips are muted, or nothing is overdue', () => {
-    expect(pickOverdueNudge(input({ mutedTips: ['loan-overdue'] }))).toBeNull();
-    expect(pickOverdueNudge(input({ overdue: [] }))).toBeNull();
-    expect(pickOverdueNudge(input({ overdue: [{ ...dune, returnedOn: '2026-06-14' }, loan(3, 'Mort', 'Kim', TODAY)] }))).toBeNull();
+    expect(pick(state({ muted: ['loan-overdue'] }))).toBeNull();
+    expect(pick(state(), [])).toBeNull();
   });
 });
 
-describe('markNudgeShown', () => {
-  it('keeps only today’s ids, so the list never grows', () => {
-    expect(markNudgeShown(['loan-overdue:1:2026-06-14', 'loan-overdue:2:2026-06-15'], 'loan-overdue:1:2026-06-15', TODAY)).toEqual([
-      'loan-overdue:2:2026-06-15',
-      'loan-overdue:1:2026-06-15',
-    ]);
-  });
-});
-
-describe('takeOverdueNudge (demo fixture)', () => {
+describe('overdueEvents (demo fixture)', () => {
   let db: Db;
   beforeEach(async () => {
     setToday(TODAY);
@@ -78,33 +76,26 @@ describe('takeOverdueNudge (demo fixture)', () => {
     await db.close();
   });
 
-  it('nudges about Roger Ackroyd once today, remembering it across restarts', async () => {
-    const first = await takeOverdueNudge(db, TODAY);
-    expect(first?.message).toBe('“The Murder of Roger Ackroyd” was due back from Priya 5 days ago.');
-    expect(await settingsRepo.getSetting(db, 'overdueNudgesShown')).toEqual([first!.id]);
-    expect(await takeOverdueNudge(db, TODAY)).toBeNull();
-    expect((await takeOverdueNudge(db, '2026-06-16'))?.message).toBe('“The Murder of Roger Ackroyd” was due back from Priya 6 days ago.');
-  });
-
-  it('respects Booky mode from settings', async () => {
-    await settingsRepo.setSetting(db, 'bookyMode', 'quiet');
-    expect(await takeOverdueNudge(db, TODAY)).toBeNull();
-    expect(await settingsRepo.getSetting(db, 'overdueNudgesShown')).toEqual([]);
+  it('nudges about Roger Ackroyd', async () => {
+    const events = await overdueEvents(db, TODAY);
+    expect(selectFirst(state(), events, 0)?.text).toBe('“The Murder of Roger Ackroyd” was due back from Priya 5 days ago.');
+    const tomorrow = await overdueEvents(db, '2026-06-16');
+    expect(selectFirst(state({ today: '2026-06-16' }), tomorrow, 0)?.text).toBe('“The Murder of Roger Ackroyd” was due back from Priya 6 days ago.');
   });
 
   it('says nothing once the book is back', async () => {
     const [late] = await loansRepo.listOverdueLoans(db, TODAY);
     await loansRepo.returnLoan(db, late.id, TODAY);
-    expect(await takeOverdueNudge(db, TODAY)).toBeNull();
+    expect(await overdueEvents(db, TODAY)).toEqual([]);
   });
 });
 
 describe('loading a fixture', () => {
-  it('forgets which loans were nudged, since loan ids start again', async () => {
+  it('forgets what Booky has said, since loan and series ids start again', async () => {
     const db = await createTestDb();
-    await settingsRepo.setSetting(db, 'overdueNudgesShown', ['loan-overdue:2:2026-06-15']);
+    await settingsRepo.setSetting(db, 'booky.seen', ['loan-overdue:2@2026-06-15', 'series-gap:3']);
     await loadFixture(db, 'demo');
-    expect(await settingsRepo.getSetting(db, 'overdueNudgesShown')).toEqual([]);
+    expect(await settingsRepo.getSetting(db, 'booky.seen')).toEqual([]);
     await db.close();
   });
 });

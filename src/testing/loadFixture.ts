@@ -72,8 +72,9 @@ export async function loadFixture(db: Db, name: FixtureName): Promise<void> {
     // Settings survive the wipe, but these name books, series and loans by id: start them afresh.
     await settingsRepo.setSetting(tx, 'series.pendingConfirmBookIds', pendingSeries);
     await settingsRepo.setSetting(tx, 'series.dismissedBookIds', []);
-    await settingsRepo.setSetting(tx, 'series.gapTipSeriesIds', []);
-    await settingsRepo.setSetting(tx, 'overdueNudgesShown', []);
+    // What Booky has already said names series and loans too; the first-run experience only when the fixture asks.
+    await settingsRepo.setSetting(tx, 'booky.seen', []);
+    await settingsRepo.setSetting(tx, 'onboarding.done', fixture.onboarding ?? null);
 
     for (const group of fixture.groups ?? []) {
       const { id } = await groupsRepo.createGroup(tx, { name: group.name, colour: group.colour, icon: group.icon });

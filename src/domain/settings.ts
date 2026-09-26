@@ -21,22 +21,22 @@ export interface AppSettings {
   bookyMode: BookyMode;
   /** Tip ids the user asked Booky not to show again. */
   mutedTips: string[];
+  /** Tips Booky must not repeat (P07-02): `<tipId>[:<key>]` once-only, `<tipId>[:<key>]@<YYYY-MM-DD>` once a day. */
+  'booky.seen': string[];
+  /** First-run onboarding (P07-03): true once finished or skipped; null on a fresh install (never answered). */
+  'onboarding.done': boolean | null;
   /** Ask Google Books as well as Open Library for book details (PLAN §6). Settings → Lookups (P08-05). */
   googleBooksEnabled: boolean;
   /** Days from lending to the default due date (P05-02); configurable in Settings (P08-07). */
   loanDays: number;
   /** Local notifications at 10:00 on each open loan's due date (P05-08). Off until the user turns it on. */
   loanReminders: boolean;
-  /** Overdue nudge tip ids (`loan-overdue:<loanId>:<date>`) already shown, so each loan is nudged at most once a day (P05-10). */
-  overdueNudgesShown: string[];
   /** The Shelf's sort order, remembered across restarts. */
   shelfSort: ShelfSort;
   /** Books whose auto-detected series the user said was wrong ("Not a series"): never re-added (P04-03). */
   'series.dismissedBookIds': number[];
   /** Books linked to a series from a low- or medium-confidence guess, awaiting "Is this Discworld #5?" (P04-03). */
   'series.pendingConfirmBookIds': number[];
-  /** Series Booky has already pointed out a gap in (tip id `series-gap:<seriesId>`), so the tip shows once per series (P04-07). */
-  'series.gapTipSeriesIds': number[];
   /** How the Shelf is split into sections (P06-01). */
   shelfGroupBy: ShelfGroupBy;
   /** List, covers or spines (P06-08). */
@@ -61,14 +61,14 @@ export type SettingKey = keyof AppSettings;
 export const settingDefaults: Readonly<AppSettings> = Object.freeze<AppSettings>({
   bookyMode: 'helpful',
   mutedTips: [],
+  'booky.seen': [],
+  'onboarding.done': null,
   googleBooksEnabled: true,
   loanDays: 28,
   loanReminders: false,
-  overdueNudgesShown: [],
   shelfSort: { sort: 'title', direction: 'asc' },
   'series.dismissedBookIds': [],
   'series.pendingConfirmBookIds': [],
-  'series.gapTipSeriesIds': [],
   shelfGroupBy: 'none',
   shelfViewMode: 'list',
   shelfFilters: { genreIds: [], formats: [], languages: [], loan: 'any', series: 'any', yearFrom: null, yearTo: null, recentlyAdded: false },

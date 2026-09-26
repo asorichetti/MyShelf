@@ -1,7 +1,8 @@
 import { act, fireEvent, screen, waitFor } from '@testing-library/react-native';
+import { Text } from 'react-native';
 
 
-import { BookyProvider, BookyTipHost } from '@/components/booky';
+import { BookyProvider, useBooky } from '@/components/booky';
 import { booksRepo, StaticDatabaseProvider, type Db } from '@/db';
 import { GroupsScreen } from '@/features/groups/GroupsScreen';
 import { LoansScreen } from '@/features/loans/LoansScreen';
@@ -25,12 +26,18 @@ afterEach(async () => {
   await db.close();
 });
 
+/** Shows the tip Booky would float over the app (the overlay itself needs the router). */
+function TipProbe() {
+  const { tip } = useBooky();
+  return tip ? <Text testID={Testids.booky.bubbleText}>{tip.text}</Text> : null;
+}
+
 function renderScreen(Component: ComponentType) {
   return renderWithTheme(
     <StaticDatabaseProvider db={db}>
       <BookyProvider>
         <Component />
-        <BookyTipHost />
+        <TipProbe />
       </BookyProvider>
     </StaticDatabaseProvider>,
   );
@@ -101,8 +108,8 @@ describe('Shelf screen contract', () => {
   it('opens a Booky tip on request', async () => {
     renderScreen(ShelfScreen);
     await screen.findByTestId(Testids.home.bookCount);
-    fireEvent.press(screen.getByTestId(Testids.home.askBooky));
-    expect(screen.getByTestId(Testids.booky.bubble)).toBeOnTheScreen();
+    await act(async () => fireEvent.press(screen.getByTestId(Testids.home.askBooky)));
+    expect(screen.getByTestId(Testids.booky.bubbleText)).toHaveTextContent(/I keep track of your books/);
   });
 });
 

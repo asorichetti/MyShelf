@@ -1,17 +1,8 @@
 import { act, fireEvent, screen } from '@testing-library/react-native';
-import { AccessibilityInfo, Pressable, Text } from 'react-native';
+import { AccessibilityInfo } from 'react-native';
 
-import {
-  Booky,
-  BookyBubble,
-  bookyExpressions,
-  BookyProvider,
-  BookyTipHost,
-  expressionDescriptions,
-  useBooky,
-} from '@/components/booky';
+import { Booky, BookyBubble, bookyExpressions, expressionDescriptions } from '@/components/booky';
 import { renderWithTheme } from '@/testing/render';
-import { Testids } from '@/testing/testids.gen';
 
 describe('Booky', () => {
   it.each(bookyExpressions)('renders the %s expression with an accessible label', async (expression) => {
@@ -87,60 +78,5 @@ describe('BookyBubble', () => {
   it('has no dismiss button without onDismiss', () => {
     renderWithTheme(<BookyBubble message="Hi" />);
     expect(screen.queryByRole('button', { name: "Dismiss Booky's tip" })).toBeNull();
-  });
-});
-
-describe('useBooky', () => {
-  function Trigger() {
-    const { showTip } = useBooky();
-    return (
-      <Pressable
-        role="button"
-        accessibilityLabel="help"
-        onPress={() =>
-          showTip({
-            message: 'Books you lend show up here.',
-            expression: 'thinking',
-            actions: [{ label: 'Got it', onPress: jest.fn() }],
-          })
-        }
-      >
-        <Text>help</Text>
-      </Pressable>
-    );
-  }
-
-  it('shows a tip in the host and dismisses it', () => {
-    renderWithTheme(
-      <BookyProvider>
-        <Trigger />
-        <BookyTipHost />
-      </BookyProvider>,
-    );
-    expect(screen.queryByTestId(Testids.booky.bubble)).toBeNull();
-    fireEvent.press(screen.getByRole('button', { name: 'help' }));
-    expect(screen.getByTestId(Testids.booky.bubbleText)).toHaveTextContent('Books you lend show up here.');
-    expect(screen.getByTestId(Testids.booky.avatar).props.accessibilityLabel).toMatch(/thinking/);
-    fireEvent.press(screen.getByTestId(Testids.booky.dismiss));
-    expect(screen.queryByTestId(Testids.booky.bubble)).toBeNull();
-  });
-
-  it('dismisses after an action runs', () => {
-    renderWithTheme(
-      <BookyProvider>
-        <Trigger />
-        <BookyTipHost />
-      </BookyProvider>,
-    );
-    fireEvent.press(screen.getByRole('button', { name: 'help' }));
-    expect(screen.getByTestId(Testids.booky.action)).toBe(screen.getByRole('button', { name: 'Got it' }));
-    fireEvent.press(screen.getByRole('button', { name: 'Got it' }));
-    expect(screen.queryByTestId(Testids.booky.bubble)).toBeNull();
-  });
-
-  it('throws outside a provider', () => {
-    const spy = jest.spyOn(console, 'error').mockImplementation(() => {});
-    expect(() => renderWithTheme(<Trigger />)).toThrow(/BookyProvider/);
-    spy.mockRestore();
   });
 });

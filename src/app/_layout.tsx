@@ -5,16 +5,15 @@ import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
 import { View } from 'react-native';
 
-import { BookyProvider } from '@/components/booky';
+import { BookyOverlay } from '@/components/booky';
 import { SnackbarProvider } from '@/components/ui';
 import { DatabaseProvider, type DatabaseStatus } from '@/db';
 import { openAppDatabase } from '@/db/expo';
+import { BookyRoot } from '@/features/booky/BookyRoot';
 import { LoanWatchers } from '@/features/loans/LoanWatchers';
 import { AppSnackbarHost } from '@/features/navigation/AppSnackbarHost';
 import { DatabaseErrorScreen } from '@/features/navigation/DatabaseErrorScreen';
 import { LoadingScreen } from '@/features/navigation/LoadingScreen';
-import { StackBookyTipHost } from '@/features/navigation/StackBookyTipHost';
-import { SeriesEventHost } from '@/features/series/SeriesEventHost';
 import { SettingsWatchers } from '@/features/settings/SettingsWatchers';
 import { ThemeProvider, useTheme } from '@/theme';
 import { appFonts } from '@/theme/fonts';
@@ -25,7 +24,7 @@ SplashScreen.preventAutoHideAsync().catch(() => {});
 function RootStack() {
   const theme = useTheme();
   return (
-    <BookyProvider>
+    <BookyRoot>
       <SnackbarProvider>
         <StatusBar style="dark" />
         <View style={{ flex: 1 }}>
@@ -35,14 +34,13 @@ function RootStack() {
           </Stack>
           {/* Above every screen, so an Undo survives leaving the screen that offered it. */}
           <AppSnackbarHost />
-          <StackBookyTipHost />
-          {/* Booky's series gap tip and completion celebration, wherever a save lands. */}
-          <SeriesEventHost />
+          {/* Booky's tips, above every screen and clear of its bottom actions. */}
+          <BookyOverlay />
         </View>
         <LoanWatchers />
         <SettingsWatchers />
       </SnackbarProvider>
-    </BookyProvider>
+    </BookyRoot>
   );
 }
 

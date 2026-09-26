@@ -2,9 +2,10 @@ import { router, Slot } from 'expo-router';
 import { act, fireEvent, renderRouter, screen } from 'expo-router/testing-library';
 import { Text, View } from 'react-native';
 
-import { BookyProvider, BookyTipHost } from '@/components/booky';
+import { BookyOverlay, BookyProvider, emitBooky } from '@/components/booky';
 import { StaticDatabaseProvider, type Db } from '@/db';
 import { setToday } from '@/domain';
+import { settingsBookyStore } from '@/features/booky/bookyStore';
 import { useOverdueNudge } from '@/features/loans/useOverdueNudge';
 import { createTestDb } from '@/testing/createTestDb';
 import { loadFixture } from '@/testing/loadFixture';
@@ -27,7 +28,7 @@ function Layout() {
   return (
     <View style={{ flex: 1 }}>
       <Slot />
-      <BookyTipHost />
+      <BookyOverlay />
     </View>
   );
 }
@@ -44,7 +45,7 @@ function start(url: string) {
       wrapper: ({ children }) => (
         <AppTestProviders>
           <StaticDatabaseProvider db={db}>
-            <BookyProvider>{children}</BookyProvider>
+            <BookyProvider store={settingsBookyStore(db, false)}>{children}</BookyProvider>
           </StaticDatabaseProvider>
         </AppTestProviders>
       ),
@@ -53,6 +54,9 @@ function start(url: string) {
   return r;
 }
 const settle = async () => {
+  for (let i = 0; i < 5; i++) await act(async () => {});
+  // The app says it has started (BookyRoot does this in the app).
+  await act(async () => emitBooky({ type: 'app-foreground' }));
   for (let i = 0; i < 5; i++) await act(async () => {});
 };
 

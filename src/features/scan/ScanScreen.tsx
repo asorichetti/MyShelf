@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { CoverImage } from '@/components/book/CoverImage';
-import { BookyBubble } from '@/components/booky';
+import { BookyBubble, tipById, useOptionalBooky } from '@/components/booky';
 import { ScanHelp } from '@/components/scan/ScanHelp';
 import { ScanModeSwitch, type ScanMode } from '@/components/scan/ScanModeSwitch';
 import { ScannerHost } from '@/components/scan/ScannerHost';
@@ -41,6 +41,12 @@ export function ScanScreen() {
   const [trayNotice, setTrayNotice] = useState<ScanNotice | null>(null);
   const tray = useTray();
   const permission = usePermission();
+  const emit = useOptionalBooky()?.emit;
+
+  // Booky's first-visit tip ("Point me at the barcode on the back cover."), once ever.
+  useEffect(() => {
+    void emit?.({ type: 'scan-opened' });
+  }, [emit]);
 
   const setMode = useCallback((m: ScanMode) => {
     remembered.mode = m;
@@ -118,7 +124,7 @@ export function ScanScreen() {
           <BookyBubble
             expression="concerned"
             title={state.kind === 'isbn' ? 'No match for that ISBN' : 'No match for that cover'}
-            message="I couldn’t find that one. Let’s add it by hand — I’ll fill in what I know."
+            message={tipById('lookup-none-scan').text}
             actions={[
               { label: 'Add it by hand', onPress: () => addManually(state.isbn13, state.guess), testID: Testids.scan.addManually },
               state.kind === 'isbn'

@@ -2,7 +2,7 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import { BookyBubble } from '@/components/booky';
+import { BookyBubble, tipById } from '@/components/booky';
 import { Button, Heading, Text, TextField } from '@/components/ui';
 import { formatIsbn13, isValidIsbn13, normalizeIsbn } from '@/domain';
 import { Testids } from '@/testing/testids.gen';
@@ -127,7 +127,7 @@ export function LookupPanel(props: LookupPanelProps) {
           testID={Testids.lookup.noResults}
           expression="concerned"
           title={mode === 'isbn' ? 'No match for that ISBN' : 'No matches'}
-          message="I couldn’t find that one. Let’s add it by hand — it only takes a minute."
+          message={tipById('lookup-none').text}
           actions={[{ label: 'Add it by hand', onPress: props.onAddManually, testID: Testids.lookup.addManually }]}
         />
       ) : null}

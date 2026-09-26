@@ -5,7 +5,7 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 
 import { candidateFacts } from '@/components/book/CandidateCard';
 import { CoverImage } from '@/components/book/CoverImage';
-import { Booky, useBooky } from '@/components/booky';
+import { Booky, bookCount, useBooky } from '@/components/booky';
 import { Button, CatalogueCard, EmptyState, Heading, Screen, Stamp, Text, TopBar, useSnackbar } from '@/components/ui';
 import { useDatabase } from '@/db';
 import { joinNames } from '@/domain';
@@ -71,7 +71,7 @@ export function ScanReviewScreen() {
   const tray = useTray();
   const db = useDatabase();
   const { spacing, colors, sizes } = useTheme();
-  const { showTip } = useBooky();
+  const { emit } = useBooky();
   const { show } = useSnackbar();
   const [saving, setSaving] = useState(false);
   const ready = tray.filter((i): i is TrayItem & { candidate: NonNullable<TrayItem['candidate']> } => i.status === 'ready' && i.candidate !== null);
@@ -95,7 +95,7 @@ export function ScanReviewScreen() {
       setSaving(false);
     }
     if (saved.length) {
-      showTip({ expression: 'excited', message: `Shelved ${books(saved.length)}! That’s ${books(count)} in all.` });
+      void emit({ type: 'book-added', variant: 'batch', vars: { saved: bookCount(saved.length), books: bookCount(count) } });
       // Back to the tab shell underneath (not a second one on top of it), then to the Shelf.
       if (router.canDismiss()) router.dismissAll();
       router.navigate('/');

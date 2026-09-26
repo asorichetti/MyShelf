@@ -1,13 +1,15 @@
-import { booksRepo, seriesRepo, settingsRepo, type Db } from '@/db';
-import { seriesMilestones, type SeriesMilestone, type SeriesState } from '@/domain';
-
-import { addToIdList } from './seriesSettings';
+import { emitBooky, type BookyEvent } from '@/components/booky';
+import { booksRepo, seriesRepo, type Db } from '@/db';
+import { completionWhole, gapTipParts, seriesMilestones, type SeriesMilestone, type SeriesState } from '@/domain';
 
 /**
  * Series milestones after a save (P04-07, P04-08): Booky's gap tip ("You
- * have #1 and #3 of Discworld — #2 is missing.", once per series, tip id
- * `series-gap:<seriesId>`) and the completion celebration ("Series complete!
- * All 9 Discworld books.", once per completion).
+ * have #1 and #3 of Discworld — #2 is missing.") and the completion
+ * celebration ("Series complete! All 9 Discworld books.", once per
+ * completion). Each milestone goes to Booky's engine (P07-02) as a
+ * `series-gap` or `series-complete` event keyed by the series id; the engine
+ * decides whether it shows (once per series for gaps, never in Off mode, gaps
+ * not in Quiet, never when muted).
  *
  * Every path that saves a book calls it the same way:
  *
@@ -19,8 +21,7 @@ import { addToIdList } from './seriesSettings';
  * (`src/features/scan/useSaveCandidate.ts`, P03-09) should do the same around
  * its save, after `applyDetectedSeries`.
  *
- * `SeriesEventHost` (root layout) listens and shows the tip or celebration.
- * The Booky rules engine (P07-02) can take over the listening later.
+ * Other code can listen with `subscribeSeriesMilestones`.
  */
 
 type Listener = (milestone: SeriesMilestone) => void;
@@ -35,7 +36,15 @@ export function subscribeSeriesMilestones(listener: Listener): () => void {
   };
 }
 
+/** The Booky event for a milestone. */
+export function milestoneEvent(m: SeriesMilestone): BookyEvent {
+  return m.type === 'series-gap'
+    ? { type: 'series-gap', key: m.seriesId, vars: { ...gapTipParts(m.seriesName, m.owned, m.gaps), seriesId: m.seriesId } }
+    : { type: 'series-complete', key: m.seriesId, vars: { whole: completionWhole(m.seriesName, m.total), seriesId: m.seriesId } };
+}
+
 export function publishSeriesMilestone(milestone: SeriesMilestone): void {
+  emitBooky(milestoneEvent(milestone));
   for (const listener of [...listeners]) {
     try {
       listener(milestone);
@@ -45,31 +54,15 @@ export function publishSeriesMilestone(milestone: SeriesMilestone): void {
   }
 }
 
-/** Booky's tip id for a series' gap tip. */
-export const gapTipId = (seriesId: number) => `series-gap:${seriesId}`;
-
 /**
- * Compares the series before and after a write and publishes what changed,
- * respecting Booky's mode (Off: nothing; Quiet: no gap tips) and showing a
- * gap tip only once per series. Returns what was published.
+ * Compares the series before and after a write and publishes what changed.
+ * Returns what was published (Booky decides what to say about it).
  */
 export async function announceSeriesChanges(db: Db, before: ReadonlyMap<number, SeriesState>, alsoIds: Iterable<number> = []): Promise<SeriesMilestone[]> {
   const after = await seriesRepo.seriesStates(db, [...before.keys(), ...alsoIds]);
   const found = [...after.values()].flatMap((state) => seriesMilestones(before.get(state.id) ?? null, state));
-  if (!found.length) return [];
-  const mode = await settingsRepo.getSetting(db, 'bookyMode');
-  if (mode === 'off') return [];
-  const [tipped, muted] = await Promise.all([settingsRepo.getSetting(db, 'series.gapTipSeriesIds'), settingsRepo.getSetting(db, 'mutedTips')]);
-  const published: SeriesMilestone[] = [];
-  for (const m of found) {
-    if (m.type === 'series-gap') {
-      if (mode === 'quiet' || tipped.includes(m.seriesId) || muted.includes(gapTipId(m.seriesId))) continue;
-      await addToIdList(db, 'series.gapTipSeriesIds', m.seriesId);
-    }
-    published.push(m);
-    publishSeriesMilestone(m);
-  }
-  return published;
+  for (const m of found) publishSeriesMilestone(m);
+  return found;
 }
 
 /** Snapshots the series a write may touch; `finish` announces what the write changed. */
