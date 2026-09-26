@@ -68,7 +68,9 @@ describe('searchTerms and searchGlob', () => {
   it('builds GLOB patterns for the start of a word that ignore case and accents', () => {
     const glob = booksRepo.searchGlob('anos');
     expect(glob.startsWith('* [') && glob.endsWith(']*')).toBe(true);
-    for (const letter of ['a', 'A', 'á', 'Å', 'ā']) expect(glob.includes(letter)).toBe(true);
+    // The plain index is stored in lower case (ASCII), so only accented capitals need listing.
+    for (const letter of ['a', 'á', 'Å', 'ā']) expect(glob.includes(letter)).toBe(true);
+    expect(glob.includes('A')).toBe(false);
     expect(glob).toContain('ñ');
     expect(booksRepo.searchGlob('42')).toBe('* 42*');
     expect(booksRepo.searchGlob('я')).toBe('* [яЯ]*');
@@ -108,6 +110,8 @@ describe.each([
     expect(await search(db, 'colera')).toEqual(['El amor en los tiempos del cólera']);
     expect(await search(db, 'gunter')).toEqual(['Die Blechtrommel']);
     expect(await search(db, 'Günter grass')).toEqual(['Die Blechtrommel']);
+    // An accent typed where the book has none (an all-ASCII row) is ignored too.
+    expect(await search(db, 'HÓBBIT')).toEqual(['The Hobbit']);
   });
 
   it('finds ISBNs typed with or without hyphens, and parts of them', async () => {

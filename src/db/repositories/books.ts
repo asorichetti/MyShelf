@@ -292,7 +292,10 @@ let letterClasses: Map<string, string> | undefined;
 function letterClass(ch: string): string {
   if (!letterClasses) {
     const sets = new Map<string, Set<string>>();
-    for (let cp = 0x41; cp <= 0x24f; cp++) {
+    // The plain index is stored lower-cased (ASCII only): each class starts with its ASCII letter, the
+    // likeliest match, followed by the accented letters in both cases.
+    for (let cp = 0x61; cp <= 0x24f; cp++) {
+      if (cp > 0x7a && cp < 0xc0) continue;
       const c = String.fromCodePoint(cp);
       const base = stripDiacritics(c).toLowerCase();
       if (!/^[a-z]$/.test(base)) continue;
@@ -325,8 +328,9 @@ export function searchGlob(term: string): string {
  *   title, subtitle, authors, series, genres, notes or ISBNs ("prat" finds
  *   Pratchett, "cien anos" finds "Cien años").
  * - With the plain index (`books_search`; web and Node have no FTS5), the
- *   same: each word matches the start of a word in that same text, with case
- *   and accents folded by the GLOB pattern. The two agree except for letters
+ *   same: each word matches the start of a word in that same text, found
+ *   with `instr` in rows that are all ASCII and with a GLOB pattern that
+ *   folds case and accents in the rest. The two agree except for letters
  *   that fold to two ("ß" → "ss"), which neither folds the same way, and for
  *   words longer than FTS5 indexes.
  * - Without either (a database from before migration 0006), the old `LIKE`
@@ -347,8 +351,10 @@ export async function searchClause(db: Db, query: string): Promise<SqlClause | n
     alternatives.push('b.id IN (SELECT rowid FROM books_fts WHERE books_fts MATCH ?)');
     params.push(terms.map((t) => `"${t}"*`).join(' '));
   } else if (kind === 'plain') {
-    alternatives.push(`b.id IN (SELECT book_id FROM books_search WHERE ${terms.map(() => 'body GLOB ?').join(' AND ')})`);
-    params.push(...terms.map(searchGlob));
+    // ASCII text cannot hold an accent to fold: a plain substring search for " word" is enough, and fast.
+    const conditions = terms.map((t) => (/^[\x20-\x7e]+$/.test(t) ? '(CASE WHEN ascii THEN instr(body, ?) > 0 ELSE body GLOB ? END)' : 'body GLOB ?'));
+    alternatives.push(`b.id IN (SELECT book_id FROM books_search WHERE ${conditions.join(' AND ')})`);
+    for (const t of terms) params.push(...(/^[\x20-\x7e]+$/.test(t) ? [` ${t}`, searchGlob(t)] : [searchGlob(t)]));
   } else {
     const like = `%${likeEscape(text)}%`;
     alternatives.push(

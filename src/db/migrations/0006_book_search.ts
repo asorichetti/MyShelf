@@ -12,9 +12,11 @@ import type { Migration } from './types';
  * makes "cien anos" find "Cien años" and answers prefix queries from an index.
  * Where it does not (the web build's wa-sqlite and Node's built-in SQLite,
  * which Jest uses, are both compiled without it) the same text goes into
- * `books_search`, a plain table that the repository searches for the start
- * of words with GLOB patterns that fold case and accents themselves (see
- * `searchClause` in repositories/books.ts).
+ * `books_search`, a plain table holding the same text in lower case with
+ * common punctuation as spaces, plus whether it is all ASCII. The repository
+ * finds the start of a word there with `instr` in ASCII text and with a GLOB
+ * pattern that folds accents itself elsewhere (see `searchClause` in
+ * repositories/books.ts).
  * Neither table is part of a backup: both are rebuilt from the library.
  */
 
@@ -43,13 +45,16 @@ export type SearchIndexKind = 'fts5' | 'plain';
  */
 const SEPARATORS = ['-', '/', '(', ')', '[', ']', '.', ',', ':', ';', '!', '?', '&', '+', '_', "'", '"', '’', '‘', '“', '”', '–', '—'];
 
-/** `expr` with the separators, tabs and line breaks as spaces, and a space in front. */
+/** `expr` in lower case (SQLite folds ASCII only), with the separators, tabs and line breaks as spaces, and a space in front. */
 function spaced(expr: string): string {
-  let out = expr;
+  let out = `lower(${expr})`;
   for (const c of SEPARATORS) out = `replace(${out}, '${c.replace(/'/g, "''")}', ' ')`;
   for (const code of [9, 10, 13]) out = `replace(${out}, char(${code}), ' ')`;
   return `' ' || ${out}`;
 }
+
+/** All of a book's searchable text in one string (from `book_search_source`). */
+const TEXT = "(title || ' ' || subtitle || ' ' || authors || ' ' || series || ' ' || genres || ' ' || notes || ' ' || isbn)";
 
 /** SQL that forgets and re-reads the search rows of the books whose ids `ids` (a SQL list or subquery) yields. */
 function refresh(kind: SearchIndexKind, ids: string): string {
@@ -59,8 +64,8 @@ function refresh(kind: SearchIndexKind, ids: string): string {
       SELECT id, title, subtitle, authors, series, genres, notes, isbn FROM book_search_source WHERE id IN (${ids});`;
   }
   return `DELETE FROM books_search WHERE book_id IN (${ids});
-    INSERT INTO books_search (book_id, body)
-      SELECT id, ${spaced("title || ' ' || subtitle || ' ' || authors || ' ' || series || ' ' || genres || ' ' || notes || ' ' || isbn")}
+    INSERT INTO books_search (book_id, body, ascii)
+      SELECT id, ${spaced(TEXT)}, ${TEXT} NOT GLOB '*[^ -~]*'
       FROM book_search_source WHERE id IN (${ids});`;
 }
 
@@ -73,7 +78,7 @@ export function bookSearchSchema(kind: SearchIndexKind): string {
   const table =
     kind === 'fts5'
       ? `CREATE VIRTUAL TABLE books_fts USING fts5(title, subtitle, authors, series, genres, notes, isbn, tokenize = 'unicode61 remove_diacritics 2');`
-      : 'CREATE TABLE books_search (book_id INTEGER PRIMARY KEY, body TEXT NOT NULL);';
+      : 'CREATE TABLE books_search (book_id INTEGER PRIMARY KEY, body TEXT NOT NULL, ascii INTEGER NOT NULL);';
   const trigger = (name: string, when: string, body: string) => `CREATE TRIGGER ${name} ${when} BEGIN
     ${body}
   END;`;
