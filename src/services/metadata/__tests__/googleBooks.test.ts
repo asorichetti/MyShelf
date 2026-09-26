@@ -54,6 +54,12 @@ describe('googleBooks.lookupIsbn', () => {
         "The Colour of Magic is Terry Pratchett's maiden voyage through the bizarre land of Discworld.\n\n" +
         'Here is where it all begins – with the tourist Twoflower and his wizard guide, Rincewind.',
       coverUrl: 'https://books.google.com/books/content?id=synthCoM01&printsec=frontcover&img=1&zoom=1&source=gbs_api',
+      coverRefs: {
+        olEditionCoverIds: [],
+        olWorkCoverIds: [],
+        googleVolumeId: 'synthCoM01',
+        googleImageUrl: 'http://books.google.com/books/content?id=synthCoM01&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api',
+      },
       subjects: ['Fiction / Fantasy / Humorous'],
       seriesHints: [
         { name: null, position: 1, source: 'googlebooks', raw: '1' },

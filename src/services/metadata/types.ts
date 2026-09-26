@@ -20,6 +20,22 @@ export interface SeriesHint {
 }
 
 /**
+ * Where each provider keeps this book's cover, kept apart so the cover chain
+ * (`src/services/covers`) can try them best first instead of trusting the
+ * one merged `coverUrl`.
+ */
+export interface CoverRefs {
+  /** Open Library cover ids on the edition record, positive only, record order. */
+  olEditionCoverIds: number[];
+  /** Open Library cover ids on the work record (a search result's `cover_i`). */
+  olWorkCoverIds: number[];
+  /** Google Books volume id, when the candidate came from (or was merged with) Google Books. */
+  googleVolumeId: string | null;
+  /** Google Books `imageLinks.thumbnail` (else `smallThumbnail`) exactly as sent. */
+  googleImageUrl: string | null;
+}
+
+/**
  * One book as a provider describes it, normalised to the app's vocabulary.
  * Usually an edition (from an ISBN lookup, a work's editions, or a Google
  * Books volume); Open Library search results are works (`kind: 'work'`),
@@ -50,8 +66,10 @@ export interface BookCandidate {
   format: BookFormat | null;
   /** Full description with HTML removed; shortened later with `briefSummary()`. */
   summary: string | null;
-  /** HTTPS cover image URL. */
+  /** HTTPS cover image URL (for display in the candidate list; saving uses the cover chain). */
   coverUrl: string | null;
+  /** Every provider's cover pointers, for the cover chain. */
+  coverRefs: CoverRefs;
   /** Raw subjects / categories, for the genre normaliser. */
   subjects: string[];
   seriesHints: SeriesHint[];

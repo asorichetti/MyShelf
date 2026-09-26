@@ -8,9 +8,10 @@ import { rankCandidates } from './rank';
 
 import type { BookCandidate, MetadataProvider, MetadataResult, ProviderWarning, SearchQuery } from './types';
 
-export type { BookCandidate, CandidateSource, MetadataProvider, MetadataResult, ProviderWarning, SearchQuery, SeriesHint } from './types';
+export type { BookCandidate, CandidateSource, CoverRefs, MetadataProvider, MetadataResult, ProviderWarning, SearchQuery, SeriesHint } from './types';
 export { createGoogleBooks, isDailyQuotaError } from './googleBooks';
-export { dedupeCandidates, mergeCandidates } from './merge';
+export { emptyCoverRefs, makeCandidate } from './candidate';
+export { dedupeCandidates, mergeCandidates, mergeCoverRefs } from './merge';
 export { createOpenLibrary, type OpenLibraryProvider } from './openLibrary';
 export { rankCandidates, scoreCandidate } from './rank';
 

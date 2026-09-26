@@ -1,4 +1,9 @@
-import type { BookCandidate, CandidateSource } from './types';
+import type { BookCandidate, CandidateSource, CoverRefs } from './types';
+
+/** Cover refs with nothing known. */
+export function emptyCoverRefs(): CoverRefs {
+  return { olEditionCoverIds: [], olWorkCoverIds: [], googleVolumeId: null, googleImageUrl: null };
+}
 
 /** A candidate with every optional field empty; mappers and tests fill in what they know. */
 export function makeCandidate(
@@ -18,6 +23,7 @@ export function makeCandidate(
     format: null,
     summary: null,
     coverUrl: null,
+    coverRefs: emptyCoverRefs(),
     subjects: [],
     seriesHints: [],
     workKey: null,
@@ -27,4 +33,4 @@ export function makeCandidate(
   };
 }
 
-export type { BookCandidate, CandidateSource };
+export type { BookCandidate, CandidateSource, CoverRefs };

@@ -2,7 +2,7 @@ import { bookMatchKey } from '@/domain/text';
 
 import { uniqueStrings } from './openLibraryMap';
 
-import type { BookCandidate, SeriesHint } from './types';
+import type { BookCandidate, CoverRefs, SeriesHint } from './types';
 
 const SCALARS = [
   'subtitle',
@@ -24,6 +24,16 @@ function hintKey(h: SeriesHint): string {
   return `${h.source}|${h.name?.toLowerCase() ?? ''}|${h.position ?? ''}`;
 }
 
+/** Each provider's pointers survive a merge; the primary's win where both have one. */
+export function mergeCoverRefs(primary: CoverRefs, secondary: CoverRefs): CoverRefs {
+  return {
+    olEditionCoverIds: primary.olEditionCoverIds.length ? primary.olEditionCoverIds : secondary.olEditionCoverIds,
+    olWorkCoverIds: primary.olWorkCoverIds.length ? primary.olWorkCoverIds : secondary.olWorkCoverIds,
+    googleVolumeId: primary.googleVolumeId ?? secondary.googleVolumeId,
+    googleImageUrl: primary.googleImageUrl ?? secondary.googleImageUrl,
+  };
+}
+
 /**
  * Merges two descriptions of the same book. The primary (Open Library, by
  * convention) wins every field it has — edition facts such as publisher,
@@ -41,6 +51,7 @@ export function mergeCandidates(primary: BookCandidate, secondary: BookCandidate
   const hints = new Map<string, SeriesHint>();
   for (const h of [...primary.seriesHints, ...secondary.seriesHints]) if (!hints.has(hintKey(h))) hints.set(hintKey(h), h);
   merged.seriesHints = [...hints.values()];
+  merged.coverRefs = mergeCoverRefs(primary.coverRefs, secondary.coverRefs);
   merged.kind = primary.kind === 'edition' || secondary.kind === 'edition' ? 'edition' : 'work';
   merged.confidence = Math.max(primary.confidence, secondary.confidence);
   return merged;

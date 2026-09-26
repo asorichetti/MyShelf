@@ -2,7 +2,7 @@ import { isbn10To13, isbn13To10, isValidIsbn10, isValidIsbn13, normalizeIsbn, ty
 import { toIso6391 } from '@/domain/languages';
 import { parseSeriesString } from '@/domain/seriesParser';
 
-import { makeCandidate } from './candidate';
+import { emptyCoverRefs, makeCandidate } from './candidate';
 
 import type { BookCandidate, SeriesHint } from './types';
 
@@ -83,6 +83,11 @@ export function olid(key: string | null | undefined): string | null {
 /** Large cover URL for an Open Library cover id; ids ≤ 0 mean "no cover". */
 export function coverUrlFromId(id: number | null | undefined, size: 'S' | 'M' | 'L' = 'L'): string | null {
   return typeof id === 'number' && id > 0 ? `${COVERS_BASE}/b/id/${id}-${size}.jpg` : null;
+}
+
+/** Real cover ids from a `covers[]` list: Open Library uses `-1` for "no cover". */
+export function coverIds(ids: readonly number[] | null | undefined): number[] {
+  return (ids ?? []).filter((id) => Number.isInteger(id) && id > 0);
 }
 
 /** First plausible 4-digit year in free text: "March 2007" → 2007, "Jul 12, 2019" → 2019. */
@@ -198,6 +203,7 @@ export function mapEdition(edition: OlEdition, context: MapEditionContext = {}):
     format: mapPhysicalFormat(edition.physical_format),
     summary: descriptionText(work?.description) ?? descriptionText(edition.description),
     coverUrl: coverUrlFromId(edition.covers?.find((c) => c > 0) ?? work?.covers?.find((c) => c > 0)),
+    coverRefs: { ...emptyCoverRefs(), olEditionCoverIds: coverIds(edition.covers), olWorkCoverIds: coverIds(work?.covers) },
     subjects: uniqueStrings([...(edition.subjects ?? []), ...(work?.subjects ?? [])]),
     seriesHints: mapSeriesHints(edition.series),
     workKey,
@@ -227,6 +233,7 @@ export function mapSearchDoc(doc: OlSearchDoc): BookCandidate | null {
     publicationYear: typeof doc.first_publish_year === 'number' ? doc.first_publish_year : null,
     language: languages.length === 1 ? toIso6391(languages[0]) : null,
     coverUrl: coverUrlFromId(doc.cover_i),
+    coverRefs: { ...emptyCoverRefs(), olWorkCoverIds: coverIds(doc.cover_i === undefined ? [] : [doc.cover_i]) },
     subjects: uniqueStrings(doc.subject ?? []),
     workKey,
     editionCount: typeof doc.edition_count === 'number' ? doc.edition_count : null,

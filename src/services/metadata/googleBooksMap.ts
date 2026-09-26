@@ -3,7 +3,7 @@ import { toIso6391 } from '@/domain/languages';
 import { parsePosition, parseSeriesString } from '@/domain/seriesParser';
 import { stripHtml } from '@/domain/text';
 
-import { makeCandidate } from './candidate';
+import { emptyCoverRefs, makeCandidate } from './candidate';
 import { cleanText, uniqueStrings } from './openLibraryMap';
 
 import type { BookCandidate, SeriesHint } from './types';
@@ -104,6 +104,11 @@ export function mapVolume(volume: GbVolume, confidence = 0.5): BookCandidate | n
     language: toIso6391(info.language),
     summary: stripHtml(info.description),
     coverUrl: coverFromImageLinks(info.imageLinks),
+    coverRefs: {
+      ...emptyCoverRefs(),
+      googleVolumeId: volume.id,
+      googleImageUrl: info.imageLinks?.thumbnail ?? info.imageLinks?.smallThumbnail ?? null,
+    },
     subjects: uniqueStrings(info.categories ?? []),
     seriesHints,
     source: 'googlebooks',

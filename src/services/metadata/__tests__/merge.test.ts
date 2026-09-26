@@ -132,3 +132,26 @@ describe('dedupeCandidates', () => {
     expect(out.map((x) => x.title)).toEqual(['B', 'A']);
   });
 });
+
+describe('cover refs survive mapping and merging', () => {
+  it('keeps each provider’s cover pointers side by side', () => {
+    expect(olColour.coverRefs).toEqual({
+      olEditionCoverIds: [14647238],
+      olWorkCoverIds: [14647238, 13642933, 13946817, 13946819],
+      googleVolumeId: null,
+      googleImageUrl: null,
+    });
+    expect(gbColour.coverRefs).toMatchObject({ olEditionCoverIds: [], googleVolumeId: 'synthCoM01', googleImageUrl: expect.stringContaining('id=synthCoM01') });
+    expect(mergeCandidates(olColour, gbColour).coverRefs).toEqual({
+      olEditionCoverIds: [14647238],
+      olWorkCoverIds: [14647238, 13642933, 13946817, 13946819],
+      googleVolumeId: 'synthCoM01',
+      googleImageUrl: gbColour.coverRefs.googleImageUrl,
+    });
+  });
+
+  it('drops Open Library’s -1 "no cover" ids', () => {
+    const potter = mapEdition(olFixtures.editions.philosophersStone);
+    expect(potter.coverRefs.olEditionCoverIds).toEqual([7355968]);
+  });
+});
