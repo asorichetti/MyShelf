@@ -1,15 +1,16 @@
 import { fireEvent, screen } from '@testing-library/react-native';
 
-import { directionLabel, ShelfToolbar } from '@/components/book/ShelfToolbar';
-import type { ShelfSort } from '@/domain';
+import { ShelfToolbar } from '@/components/book/ShelfToolbar';
 import { renderWithTheme } from '@/testing/render';
 import { Testids } from '@/testing/testids.gen';
 
-function renderToolbar(query = '', sort: ShelfSort = { sort: 'title', direction: 'asc' }) {
+function renderToolbar(query = '', sortOpen = false) {
   const onQueryChange = jest.fn();
-  const onSortChange = jest.fn();
-  renderWithTheme(<ShelfToolbar query={query} onQueryChange={onQueryChange} sort={sort} onSortChange={onSortChange} />);
-  return { onQueryChange, onSortChange };
+  const onOpenSort = jest.fn();
+  renderWithTheme(
+    <ShelfToolbar query={query} onQueryChange={onQueryChange} sortLabel="Library order" sortDescription="Genre, then Author" onOpenSort={onOpenSort} sortOpen={sortOpen} />,
+  );
+  return { onQueryChange, onOpenSort };
 }
 
 describe('ShelfToolbar search', () => {
@@ -33,42 +34,19 @@ describe('ShelfToolbar search', () => {
   });
 });
 
-describe('ShelfToolbar sort menu', () => {
-  it('opens and closes, reporting its state', () => {
-    renderToolbar();
+describe('ShelfToolbar sort button', () => {
+  it('names the sort and opens the Sort sheet', () => {
+    const { onOpenSort } = renderToolbar();
     const button = screen.getByTestId(Testids.home.sortButton);
-    expect(button).toHaveTextContent(/Sort: Title, A to Z$/);
+    expect(button).toHaveTextContent(/Sort: Library order$/);
+    expect(button.props.accessibilityLabel).toBe('Sort: Genre, then Author');
     expect(button).toBeCollapsed();
-    expect(screen.queryByTestId(Testids.home.sortYear)).toBeNull();
     fireEvent.press(button);
+    expect(onOpenSort).toHaveBeenCalledTimes(1);
+  });
+
+  it('reports the open sheet', () => {
+    renderToolbar('', true);
     expect(screen.getByTestId(Testids.home.sortButton)).toBeExpanded();
-    expect(screen.getByRole('radio', { name: 'Title' })).toBeChecked();
-    fireEvent.press(screen.getByTestId(Testids.home.sortButton));
-    expect(screen.queryByTestId(Testids.home.sortYear)).toBeNull();
-  });
-
-  it.each([
-    [Testids.home.sortAuthor, { sort: 'author', direction: 'asc' }],
-    [Testids.home.sortYear, { sort: 'year', direction: 'asc' }],
-    [Testids.home.sortAdded, { sort: 'added', direction: 'desc' }],
-  ])('%s picks that order with its natural direction', (id, expected) => {
-    const { onSortChange } = renderToolbar();
-    fireEvent.press(screen.getByTestId(Testids.home.sortButton));
-    fireEvent.press(screen.getByTestId(id));
-    expect(onSortChange).toHaveBeenCalledWith(expected);
-  });
-
-  it('reverses the direction', () => {
-    const { onSortChange } = renderToolbar('', { sort: 'year', direction: 'asc' });
-    fireEvent.press(screen.getByTestId(Testids.home.sortButton));
-    expect(screen.getByTestId(Testids.home.sortDirection)).toHaveTextContent(/Oldest first$/);
-    fireEvent.press(screen.getByTestId(Testids.home.sortDirection));
-    expect(onSortChange).toHaveBeenCalledWith({ sort: 'year', direction: 'desc' });
-  });
-
-  it('names directions in words', () => {
-    expect(directionLabel({ sort: 'title', direction: 'desc' })).toBe('Z to A');
-    expect(directionLabel({ sort: 'added', direction: 'desc' })).toBe('Newest first');
-    expect(directionLabel({ sort: 'added', direction: 'asc' })).toBe('Oldest first');
   });
 });

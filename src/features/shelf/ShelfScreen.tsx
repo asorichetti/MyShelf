@@ -10,6 +10,7 @@ import { FilterSheet } from '@/components/book/FilterSheet';
 import { SectionHeader } from '@/components/book/SectionHeader';
 import { SelectionBar } from '@/components/book/SelectionBar';
 import { ShelfToolbar } from '@/components/book/ShelfToolbar';
+import { SortSheet } from '@/components/book/SortSheet';
 import { SpineShelf, spinesPerShelf } from '@/components/book/SpineShelf';
 import { Booky, HelpButton, useBooky } from '@/components/booky';
 import { GroupEditorSheet, type GroupDraft } from '@/components/groups/GroupEditorSheet';
@@ -18,7 +19,8 @@ import { ShelfLoanStamp } from '@/components/loans/ShelfLoanStamp';
 import { Button, Chip, ConfirmDialog, EmptyState, Heading, Screen, Text, useFloatClearance, useSnackbar } from '@/components/ui';
 import { useBottomObstacle } from '@/components/ui/layers';
 import type { ShelfSection } from '@/db';
-import { activeFilterCount, filterChips, languages, noFilters, today, type BookListItem, type ShelfGroupBy } from '@/domain';
+import { describeSort } from '@/db/sortKeys';
+import { activeFilterCount, filterChips, languages, matchingPreset, noFilters, today, type BookListItem, type ShelfGroupBy } from '@/domain';
 import { useGroups } from '@/features/groups/useGroups';
 import { ShelfPendingBanner } from '@/features/lookup/PendingLookupsProvider';
 import { goBackOr } from '@/features/navigation/goBack';
@@ -94,6 +96,7 @@ export function ShelfScreen() {
   const window = useWindowDimensions();
   const [listWidth, setListWidth] = useState(0);
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const [sortOpen, setSortOpen] = useState(false);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [creating, setCreating] = useState(false);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
@@ -111,6 +114,9 @@ export function ShelfScreen() {
   const filterCount = activeFilterCount(filters);
   const genreNames = useMemo(() => new Map(shelf.filterOptions?.genres.map((g) => [g.id, g.name]) ?? []), [shelf.filterOptions]);
   const chips = filterChips(filters, (id) => genreNames.get(id), languageName);
+  const sortDescription = describeSort(shelf.sort.levels, groupBy);
+  const preset = matchingPreset(shelf.sort.levels, shelf.presets);
+  const sortLabel = preset?.name ?? (shelf.sort.levels.length === 1 ? sortDescription : 'Custom');
 
   // Width the rows can use (the list pads 2 px each side).
   const width = (listWidth || Math.min(window.width, sizes.contentMaxWidth) - spacing.lg * 2) - spacing.xxs * 2;
@@ -213,8 +219,10 @@ export function ShelfScreen() {
           <ShelfToolbar
             query={shelf.query}
             onQueryChange={shelf.setQuery}
-            sort={shelf.sort}
-            onSortChange={shelf.setSort}
+            sortLabel={sortLabel}
+            sortDescription={sortDescription}
+            onOpenSort={() => setSortOpen(true)}
+            sortOpen={sortOpen}
             groupBy={groupBy}
             onGroupByChange={shelf.setGroupBy}
             viewMode={viewMode}
@@ -238,6 +246,9 @@ export function ShelfScreen() {
               <Button variant="ghost" label={t('filters.sheet.clearAll')} accessibilityLabel={t('shelf.screen.clearAllFilters')} onPress={() => shelf.setFilters(noFilters)} testID={Testids.shelfView.filterClear} />
             </View>
           ) : null}
+          <Text variant="caption" color="inkMuted" testID={Testids.home.sortSummary}>
+            {`Sorted by ${sortDescription}`}
+          </Text>
           <Text
             variant="caption"
             color="inkMuted"
@@ -370,6 +381,15 @@ export function ShelfScreen() {
         onChange={shelf.setFilters}
         onClose={() => setFiltersOpen(false)}
         languageName={languageName}
+      />
+      <SortSheet
+        visible={sortOpen}
+        sort={shelf.sort}
+        groupBy={groupBy}
+        presets={shelf.presets}
+        onChange={shelf.setSort}
+        onPresetsChange={shelf.setPresets}
+        onClose={() => setSortOpen(false)}
       />
       <GroupPickerSheet
         visible={pickerOpen}

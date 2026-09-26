@@ -80,14 +80,17 @@ describe('Shelf group by', () => {
   it('sorts by rating and filters by a minimum rating, and remembers both', async () => {
     const first = await openShelf();
     await act(async () => fireEvent.press(screen.getByTestId(Testids.home.sortButton)));
-    await act(async () => fireEvent.press(screen.getByTestId(Testids.home.sortRating)));
+    await act(async () => fireEvent.press(screen.getByTestId(Testids.sortSheet.levelKey)));
+    await act(async () => fireEvent.press(screen.getByRole('radio', { name: 'Rating' })));
     const names = () => screen.getAllByTestId(Testids.home.row).map((r) => r.props.accessibilityLabel as string);
     await waitFor(() => expect(names()[0]).toBe('Good Omens, by Terry Pratchett and Neil Gaiman, 1990, rated 5 out of 5'));
-    expect(screen.getByTestId(Testids.home.sortButton)).toHaveTextContent(/Sort: Rating, Highest first$/);
+    expect(screen.getByTestId(Testids.home.sortButton)).toHaveTextContent(/Sort: Rating$/);
+    expect(screen.getByTestId(Testids.sortSheet.levelDirection)).toHaveTextContent(/Highest first$/);
     expect(names().slice(0, 7).map((n) => /rated (\d)/.exec(n)?.[1])).toEqual(['5', '5', '5', '4', '4', '3', '3']);
     expect(names().slice(7).every((n) => !n.includes('rated'))).toBe(true);
-    await act(async () => fireEvent.press(screen.getByTestId(Testids.home.sortDirection)));
+    await act(async () => fireEvent.press(screen.getByTestId(Testids.sortSheet.levelDirection)));
     await waitFor(() => expect(names()[0]).toMatch(/rated 3 out of 5/));
+    await act(async () => fireEvent.press(screen.getByTestId(Testids.sortSheet.done)));
     expect(names()[names().length - 1]).not.toMatch(/rated/);
 
     await act(async () => fireEvent.press(screen.getByTestId(Testids.shelfView.filterButton)));
@@ -98,7 +101,7 @@ describe('Shelf group by', () => {
     expect(screen.getByTestId(Testids.home.resultCount)).toHaveTextContent('5 of 12 books match your filters');
     await advance(PREFS_DEBOUNCE_MS);
     await waitFor(async () => expect(await settingsRepo.getSetting(db, 'shelfFilters')).toMatchObject({ minRating: 4 }));
-    expect(await settingsRepo.getSetting(db, 'shelfSort')).toEqual({ sort: 'rating', direction: 'asc' });
+    expect(await settingsRepo.getSetting(db, 'shelfSort')).toEqual({ levels: [{ key: 'rating', direction: 'asc' }] });
     first.unmount();
     renderApp(db, '/', routes);
     await waitFor(() => expect(screen.getAllByTestId(Testids.home.row)).toHaveLength(5));

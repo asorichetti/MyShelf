@@ -5,6 +5,7 @@ import { SEARCH_DEBOUNCE_MS } from '@/features/shelf/useShelf';
 import { createTestDb } from '@/testing/createTestDb';
 import { loadFixture } from '@/testing/loadFixture';
 import { advance, renderApp } from '@/testing/renderApp';
+import { oneKey } from '@/testing/sorts';
 import { Testids } from '@/testing/testids.gen';
 
 let db: Db;
@@ -59,18 +60,22 @@ describe('Shelf search', () => {
 });
 
 describe('Shelf sort', () => {
-  it('re-orders the list and keeps the order after a restart', async () => {
+  it('re-orders the list from the Sort sheet and keeps the order after a restart', async () => {
     const first = await openShelf();
     await act(async () => fireEvent.press(screen.getByTestId(Testids.home.sortButton)));
-    await act(async () => fireEvent.press(screen.getByTestId(Testids.home.sortYear)));
+    expect(await screen.findByTestId(Testids.sortSheet.root)).toBeOnTheScreen();
+    await act(async () => fireEvent.press(screen.getByTestId(Testids.sortSheet.levelKey)));
+    await act(async () => fireEvent.press(screen.getByRole('radio', { name: 'Year published' })));
     await waitFor(() => expect(rowNames()[0]).toMatch(/^Pride and Prejudice/));
-    await act(async () => fireEvent.press(screen.getByTestId(Testids.home.sortDirection)));
+    await act(async () => fireEvent.press(screen.getByTestId(Testids.sortSheet.levelDirection)));
     await waitFor(() => expect(rowNames()[0]).toMatch(/^Good Omens/));
-    await waitFor(async () => expect(await settingsRepo.getSetting(db, 'shelfSort')).toEqual({ sort: 'year', direction: 'desc' }));
+    await waitFor(async () => expect(await settingsRepo.getSetting(db, 'shelfSort')).toEqual(oneKey('year', 'desc')));
+    await act(async () => fireEvent.press(screen.getByTestId(Testids.sortSheet.done)));
     first.unmount();
 
     await openShelf();
     expect(rowNames()[0]).toMatch(/^Good Omens/);
-    expect(screen.getByTestId(Testids.home.sortButton)).toHaveTextContent(/Sort: Year, Newest first$/);
+    expect(screen.getByTestId(Testids.home.sortButton)).toHaveTextContent(/Sort: Year published \(Newest first\)$/);
+    expect(screen.getByTestId(Testids.home.sortSummary)).toHaveTextContent('Sorted by Year published (Newest first)');
   });
 });

@@ -313,9 +313,11 @@ export const en = {
       searchPlaceholder: 'Search title, author or ISBN',
       clearSearch: 'Clear search',
       showBooksAs: 'Show books as',
-      /** {summary} is e.g. "Title, A to Z". */
+      /** {summary} is a preset's name ("Library order"), one level ("Year published (Newest first)") or "Custom". */
       sortButton: 'Sort: {summary}',
+      /** {summary} is the whole sort in words, e.g. "Genre, then Author". */
       sortButtonLabel: 'Sort by {summary}',
+      sortHint: 'Opens the sort options',
       sortSummary: '{field}, {direction}',
       /** {grouping} is e.g. "Genre". */
       groupButton: 'Group: {grouping}',

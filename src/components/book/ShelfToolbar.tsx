@@ -3,32 +3,10 @@ import { useState } from 'react';
 import { StyleSheet, TextInput, View } from 'react-native';
 
 import { Button, Chip, IconButton, Text, type IconName } from '@/components/ui';
-import { groupByLabelKeys, viewModeLabelKeys, type ShelfGroupBy, type ShelfSort, type ShelfSortKey, type ShelfViewMode, type SortDirection } from '@/domain';
-import { t, translate, type MessageKey } from '@/i18n';
+import { groupByLabelKeys, viewModeLabelKeys, type ShelfGroupBy, type ShelfViewMode } from '@/domain';
+import { t, translate } from '@/i18n';
 import { Testids } from '@/testing/testids.gen';
 import { useTheme } from '@/theme';
-
-export const sortOptions: { key: ShelfSortKey; label: MessageKey; testID: string }[] = [
-  { key: 'title', label: 'shelfView.sort.title', testID: Testids.home.sortTitle },
-  { key: 'author', label: 'shelfView.sort.author', testID: Testids.home.sortAuthor },
-  { key: 'year', label: 'shelfView.sort.year', testID: Testids.home.sortYear },
-  { key: 'added', label: 'shelfView.sort.added', testID: Testids.home.sortAdded },
-  { key: 'rating', label: 'shelfView.sort.rating', testID: Testids.home.sortRating },
-];
-
-/** The natural first direction for each sort: A-Z, oldest year first, newest addition first, best rated first. */
-export const defaultDirection: Record<ShelfSortKey, SortDirection> = { title: 'asc', author: 'asc', year: 'asc', added: 'desc', rating: 'desc' };
-
-export function directionLabel(sort: ShelfSort): string {
-  if (sort.sort === 'title' || sort.sort === 'author') return t(sort.direction === 'asc' ? 'shelfView.direction.aToZ' : 'shelfView.direction.zToA');
-  // Unrated books come last either way.
-  if (sort.sort === 'rating') return t(sort.direction === 'desc' ? 'shelfView.direction.highestFirst' : 'shelfView.direction.lowestFirst');
-  return t(sort.direction === 'asc' ? 'shelfView.direction.oldestFirst' : 'shelfView.direction.newestFirst');
-}
-
-export function sortSummary(sort: ShelfSort): string {
-  return t('shelfView.toolbar.sortSummary', { field: translate(sortOptions.find((o) => o.key === sort.sort)!.label), direction: directionLabel(sort) });
-}
 
 export const groupByOptions: { key: ShelfGroupBy; testID: string }[] = [
   { key: 'none', testID: Testids.shelfView.groupByNone },
@@ -48,8 +26,14 @@ export const viewModeOptions: { key: ShelfViewMode; icon: IconName; testID: stri
 export interface ShelfToolbarProps {
   query: string;
   onQueryChange: (query: string) => void;
-  sort: ShelfSort;
-  onSortChange: (sort: ShelfSort) => void;
+  /** The sort button's short name for the current sort ("Library order", "Custom"). */
+  sortLabel: string;
+  /** The whole sort in words, for the button's accessible name. */
+  sortDescription: string;
+  /** Opens the Sort sheet. */
+  onOpenSort: () => void;
+  /** Whether the Sort sheet is open. */
+  sortOpen?: boolean;
   /** Group-by menu (shown when `onGroupByChange` is given). */
   groupBy?: ShelfGroupBy;
   onGroupByChange?: (groupBy: ShelfGroupBy) => void;
@@ -65,14 +49,16 @@ export interface ShelfToolbarProps {
 
 /**
  * Above the Shelf list: a search box with a clear button, the display mode
- * switch, and buttons for the sort menu (field and direction), the group-by
- * menu, the filter sheet and selecting books. One menu is open at a time.
+ * switch, and buttons for the Sort sheet, the group-by menu, the filter sheet
+ * and selecting books.
  */
 export function ShelfToolbar({
   query,
   onQueryChange,
-  sort,
-  onSortChange,
+  sortLabel,
+  sortDescription,
+  onOpenSort,
+  sortOpen = false,
   groupBy = 'none',
   onGroupByChange,
   viewMode = 'list',
@@ -84,10 +70,7 @@ export function ShelfToolbar({
   const theme = useTheme();
   const { colors, spacing, radii, sizes } = theme;
   const [focused, setFocused] = useState(false);
-  const [open, setOpen] = useState<'sort' | 'group' | null>(null);
-  const menuOpen = open === 'sort';
-  const groupOpen = open === 'group';
-  const toggle = (menu: 'sort' | 'group') => setOpen((current) => (current === menu ? null : menu));
+  const [groupOpen, setGroupOpen] = useState(false);
 
   return (
     <View style={{ gap: spacing.sm }}>
@@ -146,12 +129,16 @@ export function ShelfToolbar({
       <View style={[styles.row, styles.sortRow, { columnGap: spacing.xs }]}>
         <Button
           variant="ghost"
-          label={t('shelfView.toolbar.sortButton', { summary: sortSummary(sort) })}
-          accessibilityLabel={t('shelfView.toolbar.sortButtonLabel', { summary: sortSummary(sort) })}
-          icon={<MaterialCommunityIcons name={menuOpen ? 'chevron-up' : 'sort'} size={sizes.icon} color={colors.primary} />}
-          onPress={() => toggle('sort')}
+          label={t('shelfView.toolbar.sortButton', { summary: sortLabel })}
+          accessibilityLabel={t('shelfView.toolbar.sortButtonLabel', { summary: sortDescription })}
+          accessibilityHint={t('shelfView.toolbar.sortHint')}
+          icon={<MaterialCommunityIcons name="sort" size={sizes.icon} color={colors.primary} />}
+          onPress={() => {
+            setGroupOpen(false);
+            onOpenSort();
+          }}
           testID={Testids.home.sortButton}
-          expanded={menuOpen}
+          expanded={sortOpen}
           style={{ paddingHorizontal: spacing.md }}
         />
         {onGroupByChange ? (
@@ -160,7 +147,7 @@ export function ShelfToolbar({
             label={t('shelfView.toolbar.groupButton', { grouping: translate(groupByLabelKeys[groupBy]) })}
             accessibilityLabel={t('shelfView.toolbar.groupButtonLabel', { grouping: translate(groupByLabelKeys[groupBy]) })}
             icon={<MaterialCommunityIcons name={groupOpen ? 'chevron-up' : 'format-list-group'} size={sizes.icon} color={colors.primary} />}
-            onPress={() => toggle('group')}
+            onPress={() => setGroupOpen((o) => !o)}
             testID={Testids.shelfView.groupByButton}
             expanded={groupOpen}
             style={{ paddingHorizontal: spacing.md }}
@@ -173,7 +160,7 @@ export function ShelfToolbar({
             accessibilityLabel={filterCount ? t('shelfView.toolbar.filterCountLabel', { count: filterCount }) : t('shelfView.toolbar.filter')}
             icon={<MaterialCommunityIcons name={filterCount ? 'filter' : 'filter-outline'} size={sizes.icon} color={colors.primary} />}
             onPress={() => {
-              setOpen(null);
+              setGroupOpen(false);
               onOpenFilters();
             }}
             testID={Testids.shelfView.filterButton}
@@ -187,7 +174,7 @@ export function ShelfToolbar({
             accessibilityLabel={t('shelfView.toolbar.selectBooks')}
             icon={<MaterialCommunityIcons name="checkbox-multiple-outline" size={sizes.icon} color={colors.primary} />}
             onPress={() => {
-              setOpen(null);
+              setGroupOpen(false);
               onSelect();
             }}
             testID={Testids.shelfView.selectButton}
@@ -195,37 +182,6 @@ export function ShelfToolbar({
           />
         ) : null}
       </View>
-      {menuOpen ? (
-        <View
-          role="radiogroup"
-          aria-label={t('shelfView.toolbar.sortBy')}
-          style={[styles.menu, { gap: spacing.sm, padding: spacing.md, borderRadius: radii.md, backgroundColor: colors.surfaceTint }]}
-        >
-          <Text variant="label" color="inkMuted">
-            {t('shelfView.toolbar.sortBy')}
-          </Text>
-          <View style={[styles.chips, { columnGap: spacing.sm }]}>
-            {sortOptions.map((o) => (
-              <Chip
-                key={o.key}
-                label={translate(o.label)}
-                role="radio"
-                selected={sort.sort === o.key}
-                testID={o.testID}
-                onPress={() => onSortChange({ sort: o.key, direction: o.key === sort.sort ? sort.direction : defaultDirection[o.key] })}
-              />
-            ))}
-          </View>
-          <Button
-            variant="secondary"
-            label={directionLabel(sort)}
-            accessibilityLabel={t('shelfView.toolbar.orderLabel', { direction: directionLabel(sort) })}
-            icon={<MaterialCommunityIcons name="swap-vertical" size={sizes.icon} color={colors.onPrimaryContainer} />}
-            onPress={() => onSortChange({ ...sort, direction: sort.direction === 'asc' ? 'desc' : 'asc' })}
-            testID={Testids.home.sortDirection}
-          />
-        </View>
-      ) : null}
       {groupOpen && onGroupByChange ? (
         <View
           role="radiogroup"
