@@ -31,6 +31,7 @@ Never lose a book to a friend again. The user records who borrowed a book and wh
 - **Files:** `src/db/repositories/loans.ts`, `src/components/loans/BorrowerPicker.tsx`.
 - **Acceptance:** case-insensitive de-duplication suggestion ("Sam already exists — use them?"); delete rules enforced.
 - **Tests:** `src/db/repositories/__tests__/borrowers.test.ts`, `src/components/loans/__tests__/BorrowerPicker.test.tsx`.
+- **Partly delivered:** the repository part is done in `loansRepo`: `searchBorrowers(db, prefix)` (the name or any word of it starts with the prefix, ignoring case and accents; most recent borrower first; a blank prefix lists everyone), `listBorrowersWithStats(db)` (`BorrowerWithStats`: `openLoans`, `totalLoans`, `lastLentOn`, most recent first, then A-Z), `findBorrowerByName(db, name)` for the "Sam already exists — use them?" suggestion (case, accents and punctuation ignored) and `deleteReturnedLoansForBorrower(db, id)`. `deleteBorrower` still throws `BorrowerHasLoansError` while any loan remains. Blank contact text is stored as null. The loan writes now check dates with the P05-02 rules before touching the database (`LoanValidationError`; the CHECK constraints stay as a backstop), and `lendBook` turns a foreign-key failure into `BorrowerNotFoundError` or `BookNotFoundError`. **Remaining:** `BorrowerPicker.tsx`, its test ids and `BorrowerPicker.test.tsx`.
 
 ### P05-02 Loan domain rules — done
 

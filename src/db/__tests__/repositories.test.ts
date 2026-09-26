@@ -476,9 +476,9 @@ describe('borrowers and loans repository', () => {
   it('rejects due and return dates before the lend date', async () => {
     const b = await book('Emma');
     const p = await loansRepo.createBorrower(db, 'Sam');
-    await expect(loansRepo.lendBook(db, { bookId: b.id, borrowerId: p.id, lentOn: '2026-02-01', dueOn: '2026-01-01' })).rejects.toThrow(/CHECK/);
+    await expect(loansRepo.lendBook(db, { bookId: b.id, borrowerId: p.id, lentOn: '2026-02-01', dueOn: '2026-01-01' })).rejects.toThrow(/due-before-lent/);
     const l = await loansRepo.lendBook(db, { bookId: b.id, borrowerId: p.id, lentOn: '2026-02-01' });
-    await expect(loansRepo.returnLoan(db, l.id, '2026-01-01')).rejects.toThrow(/CHECK/);
+    await expect(loansRepo.returnLoan(db, l.id, '2026-01-01')).rejects.toThrow(/returned-before-lent/);
   });
 
   it('lists open loans soonest-due first and overdue loans', async () => {
