@@ -79,7 +79,7 @@ export function parseColorScheme(s: string): ColorScheme | undefined {
 // helper does not exist. Defining it as the identity function in every page
 // (before any page script runs) keeps evaluate callbacks real, typechecked
 // functions instead of strings.
-const EVALUATE_SHIM = 'globalThis.__name = globalThis.__name || function (fn) { return fn; };';
+export const EVALUATE_SHIM = 'globalThis.__name = globalThis.__name || function (fn) { return fn; };';
 
 /** One Chromium process and the contexts opened on it. */
 export class Browser {
