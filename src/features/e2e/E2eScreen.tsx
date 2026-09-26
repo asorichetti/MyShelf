@@ -1,0 +1,70 @@
+import { router, useLocalSearchParams, type Href } from 'expo-router';
+import { useEffect, useState } from 'react';
+
+import { Booky } from '@/components/booky';
+import { EmptyState, Screen, Text } from '@/components/ui';
+import { useDatabase } from '@/db';
+import { isIsoDate, setToday } from '@/domain';
+import { NotFoundScreen } from '@/features/navigation/NotFoundScreen';
+import { fixtureNames, isFixtureName } from '@/testing/fixtures';
+import { loadFixture } from '@/testing/loadFixture';
+
+import { isE2eEnabled, safeNextPath } from './e2eFlag';
+
+type Params = { fixture?: string; next?: string; today?: string };
+
+function first(v: string | string[] | undefined): string | undefined {
+  return Array.isArray(v) ? v[0] : v;
+}
+
+function FixtureLoader() {
+  const db = useDatabase();
+  const params = useLocalSearchParams<Params>();
+  const fixture = first(params.fixture) ?? '';
+  const next = safeNextPath(first(params.next));
+  const frozen = first(params.today);
+  const problem = !isFixtureName(fixture)
+    ? `Unknown fixture "${fixture}". Try one of: ${fixtureNames.join(', ')}.`
+    : frozen != null && !isIsoDate(frozen)
+      ? `"today" must be a YYYY-MM-DD date, got "${frozen}".`
+      : null;
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (problem || !isFixtureName(fixture)) return;
+    let active = true;
+    if (frozen != null) setToday(frozen);
+    loadFixture(db, fixture)
+      .then(() => active && router.replace(next as Href))
+      .catch((e: unknown) => active && setError(e instanceof Error ? e.message : String(e)));
+    return () => {
+      active = false;
+    };
+  }, [db, fixture, next, frozen, problem]);
+
+  const message = problem ?? error;
+  if (message) {
+    return (
+      <Screen pageState="error" centered edges={['top', 'bottom', 'left', 'right']}>
+        <EmptyState illustration={<Booky expression="concerned" size={96} />} headingLevel={1} title="Couldn't load the fixture" />
+        <Text align="center" color="inkMuted" selectable>
+          {message}
+        </Text>
+      </Screen>
+    );
+  }
+  return (
+    <Screen pageState="loading" centered scroll={false} edges={['top', 'bottom', 'left', 'right']}>
+      <EmptyState illustration={<Booky expression="thinking" size={96} animated={false} />} headingLevel={1} title="Setting out the books…" />
+    </Screen>
+  );
+}
+
+/**
+ * `/e2e?fixture=<name>&next=<route>[&today=YYYY-MM-DD]`: wipes the library,
+ * loads a fixture and redirects. Only in builds with EXPO_PUBLIC_E2E=1; in
+ * every other build it is the not-found screen and touches nothing.
+ */
+export function E2eScreen() {
+  return isE2eEnabled() ? <FixtureLoader /> : <NotFoundScreen />;
+}

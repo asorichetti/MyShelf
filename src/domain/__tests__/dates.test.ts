@@ -1,9 +1,19 @@
-import { addDays, compareDates, daysBetween, isIsoDate, isOverdue, parseIsoDate, toIsoDate, today } from '@/domain';
+import { addDays, compareDates, daysBetween, isIsoDate, isOverdue, parseIsoDate, setToday, toIsoDate, today } from '@/domain';
 
 describe('dates', () => {
   it('formats local calendar dates', () => {
     expect(toIsoDate(new Date(2026, 0, 5, 23, 59))).toBe('2026-01-05');
     expect(today(new Date(2026, 8, 25, 0, 1))).toBe('2026-09-25');
+  });
+
+  it('can freeze today for the session and unfreeze it', () => {
+    setToday('2026-03-14');
+    expect(today()).toBe('2026-03-14');
+    // An explicit clock still wins, so pure callers stay deterministic.
+    expect(today(new Date(2026, 0, 2))).toBe('2026-01-02');
+    setToday(null);
+    expect(today()).toBe(toIsoDate(new Date()));
+    expect(() => setToday('2026-02-30')).toThrow(/calendar date/);
   });
 
   it('parses and validates', () => {

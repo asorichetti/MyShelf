@@ -3,6 +3,7 @@ export * as authorsRepo from './authors';
 export * as booksRepo from './books';
 export * as genresRepo from './genres';
 export * as groupsRepo from './groups';
+export * as libraryRepo from './library';
 export * as loansRepo from './loans';
 export * as pendingLookupsRepo from './pendingLookups';
 export * as seriesRepo from './series';

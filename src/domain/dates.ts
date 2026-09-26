@@ -13,9 +13,21 @@ export function toIsoDate(date: Date): IsoDate {
   return `${y}-${m}-${d}`;
 }
 
-/** Today's local calendar date. `now` is injectable for tests. */
-export function today(now: Date = new Date()): IsoDate {
-  return toIsoDate(now);
+let frozenToday: IsoDate | null = null;
+
+/**
+ * Freezes "today" for the rest of the session (E2E fixtures pass
+ * `&today=YYYY-MM-DD`), or unfreezes it with null. Held in memory only.
+ */
+export function setToday(value: IsoDate | null): void {
+  if (value != null) parseIsoDate(value);
+  frozenToday = value;
+}
+
+/** Today's local calendar date: the frozen date if one is set, else the clock. `now` is injectable for tests. */
+export function today(now?: Date): IsoDate {
+  if (now) return toIsoDate(now);
+  return frozenToday ?? toIsoDate(new Date());
 }
 
 export function parseIsoDate(value: IsoDate): Date {

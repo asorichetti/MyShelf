@@ -28,12 +28,13 @@ A usable, offline catalogue: the user can add a book by hand, see it on the Shel
 
 ## Task cards
 
-### P01-01 E2E fixture loader
+### P01-01 E2E fixture loader — done
 
 - **Description:** A route `src/app/e2e/index.tsx` that, only when `process.env.EXPO_PUBLIC_E2E === '1'`, wipes the database, loads a named fixture and redirects: `/e2e?fixture=<name>&next=<route>` (web) and `myshelf://e2e?fixture=<name>&next=<route>` (Android). In other builds it renders a "not found" screen and touches nothing. Fixtures are TypeScript data in `src/testing/fixtures/` (`empty`, `demo` — 12 books across 4 genres, 2 series with a gap, 3 authors with multiple books, 1 open loan, 1 overdue loan, 1 group — and `large` — 2,000 generated books for performance checks). A `loadFixture(db, name)` helper is shared with Jest. Freeze "today" for fixtures via an optional `&today=YYYY-MM-DD` param stored in memory for the session.
 - **Files:** `src/app/e2e/index.tsx`, `src/testing/fixtures/{index,empty,demo,large}.ts`, `src/testing/loadFixture.ts`, `src/domain/dates.ts` (clock override).
 - **Acceptance:** with `EXPO_PUBLIC_E2E=1`, `/e2e?fixture=demo&next=/` shows 12 books; without the flag, the route loads nothing and shows not-found; fixture loading is one transaction.
 - **Tests:** `src/testing/__tests__/loadFixture.test.ts` (node env: counts per table for each fixture), `src/app/e2e/__tests__/e2e.test.tsx` (flag on/off behaviour).
+- **Delivered:** the route re-exports `E2eScreen` from `src/features/e2e/` (with `e2eFlag.ts`), so the flag test is `src/features/e2e/__tests__/e2e.test.tsx` (nothing but routes lives in `src/app`). The flag is on for `expo start` through the committed `.env.development` (`EXPO_PUBLIC_E2E=1`); `expo export` and release builds do not load that file. The wipe is `libraryRepo.wipeLibrary(db)` (`src/db/repositories/library.ts`, with `countRows` for tests), since SQL stays in `src/db`; settings survive a wipe. Fixture types are in `src/testing/fixtures/types.ts`; loan dates are relative to `today()` (so the overdue loan stays overdue), and `setToday()` in `src/domain/dates.ts` freezes them. `demo` also has a returned loan (Mort) for loan history; `next` must be an in-app path. An unknown fixture shows `page-error` and loads nothing.
 
 ### P01-02 Books repository: list, search and sort queries
 
