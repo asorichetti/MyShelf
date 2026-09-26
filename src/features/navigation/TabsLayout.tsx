@@ -30,7 +30,7 @@ function FocusedTabScene({ children }: { children: ReactNode }) {
 
 export function TabsLayout() {
   const theme = useTheme();
-  const { colors, fonts } = theme;
+  const { colors, spacing, sizes, typography } = theme;
   const insets = useSafeAreaInsets();
   return (
     <View style={styles.fill}>
@@ -45,11 +45,12 @@ export function TabsLayout() {
             backgroundColor: colors.surface,
             borderTopColor: colors.border,
             borderTopWidth: 1,
-            height: 64 + insets.bottom,
-            paddingTop: 4,
-            paddingBottom: 6 + insets.bottom,
+            height: sizes.tabBar + insets.bottom,
+            paddingTop: spacing.xs,
+            paddingBottom: spacing.sm + insets.bottom,
           },
-          tabBarLabelStyle: { fontFamily: fonts.bodySemiBold, fontSize: 12, lineHeight: 16 },
+          tabBarItemStyle: { minHeight: sizes.touchTarget },
+          tabBarLabelStyle: typography.tabLabel,
           sceneStyle: { backgroundColor: colors.paper },
         }}
       >
@@ -66,13 +67,12 @@ export function TabsLayout() {
           />
         ))}
       </Tabs>
-      <BookyTipHost style={styles.tipHost} />
+      {/* Float Booky's tips just above the tab bar. */}
+      <BookyTipHost style={{ bottom: sizes.tabBar + insets.bottom + spacing.md }} />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   fill: { flex: 1 },
-  // Float the tip above the tab bar.
-  tipHost: { bottom: 76 },
 });

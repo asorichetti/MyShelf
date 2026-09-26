@@ -95,13 +95,20 @@ export function BookyBubble({
               accessibilityLabel="Dismiss Booky's tip"
               onPress={onDismiss}
               testID={dismissTestID}
-              hitSlop={8}
+              hitSlop={spacing.sm}
               style={({ pressed }) => [
                 styles.close,
-                { borderRadius: radii.pill, backgroundColor: pressed ? colors.surfaceTint : 'transparent' },
+                {
+                  top: spacing.xs,
+                  right: spacing.xs,
+                  width: theme.sizes.iconButton,
+                  height: theme.sizes.iconButton,
+                  borderRadius: radii.pill,
+                  backgroundColor: pressed ? colors.surfaceTint : 'transparent',
+                },
               ]}
             >
-              <MaterialCommunityIcons name="close" size={20} color={colors.inkMuted} />
+              <MaterialCommunityIcons name="close" size={theme.sizes.icon} color={colors.inkMuted} />
             </Pressable>
           ) : null}
         </View>
@@ -126,5 +133,5 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   actions: { flexDirection: 'row', flexWrap: 'wrap' },
-  close: { position: 'absolute', top: 6, right: 6, width: 32, height: 32, alignItems: 'center', justifyContent: 'center' },
+  close: { position: 'absolute', alignItems: 'center', justifyContent: 'center' },
 });

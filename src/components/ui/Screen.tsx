@@ -36,7 +36,7 @@ export function Screen({
       testID={testID}
       style={[
         styles.main,
-        { padding: theme.spacing.lg, gap: theme.spacing.lg },
+        { padding: theme.spacing.lg, gap: theme.spacing.lg, maxWidth: theme.sizes.contentMaxWidth },
         centered && styles.centered,
         contentStyle,
       ]}
@@ -66,6 +66,6 @@ export function Screen({
 const styles = StyleSheet.create({
   fill: { flex: 1 },
   grow: { flexGrow: 1 },
-  main: { flexGrow: 1, width: '100%', maxWidth: 720, alignSelf: 'center' },
+  main: { flexGrow: 1, width: '100%', alignSelf: 'center' },
   centered: { justifyContent: 'center' },
 });

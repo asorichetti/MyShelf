@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useMemo, useState, type ReactNo
 import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { Testids } from '@/testing/testids.gen';
+import { useTheme } from '@/theme';
 
 import { BookyBubble, type BookyAction } from './BookyBubble';
 import type { BookyExpression } from './expressions';
@@ -41,6 +42,7 @@ export function useBooky(): BookyContextValue {
 /** Renders the current tip, floating over the content. Place once per layout. */
 export function BookyTipHost({ style }: { style?: StyleProp<ViewStyle> }) {
   const { tip, dismissTip } = useBooky();
+  const { spacing, sizes } = useTheme();
   if (!tip) return null;
   const actions = tip.actions?.map((a) => ({
     ...a,
@@ -50,7 +52,10 @@ export function BookyTipHost({ style }: { style?: StyleProp<ViewStyle> }) {
     },
   }));
   return (
-    <View style={[styles.host, style]} testID={Testids.booky.tipHost}>
+    <View
+      style={[styles.host, { left: spacing.md, right: spacing.md, bottom: spacing.md, maxWidth: sizes.bubbleMaxWidth }, style]}
+      testID={Testids.booky.tipHost}
+    >
       <BookyBubble
         message={tip.message}
         title={tip.title}
@@ -67,5 +72,5 @@ export function BookyTipHost({ style }: { style?: StyleProp<ViewStyle> }) {
 }
 
 const styles = StyleSheet.create({
-  host: { pointerEvents: 'box-none', position: 'absolute', left: 12, right: 12, bottom: 12, maxWidth: 560, alignSelf: 'center' },
+  host: { pointerEvents: 'box-none', position: 'absolute', alignSelf: 'center' },
 });

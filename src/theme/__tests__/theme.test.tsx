@@ -1,11 +1,14 @@
 import { render } from '@testing-library/react-native';
 import { Text } from 'react-native';
 
+import { platformTypography as nativeTypography } from '@/theme/platformTypography';
+import { platformTypography as webTypography } from '@/theme/platformTypography.web';
 import {
   contrastRatio,
   lightTheme,
   textPairs,
   themeToCssVariables,
+  typography,
   ThemeProvider,
   themes,
   uiPairs,
@@ -63,7 +66,33 @@ describe('themeToCssVariables', () => {
     expect(vars['--ms-space-lg']).toBe('16px');
     expect(vars['--ms-radius-md']).toBe(`${lightTheme.radii.md}px`);
     expect(vars['--ms-font-heading']).toBe(lightTheme.fonts.heading);
+    expect(vars['--ms-text-h1-weight']).toBe('700');
+    expect(vars['--ms-size-touch-target']).toBe('48px');
     expect(Object.keys(vars).every((k) => /^--ms-[a-z0-9-]+$/.test(k))).toBe(true);
+  });
+});
+
+describe('typography', () => {
+  it('uses Lora for headings, Nunito for body and Courier Prime for stamps', () => {
+    expect(typography.h1.fontFamily).toMatch(/^Lora_/);
+    expect(typography.body.fontFamily).toMatch(/^Nunito_/);
+    expect(typography.stamp.fontFamily).toMatch(/^CourierPrime_/);
+  });
+
+  it('pairs every family with the weight of its font file', () => {
+    for (const style of Object.values(typography)) {
+      const fileWeight = /_(\d)00/.exec(style.fontFamily)?.[1];
+      expect(`${fileWeight}00`).toBe(style.fontWeight);
+    }
+  });
+
+  it('drops fontWeight on native and keeps it on web', () => {
+    expect(nativeTypography(typography).h1).not.toHaveProperty('fontWeight');
+    expect(webTypography(typography).h1.fontWeight).toBe('700');
+  });
+
+  it('keeps touch targets at 48dp or more', () => {
+    expect(lightTheme.sizes.touchTarget).toBeGreaterThanOrEqual(48);
   });
 });
 

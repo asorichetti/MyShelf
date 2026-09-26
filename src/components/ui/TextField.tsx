@@ -1,5 +1,5 @@
 import { useId, useState } from 'react';
-import { StyleSheet, TextInput, View, type TextInputProps } from 'react-native';
+import { TextInput, View, type TextInputProps } from 'react-native';
 
 import { useTheme } from '@/theme';
 
@@ -50,8 +50,8 @@ export function TextField({ label, value, onChangeText, helperText, errorText, t
         }}
         style={[
           theme.typography.body,
-          styles.input,
           {
+            minHeight: theme.sizes.touchTarget,
             color: colors.ink,
             backgroundColor: colors.surface,
             borderColor,
@@ -74,6 +74,3 @@ export function TextField({ label, value, onChangeText, helperText, errorText, t
   );
 }
 
-const styles = StyleSheet.create({
-  input: { minHeight: 48 },
-});

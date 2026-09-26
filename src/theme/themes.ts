@@ -1,8 +1,10 @@
+import { platformTypography, type PlatformTypography } from './platformTypography';
 import {
   elevation,
   fontFamilies,
   lightColors,
   radii,
+  sizes,
   spacing,
   typography,
   type ColorTokens,
@@ -14,8 +16,9 @@ export interface Theme {
   scheme: ColorSchemeName;
   colors: ColorTokens;
   spacing: typeof spacing;
+  sizes: typeof sizes;
   radii: typeof radii;
-  typography: typeof typography;
+  typography: PlatformTypography;
   fonts: typeof fontFamilies;
   elevation: typeof elevation;
 }
@@ -24,8 +27,9 @@ export const lightTheme: Theme = {
   scheme: 'light',
   colors: lightColors,
   spacing,
+  sizes,
   radii,
-  typography,
+  typography: platformTypography(typography),
   fonts: fontFamilies,
   elevation,
 };

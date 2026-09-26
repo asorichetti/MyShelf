@@ -66,6 +66,7 @@ export function Button({
       style={({ pressed }) => [
         styles.base,
         {
+          minHeight: theme.sizes.touchTarget,
           borderRadius: theme.radii.pill,
           paddingHorizontal: theme.spacing.xl,
           gap: theme.spacing.sm,
@@ -79,7 +80,7 @@ export function Button({
       ]}
     >
       {loading ? <ActivityIndicator color={theme.colors[v.fg]} size="small" /> : icon ? <View>{icon}</View> : null}
-      <Text variant="label" color={v.fg} style={styles.label}>
+      <Text variant="bodyStrong" color={v.fg}>
         {label}
       </Text>
     </Pressable>
@@ -88,7 +89,6 @@ export function Button({
 
 const styles = StyleSheet.create({
   base: {
-    minHeight: 48,
     borderWidth: 1.5,
     flexDirection: 'row',
     alignItems: 'center',
@@ -97,5 +97,4 @@ const styles = StyleSheet.create({
   },
   block: { alignSelf: 'stretch' },
   inactive: { opacity: 0.5 },
-  label: { fontSize: 16 },
 });

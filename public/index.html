@@ -16,9 +16,14 @@
       body {
         height: 100%;
       }
+      html {
+        /* Each weight is its own font file; never fake bold/italic on top. */
+        font-synthesis: none;
+      }
       body {
         margin: 0;
         overflow: hidden;
+        font-family: var(--ms-font-body, system-ui), system-ui, sans-serif;
         background-color: var(--ms-color-paper, #FBF6EC);
         color: var(--ms-color-ink, #271D38);
       }

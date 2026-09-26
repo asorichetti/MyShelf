@@ -15,7 +15,7 @@ export const palette = {
   plum300: '#BFA3E3',
   plum400: '#9B74CF',
   plum500: '#7B4FB8',
-  plum600: '#653D9E',
+  plum600: '#6B3FA8',
   plum700: '#512F82',
   plum800: '#3D2363',
   plum900: '#2A1846',
@@ -185,6 +185,20 @@ export const spacing = {
   xxxl: 48,
 } as const;
 
+/** Fixed sizes for layout and touch targets. */
+export const sizes = {
+  /** Minimum touch target (dp). */
+  touchTarget: 48,
+  /** Small icon button inside another control (e.g. a bubble's close button). */
+  iconButton: 32,
+  icon: 20,
+  /** Tab bar height above the bottom safe-area inset. */
+  tabBar: 64,
+  /** Readable content column on wide screens. */
+  contentMaxWidth: 720,
+  bubbleMaxWidth: 560,
+} as const;
+
 export const radii = {
   none: 0,
   sm: 6,
@@ -194,35 +208,49 @@ export const radii = {
   pill: 999,
 } as const;
 
-/** Font family names as registered by `useFonts` in the root layout. */
+/**
+ * Font family names as registered by `useFonts` in the root layout: Lora
+ * (bookish serif) for headings, Nunito (rounded sans) for body text and
+ * Courier Prime (typewriter) for stamps, ISBNs and call numbers.
+ */
 export const fontFamilies = {
-  headingRegular: 'Fraunces_500Medium',
-  heading: 'Fraunces_600SemiBold',
-  headingBold: 'Fraunces_700Bold',
+  headingRegular: 'Lora_500Medium',
+  heading: 'Lora_600SemiBold',
+  headingBold: 'Lora_700Bold',
   body: 'Nunito_400Regular',
   bodyItalic: 'Nunito_400Regular_Italic',
   bodySemiBold: 'Nunito_600SemiBold',
   bodyBold: 'Nunito_700Bold',
+  mono: 'CourierPrime_400Regular',
+  monoBold: 'CourierPrime_700Bold',
 } as const;
+
+export type FontWeight = '400' | '500' | '600' | '700';
 
 export interface TypeStyle {
   fontFamily: string;
+  /** The weight of the font file named by `fontFamily` (see platformTypography). */
+  fontWeight: FontWeight;
   fontSize: number;
   lineHeight: number;
   letterSpacing?: number;
 }
 
 export const typography = {
-  display: { fontFamily: fontFamilies.headingBold, fontSize: 34, lineHeight: 42, letterSpacing: -0.3 },
-  h1: { fontFamily: fontFamilies.headingBold, fontSize: 28, lineHeight: 36, letterSpacing: -0.2 },
-  h2: { fontFamily: fontFamilies.heading, fontSize: 22, lineHeight: 30 },
-  h3: { fontFamily: fontFamilies.heading, fontSize: 18, lineHeight: 24 },
-  body: { fontFamily: fontFamilies.body, fontSize: 16, lineHeight: 24 },
-  bodyStrong: { fontFamily: fontFamilies.bodyBold, fontSize: 16, lineHeight: 24 },
-  label: { fontFamily: fontFamilies.bodySemiBold, fontSize: 14, lineHeight: 20, letterSpacing: 0.1 },
-  caption: { fontFamily: fontFamilies.body, fontSize: 13, lineHeight: 18 },
-  /** Uppercase stamp lettering, e.g. due-date stamps. */
-  stamp: { fontFamily: fontFamilies.bodyBold, fontSize: 12, lineHeight: 16, letterSpacing: 1.2 },
+  display: { fontFamily: fontFamilies.headingBold, fontWeight: '700', fontSize: 34, lineHeight: 42, letterSpacing: -0.3 },
+  h1: { fontFamily: fontFamilies.headingBold, fontWeight: '700', fontSize: 28, lineHeight: 36, letterSpacing: -0.2 },
+  h2: { fontFamily: fontFamilies.heading, fontWeight: '600', fontSize: 22, lineHeight: 30 },
+  h3: { fontFamily: fontFamilies.heading, fontWeight: '600', fontSize: 18, lineHeight: 24 },
+  body: { fontFamily: fontFamilies.body, fontWeight: '400', fontSize: 16, lineHeight: 24 },
+  bodyStrong: { fontFamily: fontFamilies.bodyBold, fontWeight: '700', fontSize: 16, lineHeight: 24 },
+  label: { fontFamily: fontFamilies.bodySemiBold, fontWeight: '600', fontSize: 14, lineHeight: 20, letterSpacing: 0.1 },
+  /** Tab bar labels and other small UI text. */
+  tabLabel: { fontFamily: fontFamilies.bodySemiBold, fontWeight: '600', fontSize: 12, lineHeight: 16 },
+  caption: { fontFamily: fontFamilies.body, fontWeight: '400', fontSize: 13, lineHeight: 18 },
+  /** Typewriter details: ISBNs, call numbers. */
+  mono: { fontFamily: fontFamilies.mono, fontWeight: '400', fontSize: 14, lineHeight: 20 },
+  /** Uppercase rubber-stamp lettering, e.g. due-date stamps. */
+  stamp: { fontFamily: fontFamilies.monoBold, fontWeight: '700', fontSize: 13, lineHeight: 16, letterSpacing: 1 },
 } as const satisfies Record<string, TypeStyle>;
 
 export type TypographyVariant = keyof typeof typography;

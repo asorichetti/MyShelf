@@ -1,4 +1,5 @@
 import type { Theme } from './themes';
+import { typography } from './tokens';
 
 const kebab = (s: string) => s.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`);
 
@@ -10,10 +11,14 @@ export function themeToCssVariables(theme: Theme): Record<string, string> {
   const vars: Record<string, string> = {};
   for (const [k, v] of Object.entries(theme.colors)) vars[`--ms-color-${kebab(k)}`] = v;
   for (const [k, v] of Object.entries(theme.spacing)) vars[`--ms-space-${kebab(k)}`] = `${v}px`;
+  for (const [k, v] of Object.entries(theme.sizes)) vars[`--ms-size-${kebab(k)}`] = `${v}px`;
   for (const [k, v] of Object.entries(theme.radii)) vars[`--ms-radius-${kebab(k)}`] = `${v}px`;
   for (const [k, v] of Object.entries(theme.fonts)) vars[`--ms-font-${kebab(k)}`] = v;
   for (const [k, v] of Object.entries(theme.elevation)) vars[`--ms-elevation-${kebab(k)}`] = v;
-  for (const [k, v] of Object.entries(theme.typography)) vars[`--ms-text-${kebab(k)}-size`] = `${v.fontSize}px`;
+  for (const [k, v] of Object.entries(typography)) {
+    vars[`--ms-text-${kebab(k)}-size`] = `${v.fontSize}px`;
+    vars[`--ms-text-${kebab(k)}-weight`] = v.fontWeight;
+  }
   return vars;
 }
 
