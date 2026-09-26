@@ -9,4 +9,11 @@ export const Testids = {
     root: 'home-root',
     title: 'home-title',
   },
+  booky: {
+    avatar: 'booky-avatar',
+    bubble: 'booky-bubble',
+    bubbleMessage: 'booky-bubble-message',
+    bubbleDismiss: 'booky-bubble-dismiss',
+    tipHost: 'booky-tip-host',
+  },
 } as const;

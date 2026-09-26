@@ -1,4 +1,11 @@
 {
   "pageState": { "content": "page-content", "error": "page-error" },
-  "home": { "root": "home-root", "title": "home-title" }
+  "home": { "root": "home-root", "title": "home-title" },
+  "booky": {
+    "avatar": "booky-avatar",
+    "bubble": "booky-bubble",
+    "bubbleMessage": "booky-bubble-message",
+    "bubbleDismiss": "booky-bubble-dismiss",
+    "tipHost": "booky-tip-host"
+  }
 }

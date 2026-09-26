@@ -24,3 +24,20 @@ var Home = homeSelectors{
 	Root:  `[data-testid="home-root"]`,
 	Title: `[data-testid="home-title"]`,
 }
+
+type bookySelectors struct {
+	Avatar        string
+	Bubble        string
+	BubbleMessage string
+	BubbleDismiss string
+	TipHost       string
+}
+
+// Booky selectors.
+var Booky = bookySelectors{
+	Avatar:        `[data-testid="booky-avatar"]`,
+	Bubble:        `[data-testid="booky-bubble"]`,
+	BubbleMessage: `[data-testid="booky-bubble-message"]`,
+	BubbleDismiss: `[data-testid="booky-bubble-dismiss"]`,
+	TipHost:       `[data-testid="booky-tip-host"]`,
+}
