@@ -22,9 +22,14 @@ export interface LoanStampInfo {
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-/** "12 Oct", or "12 Oct 2027" when the date is not in `today`'s year. */
+/** "12 Oct", or "12 Oct 2027" when the date is not in `today`'s year; a value that is not a date as it is. */
 export function formatShortDate(value: IsoDate, today?: IsoDate): string {
-  const d = parseIsoDate(value);
+  let d: Date;
+  try {
+    d = parseIsoDate(value);
+  } catch {
+    return String(value);
+  }
   const short = `${d.getDate()} ${MONTHS[d.getMonth()]}`;
   return today != null && today.slice(0, 4) === value.slice(0, 4) ? short : `${short} ${d.getFullYear()}`;
 }

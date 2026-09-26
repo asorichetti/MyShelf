@@ -20,14 +20,24 @@ export const MAX_LOAN_DAYS = 3650;
 type LoanDates = Pick<Loan, 'dueOn' | 'returnedOn'>;
 
 /**
+ * The due date, or null when there is none or it is not a real date (a
+ * corrupt row, say, from an edited backup): such a loan counts as undated
+ * rather than breaking every screen that shows it (P09-04).
+ */
+function dueDate(loan: LoanDates): IsoDate | null {
+  return loan.dueOn != null && isIsoDate(loan.dueOn) ? loan.dueOn : null;
+}
+
+/**
  * `returned` once returned; `overdue` after the due date; `due-soon` from
  * three days before the due date up to and including the due date itself;
  * otherwise (or with no due date) `on-loan`.
  */
 export function loanStatus(loan: LoanDates, today: IsoDate): LoanStatus {
   if (loan.returnedOn != null) return 'returned';
-  if (loan.dueOn == null) return 'on-loan';
-  const left = daysBetween(today, loan.dueOn);
+  const due = dueDate(loan);
+  if (due == null) return 'on-loan';
+  const left = daysBetween(today, due);
   if (left < 0) return 'overdue';
   return left <= DUE_SOON_DAYS ? 'due-soon' : 'on-loan';
 }
@@ -44,19 +54,21 @@ export function isOverdue(loan: LoanDates, today: IsoDate): boolean {
 
 /** Whole days past the due date for an open loan; 0 when not overdue. */
 export function daysOverdue(loan: LoanDates, today: IsoDate): number {
-  return isOverdue(loan, today) ? daysBetween(loan.dueOn!, today) : 0;
+  return isOverdue(loan, today) ? daysBetween(dueDate(loan)!, today) : 0;
 }
 
 /** Days until an open loan is due (0 = today, negative = overdue); null when returned or undated. */
 export function daysUntilDue(loan: LoanDates, today: IsoDate): number | null {
-  if (loan.returnedOn != null || loan.dueOn == null) return null;
-  return daysBetween(today, loan.dueOn);
+  const due = dueDate(loan);
+  if (loan.returnedOn != null || due == null) return null;
+  return daysBetween(today, due);
 }
 
 /** How many days after its due date a returned loan came back; 0 when on time, open or undated. */
 export function daysReturnedLate(loan: LoanDates): number {
-  if (loan.returnedOn == null || loan.dueOn == null) return 0;
-  return Math.max(0, daysBetween(loan.dueOn, loan.returnedOn));
+  const due = dueDate(loan);
+  if (loan.returnedOn == null || due == null || !isIsoDate(loan.returnedOn)) return 0;
+  return Math.max(0, daysBetween(due, loan.returnedOn));
 }
 
 /** A usable loan length: whole days from 1 to MAX_LOAN_DAYS, else the default. */

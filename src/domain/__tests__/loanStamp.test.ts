@@ -33,3 +33,9 @@ describe('formatShortDate', () => {
     expect(formatShortDate('2026-10-12')).toBe('12 Oct 2026');
   });
 });
+
+describe('formatShortDate with a value that is not a date (P09-04)', () => {
+  it('shows it as it is', () => {
+    expect(formatShortDate('someday', '2026-06-20')).toBe('someday');
+  });
+});

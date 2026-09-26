@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { loansRepo, useDatabase } from '@/db';
-import { daysBetween, loanStatus, today as todayOf, type IsoDate, type LoanStatus, type LoanWithDetails } from '@/domain';
+import { loanStatus, today as todayOf, type IsoDate, type LoanStatus, type LoanWithDetails } from '@/domain';
 import { useLibraryEvent } from '@/features/events';
 
 const RANK: Record<LoanStatus, number> = { overdue: 0, 'due-soon': 1, 'on-loan': 2, returned: 3 };
@@ -14,7 +14,8 @@ export function sortOutNow(loans: readonly LoanWithDetails[], today: IsoDate): L
   return [...loans].sort((a, b) => {
     const rank = RANK[loanStatus(a, today)] - RANK[loanStatus(b, today)];
     if (rank) return rank;
-    if (a.dueOn && b.dueOn && a.dueOn !== b.dueOn) return daysBetween(b.dueOn, a.dueOn);
+    // YYYY-MM-DD sorts as text, and a corrupt date then sorts somewhere instead of throwing.
+    if (a.dueOn && b.dueOn && a.dueOn !== b.dueOn) return a.dueOn < b.dueOn ? -1 : 1;
     if (a.dueOn && !b.dueOn) return -1;
     if (!a.dueOn && b.dueOn) return 1;
     return a.lentOn === b.lentOn ? a.id - b.id : a.lentOn < b.lentOn ? -1 : 1;

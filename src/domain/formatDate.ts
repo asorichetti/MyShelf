@@ -46,7 +46,15 @@ export function formatDateAs(value: IsoDate, format: DateFormat, locale?: string
   return `${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
 }
 
-/** "2026-10-12" in the user's chosen format ("12 Oct 2026" unless they picked another). */
+/**
+ * "2026-10-12" in the user's chosen format ("12 Oct 2026" unless they picked
+ * another). A stored value that is not a real date (a corrupt row) is shown
+ * as it is rather than breaking the screen (P09-04).
+ */
 export function formatDate(value: IsoDate): string {
-  return formatDateAs(value, current);
+  try {
+    return formatDateAs(value, current);
+  } catch {
+    return String(value);
+  }
 }

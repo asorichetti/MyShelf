@@ -31,3 +31,10 @@ describe('formatDate', () => {
     expect(formatDate('2026-06-20')).toBe('2026-06-20');
   });
 });
+
+describe('formatDate with a stored value that is not a date (P09-04)', () => {
+  it('shows it as it is instead of throwing', () => {
+    expect(formatDate('yesterday')).toBe('yesterday');
+    expect(formatDate('2026-02-30')).toBe('2026-02-30');
+  });
+});

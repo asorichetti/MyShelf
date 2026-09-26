@@ -1,4 +1,4 @@
-import { parseIsoDate, type IsoDate, type LoanWithDetails } from '@/domain';
+import { isIsoDate, parseIsoDate, type IsoDate, type LoanWithDetails } from '@/domain';
 
 /**
  * Due-date reminders (P05-08): which local notifications should exist, and
@@ -40,12 +40,13 @@ export function reminderTime(dueOn: IsoDate): Date {
 /**
  * The reminders that should exist at `now`: one per open loan with a due
  * date whose 10:00 has not passed yet. Returned loans, loans without a due
- * date and times already past get none (an overdue loan is Booky's nudge).
+ * date (or with one that is not a real date: a corrupt row) and times
+ * already past get none (an overdue loan is Booky's nudge).
  */
 export function planReminders(loans: readonly ReminderLoan[], now: Date): ReminderRequest[] {
   const out: ReminderRequest[] = [];
   for (const loan of loans) {
-    if (loan.returnedOn != null || loan.dueOn == null) continue;
+    if (loan.returnedOn != null || loan.dueOn == null || !isIsoDate(loan.dueOn)) continue;
     const at = reminderTime(loan.dueOn);
     if (at.getTime() <= now.getTime()) continue;
     out.push({

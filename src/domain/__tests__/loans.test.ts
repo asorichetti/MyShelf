@@ -258,3 +258,14 @@ describe('timezones and daylight saving (child processes)', () => {
     ).toEqual(['due-soon', 'overdue']);
   });
 });
+
+describe('a due date that is not a real date (a corrupt row, P09-04)', () => {
+  const odd = { dueOn: 'zzz', returnedOn: null };
+  it('counts as undated instead of throwing', () => {
+    expect(loanStatus(odd, '2026-06-20')).toBe('on-loan');
+    expect(daysOverdue(odd, '2026-06-20')).toBe(0);
+    expect(daysUntilDue(odd, '2026-06-20')).toBeNull();
+    expect(daysReturnedLate({ dueOn: 'zzz', returnedOn: '2026-06-20' })).toBe(0);
+    expect(daysReturnedLate({ dueOn: '2026-06-01', returnedOn: 'later' })).toBe(0);
+  });
+});

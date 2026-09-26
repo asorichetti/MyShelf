@@ -44,6 +44,10 @@ describe('planReminders: which loans get a reminder, and when', () => {
     expect(planReminders([loan(1, '2026-06-14')], NOW)).toEqual([]);
   });
 
+  it('skips a loan whose due date is not a real date (a corrupt row) instead of failing them all', () => {
+    expect(planReminders([loan(1, 'zzz'), loan(2, '2026-02-30'), loan(3, '2026-06-20')], NOW).map((r) => r.loanId)).toEqual([3]);
+  });
+
   it('keeps 10:00 across a daylight-saving change', () => {
     expect(reminderTime('2026-03-29').getHours()).toBe(10);
     expect(reminderTime('2026-10-25').getHours()).toBe(10);
