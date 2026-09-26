@@ -19,7 +19,7 @@ Turn Booky from a component (P00-10) into a genuinely helpful, never-annoying as
 
 ## Prerequisites
 
-- Phases 00–06 (the triggers refer to their features). Earlier phases may already call `useBooky().say()` directly; this phase moves those calls onto the engine.
+- Phases 00–06 (the triggers refer to their features). Earlier phases may already call `useBooky().showTip()` directly; this phase moves those calls onto the engine.
 
 ---
 
@@ -76,14 +76,14 @@ Turn Booky from a component (P00-10) into a genuinely helpful, never-annoying as
 
 ### P07-08 Motion and reduce-motion
 
-- **Description:** Subtle idle bob (2 px, 3 s loop), blink every ~5 s, bubble pop-in (150 ms scale/opacity), celebration from P04-08, using `react-native-reanimated` (install with `npx expo install react-native-reanimated` if not already present). All disabled when reduce-motion is on (`useReducedMotion`); web honours `prefers-reduced-motion`.
+- **Description:** Booky already has an idle bob (P00-10: React Native `Animated`, a 2.8 s loop, off with reduce-motion). Tune it (about 2 px, 3 s loop) and add a blink every ~5 s, bubble pop-in (150 ms scale/opacity), celebration from P04-08, using `react-native-reanimated` (install with `npx expo install react-native-reanimated` if not already present). All disabled when reduce-motion is on (`useReducedMotion`); web honours `prefers-reduced-motion`.
 - **Files:** `src/components/booky/Booky.tsx`, `src/components/booky/useBookyMotion.ts`.
 - **Acceptance:** no animation frames scheduled with reduce-motion; no layout shift from animation.
 - **Tests:** `src/components/booky/__tests__/useBookyMotion.test.tsx`.
 
 ### P07-09 Booky accessibility pass
 
-- **Description:** Verify and fix: avatar hidden from accessibility tree; bubble text announced politely (Android `announceForAccessibility`, web `aria-live="polite"` region); no focus steal; dismiss labelled, 48 dp; bubble text contrast AA; every error Booky mentions also appears inline on the screen.
+- **Description:** Verify and fix: Booky's avatar is one labelled image (`role="img"`, label names the expression) with its artwork hidden ([ADR 0014](../adr/0014-warm-paper-palette-and-labelled-booky.md)); bubble text announced politely (live region: `accessibilityLiveRegion` on Android, `aria-live="polite"` on web); no focus steal; dismiss labelled, 48 dp; bubble text contrast AA; every error Booky mentions also appears inline on the screen.
 - **Files:** `src/components/booky/*`.
 - **Acceptance:** the auto test suite's `a11y` gate clean on screens with a bubble open; TalkBack manual check noted in PR.
 - **Tests:** `src/components/booky/__tests__/a11y.test.tsx`.
@@ -104,7 +104,7 @@ Turn Booky from a component (P00-10) into a genuinely helpful, never-annoying as
 }
 ```
 
-(`booky.avatar`…`booky.action` exist from P00 — extend the group.)
+(`booky.avatar`, `bubble`, `bubbleText`, `dismiss`, `action` and `tipHost` exist from P00 — extend the group.)
 
 ## Auto test suite journeys
 

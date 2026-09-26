@@ -21,7 +21,8 @@ A usable, offline catalogue: the user can add a book by hand, see it on the Shel
 
 ## Prerequisites
 
-- Phase 00 complete: theme, UI primitives, Booky, tabs, `Db` + repositories + `0001_init`, the auto test suite, CI.
+- Phase 00 complete: theme, UI primitives (including `CatalogueCard`, `Chip`, `Stamp`, `ConfirmDialog` and `Snackbar` from P00-30), Booky, tabs, `Db` + repositories + `0001_init`, the auto test suite, CI.
+- Screens follow the Phase 00 layout: a route file in `src/app` re-exports a screen from `src/features/<feature>/`, and repository functions are called as `booksRepo.createBook(db, …)` with the `Db` from `useDatabase()`.
 
 ---
 
@@ -36,22 +37,22 @@ A usable, offline catalogue: the user can add a book by hand, see it on the Shel
 
 ### P01-02 Books repository: list, search and sort queries
 
-- **Description:** Extend `books` repository: `list({ query?, sort, direction, limit, offset })` returning `BookListItem` (id, title, subtitle, primary author, cover_uri, publication_year, series name + position, on-loan flag). Search matches title, subtitle, author names and ISBN (normalised) case-insensitively. Sorts: `title` (ignoring leading "The/A/An"), `author` (sort_name), `year`, `added` (created_at). `getDetail(id)` returns `BookDetail` with authors (ordered), genres, series, open loan.
+- **Description:** Extend `booksRepo` (`src/db/repositories/books.ts`, which already has `listBooks`, `searchBooks` and `countBooks`): `listBookItems(db, { query?, sort, direction, limit, offset })` returning `BookListItem` (id, title, subtitle, primary author, cover_uri, publication_year, series name + position, on-loan flag). Search matches title, subtitle, author names (as `searchBooks` does today) and ISBN (normalised) case-insensitively. Sorts: `title` (ignoring leading "The/A/An"), `author` (sort_name), `year`, `added` (created_at). `getBookDetail(db, id)` returns `BookDetail` with authors (ordered), genres, series, open loan.
 - **Files:** `src/db/repositories/books.ts`, `src/domain/book.ts` (`sortableTitle`).
 - **Acceptance:** each sort order correct on the `demo` fixture; search "prat" finds Pratchett; ISBN search with hyphens works; list query uses indexes (no N+1 — one query plus one for authors).
 - **Tests:** `src/db/repositories/__tests__/books.list.test.ts`, `src/domain/__tests__/book.test.ts`.
 
 ### P01-03 Shelf screen (list of catalogue cards)
 
-- **Description:** `useShelf()` feature hook (loads list, reloads on focus and on a `library-changed` event). Shelf tab renders a `FlatList` of `BookRow` (compact catalogue card: cover thumb, title in Lora, author and year in Courier Prime, series badge "Discworld #5", "On loan" stamp). Tapping opens `/book/[id]`. Floating "Add book" button. Empty state: Booky (*happy*) "Your shelf is empty — scan or add your first book" with actions to Scan and Add manually.
-- **Files:** `src/features/shelf/useShelf.ts`, `src/features/events.ts`, `src/components/book/BookRow.tsx`, `src/app/(tabs)/index.tsx`.
+- **Description:** `useShelf()` feature hook (loads list, reloads on focus and on a `library-changed` event). The Shelf screen (`src/features/shelf/ShelfScreen.tsx`, re-exported by `src/app/(tabs)/index.tsx`) renders a `FlatList` of `BookRow` (compact catalogue card: cover thumb, title in Lora, author and year in Courier Prime, series badge "Discworld #5", "On loan" stamp). Tapping opens `/book/[id]`. Floating "Add book" button. Empty state: the existing one (Booky *happy*, "Your shelf is empty", Scan action) gains an "Add manually" action.
+- **Files:** `src/features/shelf/useShelf.ts`, `src/features/events.ts`, `src/components/book/BookRow.tsx`, `src/features/shelf/ShelfScreen.tsx`.
 - **Acceptance:** 12 rows with `demo`; empty state with `empty`; row accessible label "Title, by Author, Year"; list scrolls smoothly with `large`.
 - **Tests:** `src/features/shelf/__tests__/useShelf.test.tsx`, `src/components/book/__tests__/BookRow.test.tsx`, `src/__tests__/shelf.test.tsx`.
 
 ### P01-04 Shelf search and sort controls
 
-- **Description:** Search field (debounced 200 ms, clear button) and a sort menu (Title, Author, Year, Recently added; direction toggle) above the list. Current sort persisted in `settings` (`shelf.sort`). "No matches" state with Booky (*thinking*) and a "Clear search" action.
-- **Files:** `src/components/book/ShelfToolbar.tsx`, `src/app/(tabs)/index.tsx`, `src/db/repositories/settings.ts` (key).
+- **Description:** Search field (debounced 200 ms, clear button) and a sort menu (Title, Author, Year, Recently added; direction toggle) above the list. Current sort persisted in `settings` (key `shelfSort`). "No matches" state with Booky (*thinking*) and a "Clear search" action.
+- **Files:** `src/components/book/ShelfToolbar.tsx`, `src/features/shelf/ShelfScreen.tsx`, `src/domain/settings.ts` (`shelfSort` in `AppSettings` and `settingDefaults`).
 - **Acceptance:** typing filters results; sort survives app restart; screen reader announces result count.
 - **Tests:** `src/components/book/__tests__/ShelfToolbar.test.tsx`, `src/__tests__/shelf.search.test.tsx`.
 
@@ -71,22 +72,22 @@ A usable, offline catalogue: the user can add a book by hand, see it on the Shel
 
 ### P01-07 Add and edit book form
 
-- **Description:** Routes `src/app/book/new.tsx` and `src/app/book/[id]/edit.tsx` sharing `BookForm`. Fields: title, subtitle, authors (P01-08), ISBN, publisher, year, edition, format, pages, language, genres (P01-09), series name + position (free text / number for now), summary (multiline), notes. Inline errors from P01-05, focus moves to the first invalid field on submit. Save writes book + authors + genres in one repository transaction (`books.create(draft)` / `books.update(id, draft)`), sets `source='manual'` for new books, emits `library-changed`, navigates to detail and shows a snackbar "Saved". Leaving with unsaved changes asks for confirmation.
+- **Description:** Routes `src/app/book/new.tsx` and `src/app/book/[id]/edit.tsx` sharing `BookForm`. Fields: title, subtitle, authors (P01-08), ISBN, publisher, year, edition, format, pages, language, genres (P01-09), series name + position (free text / number for now), summary (multiline), notes. Inline errors from P01-05, focus moves to the first invalid field on submit. Save writes book + authors + genres in one repository transaction (a new `booksRepo.saveBookDraft(db, draft, id?)` built on `createBook`/`updateBook`, `authorsRepo.setBookAuthors` and `genresRepo.setBookGenres`), sets `source='manual'` for new books, emits `library-changed`, navigates to detail and shows a snackbar "Saved". Leaving with unsaved changes asks for confirmation.
 - **Files:** `src/app/book/new.tsx`, `src/app/book/[id]/edit.tsx`, `src/components/book/BookForm.tsx`, `src/features/book/useBookForm.ts`, `src/db/repositories/books.ts`.
 - **Acceptance:** create then edit round-trips every field; invalid ISBN blocks save with message; unsaved-changes guard works on Android back and on web.
 - **Tests:** `src/features/book/__tests__/useBookForm.test.tsx`, `src/components/book/__tests__/BookForm.test.tsx`, `src/db/repositories/__tests__/books.write.test.ts`.
 
 ### P01-08 Authors editor
 
-- **Description:** Chip input: type a name, pick an existing author from suggestions (`authors.search(prefix)`) or create a new one; reorder with move-up/move-down buttons; role selector (author, illustrator, translator, editor). `sort_name` derived with `sortName()` and editable in an "advanced" disclosure (for names like "Ursula K. Le Guin" → "Le Guin, Ursula K."). Orphaned authors are deleted when their last book is removed.
-- **Files:** `src/components/book/AuthorsInput.tsx`, `src/db/repositories/authors.ts`, `src/domain/authors.ts`.
+- **Description:** Chip input: type a name, pick an existing author from suggestions (new `authorsRepo.searchAuthors(db, prefix)`) or create a new one (`findOrCreateAuthor`, already case-insensitive); reorder with move-up/move-down buttons; role selector (author, illustrator, translator, editor). `sort_name` derived with `toSortName()` (`src/domain/author.ts`) and editable in an "advanced" disclosure (for names like "Ursula K. Le Guin" → "Le Guin, Ursula K."). Orphaned authors are deleted when their last book is removed.
+- **Files:** `src/components/book/AuthorsInput.tsx`, `src/db/repositories/authors.ts`, `src/domain/author.ts`.
 - **Acceptance:** duplicate author names reuse the same row (case-insensitive); order persists; orphan cleanup verified.
-- **Tests:** `src/components/book/__tests__/AuthorsInput.test.tsx`, `src/db/repositories/__tests__/authors.test.ts`, `src/domain/__tests__/authors.test.ts` (particles: van, de, Le).
+- **Tests:** `src/components/book/__tests__/AuthorsInput.test.tsx`, `src/db/repositories/__tests__/authors.test.ts`, `src/domain/__tests__/authors.test.ts` (particles such as van, de and Le are covered already; add any new cases).
 
 ### P01-09 Genres editor
 
-- **Description:** Chip multi-select with suggestions from existing genres plus a curated starter list (`src/domain/genres.ts`: Fiction, Fantasy, Science Fiction, Mystery, Thriller, Romance, Historical Fiction, Horror, Literary Fiction, Young Adult, Children's, Graphic Novel, Poetry, Biography, Memoir, History, Science, Philosophy, Self-Help, Cookery, Travel, Art, Religion, Business, Reference). Any genre the user adds or keeps in the form is saved with `user_edited = 1`.
-- **Files:** `src/components/book/GenresInput.tsx`, `src/domain/genres.ts`, `src/db/repositories/genres.ts`.
+- **Description:** Chip multi-select with suggestions from existing genres plus a curated starter list (`starterGenres` in `src/domain/genre.ts`: Fiction, Fantasy, Science Fiction, Mystery, Thriller, Romance, Historical Fiction, Horror, Literary Fiction, Young Adult, Children's, Graphic Novel, Poetry, Biography, Memoir, History, Science, Philosophy, Self-Help, Cookery, Travel, Art, Religion, Business, Reference). Any genre the user adds or keeps in the form is saved with `user_edited = 1`.
+- **Files:** `src/components/book/GenresInput.tsx`, `src/domain/genre.ts`, `src/db/repositories/genres.ts`.
 - **Acceptance:** case-insensitive de-duplication; removing a genre from the last book leaves the genre row (genres are managed in P06-02).
 - **Tests:** `src/components/book/__tests__/GenresInput.test.tsx`, `src/db/repositories/__tests__/genres.test.ts`.
 
@@ -117,11 +118,11 @@ A usable, offline catalogue: the user can add a book by hand, see it on the Shel
 
 ```json
 {
-  "shelf": {
-    "root": "shelf-root", "title": "shelf-title", "list": "shelf-list", "row": "shelf-row",
-    "addButton": "shelf-add-button", "search": "shelf-search", "searchClear": "shelf-search-clear",
-    "sortButton": "shelf-sort-button", "sortTitle": "shelf-sort-title", "sortAuthor": "shelf-sort-author",
-    "sortYear": "shelf-sort-year", "sortAdded": "shelf-sort-added", "noMatches": "shelf-no-matches"
+  "home": {
+    "list": "home-list", "row": "home-row",
+    "addButton": "home-add-button", "search": "home-search", "searchClear": "home-search-clear",
+    "sortButton": "home-sort-button", "sortTitle": "home-sort-title", "sortAuthor": "home-sort-author",
+    "sortYear": "home-sort-year", "sortAdded": "home-sort-added", "noMatches": "home-no-matches"
   },
   "bookDetail": {
     "root": "book-detail-root", "title": "book-detail-title", "authors": "book-detail-authors",
@@ -138,11 +139,11 @@ A usable, offline catalogue: the user can add a book by hand, see it on the Shel
     "seriesName": "book-form-series-name", "seriesPosition": "book-form-series-position",
     "summary": "book-form-summary", "notes": "book-form-notes", "save": "book-form-save",
     "cancel": "book-form-cancel", "error": "book-form-error"
-  },
-  "dialog": { "root": "dialog-root", "confirm": "dialog-confirm", "cancel": "dialog-cancel" },
-  "snackbar": { "root": "snackbar-root", "action": "snackbar-action" }
+  }
 }
 ```
+
+The `home` group already exists (the Shelf tab's `root`, `title`, `bookCount`, `scanAction`, `askBooky`); add these keys to it. The `dialog` and `snackbar` groups come with `ConfirmDialog` and `Snackbar` in P00-30.
 
 Repeated elements (rows, chips) share one id; tests pick by index or by contained text.
 
@@ -153,7 +154,7 @@ Each journey is added by the card that builds its screen. Suite `core` journeys 
 | Journey | Suite | Steps |
 |---|---|---|
 | `shelf-empty` | `core` | fixture `empty`; expect `emptyState.root`, Booky bubble text |
-| `shelf-demo-list` | `core` | fixture `demo`; expect 12 `shelf.row`; screenshot |
+| `shelf-demo-list` | `core` | fixture `demo`; expect 12 `home.row`; screenshot |
 | `shelf-search-sort` | `p01` | fixture `demo`; search "prat" → rows contain Pratchett; sort by year; clear → 12 rows |
 | `book-add-manual` | `core` | fixture `empty`; add button → fill title, author, year, genre → save → detail shows values → back → 1 row |
 | `book-add-invalid-isbn` | `p01` | fill ISBN `9780000000000` → save → `bookForm.error` visible, still on form |

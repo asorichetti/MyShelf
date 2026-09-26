@@ -68,7 +68,7 @@ Books know which series they belong to and where they sit in it. The user can se
 
 ### P04-07 Series gap tip
 
-- **Description:** Publish a `series-gap` event when a save creates or reveals a gap; Booky (*thinking*) says "You have #1 and #3 of Discworld — #2 is missing." once per series (tip id `series-gap:<seriesId>`). The rules engine consumes it in P07-02; until then call `useBooky().say` directly.
+- **Description:** Publish a `series-gap` event when a save creates or reveals a gap; Booky (*thinking*) says "You have #1 and #3 of Discworld — #2 is missing." once per series (tip id `series-gap:<seriesId>`). The rules engine consumes it in P07-02; until then call `useBooky().showTip` directly.
 - **Files:** `src/features/series/seriesEvents.ts`, `src/features/scan/useSaveCandidate.ts`.
 - **Acceptance:** tip appears once per series; not shown in Quiet mode (after P07-06).
 - **Tests:** `src/features/series/__tests__/seriesEvents.test.ts`.

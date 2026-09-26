@@ -35,7 +35,7 @@ Ship v1.0: an accessible, fast, robust app with a dark theme, a free and repeata
 ### P09-02 Dark theme
 
 - **Description:** Dark token set from `PLAN.md` §9; follow system by default with a Settings override (System / Light / Dark); `app.json` `userInterfaceStyle` → `automatic`; Booky and motifs (catalogue cards become "night reading" cards) adapted; CSS vars switch on web via `prefers-color-scheme` and a data attribute.
-- **Files:** `src/theme/tokens.ts`, `src/theme/index.ts`, `src/app/settings/preferences.tsx`, `app.json`, SVG components.
+- **Files:** `src/theme/tokens.ts` (`darkColors`), `src/theme/themes.ts` (`darkTheme` in `themes`), `src/theme/ThemeProvider.tsx`, `src/app/settings/preferences.tsx`, `app.json`, SVG components.
 - **Acceptance:** all text pairs ≥ 4.5:1 in dark (unit test); every screen screenshot reviewed in both themes.
 - **Tests:** `src/theme/__tests__/contrast.dark.test.ts`; journey `theme-dark-gallery`.
 
@@ -48,10 +48,10 @@ Ship v1.0: an accessible, fast, robust app with a dark theme, a free and repeata
 
 ### P09-04 Error boundaries and resilience
 
-- **Description:** Root and per-screen error boundaries rendering `page-error` with Booky (*concerned*), "Try again" and "Copy error details" (local only, no reporting service). Handle DB open/migration failure with a recovery screen offering export of the raw DB file. Guard every async action against unmount.
-- **Files:** `src/components/ui/ErrorBoundary.tsx`, `src/app/_layout.tsx`, `src/db/DbProvider.tsx`.
+- **Description:** Root and per-screen error boundaries rendering `page-error` with Booky (*concerned*), "Try again" and "Copy error details" (local only, no reporting service). Handle DB open/migration failure with a recovery screen offering export of the raw DB file (today `DatabaseErrorScreen` offers only a retry). Guard every async action against unmount.
+- **Files:** `src/components/ui/ErrorBoundary.tsx`, `src/app/_layout.tsx`, `src/db/DatabaseProvider.tsx`, `src/features/navigation/DatabaseErrorScreen.tsx`.
 - **Acceptance:** thrown render error in a screen shows the boundary, not a blank screen; migration failure screen reachable via a test hook.
-- **Tests:** `src/components/ui/__tests__/ErrorBoundary.test.tsx`, `src/db/__tests__/DbProvider.failure.test.tsx`.
+- **Tests:** `src/components/ui/__tests__/ErrorBoundary.test.tsx`, `src/db/__tests__/DatabaseProvider.test.tsx` (failure cases).
 
 ### P09-05 App icon, splash and store graphics
 

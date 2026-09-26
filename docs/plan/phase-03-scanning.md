@@ -36,7 +36,7 @@ The headline feature: point the phone at a book and get it onto the shelf with t
 ### P03-02 Camera permission flow
 
 - **Description:** Scan tab uses `useCameraPermissions()` from `expo-camera` (`npx expo install expo-camera`, add plugin with a camera permission message). States: *undetermined* → Booky (*happy*) explains "I use the camera only to read barcodes and covers — nothing leaves your phone" + "Allow camera"; *denied* → explanation + "Open settings" (`Linking.openSettings()`) + "Type ISBN instead"; *granted* → scanner.
-- **Files:** `src/app/(tabs)/scan.tsx`, `src/features/scan/usePermission.ts`, `src/components/scan/PermissionPrompt.tsx`, `app.json` (plugin config).
+- **Files:** `src/features/scan/ScanScreen.tsx`, `src/features/scan/usePermission.ts`, `src/components/scan/PermissionPrompt.tsx`, `app.json` (plugin config).
 - **Acceptance:** each state renders its test id; no camera view mounted without permission.
 - **Tests:** `src/features/scan/__tests__/usePermission.test.tsx` (mocked `expo-camera`), `src/__tests__/scan.permission.test.tsx`.
 
@@ -84,7 +84,7 @@ The headline feature: point the phone at a book and get it onto the shelf with t
 
 ### P03-09 Save from candidate
 
-- **Description:** `books.createFromCandidate(candidate, overrides)` in one transaction: book row (`source`, `source_id`), authors (reuse by name), genres via normaliser (`user_edited = 0`), series via `extractSeries` (find or create by case-insensitive name) and position, cover download (after commit; failure does not roll back the book). Then navigate to book detail with Booky *excited* "Shelved! That's N books." An optional "Review before saving" toggle routes through `BookForm` instead.
+- **Description:** `booksRepo.createBookFromCandidate(db, candidate, overrides)` in one transaction: book row (`source`, `source_id`), authors (reuse by name), genres via normaliser (`user_edited = 0`), series via `extractSeries` (find or create by case-insensitive name) and position, cover download (after commit; failure does not roll back the book). Then navigate to book detail with Booky *excited* "Shelved! That's N books." An optional "Review before saving" toggle routes through `BookForm` instead.
 - **Files:** `src/db/repositories/books.ts`, `src/features/scan/useSaveCandidate.ts`.
 - **Acceptance:** all related rows created once; re-using existing author/series rows; cover failure leaves book saved with generated cover.
 - **Tests:** `src/db/repositories/__tests__/books.fromCandidate.test.ts`, `src/features/scan/__tests__/useSaveCandidate.test.tsx`.
@@ -113,7 +113,7 @@ The headline feature: point the phone at a book and get it onto the shelf with t
 ### P03-13 Scan screen polish and help
 
 - **Description:** Mode switcher (Barcode / Cover) as a segmented control; last-scanned mini card; help sheet with a diagram of where ISBN barcodes usually are; `?` button hooks into Booky help (full content in P07-05).
-- **Files:** `src/app/(tabs)/scan.tsx`, `src/components/scan/ScanModeSwitch.tsx`, `src/components/scan/ScanHelp.tsx`.
+- **Files:** `src/features/scan/ScanScreen.tsx`, `src/components/scan/ScanModeSwitch.tsx`, `src/components/scan/ScanHelp.tsx`.
 - **Acceptance:** mode persists for the session; help sheet accessible and dismissible.
 - **Tests:** `src/__tests__/scan.modes.test.tsx`.
 

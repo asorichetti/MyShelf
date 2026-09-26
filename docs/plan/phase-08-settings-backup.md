@@ -28,7 +28,7 @@ Give the user control and peace of mind: sensible preferences, a full backup the
 ### P08-01 Settings screen
 
 - **Description:** Settings tab as grouped sections: **Library** (default sort, group by, view mode, default loan length), **Booky** (→ P07-06 screen), **Lookups** (Google Books on/off, download covers on mobile data on/off, pending lookups list with retry/remove), **Lending** (reminders toggle from P05-08, manage borrowers), **Backup & data** (export, import, CSV, clear data), **About**. Typed settings access with defaults in `src/db/repositories/settings.ts`.
-- **Files:** `src/app/(tabs)/settings.tsx`, `src/app/settings/*.tsx`, `src/components/settings/SettingsRow.tsx`, `src/features/settings/useSettings.ts`.
+- **Files:** `src/features/settings/SettingsScreen.tsx`, `src/app/settings/*.tsx`, `src/components/settings/SettingsRow.tsx`, `src/features/settings/useSettings.ts`.
 - **Acceptance:** every row has a label, value and accessible role (switch/button/link); changes apply immediately and persist.
 - **Tests:** `src/features/settings/__tests__/useSettings.test.tsx`, `src/__tests__/settingsTab.test.tsx`.
 

@@ -27,8 +27,8 @@ Never lose a book to a friend again. The user records who borrowed a book and wh
 
 ### P05-01 Borrowers repository and picker
 
-- **Description:** `borrowers` repository: `search(prefix)`, `create({ name, contact })`, `update`, `delete` (blocked with `BorrowerHasLoansError` if any open loan; offers to delete returned history), `withStats()` (open loans count, total loans). `BorrowerPicker`: search field, recent borrowers first, "Add 'Sam'" inline create, optional contact field ("phone, email or where they live — just for you").
-- **Files:** `src/db/repositories/borrowers.ts`, `src/components/loans/BorrowerPicker.tsx`.
+- **Description:** Borrower queries in `loansRepo` (`src/db/repositories/loans.ts`), which already has `createBorrower`, `getBorrower`, `listBorrowers`, `updateBorrower` and `deleteBorrower` (refused with `BorrowerHasLoansError` while the borrower has any loans, because `loans.borrower_id` is `ON DELETE RESTRICT`). Add `searchBorrowers(db, prefix)`, `listBorrowersWithStats(db)` (open loans count, total loans) and `deleteReturnedLoansForBorrower(db, id)` so the UI can offer to clear returned history before deleting. `BorrowerPicker`: search field, recent borrowers first, "Add 'Sam'" inline create, optional contact field ("phone, email or where they live — just for you").
+- **Files:** `src/db/repositories/loans.ts`, `src/components/loans/BorrowerPicker.tsx`.
 - **Acceptance:** case-insensitive de-duplication suggestion ("Sam already exists — use them?"); delete rules enforced.
 - **Tests:** `src/db/repositories/__tests__/borrowers.test.ts`, `src/components/loans/__tests__/BorrowerPicker.test.tsx`.
 
@@ -41,7 +41,7 @@ Never lose a book to a friend again. The user records who borrowed a book and wh
 
 ### P05-03 Lend flow
 
-- **Description:** Book detail "Lend" button → sheet: borrower picker, lent-on date (default today), due date (default from settings; "No due date" option), note. Save calls `loans.lend(...)`; on `BookAlreadyOnLoanError` show the current loan instead. Snackbar "Lent to Sam". Book detail then shows a `Stamp` ("ON LOAN · SAM · DUE 12 OCT") and a "Mark returned" button instead of "Lend".
+- **Description:** Book detail "Lend" button → sheet: borrower picker, lent-on date (default today), due date (default from settings; "No due date" option), note. Save calls `loansRepo.lendBook(db, …)`; on `BookAlreadyOnLoanError` show the current loan instead. Snackbar "Lent to Sam". Book detail then shows a `Stamp` ("ON LOAN · SAM · DUE 12 OCT") and a "Mark returned" button instead of "Lend".
 - **Files:** `src/components/loans/LendSheet.tsx`, `src/features/loans/useLend.ts`, `src/components/ui/DateField.tsx`, `src/app/book/[id].tsx`.
 - **Acceptance:** cannot create a second open loan (UI and DB); dates validated; accessible date field with typed input fallback.
 - **Tests:** `src/features/loans/__tests__/useLend.test.tsx`, `src/components/loans/__tests__/LendSheet.test.tsx`, `src/components/ui/__tests__/DateField.test.tsx`.
@@ -55,8 +55,8 @@ Never lose a book to a friend again. The user records who borrowed a book and wh
 
 ### P05-05 Loans tab
 
-- **Description:** Loans tab with segmented sections: **Out now** (sorted by due date, overdue first), **History** (returned, newest first). Each row is a library-card-pocket style card: cover thumb, title, borrower, lent date, due stamp in `warning`/`danger`/`success` tone. Filters: borrower. Counts in the tab badge (overdue count). Empty state: Booky *sleepy* "Every book is home. Lovely."
-- **Files:** `src/app/(tabs)/loans.tsx`, `src/features/loans/useLoans.ts`, `src/components/loans/LoanRow.tsx`, `src/db/repositories/loans.ts` (`listOpen`, `listHistory`).
+- **Description:** Loans tab with segmented sections: **Out now** (sorted by due date, overdue first), **History** (returned, newest first). Each row is a library-card-pocket style card: cover thumb, title, borrower, lent date, due stamp in `warn`/`danger`/`success` tone. Filters: borrower. Counts in the tab badge (overdue count). Empty state: Booky *sleepy* "Every book is home. Lovely."
+- **Files:** `src/features/loans/LoansScreen.tsx`, `src/features/loans/useLoans.ts`, `src/components/loans/LoanRow.tsx`, `src/db/repositories/loans.ts` (`listOpenLoans` and `listOverdueLoans` exist; add `listReturnedLoans`).
 - **Acceptance:** overdue row shows "OVERDUE · 3 DAYS" stamp; tab badge equals overdue count; colour is never the only cue (text in stamp).
 - **Tests:** `src/features/loans/__tests__/useLoans.test.tsx`, `src/components/loans/__tests__/LoanRow.test.tsx`, `src/__tests__/loansTab.test.tsx`.
 
@@ -70,7 +70,7 @@ Never lose a book to a friend again. The user records who borrowed a book and wh
 ### P05-07 Loan history on book detail
 
 - **Description:** Book detail "Lending history" disclosure listing past loans (borrower, dates, note), newest first.
-- **Files:** `src/components/loans/BookLoanHistory.tsx`, `src/db/repositories/loans.ts` (`historyForBook`).
+- **Files:** `src/components/loans/BookLoanHistory.tsx`, `src/db/repositories/loans.ts` (`listLoansForBook`, which exists).
 - **Acceptance:** hidden when no history; correct order.
 - **Tests:** `src/components/loans/__tests__/BookLoanHistory.test.tsx`.
 

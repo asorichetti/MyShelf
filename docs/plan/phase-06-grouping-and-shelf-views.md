@@ -27,8 +27,8 @@ Let the user browse the collection the way they think about it: by genre, series
 
 ### P06-01 Shelf group-by
 
-- **Description:** Toolbar "Group by" menu: None, Genre, Series, Author, My groups. Implemented with `SectionList`; section headers styled as brass shelf edges with a count ("Fantasy · 23"). A book appears in every section it belongs to (e.g. two genres) with a stable key per section. Ungrouped books go under "No genre" / "Not in a series" / "Not in a group" at the end. Repository methods return `{ sectionKey, sectionTitle, items }[]` in one or two queries.
-- **Files:** `src/db/repositories/shelfSections.ts`, `src/features/shelf/useShelf.ts`, `src/components/book/SectionHeader.tsx`, `src/app/(tabs)/index.tsx`.
+- **Description:** Toolbar "Group by" menu: None, Genre, Series, Author, My groups. Implemented with `SectionList`; section headers styled as brass shelf edges with a count ("Fantasy · 23"). A book appears in every section it belongs to (e.g. two genres) with a stable key per section. Ungrouped books go under "No genre" / "Not in a series" / "Not in a group" at the end. The repositories already group the whole shelf (`genresRepo.groupBooksByGenre`, `seriesRepo.groupBooksBySeries`, `authorsRepo.groupBooksByAuthor`, `groupsRepo.groupBooksByGroup`, each returning `BookGroup<K>[]` with a `null` key for the ungrouped bucket); `shelfSections.ts` builds `{ sectionKey, sectionTitle, items }[]` on top of them, adding search and sort, in one or two queries per grouping.
+- **Files:** `src/db/repositories/shelfSections.ts`, `src/features/shelf/useShelf.ts`, `src/components/book/SectionHeader.tsx`, `src/features/shelf/ShelfScreen.tsx`; a `brass` colour role in `src/theme/tokens.ts` for the shelf edge.
 - **Acceptance:** section counts match `demo`; search and sort apply within sections; series sections ordered by position.
 - **Tests:** `src/db/repositories/__tests__/shelfSections.test.ts`, `src/__tests__/shelf.groupBy.test.tsx`.
 
@@ -56,7 +56,7 @@ Let the user browse the collection the way they think about it: by genre, series
 ### P06-05 Groups tab
 
 - **Description:** Groups tab shows group cards (colour band, icon, name, count, cover collage) in a 2-column grid; "New group" button → sheet with name, colour swatches, icon picker. Empty state: Booky *happy* "Groups are like little shelves — try 'Favourites'."
-- **Files:** `src/app/(tabs)/groups.tsx`, `src/components/groups/GroupCard.tsx`, `src/components/groups/GroupEditorSheet.tsx`, `src/features/groups/useGroups.ts`.
+- **Files:** `src/features/groups/GroupsScreen.tsx`, `src/components/groups/GroupCard.tsx`, `src/components/groups/GroupEditorSheet.tsx`, `src/features/groups/useGroups.ts`.
 - **Acceptance:** create/edit/delete from the tab; swatch and icon pickers have accessible names ("Lavender", "Heart icon").
 - **Tests:** `src/features/groups/__tests__/useGroups.test.tsx`, `src/components/groups/__tests__/GroupEditorSheet.test.tsx`, `src/__tests__/groupsTab.test.tsx`.
 
@@ -77,14 +77,14 @@ Let the user browse the collection the way they think about it: by genre, series
 ### P06-08 Shelf display modes
 
 - **Description:** Toggle between **List** (catalogue cards), **Covers** (grid, 3 columns on phones), **Spines** (horizontal shelves of vertical spines with titles in Lora rotated 90°, colour from `hashColour`, brass shelf edges). All modes support group-by sections and selection.
-- **Files:** `src/components/book/CoverGrid.tsx`, `src/components/book/SpineShelf.tsx`, `src/app/(tabs)/index.tsx`.
+- **Files:** `src/components/book/CoverGrid.tsx`, `src/components/book/SpineShelf.tsx`, `src/features/shelf/ShelfScreen.tsx`.
 - **Acceptance:** each mode renders `demo` without overflow at the `mobile` viewport (390 px wide) and at 200 % font scale (spines truncate with ellipsis and full title in accessible label).
 - **Tests:** `src/components/book/__tests__/CoverGrid.test.tsx`, `src/components/book/__tests__/SpineShelf.test.tsx`.
 
 ### P06-09 Persist shelf preferences
 
-- **Description:** Settings keys `shelf.groupBy`, `shelf.viewMode`, `shelf.sort`, `shelf.filters` read on load and written on change (debounced).
-- **Files:** `src/db/repositories/settings.ts`, `src/features/shelf/useShelfPrefs.ts`.
+- **Description:** Settings keys `shelfGroupBy`, `shelfViewMode`, `shelfSort` (from P01-04) and `shelfFilters` read on load and written on change (debounced).
+- **Files:** `src/domain/settings.ts` (keys and defaults), `src/features/shelf/useShelfPrefs.ts`.
 - **Acceptance:** prefs survive restart; invalid stored values fall back to defaults.
 - **Tests:** `src/features/shelf/__tests__/useShelfPrefs.test.tsx`.
 
@@ -98,7 +98,7 @@ Let the user browse the collection the way they think about it: by genre, series
 ### P06-11 Browse hub
 
 - **Description:** A "Browse" row at the top of the Shelf with chips to Genres, Series, Authors and Groups screens, so each index is one tap away.
-- **Files:** `src/components/book/BrowseChips.tsx`, `src/app/(tabs)/index.tsx`.
+- **Files:** `src/components/book/BrowseChips.tsx`, `src/features/shelf/ShelfScreen.tsx`.
 - **Acceptance:** each chip navigates; hidden while searching.
 - **Tests:** `src/components/book/__tests__/BrowseChips.test.tsx`.
 
