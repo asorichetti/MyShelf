@@ -101,9 +101,10 @@ jobs:
         run: npm run -s autotest -- smoke --serve dist --ux-gates fail --headless=true
       # Every other journey, whatever suite it is in (responsive, p00, p01, ...),
       # so a journey in a new suite runs without a workflow change. The live
-      # suite needs the internet and runs in live.yml instead.
+      # suite needs the internet and the perf suite seeds 10,000 books; both run
+      # on a schedule in live.yml instead.
       - name: Every other journey (gates fail)
-        run: npm run -s autotest -- journey --all --exclude-suite core --exclude-suite live --serve dist --ux-gates fail --headless=true
+        run: npm run -s autotest -- journey --all --exclude-suite core --exclude-suite live --exclude-suite perf --serve dist --ux-gates fail --headless=true
       - name: Upload evidence bundles
         if: failure()
         uses: actions/upload-artifact@v4

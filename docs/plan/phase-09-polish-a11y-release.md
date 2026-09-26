@@ -136,11 +136,11 @@ Each journey is added by the card that builds its screen. Suite `core` journeys 
 |---|---|---|
 | `a11y-large-text` | `p09` | set page zoom 200 %; visit every tab and book detail; render gate (no overflow) + a11y gate |
 | `theme-dark-gallery` | `p09` | emulate `prefers-color-scheme: dark`; screenshot every main screen; render and a11y gates (contrast itself is checked by `contrast.dark.test.ts`) |
-| `shelf-large-scroll` | `p09` | fixture `large`; scroll to end; record timing; no console errors |
+| `shelf-large-scroll` | `perf` | fixture `large`; scroll to end; record timing; no console errors |
 | `error-boundary` | `p09` | E2E hook throws in a screen → `errorBoundary.root` → retry recovers |
 | `db-open-failure` | `p09` | E2E hook fails the database open (and a migration) → `dbError.root` → retry opens the Shelf |
 | `theme-dark-follows-system`, `theme-setting-persist` | `p09` | the theme follows `prefers-color-scheme` live; Appearance Dark persists across a reload and System returns to it |
-| `shelf-huge-search` | `p09` | fixture `huge`; search timings (the Shelf's own measure) and a fling to the end in `timing.json`; median query < 100 ms |
+| `shelf-huge-search` | `perf` | fixture `huge`; search timings (the Shelf's own measure) and a fling to the end in `timing.json`; median query < 100 ms |
 | `release-screenshots` | `p09` | capture the curated set for P09-08 |
 
 ## Maestro flows

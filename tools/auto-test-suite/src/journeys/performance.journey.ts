@@ -27,11 +27,18 @@ const SEARCH_BUDGET_MS = 100;
  * 15 s content wait, so this waits for the redirect itself and runs the page
  * gates on the Shelf once the rows are there.
  */
+/**
+ * How long a big fixture may take to load. Seeding 10,000 books on web takes
+ * about 45 s on a laptop and several minutes on a shared CI runner, so the
+ * scheduled workflow raises it with AUTOTEST_BIG_FIXTURE_TIMEOUT_MS.
+ */
+const BIG_FIXTURE_TIMEOUT_MS = Number(process.env.AUTOTEST_BIG_FIXTURE_TIMEOUT_MS) || 180_000;
+
 async function openBigFixture(c: Context, fixture: string): Promise<number> {
   const started = Date.now();
   await c.page.goto(c.url(`/e2e?fixture=${fixture}&next=${encodeURIComponent('/')}`), { waitUntil: 'load' });
   try {
-    await c.page.waitForURL((u) => u.pathname === '/', { timeout: 180_000 });
+    await c.page.waitForURL((u) => u.pathname === '/', { timeout: BIG_FIXTURE_TIMEOUT_MS });
     await c.page.locator(row).first().waitFor({ state: 'visible', timeout: 60_000 });
   } catch {
     expect(false, `/e2e?fixture=${fixture}: expected the Shelf with rows, stayed on ${q(new URL(c.page.url()).pathname)}`);
@@ -173,7 +180,7 @@ const median = (xs: number[]) => {
 
 register({
   name: 'shelf-large-scroll',
-  suite: 'p09',
+  suite: 'perf',
   desc: 'Fixture "large" (2,000 books): the Shelf scrolls to its last book with rows on screen; frame timings recorded in timing.json',
   async run(c) {
     const loadMs = await openBigFixture(c, 'large');
@@ -190,7 +197,7 @@ register({
 
 register({
   name: 'shelf-huge-search',
-  suite: 'p09',
+  suite: 'perf',
   desc: 'Fixture "huge" (10,000 books): searches by title, author, series and prefix find the right books with the query under 100 ms; the list scrolls to its end; timings in timing.json',
   async run(c) {
     const loadMs = await openBigFixture(c, 'huge');
