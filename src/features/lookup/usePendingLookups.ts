@@ -4,6 +4,7 @@ import { AppState } from 'react-native';
 import { useBooky } from '@/components/booky';
 import { pendingLookupsRepo, useDatabase, type PendingLookup } from '@/db';
 import { backfillCoversNow } from '@/features/covers';
+import { useLibraryEvent } from '@/features/events';
 import { isAbortError, OfflineError } from '@/services/http';
 import { InvalidIsbnError, type BookCandidate, type MetadataResult } from '@/services/metadata';
 
@@ -166,6 +167,14 @@ export function usePendingLookups({ lookup, backfillCovers }: UsePendingLookupsO
     },
     [db, reload],
   );
+
+  // Settings → Pending lookups edits the queue from outside the tab shell.
+  useLibraryEvent('pending-changed', () => {
+    reload().catch(() => undefined);
+  });
+  useLibraryEvent('pending-retry', () => {
+    retryNow().catch(() => undefined);
+  });
 
   const dismissResult = useCallback((isbn13: string) => {
     setResults((current) => current.filter((r) => r.isbn13 !== isbn13));

@@ -6,7 +6,7 @@ import { Booky } from '@/components/booky';
 import { CONTACT_HELP } from '@/components/loans/BorrowerPicker';
 import { LoanRow } from '@/components/loans/LoanRow';
 import { Button, ConfirmDialog, EmptyState, Heading, IconButton, Screen, Sheet, Text, TextField, useSnackbar } from '@/components/ui';
-import { formatDate, today as todayOf } from '@/domain';
+import { formatDate, today as todayOf, type Borrower } from '@/domain';
 import { parseBookId } from '@/features/book/useBook';
 import { Testids } from '@/testing/testids.gen';
 import { useTheme } from '@/theme';
@@ -31,17 +31,18 @@ export function borrowerStats({ current, past }: Pick<BorrowerDetail, 'current' 
   return `${now} · borrowed ${total === 1 ? 'once' : `${total} times`} since ${formatDate(first)}`;
 }
 
-function EditSheet({
-  detail,
+/** Rename a borrower or change how to reach them (also used by Settings → Borrowers). */
+export function BorrowerEditSheet({
+  borrower,
   onSave,
   onClose,
 }: {
-  detail: BorrowerDetail;
+  borrower: Borrower;
   onSave: (name: string, contact: string) => Promise<string | null>;
   onClose: () => void;
 }) {
-  const [name, setName] = useState(detail.borrower.name);
-  const [contact, setContact] = useState(detail.borrower.contact ?? '');
+  const [name, setName] = useState(borrower.name);
+  const [contact, setContact] = useState(borrower.contact ?? '');
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const save = async () => {
@@ -59,7 +60,7 @@ function EditSheet({
   return (
     <Sheet
       visible
-      title={`Edit ${detail.borrower.name}`}
+      title={`Edit ${borrower.name}`}
       onClose={onClose}
       busy={saving}
       testID={Testids.borrower.editSheet}
@@ -195,8 +196,8 @@ function BorrowerContent({ detail, hooks }: { detail: BorrowerDetail; hooks: Ret
       </View>
 
       {editing ? (
-        <EditSheet
-          detail={detail}
+        <BorrowerEditSheet
+          borrower={borrower}
           onClose={() => setEditing(false)}
           onSave={async (name, contact) => {
             const outcome = await hooks.save(name, contact);
