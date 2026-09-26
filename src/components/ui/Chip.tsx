@@ -36,7 +36,8 @@ const PILL_HEIGHT = 36;
 /**
  * A rounded label: plain (display only), selectable (radio, checkbox or
  * toggle button) and/or removable. The pill is 36 dp tall, but its buttons
- * reach past it vertically so every touch target is at least 48 x 44.
+ * reach past it vertically so every touch target is at least 48 x 48
+ * (react-native-web ignores hitSlop, so the boxes themselves must be that big).
  */
 export function Chip({
   label,
@@ -116,7 +117,7 @@ export function Chip({
                 paddingLeft: spacing.md,
                 paddingRight: onRemove ? spacing.xxs : spacing.md,
                 gap: spacing.xs,
-                minWidth: 44,
+                minWidth: sizes.touchTarget,
               },
             ]}
           >
@@ -138,7 +139,7 @@ export function Chip({
             style={({ pressed: p }) => [
               styles.remove,
               {
-                width: 44,
+                width: sizes.touchTarget,
                 height: sizes.touchTarget,
                 marginVertical: overhang,
                 borderRadius: radii.pill,

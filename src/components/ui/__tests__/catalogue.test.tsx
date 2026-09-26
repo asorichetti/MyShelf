@@ -108,11 +108,11 @@ describe('Chip', () => {
     expect(chip).toBeChecked();
   });
 
-  it('has a labelled remove button with at least a 44 x 48 target', () => {
+  it('has a labelled remove button with a 48 x 48 target', () => {
     const onRemove = jest.fn();
     renderWithTheme(<Chip label="Terry Pratchett" onRemove={onRemove} removeTestID="rm" />);
     const remove = screen.getByRole('button', { name: 'Remove Terry Pratchett' });
-    expect(flat(remove.props.style)).toMatchObject({ width: 44, height: 48 });
+    expect(flat(remove.props.style)).toMatchObject({ width: 48, height: 48 });
     fireEvent.press(remove);
     expect(onRemove).toHaveBeenCalled();
   });
