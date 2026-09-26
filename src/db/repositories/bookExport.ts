@@ -21,6 +21,8 @@ export interface ExportBook {
   /** The open loan, if the book is out. */
   loan: { borrower: string; lentOn: string; dueOn: string | null } | null;
   notes: string | null;
+  /** The reader's rating, 1-5; null when not rated. */
+  rating: number | null;
   /** ISO-8601 UTC. */
   createdAt: string;
 }
@@ -39,6 +41,7 @@ interface BookRow {
   series: string | null;
   series_position: number | null;
   notes: string | null;
+  rating: number | null;
   created_at: string;
 }
 
@@ -56,7 +59,7 @@ const multi = async (db: Db, sql: string) => {
 export async function listBooksForExport(db: Db): Promise<ExportBook[]> {
   const books = await db.all<BookRow>(
     `SELECT b.id, b.title, b.subtitle, b.isbn13, b.isbn10, b.publisher, b.publication_year, b.page_count, b.format, b.language,
-       s.name AS series, b.series_position, b.notes, b.created_at
+       s.name AS series, b.series_position, b.notes, b.rating, b.created_at
      FROM books b LEFT JOIN series s ON s.id = b.series_id
      ORDER BY b.title COLLATE NOCASE, b.id`,
   );
@@ -87,6 +90,7 @@ export async function listBooksForExport(db: Db): Promise<ExportBook[]> {
     groups: groups.get(b.id) ?? [],
     loan: loans.get(b.id) ?? null,
     notes: b.notes,
+    rating: b.rating,
     createdAt: b.created_at,
   }));
 }

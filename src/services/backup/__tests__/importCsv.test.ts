@@ -13,6 +13,7 @@ import {
   mappingFor,
   parseAddedDate,
   parseFormat,
+  parseImportRating,
   planImport,
   readCsvTable,
   shelfToGroupName,
@@ -96,6 +97,21 @@ describe('reading a Goodreads export', () => {
     expect(byName).toEqual({ Read: 16, 'To read': 3, 'Currently reading': 1, Favourites: 4, Fantasy: 2, Classics: 4, 'Book club': 2, Mystery: 1, Signed: 1 });
     expect(report.groupsCreated).toHaveLength(9);
     expect((await detailOf('The Hobbit')).source).toBe('import');
+  });
+
+  it('brings the reader’s own ratings: My Rating 1-5 straight through, 0 as not rated', async () => {
+    await importPlannedBooks(db, goodreadsPlan());
+    const rated = Object.fromEntries((await booksRepo.listBooks(db)).map((b) => [b.title, b.rating]));
+    expect(rated).toMatchObject({
+      'The Hobbit': 5,
+      '1984': 4,
+      'The Science of Discworld': 3,
+      'Norse Mythology': 2,
+      'The Martian': 1,
+      'The Name of the Wind': null,
+      'Les Misérables': null,
+    });
+    expect(Object.values(rated).filter((r) => r != null)).toHaveLength(16);
   });
 
   it('can leave the shelves out', async () => {
@@ -184,6 +200,9 @@ describe('round trip through MyShelf’s own CSV', () => {
     expect((await booksRepo.listBooks(other)).map(pick).sort()).toEqual((await booksRepo.listBooks(db)).map(pick).sort());
     const mort = (await booksRepo.searchBooks(other, 'Mort'))[0];
     expect((await booksRepo.getBookDetail(other, mort.id))!.series?.name).toBe('Discworld');
+    const ratings = async (d: Db) => (await booksRepo.listBooks(d)).map((b) => [b.title, b.rating]).sort();
+    expect(await ratings(other)).toEqual(await ratings(db));
+    expect(mort.rating).toBe(5);
     await other.close();
   });
 });
@@ -193,6 +212,17 @@ describe('field parsers', () => {
     expect(unwrapFormula('="9780441172719"')).toBe('9780441172719');
     expect(unwrapFormula('=""')).toBe('');
     expect(unwrapFormula('plain')).toBe('plain');
+  });
+
+  it('reads ratings: whole stars 1-5, blank or 0 for none, anything else not understood', () => {
+    expect(['1', '5', ' 3 ', '4.0'].map(parseImportRating)).toEqual([1, 5, 3, 4]);
+    expect(['', '0', '0.0', null].map(parseImportRating)).toEqual([null, null, null, null]);
+    expect(['4.5', '6', '-1', 'great', '★★★'].map(parseImportRating)).toEqual([undefined, undefined, undefined, undefined, undefined]);
+    const plan = planImport([['Dune', '4.5'], ['Emma', '2']], ['title', 'rating']);
+    expect(plan.books.map((b) => [b.book.title, b.book.rating, b.warnings])).toEqual([
+      ['Dune', null, ['The rating “4.5” wasn’t understood, so it was left out.']],
+      ['Emma', 2, []],
+    ]);
   });
 
   it('reads bindings, dates and shelves', () => {

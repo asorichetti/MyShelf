@@ -146,6 +146,18 @@ function parsePages(value: string | null): number | null {
   return Number.isInteger(n) && n > 0 && n < 100_000 ? n : null;
 }
 
+/**
+ * A rating cell: 1-5 whole stars (4.0 is 4); blank or 0 is "not rated"
+ * (Goodreads writes 0 for books you have not rated). Undefined when the cell
+ * holds something else (4.5, 7, "great"), so the import can say so.
+ */
+export function parseImportRating(value: string | null): number | null | undefined {
+  const v = value?.trim() ?? '';
+  if (!v || /^0+(\.0+)?$/.test(v)) return null;
+  const m = /^([1-5])(\.0+)?$/.exec(v);
+  return m ? Number(m[1]) : undefined;
+}
+
 /** "2023/01/15", "2023-01-15" or a full ISO timestamp → ISO-8601 UTC (midday for a plain date). */
 export function parseAddedDate(value: string | null): string | null {
   if (!value) return null;
@@ -258,6 +270,10 @@ export function planImport(rows: readonly string[][], mapping: readonly ImportFi
     const languageText = col(row, 'language');
     const language = languageText ? (toIso6391(languageText) ?? (isLanguageCode(languageText.toLowerCase()) ? languageText.toLowerCase() : null)) : null;
 
+    const ratingText = col(row, 'rating');
+    const rating = parseImportRating(ratingText);
+    if (rating === undefined) warnings.push(`The rating “${ratingText}” wasn’t understood, so it was left out.`);
+
     const review = stripHtml(raw(row, 'notes'));
     const privateNotes = stripHtml(raw(row, 'privateNotes'));
     const notes = [review, privateNotes].filter(Boolean).join('\n\n') || null;
@@ -283,6 +299,7 @@ export function planImport(rows: readonly string[][], mapping: readonly ImportFi
         format: parseFormat(col(row, 'format')),
         language,
         notes,
+        rating: rating ?? null,
         source: 'import',
       },
       authors,

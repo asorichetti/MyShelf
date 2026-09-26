@@ -29,7 +29,7 @@ describe('exportCsv', () => {
     const { text, header, rows } = await table();
     expect(text.startsWith('﻿Title,Subtitle,Authors,ISBN-13,')).toBe(true);
     expect(text).toContain('\r\n');
-    expect(header).toEqual(['Title', 'Subtitle', 'Authors', 'ISBN-13', 'ISBN-10', 'Publisher', 'Year', 'Pages', 'Format', 'Language', 'Genres', 'Series', 'Series position', 'Groups', 'Notes', 'Added']);
+    expect(header).toEqual(['Title', 'Subtitle', 'Authors', 'ISBN-13', 'ISBN-10', 'Publisher', 'Year', 'Pages', 'Format', 'Language', 'Genres', 'Series', 'Series position', 'Groups', 'Rating', 'Notes', 'Added']);
     expect(rows).toHaveLength(12);
   });
 
@@ -41,6 +41,13 @@ describe('exportCsv', () => {
     expect(t.get('Mort', 'ISBN-13')).toBe('9780552131063');
     expect(t.get('Good Omens', 'Genres')).toBe('Fantasy');
     expect(t.get('Good Omens', 'Added')).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+  });
+
+  it('writes the reader’s rating, blank when not rated', async () => {
+    const t = await table();
+    expect(t.get('Mort', 'Rating')).toBe('5');
+    expect(t.get('Dune', 'Rating')).toBe('4');
+    expect(t.get('The Light Fantastic', 'Rating')).toBe('');
   });
 
   it('leaves the loan columns out unless asked for', async () => {

@@ -18,6 +18,7 @@ export const MYSHELF_CSV_COLUMNS = {
   series: 'Series',
   seriesPosition: 'Series position',
   groups: 'Groups',
+  rating: 'Rating',
   loanBorrower: 'On loan to',
   loanLentOn: 'Lent on',
   loanDueOn: 'Due on',
@@ -66,6 +67,8 @@ const value = (b: ExportBook, c: Column): string | number | null => {
       return b.seriesPosition;
     case 'groups':
       return b.groups.join(LIST_SEPARATOR);
+    case 'rating':
+      return b.rating;
     case 'loanBorrower':
       return b.loan?.borrower ?? null;
     case 'loanLentOn':

@@ -18,7 +18,10 @@ describe('detectPreset', () => {
 
   it('calls anything else custom', () => {
     expect(detectPreset(['Title', 'Author'])).toBe('custom');
-    expect(detectPreset(['Title', 'Authors', 'ISBN-13', 'Rating'])).toBe('custom');
+    expect(detectPreset(['Title', 'Authors', 'ISBN-13', 'Shelf mark'])).toBe('custom');
+    // MyShelf's own columns, Rating included, are MyShelf's; an export from before ratings still is.
+    expect(detectPreset(['Title', 'Authors', 'ISBN-13', 'Rating'])).toBe('myshelf');
+    expect(detectPreset(['Title', 'Authors', 'ISBN-13'])).toBe('myshelf');
   });
 });
 
@@ -43,7 +46,7 @@ describe('mappingFor', () => {
       'Private Notes': 'privateNotes',
       'Book Id': 'ignore',
       'Author l-f': 'ignore',
-      'My Rating': 'ignore',
+      'My Rating': 'rating',
     });
   });
 
@@ -55,7 +58,8 @@ describe('mappingFor', () => {
   });
 
   it('guesses other spreadsheets’ columns and never maps one field twice', () => {
-    expect(mappingFor(['Book Title', 'Writer', 'ISBN', 'Pub Year', 'Rating', 'Title'], 'custom')).toEqual(['title', 'authors', 'isbn', 'year', 'ignore', 'ignore']);
+    expect(mappingFor(['Book Title', 'Writer', 'ISBN', 'Pub Year', 'Rating', 'Title', 'Stars'], 'custom')).toEqual(['title', 'authors', 'isbn', 'year', 'rating', 'ignore', 'ignore']);
+    expect(guessField('My rating')).toBe('rating');
     expect(guessField(' Number of pages ')).toBe('pages');
     expect(guessField('EAN')).toBe('isbn13');
     expect(guessField('Tags')).toBe('groups');

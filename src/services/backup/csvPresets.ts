@@ -22,6 +22,7 @@ export type ImportField =
   | 'groups'
   | 'shelves'
   | 'exclusiveShelf'
+  | 'rating'
   | 'notes'
   | 'privateNotes'
   | 'added';
@@ -48,6 +49,7 @@ export const importFieldLabels: Record<ImportField, string> = {
   groups: 'Groups',
   shelves: 'Shelves (comma-separated, become groups)',
   exclusiveShelf: 'Reading shelf (read, to-read, …)',
+  rating: 'Your rating (1 to 5 stars)',
   notes: 'Notes',
   privateNotes: 'Private notes (added to notes)',
   added: 'Date added',
@@ -69,8 +71,8 @@ export interface CsvPreset {
  * column names. `ISBN` and `ISBN13` are written as `="…"` (a spreadsheet
  * formula that keeps leading zeros), series sit in the title as
  * "Title (Series, #3)", `Author` is one name and `Additional Authors` a
- * comma-separated list, `Bookshelves` is comma-separated, and dates look
- * like 2023/01/15.
+ * comma-separated list, `Bookshelves` is comma-separated, dates look
+ * like 2023/01/15, and `My Rating` is 0 (not rated) to 5 stars.
  */
 export const GOODREADS_PRESET: CsvPreset = {
   id: 'goodreads',
@@ -83,7 +85,7 @@ export const GOODREADS_PRESET: CsvPreset = {
     'Additional Authors': 'additionalAuthors',
     ISBN: 'isbn10',
     ISBN13: 'isbn13',
-    'My Rating': 'ignore',
+    'My Rating': 'rating',
     'Average Rating': 'ignore',
     Publisher: 'publisher',
     Binding: 'format',
@@ -122,6 +124,7 @@ export const MYSHELF_PRESET: CsvPreset = {
     [MYSHELF_CSV_COLUMNS.series]: 'series',
     [MYSHELF_CSV_COLUMNS.seriesPosition]: 'seriesPosition',
     [MYSHELF_CSV_COLUMNS.groups]: 'groups',
+    [MYSHELF_CSV_COLUMNS.rating]: 'rating',
     [MYSHELF_CSV_COLUMNS.loanBorrower]: 'ignore',
     [MYSHELF_CSV_COLUMNS.loanLentOn]: 'ignore',
     [MYSHELF_CSV_COLUMNS.loanDueOn]: 'ignore',
@@ -157,6 +160,7 @@ const SYNONYMS: [RegExp, ImportField][] = [
   [/^(groups?|collections?|tags?)$/, 'groups'],
   [/^(bookshelves|shelves)$/, 'shelves'],
   [/^exclusive shelf$/, 'exclusiveShelf'],
+  [/^(my )?(rating|stars|score)$/, 'rating'],
   [/^(notes?|comments?|my review|review)$/, 'notes'],
   [/^private notes$/, 'privateNotes'],
   [/^(date added|added|created)$/, 'added'],

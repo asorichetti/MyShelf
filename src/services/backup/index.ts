@@ -24,6 +24,7 @@ export {
   importPlannedBooks,
   parseAddedDate,
   parseFormat,
+  parseImportRating,
   planImport,
   readCsvTable,
   shelfToGroupName,
