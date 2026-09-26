@@ -130,6 +130,17 @@ export class Context {
     }
   }
 
+  /**
+   * Runs the pagestate, render and a11y gates on whatever the page shows now,
+   * for screens reached by interaction rather than by goto (a tab click).
+   * target names the screen in uxgates.json. A no-op when gates are off.
+   */
+  async checkGates(target: string, marker = ''): Promise<void> {
+    if (!this.gates.enabled()) return;
+    const err = await checkPage(this.page, this.gates, target, { marker }, this.renderAt);
+    if (err) this.gateErrs.push(err);
+  }
+
   /** Writes an extra named screenshot into the run directory. */
   snap(name: string): Promise<string> {
     return screenshot(this.page, join(this.runDir, `${name.replace(/[^A-Za-z0-9._-]+/g, '_')}.png`), this.runDir);
