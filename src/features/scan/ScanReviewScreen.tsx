@@ -6,9 +6,10 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 import { candidateFacts } from '@/components/book/CandidateCard';
 import { CoverImage } from '@/components/book/CoverImage';
 import { Booky, useBooky } from '@/components/booky';
-import { Button, CatalogueCard, EmptyState, Heading, IconButton, Screen, Stamp, Text, useSnackbar } from '@/components/ui';
+import { Button, CatalogueCard, EmptyState, Heading, Screen, Stamp, Text, TopBar, useSnackbar } from '@/components/ui';
 import { useDatabase } from '@/db';
 import { joinNames } from '@/domain';
+import { goBackOr } from '@/features/navigation/goBack';
 import { Testids } from '@/testing/testids.gen';
 import { useTheme } from '@/theme';
 
@@ -19,10 +20,7 @@ import { saveCandidate } from './useSaveCandidate';
 const EDGES = ['top', 'bottom', 'left', 'right'] as const;
 const books = (n: number) => (n === 1 ? '1 book' : `${n} books`);
 
-function backToScan() {
-  if (router.canGoBack()) router.back();
-  else router.replace('/scan');
-}
+const backToScan = () => goBackOr('/scan');
 
 function TrayRow({ item }: { item: TrayItem }) {
   const { spacing, sizes, colors } = useTheme();
@@ -108,9 +106,7 @@ export function ScanReviewScreen() {
     <Screen testID={Testids.scanReview.root} scroll={false} edges={[...EDGES]} contentStyle={{ padding: 0, gap: 0, flex: 1 }}>
       <ScrollView style={styles.fill} contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xxl }}>
         <View style={{ gap: spacing.xs }}>
-          <View style={[styles.row, { marginTop: -spacing.sm, marginHorizontal: -spacing.sm }]}>
-            <IconButton icon="arrow-left" accessibilityLabel="Back to scanning" onPress={backToScan} />
-          </View>
+          <TopBar onBack={backToScan} backLabel="Back to scanning" />
           <Heading level={1}>Review your scans</Heading>
           <Text color="inkMuted">
             {tray.length ? 'Check each book, choose an edition where I wasn’t sure, and drop any you don’t want.' : ' '}

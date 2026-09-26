@@ -143,7 +143,7 @@ register({
     await waitVisible(c, tid(Testids.duplicate.sheet), `${path} (duplicate)`);
     const sheet = await textOf(c, tid(Testids.duplicate.sheet));
     expect(sheet.includes('Already on your shelf') && sheet.includes('Pride and Prejudice'), `${path}: expected the duplicate sheet to show the existing copy, found ${q(sheet)}`);
-    expect((await c.page.locator(tid(Testids.duplicate.sheet)).getAttribute('role')) === 'alertdialog', `${path}: expected the sheet to be role=alertdialog`);
+    expect((await c.page.locator(tid(Testids.duplicate.sheet)).getAttribute('role')) === 'dialog', `${path}: expected the sheet to be role=dialog`);
     await c.checkGates(`${path} (duplicate sheet)`);
     await c.snap('duplicate-sheet');
     await c.page.locator(tid(Testids.duplicate.addCopy)).click();

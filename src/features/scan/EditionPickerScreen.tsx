@@ -8,9 +8,10 @@ import { Booky } from '@/components/booky';
 import { DuplicateSheet } from '@/components/scan/DuplicateSheet';
 import { EditionRow } from '@/components/scan/EditionRow';
 import { WorkGroup } from '@/components/scan/WorkGroup';
-import { Button, Chip, EmptyState, Heading, IconButton, Screen, Text, useSnackbar } from '@/components/ui';
+import { Button, Chip, EmptyState, Heading, Screen, Text, TopBar, useSnackbar } from '@/components/ui';
 import { genresRepo, useDatabase } from '@/db';
 import { languageName, type BookDetail } from '@/domain';
+import { goBackOr } from '@/features/navigation/goBack';
 import type { BookCandidate } from '@/services/metadata';
 import { Testids } from '@/testing/testids.gen';
 import { useTheme } from '@/theme';
@@ -26,10 +27,7 @@ import { useSaveCandidate } from './useSaveCandidate';
 const EDGES = ['top', 'bottom', 'left', 'right'] as const;
 const SHOWN = 20;
 
-function backToScan() {
-  if (router.canGoBack()) router.back();
-  else router.replace('/scan');
-}
+const backToScan = () => goBackOr('/scan');
 
 /** `/scan/pick?session=<id>` (P03-08): choose the edition in your hands, then save it. */
 export function EditionPickerScreen() {
@@ -117,9 +115,7 @@ export function EditionPickerScreen() {
     <Screen testID={Testids.picker.root} scroll={false} edges={[...EDGES]} contentStyle={{ padding: 0, gap: 0, flex: 1 }}>
       <ScrollView style={styles.fill} contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xxl }}>
         <View style={{ gap: spacing.xs }}>
-          <View style={[styles.bar, { marginTop: -spacing.sm, marginHorizontal: -spacing.sm }]}>
-            <IconButton icon="arrow-left" accessibilityLabel="Back to scanning" onPress={backToScan} />
-          </View>
+          <TopBar onBack={backToScan} backLabel="Back to scanning" />
           <Heading level={1}>{single ? 'Is this your book?' : 'Which edition is yours?'}</Heading>
           <Text color="inkMuted">{intro}</Text>
         </View>

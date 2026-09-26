@@ -1,10 +1,8 @@
-import { Modal, Pressable, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import Svg, { Rect } from 'react-native-svg';
 
 import { Booky } from '@/components/booky';
-import { Button, Heading, Text } from '@/components/ui';
-import { MODAL_ANIMATION } from '@/components/ui/modalAnimation';
-import { useReducedMotion } from '@/hooks/useReducedMotion';
+import { Button, Sheet, Text } from '@/components/ui';
 import { Testids } from '@/testing/testids.gen';
 import { useTheme } from '@/theme';
 
@@ -32,45 +30,32 @@ function BackCoverDiagram() {
  * P07-05; this is the Scan tab's part of it.
  */
 export function ScanHelp({ visible, onClose }: { visible: boolean; onClose: () => void }) {
-  const theme = useTheme();
-  const { colors, spacing, radii } = theme;
-  const reduceMotion = useReducedMotion();
+  const { spacing } = useTheme();
   return (
-    <Modal visible={visible} transparent animationType={reduceMotion ? 'none' : MODAL_ANIMATION} onRequestClose={onClose} statusBarTranslucent>
-      <View style={[styles.backdrop, { backgroundColor: colors.scrim, padding: spacing.lg }]}>
-        <View
-          role="dialog"
-          aria-modal
-          aria-labelledby="scan-help-title"
-          testID={Testids.scan.helpSheet}
-          style={[styles.sheet, { backgroundColor: colors.surface, borderColor: colors.border, borderRadius: radii.lg, padding: spacing.xl, gap: spacing.md, maxWidth: theme.sizes.bubbleMaxWidth, boxShadow: theme.elevation.raised }]}
-        >
-          <View style={[styles.row, { gap: spacing.md }]}>
-            <Booky expression="thinking" size={56} animated={false} />
-            <Heading level={2} nativeID="scan-help-title" style={styles.fill}>
-              Where’s the barcode?
-            </Heading>
-          </View>
-          <View style={[styles.row, { gap: spacing.lg, alignItems: 'center' }]}>
-            <BackCoverDiagram />
-            <View style={[styles.fill, { gap: spacing.sm }]}>
-              <Text>Turn the book over: the ISBN barcode is usually at the bottom of the back cover, starting 978 or 979.</Text>
-              <Text color="inkMuted">On a dust jacket, look on the back flap too.</Text>
-            </View>
-          </View>
-          <Text>No barcode (older books often have none)? Switch to Cover and photograph the front: I’ll read the title and author and show you the editions.</Text>
-          <Text color="inkMuted">The ISBN (International Standard Book Number) identifies one edition of a book, so a barcode finds exactly your copy.</Text>
-          <Button label="Got it" onPress={onClose} testID={Testids.scan.helpClose} style={{ alignSelf: 'flex-end' }} />
+    <Sheet
+      visible={visible}
+      title="Where’s the barcode?"
+      onClose={onClose}
+      testID={Testids.scan.helpSheet}
+      footer={<Button label="Got it" onPress={onClose} testID={Testids.scan.helpClose} />}
+    >
+      <View style={[styles.row, { gap: spacing.lg }]}>
+        <BackCoverDiagram />
+        <View style={[styles.fill, { gap: spacing.sm }]}>
+          <Text>Turn the book over: the ISBN barcode is usually at the bottom of the back cover, starting 978 or 979.</Text>
+          <Text color="inkMuted">On a dust jacket, look on the back flap too.</Text>
         </View>
-        <Pressable accessibilityElementsHidden importantForAccessibility="no-hide-descendants" aria-hidden focusable={false} style={StyleSheet.absoluteFill} onPress={onClose} />
       </View>
-    </Modal>
+      <View style={[styles.row, { gap: spacing.md }]}>
+        <Booky expression="thinking" size={48} animated={false} />
+        <Text style={styles.fill}>No barcode (older books often have none)? Switch to Cover and photograph the front: I’ll read the title and author and show you the editions.</Text>
+      </View>
+      <Text color="inkMuted">The ISBN (International Standard Book Number) identifies one edition of a book, so a barcode finds exactly your copy.</Text>
+    </Sheet>
   );
 }
 
 const styles = StyleSheet.create({
-  backdrop: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  sheet: { width: '100%', borderWidth: 1, zIndex: 1 },
   row: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap' },
   fill: { flex: 1, minWidth: 160 },
 });

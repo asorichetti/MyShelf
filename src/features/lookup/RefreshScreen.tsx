@@ -4,9 +4,9 @@ import { StyleSheet, View } from 'react-native';
 import { sourceLabels } from '@/components/book/CandidateCard';
 import { RefreshFieldRow } from '@/components/book/RefreshFieldRow';
 import { Booky, BookyBubble } from '@/components/booky';
-import { Button, EmptyState, Heading, IconButton, Screen, Text, useSnackbar } from '@/components/ui';
+import { Button, EmptyState, Heading, Screen, Text, TopBar, useSnackbar } from '@/components/ui';
 import { BookMissing, goBackOrShelf } from '@/features/book/BookDetailScreen';
-import { parseBookId } from '@/features/book/useBook';
+import { parseId } from '@/features/navigation/parseId';
 import { Testids } from '@/testing/testids.gen';
 import { useTheme } from '@/theme';
 
@@ -18,9 +18,7 @@ function Header({ title, onBack }: { title: string | null; onBack: () => void })
   const { spacing } = useTheme();
   return (
     <View style={{ gap: spacing.xs }}>
-      <View style={[styles.bar, { marginTop: -spacing.sm, marginHorizontal: -spacing.sm }]}>
-        <IconButton icon="arrow-left" accessibilityLabel="Back" onPress={onBack} />
-      </View>
+      <TopBar onBack={onBack} backLabel="Back to the book" />
       <Heading level={1}>Refresh details</Heading>
       {title ? <Text color="inkMuted">{title}</Text> : null}
     </View>
@@ -30,7 +28,7 @@ function Header({ title, onBack }: { title: string | null; onBack: () => void })
 /** `/book/[id]/refresh` (P02-12): look a book up again and choose which details to update. */
 export function RefreshScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const bookId = parseBookId(id);
+  const bookId = parseId(id);
   const refresh = useRefresh(bookId);
   const { state, ticked } = refresh;
   const { spacing } = useTheme();
@@ -110,6 +108,5 @@ export function RefreshScreen() {
 }
 
 const styles = StyleSheet.create({
-  bar: { flexDirection: 'row', alignItems: 'center' },
   actions: { flexDirection: 'row', justifyContent: 'flex-end', flexWrap: 'wrap' },
 });
