@@ -499,6 +499,18 @@ Re-export after changing app code: `--serve` tests whatever is in `dist/`.
 | `shelf-loan-badge` | p05 | Fixture `demo`, today fixed: only Dune ("on loan to Sam") and Roger Ackroyd ("on loan to Priya, overdue") are named as on loan, stamped ON LOAN and OVERDUE; screenshot `shelf-loan-badges.png` |
 | `loan-overdue-nudge` | p05 | Fixture `demo`, then a restart: Booky (concerned) says "“The Murder of Roger Ackroyd” was due back from Priya 5 days ago." (page gates run with the bubble open) → Open loans → `/loans`; a second restart the same day shows no nudge; screenshot `overdue-nudge.png` |
 | `home-responsive` | responsive | Viewport meta has `width=device-width, initial-scale=1`; at mobile, tablet and desktop the title is fully on screen and the page does not scroll sideways; one screenshot per width |
+| `lookup-isbn-found` | core | Fixture `empty`: `/book/new` → look up ISBN 9780552166591 (mocked APIs) → one candidate card with its real cover → choose → title, year, ISBN, series, author and genre chips filled, real cover on the card → save → the detail page shows series and genre and the real cover (no fallback) |
+| `lookup-isbn-not-found` | p02 | An ISBN Open Library 404s (fixture marked `expected`) → Booky's "couldn’t find that one" → Add it by hand keeps the ISBN and focuses the title |
+| `lookup-search-title` | p02 | Search online "colour of magic pratchett" → The Colour of Magic first, with a real cover |
+| `lookup-provider-partial-failure` | p02 | Google Books answers 500 (marked `expected`, retried three times) → the Open Library result still shows with a note, no error state |
+| `cover-backfill-mocked` | p02 | A book typed in with an ISBN and no cover → restart → the tab shell's cover backfill looks it up through the mock and the Shelf row shows its real cover |
+| `book-refresh-diff` | p02 | Fixture `demo`: The Farthest Shore → More → Refresh details → checkbox rows ("Summary: add" ticked, "Pages: 223 → 214" not) → keep only the summary → Update 1 detail → the summary shows, the other facts are unchanged |
+| `scan-web-isbn-single` | core | Fixture `empty`: `/scan` → type ISBN 9780552166591 → the picker shows the one edition pre-selected with a real cover → This is my edition → the book page with its real cover and Booky’s visible "Shelved! That’s 1 book." |
+| `scan-web-cover-text` | p03 | Cover mode → type "THE COLOUR OF MAGIC TERRY PRATCHETT" → works grouped → open the first (`aria-expanded`) → filter to paperbacks → choose the 1990 Corgi → saved with series Discworld, book 1, the Corgi facts and a real cover |
+| `scan-not-found-manual` | p03 | An unknown ISBN → Booky's not-found bubble → Add it by hand → the form holds the ISBN, nothing saved |
+| `scan-duplicate` | p03 | Fixture `demo`: scan Pride and Prejudice’s ISBN → "Already on your shelf" sheet (`role="dialog"`) → Add another copy → 13 rows |
+| `scan-batch-review` | p03 | Scan several: 3 ISBNs → tray count 3 → Review → drop one → Save 2 books → 2 rows on the Shelf, tray empty |
+| `scan-e2e-inject` | p03 | `/e2e/scan?isbn=9780553418026` hands the scan to the Scan tab → the picker shows The Martian |
 
 ### Adding a journey
 
