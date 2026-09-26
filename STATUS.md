@@ -13,12 +13,12 @@ On `main`: the scaffold (P00-01 to P00-07), the design system, Booky, tabs, data
 | [Phase 02](docs/plan/phase-02-metadata-providers.md) | Metadata providers | 13 / 16 |
 | [Phase 03](docs/plan/phase-03-scanning.md) | Scanning: barcode, OCR and edition picker | 0 / 14 |
 | [Phase 04](docs/plan/phase-04-series.md) | Series | 8 / 8 |
-| [Phase 05](docs/plan/phase-05-lending.md) | Lending | 1 / 10 |
+| [Phase 05](docs/plan/phase-05-lending.md) | Lending | 8 / 10 |
 | [Phase 06](docs/plan/phase-06-grouping-and-shelf-views.md) | Grouping and shelf views | 9 / 11 |
 | [Phase 07](docs/plan/phase-07-booky-assistant.md) | Booky assistant | 0 / 9 |
 | [Phase 08](docs/plan/phase-08-settings-backup.md) | Settings, backup, export and import | 0 / 10 |
 | [Phase 09](docs/plan/phase-09-polish-a11y-release.md) | Polish, accessibility and release | 0 / 12 |
-| **Total** | | **72 / 132** |
+| **Total** | | **79 / 132** |
 
 ## Phase 00 — Foundation
 
@@ -129,16 +129,16 @@ On `main`: the scaffold (P00-01 to P00-07), the design system, Booky, tabs, data
 
 [Phase document](docs/plan/phase-05-lending.md)
 
-- [ ] P05-01 Borrowers repository and picker
+- [x] P05-01 Borrowers repository and picker
 - [x] P05-02 Loan domain rules
-- [ ] P05-03 Lend flow
+- [x] P05-03 Lend flow
 - [ ] P05-04 Return flow
-- [ ] P05-05 Loans tab
-- [ ] P05-06 Borrower detail
-- [ ] P05-07 Loan history on book detail
+- [x] P05-05 Loans tab
+- [x] P05-06 Borrower detail
+- [x] P05-07 Loan history on book detail
 - [ ] P05-08 Due-date reminders (local notifications)
-- [ ] P05-09 Loan badges on the Shelf
-- [ ] P05-10 Overdue Booky nudge
+- [x] P05-09 Loan badges on the Shelf
+- [x] P05-10 Overdue Booky nudge
 
 ## Phase 06 — Grouping and shelf views
 
