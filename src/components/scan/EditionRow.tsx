@@ -18,6 +18,8 @@ export function editionLabel(c: CandidateCardData): string {
     c.isbn13 ?? c.isbn10 ? `ISBN ${c.isbn13 ?? c.isbn10}` : 'no ISBN',
     c.title,
     `from ${sourceLabels[c.source]}`,
+    // The cover is how a sighted reader spots their edition; say whether there is one to compare.
+    c.coverUrl ? 'with a cover picture' : 'no cover picture',
   ];
   return parts.filter(Boolean).join(', ');
 }

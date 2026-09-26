@@ -57,7 +57,7 @@ export function DateField({ label, value, onChange, min, max, helperText, errorT
           padding: `0 ${spacing.md}px`,
           outline: 'none',
           opacity: disabled ? 0.5 : 1,
-          colorScheme: 'light',
+          colorScheme: theme.scheme,
         }}
       />
       {hasError ? (
