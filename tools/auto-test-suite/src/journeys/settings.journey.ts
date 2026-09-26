@@ -7,7 +7,7 @@ import { readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import { Testids, tid } from '../selectors.ts';
-import { coverState, GOODREADS_CSV, openFixture, rowNames, SCHEMA1_BACKUP, upload, waitForCount, waitForPath, waitVisible } from './helpers.ts';
+import { coverState, GOODREADS_CSV, openFixture, PHONE_COVERS_BACKUP, rowNames, SCHEMA1_BACKUP, upload, waitForCount, waitForGridCovers, waitForPath, waitVisible } from './helpers.ts';
 import { expect, q, register, type Context } from './registry.ts';
 
 const S = Testids.settings;
@@ -46,6 +46,16 @@ async function select(c: Context, trigger: string, option: string): Promise<void
 
 async function text(c: Context, selector: string): Promise<string> {
   return (await c.page.locator(selector).first().innerText()).replace(/\s+/g, ' ').trim();
+}
+
+/** Waits (on the covers grid) until every one of `count` books shows a loaded cover, checks the gates there and screenshots it. */
+async function expectEveryGridCover(c: Context, count: number, shot: string): Promise<void> {
+  const { settled, seconds, cells } = await waitForGridCovers(c, { count, timeout: 45_000 });
+  const missing = cells.filter((x) => !x.complete || x.fallback).map((x) => x.label);
+  c.logf(`covers grid: ${settled ? 'every cover shown' : 'covers missing'} after ${seconds.toFixed(1)}s`);
+  expect(settled && missing.length === 0, `/ (covers grid): expected all ${count} books to show their cover, still missing ${q(missing)}`);
+  await c.checkGates('/ (covers grid, every cover)');
+  await c.snap(shot);
 }
 
 async function waitForText(c: Context, selector: string, want: RegExp, where: string): Promise<string> {
@@ -197,8 +207,11 @@ register({
       let want = firstTables[table] as Record<string, unknown>[];
       const got = (secondTables[table] ?? []) as Record<string, unknown>[];
       if (table === 'books') {
-        // By design the cover backfill looks again for books that had no cover (The Farthest Shore); a cover it found may already be there.
-        want = want.map((b, i) => (b.cover_uri == null && typeof got[i]?.cover_uri === 'string' ? { ...b, cover_uri: got[i].cover_uri } : b));
+        // By design the cover backfill looks again for books that had no cover (The Farthest Shore); a cover it found may already be
+        // there, stored like any edit (so with a new updated_at).
+        want = want.map((b, i) =>
+          b.cover_uri == null && typeof got[i]?.cover_uri === 'string' ? { ...b, cover_uri: got[i].cover_uri, updated_at: got[i].updated_at } : b,
+        );
       }
       expect(JSON.stringify(got) === JSON.stringify(want), `backup after restore: expected table ${table} to be identical (${want.length} rows), found ${got.length} rows that differ`);
     }
@@ -346,30 +359,29 @@ register({
     }
     await c.snap('import-shelf-covers');
 
-    // Then every one of the 20: the covers grid holds them all at once, so one condition watches them settle
-    // (19 through the batch cover-id search, The Colour of Magic, which has no ISBN, through its title search).
-    await c.page.locator(tid(Testids.shelfView.modeCovers)).click();
-    await waitForCount(c, tid(Testids.shelfView.coverCell), 20, '/ (covers grid)');
-    const gridAt = Date.now();
-    const everyCover = ([cell, img]: readonly [string, string]) =>
-      [...document.querySelectorAll(cell)].every((e) => [...e.querySelectorAll<HTMLImageElement>(img)].some((i) => i.complete && i.naturalWidth > 0));
-    const settled = await c.page
-      .waitForFunction(everyCover, [tid(Testids.shelfView.coverCell), `${tid(Testids.cover.image)} img`] as const, { timeout: 45_000, polling: 250 })
-      .then(() => true)
-      .catch(() => false);
-    const missingCovers = await c.page
-      .locator(tid(Testids.shelfView.coverCell))
-      .evaluateAll((els, img) => els.filter((e) => ![...e.querySelectorAll<HTMLImageElement>(img)].some((i) => i.complete && i.naturalWidth > 0)).map((e) => e.getAttribute('aria-label') ?? e.textContent), `${tid(Testids.cover.image)} img`);
-    c.logf(`covers grid: ${settled ? 'every cover shown' : 'covers missing'} after ${((Date.now() - gridAt) / 1000).toFixed(1)}s`);
-    expect(settled && missingCovers.length === 0, `/ (covers grid): expected all 20 imported books to show their cover, still missing ${q(missingCovers)}`);
-    await c.checkGates('/ (covers grid, every imported cover)');
-    // Let the last covers finish fading in over their placeholders before the screenshot.
-    await c.page
-      .waitForFunction(([cell, ph]) => [...document.querySelectorAll(cell)].every((e) => !e.querySelector(ph)), [tid(Testids.shelfView.coverCell), tid(Testids.cover.placeholder)] as const, {
-        timeout: 10_000,
-      })
-      .catch(() => {});
-    await c.snap('import-covers-grid');
+    // Then every one of the 20 (19 through the batch cover-id search; The Colour of Magic, which has no ISBN,
+    // through its title and author search).
+    await expectEveryGridCover(c, 20, 'import-covers-grid');
+  },
+});
+
+register({
+  name: 'restore-covers-backfill',
+  suite: 'p08',
+  desc: 'Fixture "empty": restore a backup from a phone (20 books whose covers were files on that phone, so they come back without covers) with Replace → "See your shelf" → the cover backfill brings a cover back for every book, through the mocked APIs',
+  async run(c) {
+    // The backup's own settings have Google Books off (Replace restores settings too): Open Library alone, as recorded.
+    await openFixture(c, 'empty', '/settings', TODAY);
+    await openSetting(c, S.importBackup, '/settings/restore');
+    await upload(c, tid(Testids.restore.pick), PHONE_COVERS_BACKUP, '/settings/restore');
+    const file = await waitForText(c, tid(Testids.restore.file), /20 books/, '/settings/restore (file chosen)');
+    expect(file.includes('backup-phone-covers.json'), `/settings/restore: expected the file card to name the backup, found ${q(file)}`);
+    await c.page.locator(tid(Testids.restore.confirmInput)).fill('REPLACE');
+    await c.page.locator(tid(Testids.restore.confirm)).click();
+    await waitForText(c, tid(Testids.restore.summary), /20 books/, '/settings/restore');
+    await c.page.getByRole('button', { name: 'See your shelf' }).click();
+    await waitForPath(c, '/', '/settings/restore -> shelf');
+    await expectEveryGridCover(c, 20, 'restore-covers-grid');
   },
 });
 

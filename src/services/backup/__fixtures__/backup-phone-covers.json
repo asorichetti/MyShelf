@@ -1,0 +1,1037 @@
+{
+  "format": "myshelf-backup",
+  "formatVersion": 1,
+  "schemaVersion": 5,
+  "appVersion": "1.0.0",
+  "exportedAt": "2026-09-20T10:00:00.000Z",
+  "covers": "Covers saved on the phone are not included (cover_uri is null for them); MyShelf fetches covers again after a restore. Web addresses and embedded pictures are kept.",
+  "counts": {
+    "series": 9,
+    "books": 20,
+    "authors": 22,
+    "book_authors": 27,
+    "genres": 0,
+    "book_genres": 0,
+    "groups": 9,
+    "group_books": 34,
+    "borrowers": 0,
+    "loans": 0,
+    "pending_lookups": 0,
+    "settings": 1
+  },
+  "tables": {
+    "series": [
+      {
+        "id": 1,
+        "name": "The Kingkiller Chronicle",
+        "total_count": null
+      },
+      {
+        "id": 2,
+        "name": "Mistborn",
+        "total_count": null
+      },
+      {
+        "id": 3,
+        "name": "Thursday Murder Club",
+        "total_count": null
+      },
+      {
+        "id": 4,
+        "name": "The Expanse",
+        "total_count": null
+      },
+      {
+        "id": 5,
+        "name": "Science of Discworld",
+        "total_count": null
+      },
+      {
+        "id": 6,
+        "name": "Dune",
+        "total_count": null
+      },
+      {
+        "id": 7,
+        "name": "The Lord of the Rings",
+        "total_count": null
+      },
+      {
+        "id": 8,
+        "name": "Discworld",
+        "total_count": null
+      },
+      {
+        "id": 9,
+        "name": "Harry Potter",
+        "total_count": null
+      }
+    ],
+    "books": [
+      {
+        "id": 1,
+        "title": "Good Omens: The Nice and Accurate Prophecies of Agnes Nutter, Witch",
+        "subtitle": null,
+        "isbn13": "9780060853983",
+        "isbn10": "0060853980",
+        "edition": null,
+        "publisher": "HarperTorch",
+        "publication_year": 2006,
+        "page_count": 432,
+        "summary": null,
+        "cover_uri": null,
+        "language": null,
+        "format": "paperback",
+        "series_id": null,
+        "series_position": null,
+        "source": "import",
+        "source_id": null,
+        "notes": "Funniest book about the end of the world.\n\nCrowley and Aziraphale, forever. \"Just popped out for some more,\" indeed.",
+        "created_at": "2019-02-20T12:00:00.000Z",
+        "updated_at": "2026-09-26T18:47:52.825Z"
+      },
+      {
+        "id": 2,
+        "title": "The Hobbit",
+        "subtitle": null,
+        "isbn13": "9780547928227",
+        "isbn10": "054792822X",
+        "edition": null,
+        "publisher": "Mariner Books",
+        "publication_year": 2012,
+        "page_count": 300,
+        "summary": null,
+        "cover_uri": null,
+        "language": null,
+        "format": "paperback",
+        "series_id": null,
+        "series_position": null,
+        "source": "import",
+        "source_id": null,
+        "notes": null,
+        "created_at": "2018-10-01T12:00:00.000Z",
+        "updated_at": "2026-09-26T18:47:52.825Z"
+      },
+      {
+        "id": 3,
+        "title": "1984",
+        "subtitle": null,
+        "isbn13": "9780451524935",
+        "isbn10": "0451524934",
+        "edition": null,
+        "publisher": "Signet Classic",
+        "publication_year": 1961,
+        "page_count": 328,
+        "summary": null,
+        "cover_uri": null,
+        "language": null,
+        "format": "paperback",
+        "series_id": null,
+        "series_position": null,
+        "source": "import",
+        "source_id": null,
+        "notes": null,
+        "created_at": "2017-04-20T12:00:00.000Z",
+        "updated_at": "2026-09-26T18:47:52.825Z"
+      },
+      {
+        "id": 4,
+        "title": "The Name of the Wind",
+        "subtitle": null,
+        "isbn13": "9780756404741",
+        "isbn10": "0756404746",
+        "edition": null,
+        "publisher": "DAW Books",
+        "publication_year": 2008,
+        "page_count": 722,
+        "summary": null,
+        "cover_uri": null,
+        "language": null,
+        "format": "paperback",
+        "series_id": 1,
+        "series_position": 1,
+        "source": "import",
+        "source_id": null,
+        "notes": null,
+        "created_at": "2024-01-06T12:00:00.000Z",
+        "updated_at": "2026-09-26T18:47:52.825Z"
+      },
+      {
+        "id": 5,
+        "title": "The Final Empire",
+        "subtitle": null,
+        "isbn13": "9780765350381",
+        "isbn10": "0765350386",
+        "edition": null,
+        "publisher": "Tor Fantasy",
+        "publication_year": 2006,
+        "page_count": 657,
+        "summary": null,
+        "cover_uri": null,
+        "language": null,
+        "format": "paperback",
+        "series_id": 2,
+        "series_position": 1,
+        "source": "import",
+        "source_id": null,
+        "notes": null,
+        "created_at": "2024-02-11T12:00:00.000Z",
+        "updated_at": "2026-09-26T18:47:52.825Z"
+      },
+      {
+        "id": 6,
+        "title": "Project Hail Mary",
+        "subtitle": null,
+        "isbn13": "9780593135204",
+        "isbn10": "0593135202",
+        "edition": null,
+        "publisher": "Ballantine Books",
+        "publication_year": 2021,
+        "page_count": 496,
+        "summary": null,
+        "cover_uri": null,
+        "language": null,
+        "format": "hardcover",
+        "series_id": null,
+        "series_position": null,
+        "source": "import",
+        "source_id": null,
+        "notes": "Science! Friendship! Rocky!",
+        "created_at": "2022-07-14T12:00:00.000Z",
+        "updated_at": "2026-09-26T18:47:52.825Z"
+      },
+      {
+        "id": 7,
+        "title": "Circe",
+        "subtitle": null,
+        "isbn13": "9780316556347",
+        "isbn10": "0316556343",
+        "edition": null,
+        "publisher": "Little, Brown and Company",
+        "publication_year": 2018,
+        "page_count": 393,
+        "summary": null,
+        "cover_uri": null,
+        "language": null,
+        "format": "hardcover",
+        "series_id": null,
+        "series_position": null,
+        "source": "import",
+        "source_id": null,
+        "notes": null,
+        "created_at": "2021-02-01T12:00:00.000Z",
+        "updated_at": "2026-09-26T18:47:52.825Z"
+      },
+      {
+        "id": 8,
+        "title": "The Thursday Murder Club",
+        "subtitle": null,
+        "isbn13": "9781984880963",
+        "isbn10": "1984880969",
+        "edition": null,
+        "publisher": "Pamela Dorman Books",
+        "publication_year": 2020,
+        "page_count": 368,
+        "summary": null,
+        "cover_uri": null,
+        "language": null,
+        "format": "hardcover",
+        "series_id": 3,
+        "series_position": 1,
+        "source": "import",
+        "source_id": null,
+        "notes": "Christmas present from Mum",
+        "created_at": "2021-12-25T12:00:00.000Z",
+        "updated_at": "2026-09-26T18:47:52.826Z"
+      },
+      {
+        "id": 9,
+        "title": "Leviathan Wakes",
+        "subtitle": null,
+        "isbn13": "9780316129084",
+        "isbn10": "0316129089",
+        "edition": null,
+        "publisher": "Orbit",
+        "publication_year": 2011,
+        "page_count": 582,
+        "summary": null,
+        "cover_uri": null,
+        "language": null,
+        "format": "paperback",
+        "series_id": 4,
+        "series_position": 1,
+        "source": "import",
+        "source_id": null,
+        "notes": null,
+        "created_at": "2023-06-03T12:00:00.000Z",
+        "updated_at": "2026-09-26T18:47:52.825Z"
+      },
+      {
+        "id": 10,
+        "title": "The Left Hand of Darkness",
+        "subtitle": null,
+        "isbn13": "9780441478125",
+        "isbn10": "0441478123",
+        "edition": null,
+        "publisher": "Ace",
+        "publication_year": 1987,
+        "page_count": 304,
+        "summary": null,
+        "cover_uri": null,
+        "language": null,
+        "format": "paperback",
+        "series_id": null,
+        "series_position": null,
+        "source": "import",
+        "source_id": null,
+        "notes": null,
+        "created_at": "2016-08-30T12:00:00.000Z",
+        "updated_at": "2026-09-26T18:47:52.825Z"
+      },
+      {
+        "id": 11,
+        "title": "Norse Mythology",
+        "subtitle": null,
+        "isbn13": "9780393609097",
+        "isbn10": "039360909X",
+        "edition": null,
+        "publisher": "W. W. Norton & Company",
+        "publication_year": 2017,
+        "page_count": 299,
+        "summary": null,
+        "cover_uri": null,
+        "language": null,
+        "format": "hardcover",
+        "series_id": null,
+        "series_position": null,
+        "source": "import",
+        "source_id": null,
+        "notes": null,
+        "created_at": "2018-12-24T12:00:00.000Z",
+        "updated_at": "2026-09-26T18:47:52.825Z"
+      },
+      {
+        "id": 12,
+        "title": "\"Surely You're Joking, Mr. Feynman!\": Adventures of a Curious Character",
+        "subtitle": null,
+        "isbn13": "9780393316049",
+        "isbn10": "0393316041",
+        "edition": null,
+        "publisher": "W. W. Norton & Company",
+        "publication_year": 1997,
+        "page_count": 350,
+        "summary": null,
+        "cover_uri": null,
+        "language": null,
+        "format": "paperback",
+        "series_id": null,
+        "series_position": null,
+        "source": "import",
+        "source_id": null,
+        "notes": null,
+        "created_at": "2015-07-01T12:00:00.000Z",
+        "updated_at": "2026-09-26T18:47:52.825Z"
+      },
+      {
+        "id": 13,
+        "title": "The Science of Discworld",
+        "subtitle": null,
+        "isbn13": "9780091865153",
+        "isbn10": "0091865158",
+        "edition": null,
+        "publisher": "Ebury Press",
+        "publication_year": 1999,
+        "page_count": 336,
+        "summary": null,
+        "cover_uri": null,
+        "language": null,
+        "format": "hardcover",
+        "series_id": 5,
+        "series_position": 1,
+        "source": "import",
+        "source_id": null,
+        "notes": null,
+        "created_at": "2012-03-15T12:00:00.000Z",
+        "updated_at": "2026-09-26T18:47:52.825Z"
+      },
+      {
+        "id": 14,
+        "title": "Les Misérables",
+        "subtitle": null,
+        "isbn13": "9780451419439",
+        "isbn10": "045141943X",
+        "edition": null,
+        "publisher": "Signet",
+        "publication_year": 2013,
+        "page_count": 1463,
+        "summary": null,
+        "cover_uri": null,
+        "language": null,
+        "format": "paperback",
+        "series_id": null,
+        "series_position": null,
+        "source": "import",
+        "source_id": null,
+        "notes": null,
+        "created_at": "2020-01-05T12:00:00.000Z",
+        "updated_at": "2026-09-26T18:47:52.825Z"
+      },
+      {
+        "id": 15,
+        "title": "Dune",
+        "subtitle": null,
+        "isbn13": "9780441172719",
+        "isbn10": "0441172717",
+        "edition": null,
+        "publisher": "Ace",
+        "publication_year": 1990,
+        "page_count": 896,
+        "summary": null,
+        "cover_uri": null,
+        "language": null,
+        "format": "paperback",
+        "series_id": 6,
+        "series_position": 1,
+        "source": "import",
+        "source_id": null,
+        "notes": null,
+        "created_at": "2014-01-31T12:00:00.000Z",
+        "updated_at": "2026-09-26T18:47:52.825Z"
+      },
+      {
+        "id": 16,
+        "title": "The Martian",
+        "subtitle": null,
+        "isbn13": "9780553418026",
+        "isbn10": "0553418025",
+        "edition": null,
+        "publisher": "Broadway Books",
+        "publication_year": 2014,
+        "page_count": 387,
+        "summary": null,
+        "cover_uri": null,
+        "language": null,
+        "format": "paperback",
+        "series_id": null,
+        "series_position": null,
+        "source": "import",
+        "source_id": null,
+        "notes": null,
+        "created_at": "2016-04-18T12:00:00.000Z",
+        "updated_at": "2026-09-26T18:47:52.825Z"
+      },
+      {
+        "id": 17,
+        "title": "The Fellowship of the Ring",
+        "subtitle": null,
+        "isbn13": "9780345339706",
+        "isbn10": "0345339703",
+        "edition": null,
+        "publisher": "Del Rey",
+        "publication_year": 1986,
+        "page_count": 458,
+        "summary": null,
+        "cover_uri": null,
+        "language": null,
+        "format": "paperback",
+        "series_id": 7,
+        "series_position": 1,
+        "source": "import",
+        "source_id": null,
+        "notes": null,
+        "created_at": "2010-12-01T12:00:00.000Z",
+        "updated_at": "2026-09-26T18:47:52.825Z"
+      },
+      {
+        "id": 18,
+        "title": "Pride and Prejudice",
+        "subtitle": null,
+        "isbn13": "9780141439518",
+        "isbn10": "0141439513",
+        "edition": null,
+        "publisher": "Penguin Classics",
+        "publication_year": 2003,
+        "page_count": 480,
+        "summary": null,
+        "cover_uri": null,
+        "language": null,
+        "format": "paperback",
+        "series_id": null,
+        "series_position": null,
+        "source": "import",
+        "source_id": null,
+        "notes": null,
+        "created_at": "2013-01-02T12:00:00.000Z",
+        "updated_at": "2026-09-26T18:47:52.825Z"
+      },
+      {
+        "id": 19,
+        "title": "The Colour of Magic",
+        "subtitle": null,
+        "isbn13": null,
+        "isbn10": null,
+        "edition": null,
+        "publisher": "Corgi",
+        "publication_year": 1983,
+        "page_count": 288,
+        "summary": null,
+        "cover_uri": null,
+        "language": null,
+        "format": "ebook",
+        "series_id": 8,
+        "series_position": 1,
+        "source": "import",
+        "source_id": null,
+        "notes": null,
+        "created_at": "2011-08-01T12:00:00.000Z",
+        "updated_at": "2026-09-26T18:47:52.825Z"
+      },
+      {
+        "id": 20,
+        "title": "Harry Potter and the Philosopher's Stone",
+        "subtitle": null,
+        "isbn13": "9780747532699",
+        "isbn10": "0747532699",
+        "edition": null,
+        "publisher": "Bloomsbury",
+        "publication_year": 1997,
+        "page_count": 223,
+        "summary": null,
+        "cover_uri": null,
+        "language": null,
+        "format": "hardcover",
+        "series_id": 9,
+        "series_position": 1,
+        "source": "import",
+        "source_id": null,
+        "notes": "Signed at the Edinburgh book festival.\nKeep it out of the sun!",
+        "created_at": "2001-07-31T12:00:00.000Z",
+        "updated_at": "2026-09-26T18:47:52.825Z"
+      }
+    ],
+    "authors": [
+      {
+        "id": 1,
+        "name": "Terry Pratchett",
+        "sort_name": "Pratchett, Terry"
+      },
+      {
+        "id": 2,
+        "name": "Neil Gaiman",
+        "sort_name": "Gaiman, Neil"
+      },
+      {
+        "id": 3,
+        "name": "J.R.R. Tolkien",
+        "sort_name": "Tolkien, J.R.R."
+      },
+      {
+        "id": 4,
+        "name": "George Orwell",
+        "sort_name": "Orwell, George"
+      },
+      {
+        "id": 5,
+        "name": "Patrick Rothfuss",
+        "sort_name": "Rothfuss, Patrick"
+      },
+      {
+        "id": 6,
+        "name": "Brandon Sanderson",
+        "sort_name": "Sanderson, Brandon"
+      },
+      {
+        "id": 7,
+        "name": "Andy Weir",
+        "sort_name": "Weir, Andy"
+      },
+      {
+        "id": 8,
+        "name": "Madeline Miller",
+        "sort_name": "Miller, Madeline"
+      },
+      {
+        "id": 9,
+        "name": "Richard Osman",
+        "sort_name": "Osman, Richard"
+      },
+      {
+        "id": 10,
+        "name": "James S.A. Corey",
+        "sort_name": "Corey, James S.A."
+      },
+      {
+        "id": 11,
+        "name": "Ursula K. Le Guin",
+        "sort_name": "Le Guin, Ursula K."
+      },
+      {
+        "id": 12,
+        "name": "Richard P. Feynman",
+        "sort_name": "Feynman, Richard P."
+      },
+      {
+        "id": 13,
+        "name": "Ralph Leighton",
+        "sort_name": "Leighton, Ralph"
+      },
+      {
+        "id": 14,
+        "name": "Edward Hutchings",
+        "sort_name": "Hutchings, Edward"
+      },
+      {
+        "id": 15,
+        "name": "Ian Stewart",
+        "sort_name": "Stewart, Ian"
+      },
+      {
+        "id": 16,
+        "name": "Jack Cohen",
+        "sort_name": "Cohen, Jack"
+      },
+      {
+        "id": 17,
+        "name": "Victor Hugo",
+        "sort_name": "Hugo, Victor"
+      },
+      {
+        "id": 18,
+        "name": "Lee Fahnestock",
+        "sort_name": "Fahnestock, Lee"
+      },
+      {
+        "id": 19,
+        "name": "Norman MacAfee",
+        "sort_name": "MacAfee, Norman"
+      },
+      {
+        "id": 20,
+        "name": "Frank Herbert",
+        "sort_name": "Herbert, Frank"
+      },
+      {
+        "id": 21,
+        "name": "Jane Austen",
+        "sort_name": "Austen, Jane"
+      },
+      {
+        "id": 22,
+        "name": "J.K. Rowling",
+        "sort_name": "Rowling, J.K."
+      }
+    ],
+    "book_authors": [
+      {
+        "book_id": 1,
+        "author_id": 1,
+        "role": "author",
+        "position": 0
+      },
+      {
+        "book_id": 1,
+        "author_id": 2,
+        "role": "author",
+        "position": 1
+      },
+      {
+        "book_id": 2,
+        "author_id": 3,
+        "role": "author",
+        "position": 0
+      },
+      {
+        "book_id": 3,
+        "author_id": 4,
+        "role": "author",
+        "position": 0
+      },
+      {
+        "book_id": 4,
+        "author_id": 5,
+        "role": "author",
+        "position": 0
+      },
+      {
+        "book_id": 5,
+        "author_id": 6,
+        "role": "author",
+        "position": 0
+      },
+      {
+        "book_id": 6,
+        "author_id": 7,
+        "role": "author",
+        "position": 0
+      },
+      {
+        "book_id": 7,
+        "author_id": 8,
+        "role": "author",
+        "position": 0
+      },
+      {
+        "book_id": 8,
+        "author_id": 9,
+        "role": "author",
+        "position": 0
+      },
+      {
+        "book_id": 9,
+        "author_id": 10,
+        "role": "author",
+        "position": 0
+      },
+      {
+        "book_id": 10,
+        "author_id": 11,
+        "role": "author",
+        "position": 0
+      },
+      {
+        "book_id": 11,
+        "author_id": 2,
+        "role": "author",
+        "position": 0
+      },
+      {
+        "book_id": 12,
+        "author_id": 12,
+        "role": "author",
+        "position": 0
+      },
+      {
+        "book_id": 12,
+        "author_id": 13,
+        "role": "author",
+        "position": 1
+      },
+      {
+        "book_id": 12,
+        "author_id": 14,
+        "role": "author",
+        "position": 2
+      },
+      {
+        "book_id": 13,
+        "author_id": 1,
+        "role": "author",
+        "position": 0
+      },
+      {
+        "book_id": 13,
+        "author_id": 15,
+        "role": "author",
+        "position": 1
+      },
+      {
+        "book_id": 13,
+        "author_id": 16,
+        "role": "author",
+        "position": 2
+      },
+      {
+        "book_id": 14,
+        "author_id": 17,
+        "role": "author",
+        "position": 0
+      },
+      {
+        "book_id": 14,
+        "author_id": 18,
+        "role": "author",
+        "position": 1
+      },
+      {
+        "book_id": 14,
+        "author_id": 19,
+        "role": "author",
+        "position": 2
+      },
+      {
+        "book_id": 15,
+        "author_id": 20,
+        "role": "author",
+        "position": 0
+      },
+      {
+        "book_id": 16,
+        "author_id": 7,
+        "role": "author",
+        "position": 0
+      },
+      {
+        "book_id": 17,
+        "author_id": 3,
+        "role": "author",
+        "position": 0
+      },
+      {
+        "book_id": 18,
+        "author_id": 21,
+        "role": "author",
+        "position": 0
+      },
+      {
+        "book_id": 19,
+        "author_id": 1,
+        "role": "author",
+        "position": 0
+      },
+      {
+        "book_id": 20,
+        "author_id": 22,
+        "role": "author",
+        "position": 0
+      }
+    ],
+    "genres": [],
+    "book_genres": [],
+    "groups": [
+      {
+        "id": 1,
+        "name": "Favourites",
+        "colour": null,
+        "icon": null,
+        "created_at": "2026-09-26T18:47:52.821Z"
+      },
+      {
+        "id": 2,
+        "name": "Read",
+        "colour": null,
+        "icon": null,
+        "created_at": "2026-09-26T18:47:52.822Z"
+      },
+      {
+        "id": 3,
+        "name": "Classics",
+        "colour": null,
+        "icon": null,
+        "created_at": "2026-09-26T18:47:52.822Z"
+      },
+      {
+        "id": 4,
+        "name": "Currently reading",
+        "colour": null,
+        "icon": null,
+        "created_at": "2026-09-26T18:47:52.822Z"
+      },
+      {
+        "id": 5,
+        "name": "Fantasy",
+        "colour": null,
+        "icon": null,
+        "created_at": "2026-09-26T18:47:52.822Z"
+      },
+      {
+        "id": 6,
+        "name": "To read",
+        "colour": null,
+        "icon": null,
+        "created_at": "2026-09-26T18:47:52.822Z"
+      },
+      {
+        "id": 7,
+        "name": "Book club",
+        "colour": null,
+        "icon": null,
+        "created_at": "2026-09-26T18:47:52.823Z"
+      },
+      {
+        "id": 8,
+        "name": "Mystery",
+        "colour": null,
+        "icon": null,
+        "created_at": "2026-09-26T18:47:52.823Z"
+      },
+      {
+        "id": 9,
+        "name": "Signed",
+        "colour": null,
+        "icon": null,
+        "created_at": "2026-09-26T18:47:52.825Z"
+      }
+    ],
+    "group_books": [
+      {
+        "group_id": 1,
+        "book_id": 1,
+        "position": 0
+      },
+      {
+        "group_id": 1,
+        "book_id": 6,
+        "position": 1
+      },
+      {
+        "group_id": 1,
+        "book_id": 15,
+        "position": 2
+      },
+      {
+        "group_id": 1,
+        "book_id": 19,
+        "position": 3
+      },
+      {
+        "group_id": 2,
+        "book_id": 1,
+        "position": 0
+      },
+      {
+        "group_id": 2,
+        "book_id": 2,
+        "position": 1
+      },
+      {
+        "group_id": 2,
+        "book_id": 3,
+        "position": 2
+      },
+      {
+        "group_id": 2,
+        "book_id": 6,
+        "position": 3
+      },
+      {
+        "group_id": 2,
+        "book_id": 7,
+        "position": 4
+      },
+      {
+        "group_id": 2,
+        "book_id": 8,
+        "position": 5
+      },
+      {
+        "group_id": 2,
+        "book_id": 10,
+        "position": 6
+      },
+      {
+        "group_id": 2,
+        "book_id": 11,
+        "position": 7
+      },
+      {
+        "group_id": 2,
+        "book_id": 12,
+        "position": 8
+      },
+      {
+        "group_id": 2,
+        "book_id": 13,
+        "position": 9
+      },
+      {
+        "group_id": 2,
+        "book_id": 15,
+        "position": 10
+      },
+      {
+        "group_id": 2,
+        "book_id": 16,
+        "position": 11
+      },
+      {
+        "group_id": 2,
+        "book_id": 17,
+        "position": 12
+      },
+      {
+        "group_id": 2,
+        "book_id": 18,
+        "position": 13
+      },
+      {
+        "group_id": 2,
+        "book_id": 19,
+        "position": 14
+      },
+      {
+        "group_id": 2,
+        "book_id": 20,
+        "position": 15
+      },
+      {
+        "group_id": 3,
+        "book_id": 3,
+        "position": 0
+      },
+      {
+        "group_id": 3,
+        "book_id": 10,
+        "position": 1
+      },
+      {
+        "group_id": 3,
+        "book_id": 14,
+        "position": 2
+      },
+      {
+        "group_id": 3,
+        "book_id": 18,
+        "position": 3
+      },
+      {
+        "group_id": 4,
+        "book_id": 4,
+        "position": 0
+      },
+      {
+        "group_id": 5,
+        "book_id": 4,
+        "position": 0
+      },
+      {
+        "group_id": 5,
+        "book_id": 5,
+        "position": 1
+      },
+      {
+        "group_id": 6,
+        "book_id": 5,
+        "position": 0
+      },
+      {
+        "group_id": 6,
+        "book_id": 9,
+        "position": 1
+      },
+      {
+        "group_id": 6,
+        "book_id": 14,
+        "position": 2
+      },
+      {
+        "group_id": 7,
+        "book_id": 6,
+        "position": 0
+      },
+      {
+        "group_id": 7,
+        "book_id": 7,
+        "position": 1
+      },
+      {
+        "group_id": 8,
+        "book_id": 8,
+        "position": 0
+      },
+      {
+        "group_id": 9,
+        "book_id": 20,
+        "position": 0
+      }
+    ],
+    "borrowers": [],
+    "loans": [],
+    "pending_lookups": [],
+    "settings": [
+      {
+        "key": "googleBooksEnabled",
+        "value": "false"
+      }
+    ]
+  }
+}

@@ -129,3 +129,73 @@ const BACKUP_FIXTURES = fileURLToPath(new URL('../../../../src/services/backup/_
 export const GOODREADS_CSV = join(BACKUP_FIXTURES, 'goodreads_library_export.csv');
 /** A backup from schema version 1 (three Earthsea books), to restore through the migrations. */
 export const SCHEMA1_BACKUP = join(BACKUP_FIXTURES, 'backup-schema1.json');
+
+/** A backup whose 20 books (the Goodreads export) had their covers stored on the phone, so they come back without covers. */
+export const PHONE_COVERS_BACKUP = join(BACKUP_FIXTURES, 'backup-phone-covers.json');
+
+/** One covers-grid cell as it is now. */
+export interface GridCover {
+  label: string;
+  /** The cover image's `src`, or null when the cell shows no image. */
+  src: string | null;
+  /** Loaded, with its natural height (0 until loaded). */
+  complete: boolean;
+  height: number;
+  /** Shows the generated cover. */
+  fallback: boolean;
+}
+
+/** Every cell of the Shelf's covers grid, with its cover's state. */
+export async function gridCovers(c: Context): Promise<GridCover[]> {
+  return c.page.locator(tid(Testids.shelfView.coverCell)).evaluateAll(
+    (els, [img, fallback]) =>
+      els.map((e) => {
+        const i = [...e.querySelectorAll<HTMLImageElement>(img!)].find((x) => x.complete && x.naturalWidth > 0) ?? e.querySelector<HTMLImageElement>(img!);
+        return {
+          label: (e.getAttribute('aria-label') ?? e.textContent ?? '').trim(),
+          src: i?.getAttribute('src') ?? null,
+          complete: !!i?.complete && (i?.naturalWidth ?? 0) > 0,
+          height: i?.naturalHeight ?? 0,
+          fallback: !!e.querySelector(fallback!),
+        };
+      }),
+    [`${tid(Testids.cover.image)} img`, tid(Testids.cover.fallback)],
+  );
+}
+
+/**
+ * Switches the Shelf to the covers grid (it holds a small library at once,
+ * with no scrolling) and waits until every cell shows a loaded cover at
+ * least `minHeight` px tall, except cells whose label contains one of
+ * `skip`, or until `timeout`. Resolves with whether that happened, the
+ * seconds it took from `since` and every cell's state, for the caller to
+ * assert on; then waits for the covers to finish fading in, so a
+ * screenshot shows them.
+ */
+export async function waitForGridCovers(
+  c: Context,
+  { count, minHeight = 1, skip = [], timeout, since = Date.now() }: { count: number; minHeight?: number; skip?: readonly string[]; timeout: number; since?: number },
+): Promise<{ settled: boolean; seconds: number; cells: GridCover[] }> {
+  await c.page.locator(tid(Testids.shelfView.modeCovers)).click();
+  await waitForCount(c, tid(Testids.shelfView.coverCell), count, '/ (covers grid)');
+  const settled = await c.page
+    .waitForFunction(
+      ([cell, img, min, skipped]) =>
+        [...document.querySelectorAll(cell as string)].every((e) => {
+          const label = e.getAttribute('aria-label') ?? e.textContent ?? '';
+          if ((skipped as string[]).some((t) => label.includes(t))) return true;
+          return [...e.querySelectorAll<HTMLImageElement>(img as string)].some((i) => i.complete && i.naturalWidth > 0 && i.naturalHeight >= (min as number));
+        }),
+      [tid(Testids.shelfView.coverCell), `${tid(Testids.cover.image)} img`, minHeight, [...skip]] as const,
+      { timeout, polling: 250 },
+    )
+    .then(() => true)
+    .catch(() => false);
+  const seconds = (Date.now() - since) / 1000;
+  await c.page
+    .waitForFunction(([cell, ph]) => [...document.querySelectorAll(cell)].every((e) => !e.querySelector(ph)), [tid(Testids.shelfView.coverCell), tid(Testids.cover.placeholder)] as const, {
+      timeout: 10_000,
+    })
+    .catch(() => {});
+  return { settled, seconds, cells: await gridCovers(c) };
+}
