@@ -10,6 +10,7 @@ import { useDatabase } from '@/db';
 import { joinNames } from '@/domain';
 import { drainCoverBackfill } from '@/features/covers';
 import { emit } from '@/features/events';
+import { t, translate } from '@/i18n';
 import {
   csvPresets,
   CsvImportError,
@@ -35,21 +36,26 @@ import { SettingsPage } from './SettingsPage';
 
 const T = Testids.csvImport;
 const PREVIEW_ROWS = 10;
-const books = (n: number) => (n === 1 ? '1 book' : `${n} books`);
-const rowsWord = (n: number) => (n === 1 ? '1 row' : `${n} rows`);
+const books = (count: number) => t('common.books', { count });
+const rowsWord = (count: number) => t('importCsv.rows', { count });
 
 type Loaded = { name: string; table: CsvTable; existing: Set<string> };
 
 function PreviewRow({ outcome }: { outcome: RowOutcome }) {
   const { colors, spacing, radii, sizes } = useTheme();
   const add = outcome.status === 'add';
-  const status = add ? (outcome.notes.length ? `Will be added. ${outcome.notes.join(' ')}` : 'Will be added.') : `Skipped: ${outcome.notes.join(' ')}`;
-  const title = outcome.title ?? '(no title)';
-  const by = outcome.authors.length ? ` by ${joinNames(outcome.authors)}` : '';
+  const notes = outcome.notes.join(t('backup.sentenceSeparator'));
+  const status = add ? (outcome.notes.length ? t('importCsv.preview.willBeAddedWithNotes', { notes }) : t('importCsv.preview.willBeAdded')) : t('importCsv.preview.skipped', { notes });
+  const title = outcome.title ?? t('importCsv.preview.noTitle');
+  const names = outcome.authors.length ? joinNames(outcome.authors) : null;
+  const label =
+    names != null
+      ? t('importCsv.preview.rowLabelWithAuthors', { line: outcome.line, title, names, status })
+      : t('importCsv.preview.rowLabel', { line: outcome.line, title, status });
   return (
     <View
       role="listitem"
-      accessibilityLabel={`Line ${outcome.line}: ${title}${by}. ${status}`}
+      accessibilityLabel={label}
       testID={T.previewRow}
       style={[styles.row, { gap: spacing.sm, padding: spacing.sm, borderRadius: radii.sm, backgroundColor: add ? colors.surface : colors.warnContainer }]}
     >
@@ -58,9 +64,9 @@ function PreviewRow({ outcome }: { outcome: RowOutcome }) {
         <Text variant="bodyStrong" numberOfLines={2}>
           {title}
         </Text>
-        {by ? (
+        {names != null ? (
           <Text variant="caption" color="inkMuted" numberOfLines={1}>
-            {by.trim()}
+            {t('importCsv.preview.byAuthors', { names })}
           </Text>
         ) : null}
         <Text variant="caption" color={add ? 'inkMuted' : 'onWarnContainer'}>
@@ -102,7 +108,7 @@ export function ImportCsvScreen() {
       const file = await pickTextFile([CSV_MIME, '.csv', 'text/comma-separated-values', 'text/plain']);
       if (!file) return;
       const table = readCsvTable(file.text);
-      if (!table.rows.length) throw new CsvImportError('That file has a header but no books under it.');
+      if (!table.rows.length) throw new CsvImportError(t('importCsv.errors.noRows'));
       const existing = await existingBookKeys(db);
       setLoaded({ name: file.name, table, existing });
       setPreset(table.preset);
@@ -110,7 +116,7 @@ export function ImportCsvScreen() {
       setReport(null);
     } catch (e) {
       if (!(e instanceof CsvImportError)) console.error('Could not read the CSV file', e);
-      setError(e instanceof CsvImportError ? e.message : 'Sorry, that file couldn’t be read. Is it a CSV spreadsheet?');
+      setError(e instanceof CsvImportError ? e.message : t('importCsv.errors.unreadable'));
     } finally {
       setReading(false);
     }
@@ -127,7 +133,7 @@ export function ImportCsvScreen() {
       void drainCoverBackfill(db, { onAttached: () => emit('library-changed') });
     } catch (e) {
       console.error('Could not import the CSV', e);
-      setError('Sorry, the import didn’t work, so nothing was added. Please try again.');
+      setError(t('importCsv.errors.importFailed'));
     } finally {
       setImporting(false);
     }
@@ -138,44 +144,44 @@ export function ImportCsvScreen() {
 
   if (report) {
     return (
-      <SettingsPage title="Import books from a spreadsheet" testID={T.root} backTestID={T.back}>
+      <SettingsPage title={t('importCsv.screen.title')} testID={T.root} backTestID={T.back}>
         <View style={{ alignItems: 'center' }}>
           <Booky expression="excited" size={96} />
         </View>
-        <SettingsNotice tone="success" title={`Imported ${books(report.imported)}`} testID={T.report} focusOnShow>
+        <SettingsNotice tone="success" title={t('importCsv.report.title', { count: report.imported })} testID={T.report} focusOnShow>
           {[
-            report.groupsCreated.length ? `New groups: ${report.groupsCreated.join(', ')}.` : null,
-            report.imported ? 'Covers are being found in the background; they’ll appear on your shelf as they arrive.' : null,
-            report.skipped.length ? `${rowsWord(report.skipped.length)} skipped (listed below).` : null,
+            report.groupsCreated.length ? t('importCsv.report.newGroups', { names: report.groupsCreated.join(t('common.list.separator')) }) : null,
+            report.imported ? t('importCsv.report.coversComing') : null,
+            report.skipped.length ? t('importCsv.report.skipped', { count: report.skipped.length }) : null,
           ]
             .filter(Boolean)
-            .join(' ') || 'Nothing new to add.'}
+            .join(t('backup.sentenceSeparator')) || t('importCsv.report.nothingNew')}
         </SettingsNotice>
         {report.skipped.length ? (
           <View style={{ gap: spacing.sm }} testID={T.skipped}>
-            <Heading level={2}>Skipped rows</Heading>
-            <View role="list" aria-label="Skipped rows" style={{ gap: spacing.xs }}>
+            <Heading level={2}>{t('importCsv.report.skippedHeading')}</Heading>
+            <View role="list" aria-label={t('importCsv.report.skippedHeading')} style={{ gap: spacing.xs }}>
               {report.skipped.map((s) => (
-                <Text key={s.line} role="listitem">{`Line ${s.line}${s.title ? ` (${s.title})` : ''}: ${s.reason}`}</Text>
+                <Text key={s.line} role="listitem">{s.title ? t('importCsv.report.skippedLineWithTitle', { line: s.line, title: s.title, reason: s.reason }) : t('importCsv.report.skippedLine', { line: s.line, reason: s.reason })}</Text>
               ))}
             </View>
           </View>
         ) : null}
-        <Button label="See your shelf" block onPress={goToShelf} testID={T.done} />
+        <Button label={t('importCsv.report.seeShelf')} block onPress={goToShelf} testID={T.done} />
       </SettingsPage>
     );
   }
 
   return (
     <SettingsPage
-      title="Import books from a spreadsheet"
-      intro="Bring in a list of books from a CSV file: a Goodreads export (My Books → Import and export → Export library), a MyShelf spreadsheet, or your own."
+      title={t('importCsv.screen.title')}
+      intro={t('importCsv.screen.intro')}
       testID={T.root}
       backTestID={T.back}
     >
-      <Button label={loaded ? 'Choose a different file' : 'Choose a CSV file'} variant={loaded ? 'secondary' : 'primary'} block loading={reading} onPress={() => void pick()} testID={T.pick} />
+      <Button label={loaded ? t('importCsv.screen.chooseDifferentFile') : t('importCsv.screen.chooseFile')} variant={loaded ? 'secondary' : 'primary'} block loading={reading} onPress={() => void pick()} testID={T.pick} />
       {error ? (
-        <SettingsNotice tone="danger" title="That file can’t be imported" testID={T.error}>
+        <SettingsNotice tone="danger" title={t('importCsv.screen.errorTitle')} testID={T.error}>
           {error}
         </SettingsNotice>
       ) : null}
@@ -183,23 +189,23 @@ export function ImportCsvScreen() {
         <View style={{ alignItems: 'center', gap: spacing.sm }}>
           <Booky expression="happy" size={88} />
           <Text color="inkMuted" align="center">
-            Nothing is added until you’ve seen a preview.
+            {t('importCsv.screen.previewFirst')}
           </Text>
         </View>
       ) : null}
 
       {loaded && plan ? (
         <View style={{ gap: spacing.lg }}>
-          <Card title={loaded.name} eyebrow="Spreadsheet" testID={T.file}>
-            <Text>{`${rowsWord(loaded.table.rows.length)} of books, ${loaded.table.headers.length} columns.`}</Text>
+          <Card title={loaded.name} eyebrow={t('importCsv.file.eyebrow')} testID={T.file}>
+            <Text>{t('importCsv.file.summary', { rows: rowsWord(loaded.table.rows.length), columns: t('importCsv.file.columnCount', { count: loaded.table.headers.length }) })}</Text>
           </Card>
 
           <View style={{ gap: spacing.sm }}>
-            <Heading level={2}>Columns</Heading>
+            <Heading level={2}>{t('importCsv.columns.heading')}</Heading>
             <SelectField
-              label="This file is a"
+              label={t('importCsv.columns.presetLabel')}
               value={preset}
-              options={csvPresets.map((p) => ({ value: p.id, label: p.label }))}
+              options={csvPresets.map((p) => ({ value: p.id, label: translate(p.labelKey) }))}
               allowNone={false}
               onChange={(v) => {
                 setPreset(v as PresetId);
@@ -218,11 +224,11 @@ export function ImportCsvScreen() {
               testID={T.mapping}
               fieldTestID={T.mapField}
             />
-            {!hasTitle ? <SettingsNotice tone="warn">Choose which column holds the title: every book needs one.</SettingsNotice> : null}
+            {!hasTitle ? <SettingsNotice tone="warn">{t('importCsv.columns.needsTitle')}</SettingsNotice> : null}
             {hasShelves ? (
               <CheckboxRow
-                label="Turn shelves into groups"
-                description="Each shelf (to-read, favourites, …) becomes a MyShelf group holding its books."
+                label={t('importCsv.columns.shelvesAsGroups')}
+                description={t('importCsv.columns.shelvesAsGroupsDescription')}
                 checked={shelvesAsGroups}
                 onChange={setShelvesAsGroups}
                 testID={T.shelvesToggle}
@@ -231,13 +237,20 @@ export function ImportCsvScreen() {
           </View>
 
           <View style={{ gap: spacing.sm }} testID={T.preview}>
-            <Heading level={2}>Preview</Heading>
+            <Heading level={2}>{t('importCsv.preview.heading')}</Heading>
             <Text role="status" aria-live="polite">
               {importing
-                ? `Importing ${books(plan.books.length)}…`
-                : `${books(plan.books.length)} will be added${plan.skipped.length ? `; ${rowsWord(plan.skipped.length)} will be skipped` : ''}.${loaded.table.rows.length > PREVIEW_ROWS ? ` The first ${PREVIEW_ROWS} rows:` : ''}`}
+                ? t('importCsv.preview.importing', { count: plan.books.length })
+                : [
+                    plan.skipped.length
+                      ? t('importCsv.preview.willAddAndSkip', { books: books(plan.books.length), rows: rowsWord(plan.skipped.length) })
+                      : t('importCsv.preview.willAdd', { books: books(plan.books.length) }),
+                    loaded.table.rows.length > PREVIEW_ROWS ? t('importCsv.preview.firstRows', { count: PREVIEW_ROWS }) : null,
+                  ]
+                    .filter(Boolean)
+                    .join(t('backup.sentenceSeparator'))}
             </Text>
-            <View role="list" aria-label="First rows" style={{ gap: spacing.xs }}>
+            <View role="list" aria-label={t('importCsv.preview.listLabel')} style={{ gap: spacing.xs }}>
               {plan.outcomes.slice(0, PREVIEW_ROWS).map((o) => (
                 <PreviewRow key={o.line} outcome={o} />
               ))}
@@ -245,7 +258,7 @@ export function ImportCsvScreen() {
           </View>
 
           <Button
-            label={plan.books.length ? `Import ${books(plan.books.length)}` : 'Nothing to import'}
+            label={plan.books.length ? t('importCsv.confirm.import', { count: plan.books.length }) : t('importCsv.confirm.nothing')}
             block
             disabled={!plan.books.length}
             loading={importing}

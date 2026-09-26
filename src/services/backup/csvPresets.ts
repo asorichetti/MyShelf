@@ -1,3 +1,5 @@
+import { translate, type MessageKey } from '@/i18n';
+
 import { MYSHELF_CSV_COLUMNS } from './exportCsv';
 
 /** What a spreadsheet column can become in MyShelf. */
@@ -27,41 +29,47 @@ export type ImportField =
   | 'privateNotes'
   | 'added';
 
-/** The choices in the column mapper, in the order shown. */
-export const importFieldLabels: Record<ImportField, string> = {
-  ignore: 'Don’t import',
-  title: 'Title',
-  subtitle: 'Subtitle',
-  authors: 'Author(s)',
-  additionalAuthors: 'More authors (comma-separated)',
-  isbn: 'ISBN (10 or 13)',
-  isbn13: 'ISBN-13',
-  isbn10: 'ISBN-10',
-  publisher: 'Publisher',
-  year: 'Year published',
-  originalYear: 'First published (used when the year is empty)',
-  pages: 'Pages',
-  format: 'Format (hardback, paperback, …)',
-  language: 'Language',
-  genres: 'Genres',
-  series: 'Series',
-  seriesPosition: 'Number in series',
-  groups: 'Groups',
-  shelves: 'Shelves (comma-separated, become groups)',
-  exclusiveShelf: 'Reading shelf (read, to-read, …)',
-  rating: 'Your rating (1 to 5 stars)',
-  notes: 'Notes',
-  privateNotes: 'Private notes (added to notes)',
-  added: 'Date added',
+/** The choices in the column mapper, in the order shown: each field's label key. */
+export const importFieldLabelKeys: Record<ImportField, MessageKey> = {
+  ignore: 'csvFields.ignore',
+  title: 'csvFields.title',
+  subtitle: 'csvFields.subtitle',
+  authors: 'csvFields.authors',
+  additionalAuthors: 'csvFields.additionalAuthors',
+  isbn: 'csvFields.isbn',
+  isbn13: 'csvFields.isbn13',
+  isbn10: 'csvFields.isbn10',
+  publisher: 'csvFields.publisher',
+  year: 'csvFields.year',
+  originalYear: 'csvFields.originalYear',
+  pages: 'csvFields.pages',
+  format: 'csvFields.format',
+  language: 'csvFields.language',
+  genres: 'csvFields.genres',
+  series: 'csvFields.series',
+  seriesPosition: 'csvFields.seriesPosition',
+  groups: 'csvFields.groups',
+  shelves: 'csvFields.shelves',
+  exclusiveShelf: 'csvFields.exclusiveShelf',
+  rating: 'csvFields.rating',
+  notes: 'csvFields.notes',
+  privateNotes: 'csvFields.privateNotes',
+  added: 'csvFields.added',
 };
 
-export const importFieldOrder = Object.keys(importFieldLabels) as ImportField[];
+/** What the column mapper calls a field ("Don’t import", "Author(s)"). */
+export function importFieldLabel(field: ImportField): string {
+  return translate(importFieldLabelKeys[field]);
+}
+
+export const importFieldOrder = Object.keys(importFieldLabelKeys) as ImportField[];
 
 export type PresetId = 'goodreads' | 'myshelf' | 'custom';
 
 export interface CsvPreset {
   id: PresetId;
-  label: string;
+  /** The preset's name in the "This file is a" list (translate it when showing it). */
+  labelKey: MessageKey;
   /** What each known header becomes; unknown headers are ignored (or guessed, for `custom`). */
   columns: Record<string, ImportField>;
 }
@@ -76,7 +84,7 @@ export interface CsvPreset {
  */
 export const GOODREADS_PRESET: CsvPreset = {
   id: 'goodreads',
-  label: 'Goodreads library export',
+  labelKey: 'importCsv.presets.goodreads',
   columns: {
     'Book Id': 'ignore',
     Title: 'title',
@@ -108,7 +116,7 @@ export const GOODREADS_PRESET: CsvPreset = {
 /** MyShelf's own spreadsheet export (P08-04), read back. Loan columns are not imported. */
 export const MYSHELF_PRESET: CsvPreset = {
   id: 'myshelf',
-  label: 'MyShelf spreadsheet',
+  labelKey: 'importCsv.presets.myshelf',
   columns: {
     [MYSHELF_CSV_COLUMNS.title]: 'title',
     [MYSHELF_CSV_COLUMNS.subtitle]: 'subtitle',
@@ -133,7 +141,7 @@ export const MYSHELF_PRESET: CsvPreset = {
   },
 };
 
-export const CUSTOM_PRESET: CsvPreset = { id: 'custom', label: 'Another spreadsheet (match the columns yourself)', columns: {} };
+export const CUSTOM_PRESET: CsvPreset = { id: 'custom', labelKey: 'importCsv.presets.custom', columns: {} };
 
 export const csvPresets: readonly CsvPreset[] = [GOODREADS_PRESET, MYSHELF_PRESET, CUSTOM_PRESET];
 

@@ -1,4 +1,5 @@
 import type { BookyMode } from '@/domain';
+import type { MessageKey } from '@/i18n';
 
 /**
  * Booky's backup reminder (P08-06), as a pure rule so the tips engine
@@ -17,7 +18,8 @@ export const BACKUP_DUE_DAYS = 30;
 export const BACKUP_REMINDER_EVERY_DAYS = 7;
 export const BACKUP_SNOOZE_DAYS = 30;
 
-export const BACKUP_REMINDER_MESSAGE = 'It’s been a while since your last backup — save one now?';
+/** The reminder's words (translate when showing them). */
+export const BACKUP_REMINDER_MESSAGE_KEY: MessageKey = 'backup.reminder.message';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 

@@ -7,6 +7,7 @@ import { Button, Card, Text } from '@/components/ui';
 import { backupRepo, settingsRepo, useDatabase } from '@/db';
 import { backupFileName, describeCounts } from '@/domain';
 import { emit, useLibraryEvent } from '@/features/events';
+import { t } from '@/i18n';
 import { exportBackup, JSON_MIME, serializeBackup } from '@/services/backup';
 import { shareFile } from '@/services/backup/shareFile';
 import { Testids } from '@/testing/testids.gen';
@@ -54,9 +55,9 @@ export function BackupScreen() {
       const now = new Date();
       const backup = await exportBackup(db, { appVersion: appVersion(), now: () => now });
       const fileName = backupFileName(now);
-      const outcome = await shareFile({ fileName, mimeType: JSON_MIME, text: serializeBackup(backup), dialogTitle: 'Save your MyShelf backup' });
+      const outcome = await shareFile({ fileName, mimeType: JSON_MIME, text: serializeBackup(backup), dialogTitle: t('backup.screen.shareDialogTitle') });
       if (outcome === 'unavailable') {
-        setStatus({ kind: 'error', message: 'This phone can’t share files right now, so the backup couldn’t be saved.' });
+        setStatus({ kind: 'error', message: t('backup.screen.cantShare') });
         return;
       }
       await settingsRepo.setSetting(db, 'backup.lastAt', now.toISOString());
@@ -65,30 +66,30 @@ export function BackupScreen() {
       setStatus({ kind: 'done', fileName, how: outcome });
     } catch (e) {
       console.error('Could not make a backup', e);
-      setStatus({ kind: 'error', message: 'Sorry, the backup couldn’t be made. Your library is fine; please try again.' });
+      setStatus({ kind: 'error', message: t('backup.screen.failed') });
     }
   };
 
   return (
     <SettingsPage
-      title="Back up your library"
-      intro="One file with every book, author, series, group, borrower, loan and preference. Keep it somewhere safe: Google Drive, an email to yourself, or your computer."
+      title={t('backup.screen.title')}
+      intro={t('backup.screen.intro')}
       testID={T.root}
       backTestID={T.back}
     >
-      <Card title="What’s in it" eyebrow="Backup">
+      <Card title={t('backup.screen.contentsTitle')} eyebrow={t('backup.screen.contentsEyebrow')}>
         <View style={{ gap: spacing.sm }}>
-          <Text testID={T.contents}>{contents == null ? 'Counting your books…' : `Right now: ${contents}.`}</Text>
+          <Text testID={T.contents}>{contents == null ? t('backup.screen.counting') : t('backup.screen.rightNow', { contents })}</Text>
           <Text variant="caption" color="inkMuted">
-            Covers saved on this phone aren’t in the file; MyShelf fetches them again after a restore. Nothing is uploaded anywhere: you choose where the file goes.
+            {t('backup.screen.coversNote')}
           </Text>
-          <Text variant="caption" color="inkMuted">{`Last backup: ${lastBackupLabel(lastAt)}`}</Text>
+          <Text variant="caption" color="inkMuted">{t('backup.screen.lastBackup', { date: lastBackupLabel(lastAt) })}</Text>
         </View>
       </Card>
-      <Button label="Save a backup" onPress={() => void save()} loading={status.kind === 'busy'} block testID={T.export} />
+      <Button label={t('backup.screen.save')} onPress={() => void save()} loading={status.kind === 'busy'} block testID={T.export} />
       {status.kind === 'done' ? (
-        <SettingsNotice tone="success" title="Backup saved" testID={T.status}>
-          {status.how === 'downloaded' ? `Downloaded ${status.fileName}.` : `${status.fileName} is ready. Keep it somewhere safe.`}
+        <SettingsNotice tone="success" title={t('backup.screen.savedTitle')} testID={T.status}>
+          {status.how === 'downloaded' ? t('backup.screen.downloaded', { fileName: status.fileName }) : t('backup.screen.ready', { fileName: status.fileName })}
         </SettingsNotice>
       ) : null}
       {status.kind === 'error' ? (
@@ -96,7 +97,7 @@ export function BackupScreen() {
           {status.message}
         </SettingsNotice>
       ) : null}
-      <Button label="Restore from a backup instead" variant="ghost" onPress={() => router.navigate('/settings/restore')} />
+      <Button label={t('backup.screen.restoreInstead')} variant="ghost" onPress={() => router.navigate('/settings/restore')} />
     </SettingsPage>
   );
 }

@@ -26,6 +26,8 @@
  * `data:` URIs travel as they are.
  */
 
+import { t } from '@/i18n';
+
 export const BACKUP_FORMAT = 'myshelf-backup';
 /** The shape of the document itself. Bump it for changes outside `tables`. */
 export const BACKUP_FORMAT_VERSION = 1;
@@ -230,15 +232,14 @@ export function backupFileName(date: Date): string {
 
 /** What a backup holds, in words: "12 books, 4 loans, 2 groups". */
 export function describeCounts(counts: Partial<Record<BackupTableName, number>>): string {
-  const parts: string[] = [];
-  const add = (n: number | undefined, one: string, many: string) => {
-    if (n) parts.push(`${n} ${n === 1 ? one : many}`);
-  };
-  add(counts.books ?? 0, 'book', 'books');
-  add(counts.series, 'series', 'series');
-  add(counts.groups, 'group', 'groups');
-  add(counts.borrowers, 'borrower', 'borrowers');
-  add(counts.loans, 'loan', 'loans');
-  if (!parts.length) return 'no books';
-  return parts.join(', ');
+  const books = counts.books ?? 0;
+  const parts = [
+    books ? t('backup.counts.books', { count: books }) : null,
+    counts.series ? t('backup.counts.series', { count: counts.series }) : null,
+    counts.groups ? t('backup.counts.groups', { count: counts.groups }) : null,
+    counts.borrowers ? t('backup.counts.borrowers', { count: counts.borrowers }) : null,
+    counts.loans ? t('backup.counts.loans', { count: counts.loans }) : null,
+  ].filter((p): p is string => p != null);
+  if (!parts.length) return t('backup.counts.none');
+  return parts.join(t('backup.counts.separator'));
 }

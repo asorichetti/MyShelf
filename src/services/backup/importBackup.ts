@@ -1,5 +1,6 @@
 import { backupRepo, LATEST_VERSION, type Db, type MergeSummary, type SnapshotInfo } from '@/db';
 import type { BackupFile, BackupTableName, BackupTables } from '@/domain';
+import { t } from '@/i18n';
 
 import { exportBackup, serializeBackup } from './exportBackup';
 import { BackupError, parseBackup } from './validateBackup';
@@ -34,7 +35,7 @@ export interface RestoreResult {
 export async function currentTables(backup: BackupFile, openScratch?: () => Promise<Db>): Promise<BackupTables> {
   if (backup.schemaVersion === LATEST_VERSION) return backup.tables;
   if (backup.schemaVersion > LATEST_VERSION) {
-    throw new BackupError('newer-version', 'This backup was made by a newer version of MyShelf. Update the app, then try again.');
+    throw new BackupError('newer-version', t('restore.errors.newerVersion'));
   }
   if (!openScratch) throw new Error('Restoring an older backup needs a scratch database');
   return backupRepo.upgradeTables(backup.tables, backup.schemaVersion, openScratch);
@@ -42,14 +43,14 @@ export async function currentTables(backup: BackupFile, openScratch?: () => Prom
 
 function friendlyDbError(error: unknown): BackupError {
   const detail = error instanceof Error ? error.message : String(error);
-  const what = /UNIQUE/i.test(detail)
-    ? 'two records clash'
+  const message = /UNIQUE/i.test(detail)
+    ? t('restore.errors.recordsClash')
     : /CHECK|NOT NULL/i.test(detail)
-      ? 'a record has a value MyShelf can’t accept'
+      ? t('restore.errors.badValue')
       : /FOREIGN KEY/i.test(detail)
-        ? 'a link points at something missing'
-        : 'something in it couldn’t be saved';
-  return new BackupError('bad-row', `This backup looks damaged: ${what}. Nothing was changed.`);
+        ? t('restore.errors.linkMissing')
+        : t('restore.errors.notSaved');
+  return new BackupError('bad-row', message);
 }
 
 /**

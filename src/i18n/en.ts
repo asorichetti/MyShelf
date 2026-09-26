@@ -1588,6 +1588,370 @@ export const en = {
     removed: 'Removed {isbn}',
   },
 
+  // Backup, restore, import and export
+  /** Backing up, restoring, spreadsheet import and export, and erasing the library (P08). */
+
+  /** Settings → Back up your library, and what a backup holds. */
+  backup: {
+    screen: {
+      title: 'Back up your library',
+      intro:
+        'One file with every book, author, series, group, borrower, loan and preference. Keep it somewhere safe: Google Drive, an email to yourself, or your computer.',
+      contentsTitle: 'What’s in it',
+      /** Small label above the card title. */
+      contentsEyebrow: 'Backup',
+      counting: 'Counting your books…',
+      /** {contents} is a list of counts, e.g. "12 books, 4 loans, 2 groups". */
+      rightNow: 'Right now: {contents}.',
+      coversNote:
+        'Covers saved on this phone aren’t in the file; MyShelf fetches them again after a restore. Nothing is uploaded anywhere: you choose where the file goes.',
+      /** {date} is a date, or the word for "Never". */
+      lastBackup: 'Last backup: {date}',
+      save: 'Save a backup',
+      /** Title of the Android share sheet. */
+      shareDialogTitle: 'Save your MyShelf backup',
+      savedTitle: 'Backup saved',
+      /** Web: the browser downloaded the file. */
+      downloaded: 'Downloaded {fileName}.',
+      /** Phone: the share sheet has been used. */
+      ready: '{fileName} is ready. Keep it somewhere safe.',
+      cantShare: 'This phone can’t share files right now, so the backup couldn’t be saved.',
+      failed: 'Sorry, the backup couldn’t be made. Your library is fine; please try again.',
+      restoreInstead: 'Restore from a backup instead',
+    },
+    /** When the last backup was made, when there has not been one. */
+    never: 'Never',
+    /** What a backup (or the library) holds: "12 books, 4 loans, 2 groups". */
+    counts: {
+      books: { one: '{count} book', other: '{count} books' },
+      series: { one: '{count} series', other: '{count} series' },
+      groups: { one: '{count} group', other: '{count} groups' },
+      borrowers: { one: '{count} borrower', other: '{count} borrowers' },
+      loans: { one: '{count} loan', other: '{count} loans' },
+      /** Separator between the counts. */
+      separator: ', ',
+      none: 'no books',
+    },
+    /** Booky’s gentle nudge when no backup has been saved for a while. */
+    reminder: {
+      message: 'It’s been a while since your last backup — save one now?',
+    },
+    /** Joins whole sentences shown one after another in the same paragraph. */
+    sentenceSeparator: ' ',
+  },
+  /** Settings → Restore from a backup, and why a backup file can't be restored. */
+  restore: {
+    screen: {
+      title: 'Restore from a backup',
+      intro: 'Choose a backup file MyShelf saved. You’ll see what’s in it before anything changes.',
+      chooseFile: 'Choose a backup file',
+      chooseDifferentFile: 'Choose a different file',
+      errorTitle: 'That file can’t be restored',
+      openFailed: 'Sorry, that file couldn’t be opened. Nothing was changed.',
+      restoreFailed: 'Sorry, the restore didn’t work. Nothing was changed.',
+      /** Shown before a file is chosen. */
+      fileNameHint: 'Backups are files named like myshelf-backup-2026-10-12.json.',
+    },
+    file: {
+      /** Small label above the file name. */
+      eyebrow: 'Backup file',
+      /** {contents} is a list of counts, e.g. "12 books, 4 loans, 2 groups". */
+      holds: 'It holds {contents}.',
+      /** The file's details are these fragments, joined with a space: "Saved 12 Oct 2026 by MyShelf 1.0.0". */
+      savedOn: 'Saved {date}',
+      byVersion: 'by MyShelf {version}',
+      fromOlderVersion: 'from an older version; it will be brought up to date',
+      /** Between the fragments above. */
+      detailsSeparator: ' ',
+    },
+    mode: {
+      label: 'How should it be restored?',
+      replace: 'Replace my library',
+      replaceDescription: 'Everything on this phone is swapped for the backup. A safety copy is kept so you can undo.',
+      merge: 'Add to my library',
+      mergeDescription: 'Books you don’t have yet are added. Nothing is removed or changed.',
+    },
+    confirm: {
+      /** The word typed to confirm a Replace; shown and typed in capitals. */
+      word: 'REPLACE',
+      label: 'Type {word} to confirm',
+      helper: 'Your current library will be replaced.',
+      replace: 'Replace my library',
+      merge: 'Add these books',
+    },
+    result: {
+      mergedTitle: 'Books added',
+      replacedTitle: 'Library restored',
+      added: { one: 'Added {count} book.', other: 'Added {count} books.' },
+      /** Follows "Added 3 books." */
+      alreadyOnShelf: { one: '{count} was already on your shelf.', other: '{count} were already on your shelf.' },
+      /** {contents} is a list of counts, e.g. "12 books, 4 loans, 2 groups". */
+      libraryNowHas: 'Your library now has {contents}.',
+      upgraded: 'The backup came from an older version of MyShelf and was brought up to date.',
+      seeShelf: 'See your shelf',
+      undo: 'Undo restore',
+    },
+    undo: {
+      title: 'Changed your mind?',
+      button: 'Undo the last restore',
+      /** {books} is a count such as "12 books". */
+      body: 'MyShelf kept a copy of your library from just before the last restore ({date}, {books}).',
+      /** Stands in for the date when the copy's date is unknown. */
+      recently: 'recently',
+      done: 'Your library is back as it was.',
+      nothingToUndo: 'There was nothing to undo.',
+      failed: 'Sorry, I couldn’t undo that. Your library is unchanged.',
+    },
+    /** One row of a backup table, for the messages below: "book 7", "book–author link 3". */
+    rowNames: {
+      series: 'series {number}',
+      books: 'book {number}',
+      authors: 'author {number}',
+      bookAuthors: 'book–author link {number}',
+      genres: 'genre {number}',
+      bookGenres: 'book–genre link {number}',
+      groups: 'group {number}',
+      groupBooks: 'group–book link {number}',
+      borrowers: 'borrower {number}',
+      loans: 'loan {number}',
+      pendingLookups: 'pending lookup {number}',
+      settings: 'setting {number}',
+    },
+    /** A backup table as a whole, for the messages below: "its book authors are missing". */
+    tableNames: {
+      series: 'series',
+      books: 'books',
+      authors: 'authors',
+      bookAuthors: 'book authors',
+      genres: 'genres',
+      bookGenres: 'book genres',
+      groups: 'groups',
+      groupBooks: 'group books',
+      borrowers: 'borrowers',
+      loans: 'loans',
+      pendingLookups: 'pending lookups',
+      settings: 'settings',
+    },
+    /**
+     * Why a file can't be restored. {row} is a row name such as "book 7";
+     * {field}, {name} and {columns} are the file's own names for fields and
+     * tables (e.g. “series_id”), left as they are.
+     */
+    errors: {
+      empty: 'That file is empty. Choose the backup file MyShelf saved.',
+      notJson: 'That file couldn’t be read as a MyShelf backup. It may be incomplete or a different kind of file. Nothing was changed.',
+      notBackup: 'That file isn’t a MyShelf backup. Choose a file named like myshelf-backup-2026-10-12.json.',
+      newerVersion: 'This backup was made by a newer version of MyShelf. Update the app, then try again.',
+      noFormatVersion: 'This backup looks damaged: its format version is missing. Nothing was changed.',
+      noSchemaVersion: 'This backup looks damaged: its schema version is missing. Nothing was changed.',
+      noTables: 'This backup looks damaged: it has no tables. Nothing was changed.',
+      tableTooNew: 'This backup looks damaged: it has “{name}”, which its version shouldn’t have. Nothing was changed.',
+      unknownTable: 'This backup looks damaged: it has a table MyShelf doesn’t know (“{name}”). Nothing was changed.',
+      /** {tables} is a table name such as "book authors". */
+      tableMissing: 'This backup looks damaged: its {tables} are missing. Nothing was changed.',
+      /** {tables} is a table name; {columns} the key's field names ("book_id and author_id"); {values} their values. */
+      duplicateKey: 'This backup looks damaged: two {tables} share the same {columns} ({values}). Nothing was changed.',
+      notARecord: 'This backup looks damaged: {row} isn’t a record. Nothing was changed.',
+      unknownField: 'This backup looks damaged: {row} has an unknown field “{field}”. Nothing was changed.',
+      missingField: 'This backup looks damaged: {row} is missing “{field}”. Nothing was changed.',
+      unexpectedField: 'This backup looks damaged: {row} has an unexpected “{field}”. Nothing was changed.',
+      emptyField: 'This backup looks damaged: {row} has an empty {field}. Nothing was changed.',
+      /** {value} is the stored rating that is out of range. */
+      badRating: 'This backup looks damaged: {row} has a rating of {value}; ratings are 1 to 5 stars. Nothing was changed.',
+      /** {target} is a row name such as "book 999". */
+      brokenLink: 'This backup looks damaged: {row} points at {target}, which isn’t in the file. Nothing was changed.',
+      /** The database refused the backup's rows while restoring. */
+      recordsClash: 'This backup looks damaged: two records clash. Nothing was changed.',
+      badValue: 'This backup looks damaged: a record has a value MyShelf can’t accept. Nothing was changed.',
+      linkMissing: 'This backup looks damaged: a link points at something missing. Nothing was changed.',
+      notSaved: 'This backup looks damaged: something in it couldn’t be saved. Nothing was changed.',
+    },
+  },
+  /** Settings → Import books from a spreadsheet. */
+  importCsv: {
+    screen: {
+      title: 'Import books from a spreadsheet',
+      intro:
+        'Bring in a list of books from a CSV file: a Goodreads export (My Books → Import and export → Export library), a MyShelf spreadsheet, or your own.',
+      chooseFile: 'Choose a CSV file',
+      chooseDifferentFile: 'Choose a different file',
+      errorTitle: 'That file can’t be imported',
+      previewFirst: 'Nothing is added until you’ve seen a preview.',
+    },
+    /** A number of spreadsheet rows. */
+    rows: { one: '{count} row', other: '{count} rows' },
+    file: {
+      /** Small label above the file name. */
+      eyebrow: 'Spreadsheet',
+      /** {rows} and {columns} are counts such as "12 rows" and "5 columns". */
+      summary: '{rows} of books, {columns}.',
+      columnCount: { one: '{count} column', other: '{count} columns' },
+    },
+    columns: {
+      heading: 'Columns',
+      presetLabel: 'This file is a',
+      needsTitle: 'Choose which column holds the title: every book needs one.',
+      shelvesAsGroups: 'Turn shelves into groups',
+      shelvesAsGroupsDescription: 'Each shelf (to-read, favourites, …) becomes a MyShelf group holding its books.',
+    },
+    /** The kinds of spreadsheet the import recognises. */
+    presets: {
+      goodreads: 'Goodreads library export',
+      myshelf: 'MyShelf spreadsheet',
+      custom: 'Another spreadsheet (match the columns yourself)',
+    },
+    /** The column mapper. */
+    mapper: {
+      /** {name} is the column's heading in the file, or its number such as "#3". */
+      columnLabel: 'Column “{name}”',
+      columnNumber: '#{number}',
+      emptyExample: 'Empty in the first row',
+      example: 'For example: {value}',
+      noneUsed: 'No column is being used yet. Choose what each column holds below.',
+      hideIgnored: 'Hide the columns not imported',
+      showIgnored: { one: 'Show the {count} column not imported', other: 'Show the {count} columns not imported' },
+    },
+    preview: {
+      heading: 'Preview',
+      /** {books} is a count such as "12 books". */
+      willAdd: '{books} will be added.',
+      /** {books} and {rows} are counts such as "12 books" and "2 rows". */
+      willAddAndSkip: '{books} will be added; {rows} will be skipped.',
+      firstRows: 'The first {count} rows:',
+      importing: { one: 'Importing {count} book…', other: 'Importing {count} books…' },
+      listLabel: 'First rows',
+      noTitle: '(no title)',
+      byAuthors: 'by {names}',
+      willBeAdded: 'Will be added.',
+      /** {notes} are the row's warnings, e.g. "The year “sometime” wasn’t understood." */
+      willBeAddedWithNotes: 'Will be added. {notes}',
+      skipped: 'Skipped: {notes}',
+      /** A preview row's accessible name. */
+      rowLabel: 'Line {line}: {title}. {status}',
+      rowLabelWithAuthors: 'Line {line}: {title} by {names}. {status}',
+    },
+    confirm: {
+      import: { one: 'Import {count} book', other: 'Import {count} books' },
+      nothing: 'Nothing to import',
+    },
+    report: {
+      title: { one: 'Imported {count} book', other: 'Imported {count} books' },
+      /** {names} is a list of group names. */
+      newGroups: 'New groups: {names}.',
+      coversComing: 'Covers are being found in the background; they’ll appear on your shelf as they arrive.',
+      skipped: { one: '{count} row skipped (listed below).', other: '{count} rows skipped (listed below).' },
+      nothingNew: 'Nothing new to add.',
+      skippedHeading: 'Skipped rows',
+      skippedLine: 'Line {line}: {reason}',
+      skippedLineWithTitle: 'Line {line} ({title}): {reason}',
+      seeShelf: 'See your shelf',
+    },
+    /** Why a row is not imported. */
+    reasons: {
+      emptyRow: 'The row is empty.',
+      noTitle: 'It has no title.',
+      twiceInFile: 'It appears twice in the file.',
+      alreadyOnShelf: 'It’s already on your shelf.',
+    },
+    /** Something in a row that was left out; {value} is the cell as written. */
+    warnings: {
+      badIsbn: 'The ISBN “{value}” isn’t valid, so it was left out.',
+      badYear: 'The year “{value}” wasn’t understood.',
+      badPages: 'The page count “{value}” wasn’t understood.',
+    },
+    errors: {
+      empty: 'That file is empty. Choose a spreadsheet saved as CSV.',
+      cutShort: 'That file looks cut short: a quoted cell starting on line {line} never ends. Try exporting it again.',
+      noHeader: 'That file has no header row. The first line should name the columns, like Title and Author.',
+      looksLikeBackup: 'That looks like a backup file, not a spreadsheet. Use “Restore from a backup” for it.',
+      noRows: 'That file has a header but no books under it.',
+      unreadable: 'Sorry, that file couldn’t be read. Is it a CSV spreadsheet?',
+      importFailed: 'Sorry, the import didn’t work, so nothing was added. Please try again.',
+    },
+  },
+  /** What a spreadsheet column can become, as the column mapper lists them. */
+  csvFields: {
+    ignore: 'Don’t import',
+    title: 'Title',
+    subtitle: 'Subtitle',
+    authors: 'Author(s)',
+    additionalAuthors: 'More authors (comma-separated)',
+    isbn: 'ISBN (10 or 13)',
+    isbn13: 'ISBN-13',
+    isbn10: 'ISBN-10',
+    publisher: 'Publisher',
+    year: 'Year published',
+    originalYear: 'First published (used when the year is empty)',
+    pages: 'Pages',
+    format: 'Format (hardback, paperback, …)',
+    language: 'Language',
+    genres: 'Genres',
+    series: 'Series',
+    seriesPosition: 'Number in series',
+    groups: 'Groups',
+    shelves: 'Shelves (comma-separated, become groups)',
+    exclusiveShelf: 'Reading shelf (read, to-read, …)',
+    rating: 'Your rating (1 to 5 stars)',
+    notes: 'Notes',
+    privateNotes: 'Private notes (added to notes)',
+    added: 'Date added',
+  },
+  /** Settings → Export as a spreadsheet. */
+  exportCsv: {
+    screen: {
+      title: 'Export as a spreadsheet',
+      intro:
+        'A CSV file with one row per book, for Excel, Numbers or Google Sheets. It’s a list to read, not a backup: use “Back up your library” to keep everything.',
+      columnsTitle: 'Columns',
+      /** Small label above the card title. */
+      columnsEyebrow: 'CSV',
+      columns:
+        'Title, subtitle, authors, ISBN-13, ISBN-10, publisher, year, pages, format, language, genres, series, number in series, groups, notes and the date added.',
+      includeLoans: 'Include lending details',
+      includeLoansDescription: 'Adds who has each book, when it was lent and when it’s due. Borrower names are personal: share this file with care.',
+      export: 'Export CSV',
+      /** Title of the Android share sheet. */
+      shareDialogTitle: 'Save your book list',
+      savedTitle: 'Spreadsheet saved',
+      /** {books} is a count such as "12 books". Web: the browser downloaded the file. */
+      downloaded: 'Downloaded {fileName} with {books}.',
+      /** {books} is a count such as "12 books". Phone: the share sheet has been used. */
+      ready: '{fileName} is ready, with {books}.',
+      cantShare: 'This phone can’t share files right now.',
+      failed: 'Sorry, the spreadsheet couldn’t be made. Please try again.',
+    },
+  },
+  /** Settings → Erase library. */
+  erase: {
+    screen: {
+      title: 'Erase library',
+      intro: 'Remove every book from this phone, for a fresh start.',
+      warningTitle: 'This can’t be undone',
+      /** {contents} is a list of counts ("12 books, 4 loans") or the words "every book". */
+      warning:
+        'Erasing removes {contents}, with their authors, genres, series, groups, borrowers and loan history, any lookups still waiting, and saved covers.',
+      everyBook: 'every book',
+      backupNudge: 'If there’s any chance you’ll want them back, save a backup first.',
+      backupFirst: 'Save a backup first',
+      resetSettings: 'Also reset my settings',
+      resetSettingsDescription: 'Shelf order, loan length, date format and the rest go back to how they started.',
+      continue: 'Continue',
+    },
+    confirm: {
+      /** The word typed to confirm; shown and typed in capitals. */
+      word: 'ERASE',
+      /** {contents} is a list of counts ("12 books, 4 loans") or the words "your library". */
+      lastStep: 'Last step. Type {word} to remove {contents}.',
+      lastStepWithSettings: 'Last step. Type {word} to remove {contents} and reset your settings.',
+      yourLibrary: 'your library',
+      label: 'Type {word} to confirm',
+      erase: 'Erase everything',
+      keep: 'Keep my library',
+      done: 'Your library was erased. A fresh start!',
+      failed: 'Sorry, the library couldn’t be erased. Nothing was changed.',
+    },
+  },
+
   // Booky and onboarding
   /**
    * Booky, the bookmark who helps (P07): the character, its tips, the help

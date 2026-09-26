@@ -16,6 +16,7 @@ import {
   type BookFormat,
   type NewBook,
 } from '@/domain';
+import { t } from '@/i18n';
 
 import { CsvParseError, detectDelimiter, parseCsv, type CsvDelimiter } from './csv';
 import { detectPreset, type ImportField, type PresetId } from './csvPresets';
@@ -39,21 +40,21 @@ export class CsvImportError extends Error {
 
 /** Reads a spreadsheet file: detects the delimiter, the header and the preset. Throws `CsvImportError` with a friendly message. */
 export function readCsvTable(text: string): CsvTable {
-  if (!text.replace(/^﻿/, '').trim()) throw new CsvImportError('That file is empty. Choose a spreadsheet saved as CSV.');
+  if (!text.replace(/^﻿/, '').trim()) throw new CsvImportError(t('importCsv.errors.empty'));
   const delimiter = detectDelimiter(text);
   let all: string[][];
   try {
     all = parseCsv(text, delimiter);
   } catch (error) {
     if (error instanceof CsvParseError) {
-      throw new CsvImportError(`That file looks cut short: a quoted cell starting on line ${error.line} never ends. Try exporting it again.`);
+      throw new CsvImportError(t('importCsv.errors.cutShort', { line: error.line }));
     }
     throw error;
   }
   const [header, ...data] = all;
   const headers = (header ?? []).map((h) => h.trim());
-  if (headers.length < 1 || !headers.some(Boolean)) throw new CsvImportError('That file has no header row. The first line should name the columns, like Title and Author.');
-  if (/^\s*[[{]/.test(headers[0])) throw new CsvImportError('That looks like a backup file, not a spreadsheet. Use “Restore from a backup” for it.');
+  if (headers.length < 1 || !headers.some(Boolean)) throw new CsvImportError(t('importCsv.errors.noHeader'));
+  if (/^\s*[[{]/.test(headers[0])) throw new CsvImportError(t('importCsv.errors.looksLikeBackup'));
   const rows = data.map((r) => headers.map((_, i) => r[i] ?? ''));
   return { delimiter, headers, rows, preset: detectPreset(headers) };
 }
@@ -167,8 +168,8 @@ export function parseAddedDate(value: string | null): string | null {
     const date = new Date(Date.UTC(y, mo - 1, d, 12));
     return date.getUTCMonth() === mo - 1 && date.getUTCDate() === d ? date.toISOString() : null;
   }
-  const t = Date.parse(value);
-  return Number.isNaN(t) || !/^\d{4}-\d{2}-\d{2}T/.test(value.trim()) ? null : new Date(t).toISOString();
+  const time = Date.parse(value);
+  return Number.isNaN(time) || !/^\d{4}-\d{2}-\d{2}T/.test(value.trim()) ? null : new Date(time).toISOString();
 }
 
 /** "to-read" → "To read", "currently-reading" → "Currently reading", "favourites" → "Favourites". */
@@ -226,7 +227,7 @@ export function planImport(rows: readonly string[][], mapping: readonly ImportFi
     const additional = splitList(col(row, 'additionalAuthors'), /\s*[,;]\s*/);
     const authors = unique([...primary, ...additional]);
     if (!rawTitle) {
-      const reason = row.every((c) => !c.trim()) ? 'The row is empty.' : 'It has no title.';
+      const reason = row.every((c) => !c.trim()) ? t('importCsv.reasons.emptyRow') : t('importCsv.reasons.noTitle');
       plan.skipped.push({ line, title: null, reason });
       plan.outcomes.push({ line, title: null, authors, status: 'skip', notes: [reason] });
       return;
@@ -246,7 +247,7 @@ export function planImport(rows: readonly string[][], mapping: readonly ImportFi
       const n = normalizeIsbn(value);
       if (n && n.length === 13 && isValidIsbn13(n)) isbn13 ??= n;
       else if (n && n.length === 10 && isValidIsbn10(n)) isbn10 ??= n;
-      else warnings.push(`The ISBN “${value}” isn’t valid, so it was left out.`);
+      else warnings.push(t('importCsv.warnings.badIsbn', { value }));
     }
     if (!isbn13 && isbn10) isbn13 = isbn10To13(isbn10);
     if (isbn13 && !isbn10) isbn10 = isbn13To10(isbn13);
@@ -254,7 +255,7 @@ export function planImport(rows: readonly string[][], mapping: readonly ImportFi
     const keys = bookKeys(isbn13, title, authors[0] ?? null);
     if (keys.some((k) => seen.has(k))) {
       const inFile = keys.some((k) => seen.has(k) && !existing.has(k));
-      const reason = inFile ? 'It appears twice in the file.' : 'It’s already on your shelf.';
+      const reason = inFile ? t('importCsv.reasons.twiceInFile') : t('importCsv.reasons.alreadyOnShelf');
       plan.skipped.push({ line, title, reason });
       plan.outcomes.push({ line, title, authors, status: 'skip', notes: [reason] });
       return;
@@ -263,10 +264,10 @@ export function planImport(rows: readonly string[][], mapping: readonly ImportFi
 
     const yearText = col(row, 'year');
     const year = parseYear(yearText) ?? parseYear(col(row, 'originalYear'));
-    if (yearText && parseYear(yearText) == null) warnings.push(`The year “${yearText}” wasn’t understood.`);
+    if (yearText && parseYear(yearText) == null) warnings.push(t('importCsv.warnings.badYear', { value: yearText }));
     const pagesText = col(row, 'pages');
     const pages = parsePages(pagesText);
-    if (pagesText && pages == null) warnings.push(`The page count “${pagesText}” wasn’t understood.`);
+    if (pagesText && pages == null) warnings.push(t('importCsv.warnings.badPages', { value: pagesText }));
     const languageText = col(row, 'language');
     const language = languageText ? (toIso6391(languageText) ?? (isLanguageCode(languageText.toLowerCase()) ? languageText.toLowerCase() : null)) : null;
 

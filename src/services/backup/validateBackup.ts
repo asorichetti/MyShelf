@@ -5,6 +5,7 @@ import {
   isRating,
   backupTableNames,
   backupTablesAt,
+  joinNames,
   type BackupColumn,
   type BackupFile,
   type BackupRow,
@@ -12,6 +13,7 @@ import {
   type BackupTables,
   type BackupTableSpec,
 } from '@/domain';
+import { t, translate, type MessageKey } from '@/i18n';
 
 export type BackupErrorCode =
   | 'empty'
@@ -36,23 +38,39 @@ export class BackupError extends Error {
   }
 }
 
-const DAMAGED = 'This backup looks damaged';
-
-/** Singular names for messages ("book 7"). */
-const ROW_NOUN: Record<BackupTableName, string> = {
-  series: 'series',
-  books: 'book',
-  authors: 'author',
-  book_authors: 'book–author link',
-  genres: 'genre',
-  book_genres: 'book–genre link',
-  groups: 'group',
-  group_books: 'group–book link',
-  borrowers: 'borrower',
-  loans: 'loan',
-  pending_lookups: 'pending lookup',
-  settings: 'setting',
+/** One row, for messages ("book 7"). */
+const ROW_NAME: Record<BackupTableName, MessageKey> = {
+  series: 'restore.rowNames.series',
+  books: 'restore.rowNames.books',
+  authors: 'restore.rowNames.authors',
+  book_authors: 'restore.rowNames.bookAuthors',
+  genres: 'restore.rowNames.genres',
+  book_genres: 'restore.rowNames.bookGenres',
+  groups: 'restore.rowNames.groups',
+  group_books: 'restore.rowNames.groupBooks',
+  borrowers: 'restore.rowNames.borrowers',
+  loans: 'restore.rowNames.loans',
+  pending_lookups: 'restore.rowNames.pendingLookups',
+  settings: 'restore.rowNames.settings',
 };
+
+/** A whole table, for messages ("its book authors are missing"). */
+const TABLE_NAME: Record<BackupTableName, MessageKey> = {
+  series: 'restore.tableNames.series',
+  books: 'restore.tableNames.books',
+  authors: 'restore.tableNames.authors',
+  book_authors: 'restore.tableNames.bookAuthors',
+  genres: 'restore.tableNames.genres',
+  book_genres: 'restore.tableNames.bookGenres',
+  groups: 'restore.tableNames.groups',
+  group_books: 'restore.tableNames.groupBooks',
+  borrowers: 'restore.tableNames.borrowers',
+  loans: 'restore.tableNames.loans',
+  pending_lookups: 'restore.tableNames.pendingLookups',
+  settings: 'restore.tableNames.settings',
+};
+
+const rowName = (table: BackupTableName, number: string | number) => translate(ROW_NAME[table], { number });
 
 const isObject = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
 
@@ -64,24 +82,24 @@ function typeOk(col: BackupColumn, v: unknown): boolean {
 }
 
 function checkRow(spec: BackupTableSpec, columns: readonly BackupColumn[], raw: unknown, index: number): BackupRow {
-  const where = `${ROW_NOUN[spec.name]} ${index + 1}`;
-  if (!isObject(raw)) throw new BackupError('bad-row', `${DAMAGED}: ${where} isn’t a record. Nothing was changed.`);
+  const row = rowName(spec.name, index + 1);
+  if (!isObject(raw)) throw new BackupError('bad-row', t('restore.errors.notARecord', { row }));
   const known = new Set(columns.map((c) => c.name));
   for (const key of Object.keys(raw)) {
-    if (!known.has(key)) throw new BackupError('bad-row', `${DAMAGED}: ${where} has an unknown field “${key}”. Nothing was changed.`);
+    if (!known.has(key)) throw new BackupError('bad-row', t('restore.errors.unknownField', { row, field: key }));
   }
   for (const col of columns) {
     const v = raw[col.name];
     if (v === undefined) {
       if (col.hasDefault) continue;
-      throw new BackupError('bad-row', `${DAMAGED}: ${where} is missing “${col.name}”. Nothing was changed.`);
+      throw new BackupError('bad-row', t('restore.errors.missingField', { row, field: col.name }));
     }
-    if (!typeOk(col, v)) throw new BackupError('bad-row', `${DAMAGED}: ${where} has an unexpected “${col.name}”. Nothing was changed.`);
+    if (!typeOk(col, v)) throw new BackupError('bad-row', t('restore.errors.unexpectedField', { row, field: col.name }));
     if (col.type === 'text' && !col.nullable && (col.name === 'title' || col.name === 'name') && !(v as string).trim()) {
-      throw new BackupError('bad-row', `${DAMAGED}: ${where} has an empty ${col.name}. Nothing was changed.`);
+      throw new BackupError('bad-row', t('restore.errors.emptyField', { row, field: col.name }));
     }
     if (spec.name === 'books' && col.name === 'rating' && v !== null && !isRating(v)) {
-      throw new BackupError('bad-row', `${DAMAGED}: ${where} has a rating of ${String(v)}; ratings are 1 to 5 stars. Nothing was changed.`);
+      throw new BackupError('bad-row', t('restore.errors.badRating', { row, value: String(v) }));
     }
   }
   return raw as BackupRow;
@@ -100,19 +118,19 @@ export interface ValidateOptions {
  */
 export function validateBackup(doc: unknown, { currentSchemaVersion }: ValidateOptions): BackupFile {
   if (!isObject(doc) || doc.format !== BACKUP_FORMAT) {
-    throw new BackupError('not-backup', 'That file isn’t a MyShelf backup. Choose a file named like myshelf-backup-2026-10-12.json.');
+    throw new BackupError('not-backup', t('restore.errors.notBackup'));
   }
   const { formatVersion, schemaVersion, tables } = doc;
   if (typeof formatVersion !== 'number' || !Number.isInteger(formatVersion) || formatVersion < 1) {
-    throw new BackupError('bad-version', `${DAMAGED}: its format version is missing. Nothing was changed.`);
+    throw new BackupError('bad-version', t('restore.errors.noFormatVersion'));
   }
   if (typeof schemaVersion !== 'number' || !Number.isInteger(schemaVersion) || schemaVersion < 1) {
-    throw new BackupError('bad-version', `${DAMAGED}: its schema version is missing. Nothing was changed.`);
+    throw new BackupError('bad-version', t('restore.errors.noSchemaVersion'));
   }
   if (formatVersion > BACKUP_FORMAT_VERSION || schemaVersion > currentSchemaVersion) {
-    throw new BackupError('newer-version', 'This backup was made by a newer version of MyShelf. Update the app, then try again.');
+    throw new BackupError('newer-version', t('restore.errors.newerVersion'));
   }
-  if (!isObject(tables)) throw new BackupError('missing-table', `${DAMAGED}: it has no tables. Nothing was changed.`);
+  if (!isObject(tables)) throw new BackupError('missing-table', t('restore.errors.noTables'));
 
   const specs = backupTablesAt(schemaVersion);
   for (const name of Object.keys(tables)) {
@@ -120,9 +138,7 @@ export function validateBackup(doc: unknown, { currentSchemaVersion }: ValidateO
       const known = (backupTableNames as readonly string[]).includes(name);
       throw new BackupError(
         'unknown-table',
-        known
-          ? `${DAMAGED}: it has “${name}”, which its version shouldn’t have. Nothing was changed.`
-          : `${DAMAGED}: it has a table MyShelf doesn’t know (“${name}”). Nothing was changed.`,
+        known ? t('restore.errors.tableTooNew', { name }) : t('restore.errors.unknownTable', { name }),
       );
     }
   }
@@ -131,14 +147,17 @@ export function validateBackup(doc: unknown, { currentSchemaVersion }: ValidateO
   const keys = new Map<BackupTableName, Set<string>>();
   for (const spec of specs) {
     const raw = tables[spec.name];
-    if (!Array.isArray(raw)) throw new BackupError('missing-table', `${DAMAGED}: its ${spec.name.replace(/_/g, ' ')} are missing. Nothing was changed.`);
+    if (!Array.isArray(raw)) throw new BackupError('missing-table', t('restore.errors.tableMissing', { tables: translate(TABLE_NAME[spec.name]) }));
     const seen = new Set<string>();
     const columns = backupColumnsAt(spec, schemaVersion);
     const rows = raw.map((r, i) => {
       const row = checkRow(spec, columns, r, i);
       const key = spec.key.map((k) => String(row[k])).join('|');
       if (seen.has(key)) {
-        throw new BackupError('duplicate-key', `${DAMAGED}: two ${spec.name.replace(/_/g, ' ')} share the same ${spec.key.join(' and ')} (${key.replace('|', ', ')}). Nothing was changed.`);
+        throw new BackupError(
+          'duplicate-key',
+          t('restore.errors.duplicateKey', { tables: translate(TABLE_NAME[spec.name]), columns: joinNames(spec.key), values: key.replace('|', ', ') }),
+        );
       }
       seen.add(key);
       return row;
@@ -156,7 +175,7 @@ export function validateBackup(doc: unknown, { currentSchemaVersion }: ValidateO
         if (!targets.has(String(v))) {
           throw new BackupError(
             'broken-link',
-            `${DAMAGED}: ${ROW_NOUN[spec.name]} ${i + 1} points at ${ROW_NOUN[ref.table]} ${String(v)}, which isn’t in the file. Nothing was changed.`,
+            t('restore.errors.brokenLink', { row: rowName(spec.name, i + 1), target: rowName(ref.table, String(v)) }),
           );
         }
       });
@@ -177,15 +196,12 @@ export function validateBackup(doc: unknown, { currentSchemaVersion }: ValidateO
 /** Parses a backup file's text (a UTF-8 BOM is allowed) and validates it. Throws `BackupError`. */
 export function parseBackup(text: string, options: ValidateOptions): BackupFile {
   const body = text.replace(/^﻿/, '');
-  if (!body.trim()) throw new BackupError('empty', 'That file is empty. Choose the backup file MyShelf saved.');
+  if (!body.trim()) throw new BackupError('empty', t('restore.errors.empty'));
   let doc: unknown;
   try {
     doc = JSON.parse(body);
   } catch {
-    throw new BackupError(
-      'not-json',
-      'That file couldn’t be read as a MyShelf backup. It may be incomplete or a different kind of file. Nothing was changed.',
-    );
+    throw new BackupError('not-json', t('restore.errors.notJson'));
   }
   return validateBackup(doc, options);
 }
