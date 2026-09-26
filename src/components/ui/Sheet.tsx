@@ -5,6 +5,7 @@ import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { useTheme } from '@/theme';
 
 import { Heading } from './Heading';
+import { useBlockingLayer } from './layers';
 import { SHEET_ANIMATION } from './modalAnimation';
 import { Text } from './Text';
 
@@ -35,6 +36,7 @@ export function Sheet({ visible, title, subtitle, onClose, children, footer, bus
   const insets = useSafeAreaInsets();
   const reduceMotion = useReducedMotion();
   const close = busy ? () => {} : onClose;
+  useBlockingLayer(visible);
   return (
     <Modal visible={visible} transparent animationType={reduceMotion ? 'none' : SHEET_ANIMATION} onRequestClose={close} statusBarTranslucent>
       <View style={[styles.backdrop, { backgroundColor: colors.scrim }]}>

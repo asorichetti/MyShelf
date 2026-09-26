@@ -6,6 +6,7 @@ import { useTheme } from '@/theme';
 
 import { Button } from './Button';
 import { Heading } from './Heading';
+import { useBlockingLayer } from './layers';
 import { Text } from './Text';
 
 export interface SelectOption {
@@ -38,6 +39,7 @@ export function SelectField({ label, value, options, onChange, placeholder = 'No
   const theme = useTheme();
   const { colors, spacing, radii, sizes } = theme;
   const [open, setOpen] = useState(false);
+  useBlockingLayer(open);
   const labelId = `select-label-${useId().replace(/:/g, '')}`;
   const current = options.find((o) => o.value === value);
   const choose = (v: string) => {

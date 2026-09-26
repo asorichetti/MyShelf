@@ -9,6 +9,7 @@ import { DuplicateSheet } from '@/components/scan/DuplicateSheet';
 import { EditionRow } from '@/components/scan/EditionRow';
 import { WorkGroup } from '@/components/scan/WorkGroup';
 import { Button, Chip, EmptyState, Heading, Screen, Text, TopBar, useSnackbar } from '@/components/ui';
+import { useBottomObstacle } from '@/components/ui/layers';
 import { genresRepo, useDatabase } from '@/db';
 import { languageName, type BookDetail } from '@/domain';
 import { goBackOr } from '@/features/navigation/goBack';
@@ -44,6 +45,8 @@ export function EditionPickerScreen() {
   const [saving, setSaving] = useState(false);
   const [duplicates, setDuplicates] = useState<{ existing: BookDetail[]; candidate: BookCandidate } | null>(null);
   const [shown, setShown] = useState<Record<string, number>>({});
+  // Booky's help tip sits above the bottom bar, never over "This is my edition" (P07-07).
+  const { attach: attachBar, onLayout: layoutBar } = useBottomObstacle(session != null);
 
   if (!session) {
     return (
@@ -189,7 +192,7 @@ export function EditionPickerScreen() {
         ) : null}
       </ScrollView>
 
-      <View style={[styles.actions, { borderTopColor: colors.border, backgroundColor: colors.surface, padding: spacing.md, gap: spacing.sm }]}>
+      <View ref={attachBar} onLayout={layoutBar} style={[styles.actions, { borderTopColor: colors.border, backgroundColor: colors.surface, padding: spacing.md, gap: spacing.sm }]}>
         <Button variant="ghost" label="None of these — add manually" onPress={addManually} testID={Testids.picker.none} disabled={saving} />
         <Button
           label={session.trayItemId ? 'Use this edition' : 'This is my edition'}

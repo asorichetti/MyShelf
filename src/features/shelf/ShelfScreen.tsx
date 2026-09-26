@@ -16,6 +16,7 @@ import { GroupEditorSheet, type GroupDraft } from '@/components/groups/GroupEdit
 import { GroupPickerSheet } from '@/components/groups/GroupPickerSheet';
 import { ShelfLoanStamp } from '@/components/loans/ShelfLoanStamp';
 import { Button, Chip, ConfirmDialog, EmptyState, Heading, Screen, Text, useSnackbar } from '@/components/ui';
+import { useBottomObstacle } from '@/components/ui/layers';
 import type { ShelfSection } from '@/db';
 import { activeFilterCount, filterChips, languages, noFilters, today, type BookListItem, type ShelfGroupBy } from '@/domain';
 import { useGroups } from '@/features/groups/useGroups';
@@ -99,6 +100,8 @@ export function ShelfScreen() {
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const isEmpty = total === 0;
+  // Booky's tips step aside for the Add book button (P07-07).
+  const { attach: attachFab, onLayout: layoutFab } = useBottomObstacle(!selection.selecting && !isEmpty && total != null);
   // Booky's empty-shelf tip: a welcome tip, once a session, only after the onboarding
   // (asked again when Booky's memory reloads, e.g. just after the onboarding finished).
   useEffect(() => {
@@ -332,21 +335,26 @@ export function ShelfScreen() {
           style={[styles.bar, { left: spacing.md, right: spacing.md, bottom: spacing.md + (snack ? sizes.touchTarget + spacing.xl : 0) }]}
         />
       ) : !isEmpty && total != null ? (
-        <Button
-          label="Add book"
-          testID={Testids.home.addButton}
-          onPress={addBook}
-          icon={<MaterialCommunityIcons name="plus" size={sizes.icon} color={colors.onPrimary} />}
+        <View
+          ref={attachFab}
+          onLayout={layoutFab}
           style={[
             styles.fab,
             {
               right: spacing.lg,
               // Step up out of the way while a snackbar is showing.
               bottom: spacing.lg + (snack ? sizes.touchTarget + spacing.xl : 0),
-              boxShadow: theme.elevation.raised,
             },
           ]}
-        />
+        >
+          <Button
+            label="Add book"
+            testID={Testids.home.addButton}
+            onPress={addBook}
+            icon={<MaterialCommunityIcons name="plus" size={sizes.icon} color={colors.onPrimary} />}
+            style={{ boxShadow: theme.elevation.raised }}
+          />
+        </View>
       ) : null}
       <FilterSheet
         visible={filtersOpen}

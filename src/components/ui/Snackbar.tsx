@@ -4,6 +4,7 @@ import { Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from 'rea
 import { Testids } from '@/testing/testids.gen';
 import { useTheme } from '@/theme';
 
+import { useBottomObstacle } from './layers';
 import { Text } from './Text';
 
 export interface SnackbarAction {
@@ -139,6 +140,8 @@ export function SnackbarHost({ style }: { style?: StyleProp<ViewStyle> }) {
   // Which snackbar (by id) is paused, so a new one never inherits the pause.
   const [pausedId, setPausedId] = useState<number | null>(null);
   const paused = snack != null && pausedId === snack.id;
+  // Booky's tips step out of the snackbar's way (P07-07).
+  const { attach: attachObstacle, onLayout: layoutObstacle } = useBottomObstacle(snack != null);
 
   useEffect(() => {
     if (!snack || paused) return;
@@ -156,7 +159,7 @@ export function SnackbarHost({ style }: { style?: StyleProp<ViewStyle> }) {
     },
   };
   return (
-    <View style={[styles.host, { left: spacing.md, right: spacing.md, bottom: spacing.md }, style]}>
+    <View ref={attachObstacle} onLayout={layoutObstacle} style={[styles.host, { left: spacing.md, right: spacing.md, bottom: spacing.md }, style]}>
       <Snackbar key={snack.id} message={snack.message} action={action} onFocusChange={(focused) => setPausedId(focused ? snack.id : null)} />
     </View>
   );

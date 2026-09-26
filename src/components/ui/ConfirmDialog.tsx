@@ -7,6 +7,7 @@ import { useTheme } from '@/theme';
 
 import { Button } from './Button';
 import { Heading } from './Heading';
+import { useBlockingLayer } from './layers';
 import { MODAL_ANIMATION } from './modalAnimation';
 import { Text } from './Text';
 
@@ -57,6 +58,7 @@ export function ConfirmDialog({
   const id = useId().replace(/:/g, '');
   const titleId = `dialog-title-${id}`;
   const messageId = `dialog-message-${id}`;
+  useBlockingLayer(visible);
 
   return (
     <Modal

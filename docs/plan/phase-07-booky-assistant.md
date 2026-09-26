@@ -72,12 +72,13 @@ Turn Booky from a component (P00-10) into a genuinely helpful, never-annoying as
 - **Acceptance:** each mode's behaviour verified; auto-dismiss disabled when `AccessibilityInfo.isScreenReaderEnabled()`.
 - **Tests:** `src/components/booky/__tests__/dismissal.test.tsx`, `src/__tests__/settings.booky.test.tsx`.
 
-### P07-07 Placement and layering
+### P07-07 Placement and layering — done
 
 - **Description:** Booky docks bottom-right above the tab bar; the bubble never covers the focused input or a primary button (measure and flip above/left when needed); keyboard-aware; hidden in full-screen camera view except for scan tips which appear at the top.
 - **Files:** `src/components/booky/BookyOverlay.tsx`, `src/components/booky/placement.ts`.
 - **Acceptance:** pure `placement()` tested for edge cases; screenshot review at the `mobile` and `tablet` viewports (`npm run -s autotest -- screenshot --viewports mobile,tablet`).
 - **Tests:** `src/components/booky/__tests__/placement.test.ts`.
+- **Delivered:** `placement()` (pure) docks the bubble centred above the tab bar (or the bottom edge off the tabs), at most `bubbleMaxWidth` wide; when something is in the way it steps aside (left of a button on the right, right of one on the left) if that leaves at least 260 px, otherwise lifts above it (repeatedly, for stacked things), and waits hidden when no room is left below the top inset. The keyboard counts as a full-width obstacle (native keyboard events; the web reports none). What is in the way comes from a small layer store, `src/components/ui/layers.ts`: `useBottomObstacle()` measures a view in the window (the Shelf's Add book button, the selection bar, the snackbar, the edition picker's bottom bar) and `useBlockingLayer(open)` marks sheets, dialogs, menus and select lists as open; while one is open the overlay hides the tip (it comes back when the layer closes) and the engine holds nudges back. `BookyOverlay` (`src/components/booky/BookyOverlay.tsx`, in the root layout) uses both. Tips wait on the fixture loader and the onboarding, and all but help wait on screens whose bottom bar holds the primary action. The card's full-screen camera rule does not apply: the Scan tab's camera sits in a card inside the scrolling screen, never full screen. The `booky-placement` journey measures the bubble against the Add book button at the mobile (lifted) and tablet (stepped aside) viewports, the selection bar and the Undo snackbar, checks the bubble hides behind the filter sheet and returns, and saves a screenshot of each; `booky-help-screens` checks it sits above the edition picker's "This is my edition".
 
 ### P07-08 Motion and reduce-motion
 

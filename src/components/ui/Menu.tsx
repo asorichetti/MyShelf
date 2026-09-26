@@ -4,6 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useTheme } from '@/theme';
 
+import { useBlockingLayer } from './layers';
 import { Text } from './Text';
 
 import type { IconName } from './IconButton';
@@ -39,6 +40,7 @@ export function Menu({ visible, onClose, items, accessibilityLabel, top = 56, te
   const theme = useTheme();
   const { colors, spacing, radii, sizes } = theme;
   const insets = useSafeAreaInsets();
+  useBlockingLayer(visible);
   return (
     <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>
       <View

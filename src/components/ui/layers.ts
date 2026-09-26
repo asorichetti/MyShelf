@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState, useSyncExternalStore, type RefObject } from 'react';
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { Dimensions, type LayoutChangeEvent, type View } from 'react-native';
 
 /**
@@ -74,19 +74,22 @@ export function useBlockingLayer(open: boolean): void {
 }
 
 /**
- * Registers a bottom obstacle while `active`. Put the returned `ref` and
- * `onLayout` on the obstacle's outer view; it is measured in the window on
+ * Registers a bottom obstacle while `active`. Pass `attach` as the `ref` of
+ * the obstacle's outer view, with `onLayout`; it is measured in the window on
  * every layout (so a resize or a slide is followed).
  */
-export function useBottomObstacle(active = true): { ref: RefObject<View | null>; onLayout: (e?: LayoutChangeEvent) => void } {
-  const ref = useRef<View | null>(null);
+export function useBottomObstacle(active = true): { attach: (view: View | null) => void; onLayout: (e?: LayoutChangeEvent) => void } {
+  const node = useRef<View | null>(null);
+  const attach = useCallback((view: View | null) => {
+    node.current = view;
+  }, []);
   const [id] = useState(() => nextId++);
   const live = useRef(active);
   useEffect(() => {
     live.current = active;
   }, [active]);
   const onLayout = useCallback(() => {
-    const view = ref.current;
+    const view = node.current;
     if (!live.current || !view?.measureInWindow) return;
     view.measureInWindow((x, y, width, height) => {
       if (!live.current || ![x, y, width, height].every(Number.isFinite) || width <= 0 || height <= 0) return;
@@ -107,7 +110,7 @@ export function useBottomObstacle(active = true): { ref: RefObject<View | null>;
     };
   }, [active, id, onLayout]);
 
-  return { ref, onLayout };
+  return { attach, onLayout };
 }
 
 /** Tests: forget everything. */

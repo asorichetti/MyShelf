@@ -147,6 +147,10 @@ register({
     await waitForPath(c, '/scan/pick', '/scan -> lookup');
     await waitVisible(c, tid(Testids.picker.edition), '/scan/pick');
     await openHelp(c, '/scan/pick');
+    await c.settle();
+    const tipBox = await c.page.locator(tid(Testids.booky.tipHost)).boundingBox();
+    const barBox = await c.page.locator(tid(Testids.picker.confirm)).boundingBox();
+    expect(tipBox != null && barBox != null && tipBox.y + tipBox.height <= barBox.y, `/scan/pick: expected Booky above "This is my edition", found bubble ${q(tipBox)} and button ${q(barBox)}`);
     await c.checkGates('/scan/pick (help open)');
     await c.snap('help-editions');
     await c.page.locator(helpMore).click();

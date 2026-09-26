@@ -2,6 +2,7 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { Button, IconButton, Text } from '@/components/ui';
+import { useBottomObstacle } from '@/components/ui/layers';
 import { Testids } from '@/testing/testids.gen';
 import { useTheme } from '@/theme';
 
@@ -28,8 +29,12 @@ export function SelectionBar({ count, onCancel, onAddToGroup, addLabel = 'Add to
   const theme = useTheme();
   const { colors, spacing, radii, sizes } = theme;
   const none = count === 0;
+  // Booky's tips never cover the bar's actions (P07-07).
+  const { attach, onLayout } = useBottomObstacle();
   return (
     <View
+      ref={attach}
+      onLayout={onLayout}
       testID={Testids.selection.bar}
       role="toolbar"
       aria-label="Selected books"
