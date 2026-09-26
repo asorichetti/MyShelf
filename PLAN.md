@@ -454,7 +454,7 @@ Booky is a small purple **bookmark** with a tassel, big friendly eyes and a gent
 
 ### Expressions
 
-Implemented in `src/components/booky` (P00-10) as one SVG component, `<Booky expression size animated />`. `BookyBubble` shows Booky with a titled message, optional actions and a dismiss button. Every word Booky says is in a fixed catalogue (`tips.ts`, P07-01). Code tells Booky what happened with `useBooky().emit(event)` (or `emitBooky(event)` outside React); the rules engine (`engine.ts`, P07-02) picks the tip, if any, and `BookyProvider` (root layout, with its memory in `settings`) holds it. `BookyOverlay` (placed once in the root layout) floats it above the tab bar, clear of bottom actions (P07-07).
+Implemented in `src/components/booky` (P00-10) as one SVG component, `<Booky expression size animated />`. `BookyBubble` shows Booky with a titled message, optional actions and a dismiss button. Every word Booky says is in a fixed catalogue (`tips.ts`, P07-01). Code tells Booky what happened with `useBooky().emit(event)` (or `emitBooky(event)` outside React); the rules engine (`engine.ts`, P07-02) picks the tip, if any, and `BookyProvider` (root layout, with its memory in `settings`) holds it. `BookyOverlay` (placed once in the root layout) floats it above the tab bar, clear of bottom actions, and never over a control the user may need (P07-07, below).
 
 | Expression | Used for |
 |---|---|
@@ -485,6 +485,11 @@ Implemented in `src/components/booky` (P00-10) as one SVG component, `<Booky exp
 - "Don't show tips like this" on tip bubbles marks the tip id as muted in `settings`.
 - **Booky mode** in Settings (`BookySettingsSection`, setting `bookyMode`): *Helpful* (default: all triggers), *Quiet* (errors, empty states and help button only), *Off* (Booky hidden everywhere; help buttons open the help sheet). "Reset tips" clears what was seen and muted.
 - Unprompted tips respect their frequency, a 30 s cooldown and open dialogs, and never cover a primary action: the bubble docks above the tab bar and steps aside or lifts above the Add book button, the selection bar, the snackbar and the keyboard.
+- **A floating tip never covers a control the user may need** (P07-07):
+  - While a tip floats, every scrolling screen keeps room below its content as tall as the part of the screen the tip covers (`useFloatClearance`), so every control can be scrolled clear of it; on web a control focused under the tip is scrolled clear. Focus never moves.
+  - A tip is not floated over a screen that already shows what it is about (the event's `topics`, registered by the focused screen with `useBookyTopic`): no overdue nudge on that book's page, its borrower's page or the Loans tab, where the loan already shows beside "Mark returned"; no series gap tip on that series' page. It is not used up and shows on the next screen.
+  - From 150 % text, or on a window under 560 px tall, the bubble docks compact: the full width, a small Booky beside its first line, at most half the window, with longer words scrolling inside it and ✕ always in reach.
+  - The auto test suite holds screens to this with `expectTipCoversNothing`: every visible control outside the tip is either clear of it or proven reachable by scrolling.
 
 ### Accessibility
 
