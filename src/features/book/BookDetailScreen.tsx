@@ -7,7 +7,8 @@ import { GenreChips } from '@/components/book/GenreChips';
 import { SummaryText } from '@/components/book/SummaryText';
 import { Booky } from '@/components/booky';
 import { ConfirmDialog, EmptyState, Heading, IconButton, Menu, Screen, Stamp, Text, useSnackbar } from '@/components/ui';
-import { daysOverdue, formatDate, formatSeriesPosition, loanStatus, today, type BookDetail } from '@/domain';
+import { daysOverdue, formatDate, loanStatus, today, type BookDetail } from '@/domain';
+import { BookSeries } from '@/features/series/BookSeries';
 import { Testids } from '@/testing/testids.gen';
 import { useTheme } from '@/theme';
 
@@ -134,13 +135,7 @@ function BookDetailContent({ book }: { book: BookDetail }) {
           <GenreChips genres={book.genres.map((g) => g.name)} testID={Testids.bookDetail.genres} />
         </Section>
       ) : null}
-      {book.series ? (
-        <Section title="Series">
-          <Text testID={Testids.bookDetail.series}>
-            {book.seriesPosition != null ? `${book.series.name} · #${formatSeriesPosition(book.seriesPosition)}` : book.series.name}
-          </Text>
-        </Section>
-      ) : null}
+      <BookSeries book={book} />
       {book.notes ? (
         <Section title="Notes">
           <Text testID={Testids.bookDetail.notes} selectable>

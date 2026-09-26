@@ -63,7 +63,7 @@ describe('Book detail', () => {
 
   it('shows the series and the overdue stamp where they apply', async () => {
     await openBook(await idOf('9780552131063'));
-    expect(screen.getByTestId(Testids.bookDetail.series)).toHaveTextContent('Discworld · #4');
+    expect(screen.getByTestId(Testids.bookDetail.series)).toHaveTextContent(/Discworld.*Book 4.*3 of 4 owned, 1 missing/);
     expect(screen.getByTestId(Testids.bookDetail.loan)).toHaveTextContent(/not lent to anyone/);
     screen.unmount();
     await openBook(await idOf('9780007527526'));
