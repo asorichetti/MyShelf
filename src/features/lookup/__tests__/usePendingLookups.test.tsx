@@ -171,4 +171,47 @@ describe('usePendingLookups', () => {
     expect(lookup).not.toHaveBeenCalled();
     expect(result.current.booky.tip).toBeNull();
   });
+  describe('cover backfill (P02-15)', () => {
+    it('starts on mount with an empty queue, and after each online retry', async () => {
+      const backfillCovers = jest.fn(async () => undefined);
+      await renderLookups({ lookup: jest.fn(async () => found(A)), backfillCovers });
+      await waitFor(() => expect(backfillCovers).toHaveBeenCalledTimes(1));
+      await pendingLookupsRepo.enqueue(db, A);
+      await foreground();
+      await waitFor(() => expect(backfillCovers).toHaveBeenCalledTimes(2));
+    });
+
+    it('does not start while still offline', async () => {
+      await pendingLookupsRepo.enqueue(db, A);
+      const lookup = jest.fn(async () => Promise.reject(new OfflineError('https://openlibrary.org')));
+      const backfillCovers = jest.fn(async () => undefined);
+      const { result } = renderLookups({ lookup, backfillCovers });
+      await waitFor(() => expect(lookup).toHaveBeenCalledTimes(1));
+      await waitFor(() => expect(result.current.lookups.retrying).toBe(false));
+      expect(backfillCovers).not.toHaveBeenCalled();
+    });
+
+    it('runs one backfill at a time and cancels it on unmount', async () => {
+      let signal: AbortSignal | undefined;
+      const backfillCovers = jest.fn((s: AbortSignal) => {
+        signal = s;
+        return new Promise<void>(() => undefined); // still running
+      });
+      const { unmount } = renderLookups({ backfillCovers });
+      await waitFor(() => expect(backfillCovers).toHaveBeenCalledTimes(1));
+      await foreground();
+      expect(backfillCovers).toHaveBeenCalledTimes(1);
+      unmount();
+      expect(signal?.aborted).toBe(true);
+    });
+
+    it('can be turned off', async () => {
+      const lookup = jest.fn();
+      const { result } = renderLookups({ lookup, backfillCovers: null });
+      await act(async () => {
+        await result.current.lookups.retryNow();
+      });
+      expect(lookup).not.toHaveBeenCalled();
+    });
+  });
 });

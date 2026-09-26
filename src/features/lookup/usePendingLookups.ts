@@ -1,8 +1,9 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AppState } from 'react-native';
 
 import { useBooky } from '@/components/booky';
 import { pendingLookupsRepo, useDatabase, type PendingLookup } from '@/db';
+import { backfillCoversNow } from '@/features/covers';
 import { isAbortError, OfflineError } from '@/services/http';
 import { InvalidIsbnError, type BookCandidate, type MetadataResult } from '@/services/metadata';
 
@@ -19,6 +20,11 @@ export interface PendingResult {
 export interface UsePendingLookupsOptions {
   /** Defaults to the app's metadata service. */
   lookup?: (isbn13: string, signal: AbortSignal) => Promise<MetadataResult>;
+  /**
+   * Runs after the queue is retried while online, to fill in missing covers
+   * (P02-15). Defaults to `backfillCoversNow`; pass null to turn it off.
+   */
+  backfillCovers?: ((signal: AbortSignal) => Promise<unknown>) | null;
 }
 
 export interface PendingLookups {
@@ -47,7 +53,7 @@ const plural = (n: number) => (n === 1 ? '1 book' : `${n} books`);
  * to five; tells the user through Booky when details arrive or a lookup is
  * given up.
  */
-export function usePendingLookups({ lookup }: UsePendingLookupsOptions = {}): PendingLookups {
+export function usePendingLookups({ lookup, backfillCovers }: UsePendingLookupsOptions = {}): PendingLookups {
   const db = useDatabase();
   const service = useMetadataService();
   const { showTip } = useBooky();
@@ -57,6 +63,24 @@ export function usePendingLookups({ lookup }: UsePendingLookupsOptions = {}): Pe
   const [retrying, setRetrying] = useState(false);
   const running = useRef(false);
   const controller = useRef<AbortController | null>(null);
+  const backfillController = useRef<AbortController | null>(null);
+
+  const backfill = useMemo(
+    () => (backfillCovers === undefined ? (signal: AbortSignal) => backfillCoversNow(db, { signal }) : backfillCovers),
+    [backfillCovers, db],
+  );
+
+  /** Starts the cover backfill in the background; one run at a time, cancelled on unmount. */
+  const startBackfill = useCallback(() => {
+    if (!backfill || backfillController.current) return;
+    const abort = new AbortController();
+    backfillController.current = abort;
+    backfill(abort.signal)
+      .catch(() => undefined) // the backfill records its own failures; nothing to tell the user
+      .finally(() => {
+        if (backfillController.current === abort) backfillController.current = null;
+      });
+  }, [backfill]);
 
   const doLookup = useCallback(
     (isbn13: string, signal: AbortSignal) => (lookup ? lookup(isbn13, signal) : service.lookupIsbn(isbn13, { signal })),
@@ -78,6 +102,7 @@ export function usePendingLookups({ lookup }: UsePendingLookupsOptions = {}): Pe
     setRetrying(true);
     const arrived: PendingResult[] = [];
     const gaveUp: string[] = [];
+    let offline = false;
     try {
       for (const item of await reload()) {
         if (abort.signal.aborted) break;
@@ -92,7 +117,10 @@ export function usePendingLookups({ lookup }: UsePendingLookupsOptions = {}): Pe
           }
         } catch (error) {
           if (isAbortError(error)) break;
-          if (error instanceof OfflineError) break; // still offline: try again next time
+          if (error instanceof OfflineError) {
+            offline = true; // still offline: try again next time
+            break;
+          }
           if (error instanceof InvalidIsbnError) {
             await pendingLookupsRepo.markFailed(db, item.isbn13, 'invalid-isbn');
             gaveUp.push(item.isbn13);
@@ -109,6 +137,7 @@ export function usePendingLookups({ lookup }: UsePendingLookupsOptions = {}): Pe
     if (abort.signal.aborted) return;
     await reload();
     setRetrying(false);
+    if (!offline) startBackfill();
     if (arrived.length) {
       setResults((current) => [...current.filter((r) => !arrived.some((a) => a.isbn13 === r.isbn13)), ...arrived]);
       showTip({ expression: 'excited', message: `Good news — I found details for ${plural(arrived.length)} you added offline.` });
@@ -118,7 +147,7 @@ export function usePendingLookups({ lookup }: UsePendingLookupsOptions = {}): Pe
         message: `I couldn't find details for ${plural(gaveUp.length)}. You can add ${gaveUp.length === 1 ? 'it' : 'them'} by hand.`,
       });
     }
-  }, [db, doLookup, reload, showTip]);
+  }, [db, doLookup, reload, showTip, startBackfill]);
 
   const queue = useCallback(
     async (isbn13: string) => {
@@ -151,6 +180,7 @@ export function usePendingLookups({ lookup }: UsePendingLookupsOptions = {}): Pe
         setFailed(gaveUp);
         // A cold start is a return to the foreground too, but AppState reports no change for it.
         if (due.length) return retryNow();
+        startBackfill();
       })
       .catch(() => undefined);
     const subscription = AppState.addEventListener('change', (state) => {
@@ -160,8 +190,9 @@ export function usePendingLookups({ lookup }: UsePendingLookupsOptions = {}): Pe
       mounted = false;
       subscription.remove();
       controller.current?.abort();
+      backfillController.current?.abort();
     };
-  }, [db, retryNow]);
+  }, [db, retryNow, startBackfill]);
 
   return { pending, failed, results, retrying, queue, retryNow, dismissResult, remove };
 }
