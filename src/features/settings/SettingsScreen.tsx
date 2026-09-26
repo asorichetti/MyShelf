@@ -8,6 +8,7 @@ import { SettingsDivider, SettingsLinkRow, SettingsSection, SettingsSwitchRow } 
 import { Heading, Screen, Text } from '@/components/ui';
 import { loansRepo, pendingLookupsRepo, useDatabase } from '@/db';
 import type { AppSettings } from '@/domain';
+import { BookySettingsSection } from '@/features/booky/BookySettingsSection';
 import { useLibraryEvent } from '@/features/events';
 import { useReminderSetting } from '@/features/loans/useReminderSync';
 import { LoadingPage } from '@/features/navigation/LoadingPage';
@@ -76,8 +77,8 @@ export function SettingsScreen() {
 
   if (!settings) return <LoadingPage />;
 
-  // Booky (P07-06): the Booky track's <BookySettingsSection /> goes in this slot, between Library and Lookups.
-  const bookySection: ReactNode = null;
+  // Booky (P07-06): how chatty Booky is, reset tips, the welcome tour.
+  const bookySection: ReactNode = <BookySettingsSection />;
 
   return (
     <Screen testID={T.root}>

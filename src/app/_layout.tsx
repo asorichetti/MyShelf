@@ -3,9 +3,8 @@ import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
-import { View } from 'react-native';
 
-import { BookyOverlay } from '@/components/booky';
+import { BookyOverlay, BookyTouchArea } from '@/components/booky';
 import { SnackbarProvider } from '@/components/ui';
 import { DatabaseProvider, type DatabaseStatus } from '@/db';
 import { openAppDatabase } from '@/db/expo';
@@ -28,7 +27,8 @@ function RootStack() {
     <BookyRoot>
       <SnackbarProvider>
         <StatusBar style="dark" />
-        <View style={{ flex: 1 }}>
+        {/* A tap anywhere outside Booky's tip puts it away. */}
+        <BookyTouchArea style={{ flex: 1 }}>
           <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: theme.colors.paper } }}>
             <Stack.Screen name="(tabs)" />
             <Stack.Screen name="+not-found" options={{ title: 'Not found' }} />
@@ -37,7 +37,7 @@ function RootStack() {
           <AppSnackbarHost />
           {/* Booky's tips, above every screen and clear of its bottom actions. */}
           <BookyOverlay />
-        </View>
+        </BookyTouchArea>
         <LoanWatchers />
         <SettingsWatchers />
         <OnboardingGate />

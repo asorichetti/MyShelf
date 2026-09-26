@@ -1,4 +1,4 @@
-import { act, fireEvent, screen, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, screen, waitFor, within } from '@testing-library/react-native';
 import { Text } from 'react-native';
 
 
@@ -82,8 +82,8 @@ describe.each(cases.filter(([name]) => name !== 'Scan' && name !== 'Settings'))(
   it('shows Booky in an empty state', async () => {
     renderScreen(Component);
     // The Shelf decides it is empty only once the database has answered.
-    expect(await screen.findByTestId(Testids.emptyState.root)).toBeOnTheScreen();
-    expect(screen.getByLabelText(/^Booky the bookmark/)).toBeOnTheScreen();
+    const empty = await screen.findByTestId(Testids.emptyState.root);
+    expect(within(empty).getByLabelText(/^Booky the bookmark/)).toBeOnTheScreen();
   });
 });
 

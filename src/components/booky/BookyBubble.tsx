@@ -1,10 +1,11 @@
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 
-import { Button, Text } from '@/components/ui';
+import { Button, Text, type ButtonVariant } from '@/components/ui';
 import { useTheme } from '@/theme';
 
 import { Booky } from './Booky';
+import { useBookyMode } from './BookyProvider';
 
 import type { BookyExpression } from './expressions';
 
@@ -12,6 +13,8 @@ export interface BookyAction {
   label: string;
   onPress: () => void;
   testID?: string;
+  /** Default: the first action is secondary, the rest ghost. */
+  variant?: ButtonVariant;
 }
 
 export interface BookyBubbleProps {
@@ -45,11 +48,14 @@ export function BookyBubble({
 }: BookyBubbleProps) {
   const theme = useTheme();
   const { colors, spacing, radii } = theme;
+  // Off: Booky's words still show where they matter (a lookup found nothing), without the character.
+  const mode = useBookyMode();
+  const withAvatar = showAvatar && mode !== 'off';
   return (
     <View testID={testID} style={[styles.row, { gap: spacing.sm }, style]}>
-      {showAvatar ? <Booky expression={expression} size={56} testID={avatarTestID} /> : null}
+      {withAvatar ? <Booky expression={expression} size={56} testID={avatarTestID} /> : null}
       <View style={styles.bubbleWrap}>
-        {showAvatar ? (
+        {withAvatar ? (
           <View
             aria-hidden
             style={[styles.tail, { backgroundColor: colors.surface, borderColor: colors.primary }]}
@@ -85,7 +91,7 @@ export function BookyBubble({
                   label={a.label}
                   onPress={a.onPress}
                   testID={a.testID}
-                  variant={i === 0 ? 'secondary' : 'ghost'}
+                  variant={a.variant ?? (i === 0 ? 'secondary' : 'ghost')}
                 />
               ))}
             </View>

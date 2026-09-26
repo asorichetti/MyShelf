@@ -1,8 +1,8 @@
 import { Stack } from 'expo-router';
 import { act, renderRouter } from 'expo-router/testing-library';
-import { Text, View } from 'react-native';
+import { Text } from 'react-native';
 
-import { BookyOverlay, BookyProvider } from '@/components/booky';
+import { BookyOverlay, BookyProvider, BookyTouchArea } from '@/components/booky';
 import { StaticDatabaseProvider, type Db } from '@/db';
 import { settingsBookyStore } from '@/features/booky/bookyStore';
 import { GroupsScreen } from '@/features/groups/GroupsScreen';
@@ -45,11 +45,11 @@ export const stubScreen = (name: string): ComponentType =>
 /** Mirrors the root layout: a stack with the app's snackbar host and Booky's overlay above it. */
 function RootStack() {
   return (
-    <View style={{ flex: 1 }}>
+    <BookyTouchArea style={{ flex: 1 }}>
       <Stack screenOptions={{ headerShown: false }} />
       <AppSnackbarHost />
       <BookyOverlay />
-    </View>
+    </BookyTouchArea>
   );
 }
 

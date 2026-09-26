@@ -1,6 +1,7 @@
 export { Booky, type BookyProps } from './Booky';
 export { BookyBubble, type BookyAction, type BookyBubbleProps } from './BookyBubble';
-export { BookyOverlay } from './BookyOverlay';
+export { AUTO_DISMISS_MS, BookyOverlay } from './BookyOverlay';
+export { BookyTouchArea } from './BookyTouchArea';
 export {
   BookyProvider,
   useBooky,

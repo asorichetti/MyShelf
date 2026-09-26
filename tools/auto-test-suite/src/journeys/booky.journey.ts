@@ -1,5 +1,6 @@
 import { Testids, tid } from '../selectors.ts';
 import { openFixture, waitForCount, waitForPath, waitVisible } from './helpers.ts';
+import { openFirstRun } from './onboarding.journey.ts';
 import { expect, q, register, type Context } from './registry.ts';
 
 const emptyState = tid(Testids.emptyState.root);
@@ -157,5 +158,97 @@ register({
     await waitVisible(c, helpSheet, '/scan/pick -> More help');
     await c.page.locator(tid(Testids.booky.helpClose)).click();
     await closed(c, helpSheet, '/scan/pick');
+  },
+});
+
+register({
+  name: 'booky-mute-tip',
+  suite: 'p07',
+  desc: 'Fixture "first-run": skip the onboarding -> Booky’s empty-shelf tip -> "Don’t show tips like this" -> reload -> the tip does not come back',
+  async run(c) {
+    await openFirstRun(c);
+    await c.page.locator(tid(Testids.onboarding.skip)).click();
+    await waitForPath(c, '/', '/onboarding -> Skip');
+    await waitVisible(c, bubble, '/ (empty-shelf tip)');
+    const text = (await c.page.locator(bubbleText).innerText()).trim();
+    expect(text === 'Your shelf is empty. Tap Scan to add your first book.', `/: expected the empty-shelf tip, found ${q(text)}`);
+    await c.checkGates('/ (empty-shelf tip)');
+    await c.snap('empty-shelf-tip');
+    await c.page.locator(tid(Testids.booky.mute)).click();
+    await closed(c, bubble, '/ (muted)');
+
+    await c.page.reload();
+    await waitVisible(c, emptyState, '/ (reload)');
+    await c.page.waitForTimeout(1_500);
+    expect((await c.page.locator(bubble).count()) === 0, '/ (reload): the muted empty-shelf tip came back');
+  },
+});
+
+register({
+  name: 'booky-dismiss',
+  suite: 'p07',
+  desc: 'Fixture "demo": a tip closes on a tap anywhere else (and that tap still works), on Escape, and by itself after 8 s when it has no action',
+  async run(c) {
+    await openFixture(c, 'demo', '/');
+    await waitForCount(c, tid(Testids.home.row), 12, '/');
+    await openHelp(c, '/');
+    // A tap elsewhere puts the tip away and still does what it was for.
+    await c.page.locator(tid(Testids.tabs.groups)).click();
+    await waitForPath(c, '/groups', 'tap on Groups with a tip open');
+    await closed(c, bubble, '/groups (tapped outside)');
+
+    await openHelp(c, '/groups');
+    await c.page.keyboard.press('Escape');
+    await closed(c, bubble, '/groups (Escape)');
+
+    await openFixture(c, 'empty', '/');
+    await c.page.locator(askBooky).click();
+    await waitVisible(c, bubble, '/ (What can Booky do?)');
+    await c.page.locator(bubble).waitFor({ state: 'detached', timeout: 12_000 }).catch(() => {});
+    expect((await c.page.locator(bubble).count()) === 0, '/: expected the tip without an action to close by itself after 8 s');
+  },
+});
+
+register({
+  name: 'booky-modes',
+  suite: 'p07',
+  desc: 'Settings -> Booky: Off hides Booky everywhere and help opens the help sheet without him; Quiet: scanning a book in says no "Shelved!"; Helpful brings him back',
+  async run(c) {
+    await openFixture(c, 'empty', '/settings');
+    await waitVisible(c, tid(Testids.bookySettings.root), '/settings');
+    await c.snap('booky-settings');
+    await c.page.locator(tid(Testids.bookySettings.modeOff)).click();
+    const off = await c.page.locator(tid(Testids.bookySettings.modeOff)).getAttribute('aria-checked');
+    expect(off === 'true', `/settings: expected Off checked, found aria-checked=${q(off)}`);
+    await c.checkGates('/settings (Booky off)');
+    await c.snap('booky-off-settings');
+
+    await c.page.locator(tid(Testids.tabs.shelf)).click();
+    await waitVisible(c, emptyState, '/ (Booky off)');
+    const bookys = await c.page.locator('[role="img"][aria-label^="Booky"]').count();
+    expect(bookys === 0, `/ (Booky off): expected no Booky anywhere, found ${bookys}`);
+    await c.page.locator(vis(helpButton)).first().click();
+    await waitVisible(c, helpSheet, '/ (Booky off) help');
+    expect((await c.page.locator(bubble).count()) === 0, '/ (Booky off): expected help without a bubble');
+    await c.checkGates('/ (Booky off, help sheet)');
+    await c.snap('booky-off-help');
+    await c.page.locator(tid(Testids.booky.helpClose)).click();
+    await closed(c, helpSheet, '/ (Booky off)');
+
+    await c.page.locator(tid(Testids.tabs.settings)).click();
+    await c.page.locator(tid(Testids.bookySettings.modeQuiet)).click();
+    await c.page.locator(tid(Testids.tabs.scan)).click();
+    await waitVisible(c, tid(Testids.scan.webIsbn), '/scan (quiet)');
+    await c.page.locator(tid(Testids.scan.webIsbn)).fill('9780552166591');
+    await c.page.locator(tid(Testids.scan.webIsbnSubmit)).click();
+    await waitForPath(c, '/scan/pick', '/scan -> lookup');
+    await waitVisible(c, tid(Testids.picker.confirm), '/scan/pick');
+    await c.page.locator(tid(Testids.picker.confirm)).click();
+    const book = await waitForPath(c, /^\/book\/\d+$/, '/scan/pick -> confirm');
+    await waitVisible(c, vis(tid(Testids.bookDetail.title)), book);
+    await c.page.waitForTimeout(1_500);
+    expect((await c.page.locator(`${bubble} >> visible=true`).count()) === 0, `${book} (quiet): expected no "Shelved!" tip in Quiet mode`);
+    const face = await c.page.locator('[role="img"][aria-label^="Booky"] >> visible=true').count();
+    expect(face === 0, `${book} (quiet): expected no Booky bubble, found ${face} Booky images`);
   },
 });

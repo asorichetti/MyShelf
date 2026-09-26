@@ -5,6 +5,7 @@ import Svg, { Circle, Ellipse, G, Path } from 'react-native-svg';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { useTheme, type ColorTokens } from '@/theme';
 
+import { useBookyMode } from './BookyProvider';
 import { expressionDescriptions, type BookyExpression } from './expressions';
 import { USE_NATIVE_DRIVER as useNativeDriver } from './nativeDriver';
 
@@ -28,6 +29,7 @@ const EYE_R = { x: 74, y: 60 };
 /** Booky: a friendly purple ribbon bookmark with a notched tail. */
 export function Booky({ expression = 'happy', size = 120, animated = true, accessibilityLabel, testID, style }: BookyProps) {
   const { colors } = useTheme();
+  const mode = useBookyMode();
   const reduceMotion = useReducedMotion();
   const [bob] = useState(() => new Animated.Value(0));
   const shouldAnimate = animated && !reduceMotion;
@@ -49,6 +51,8 @@ export function Booky({ expression = 'happy', size = 120, animated = true, acces
 
   const translateY = bob.interpolate({ inputRange: [0, 1], outputRange: [0, -size * 0.04] });
   const label = accessibilityLabel ?? `Booky the bookmark, ${expressionDescriptions[expression]}`;
+  // Booky Off (P07-06): the character stays out of sight everywhere.
+  if (mode === 'off') return null;
 
   return (
     <Animated.View

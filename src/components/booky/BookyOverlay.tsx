@@ -4,7 +4,9 @@ import { StyleSheet, useWindowDimensions, View, type LayoutChangeEvent } from 'r
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useLayers } from '@/components/ui/layers';
+import { useEscapeKey } from '@/hooks/useEscapeKey';
 import { useKeyboardHeight } from '@/hooks/useKeyboardHeight';
+import { useScreenReader } from '@/hooks/useScreenReader';
 import { Testids } from '@/testing/testids.gen';
 import { useTheme } from '@/theme';
 
@@ -13,6 +15,7 @@ import { useBooky, type ShownTip } from './BookyProvider';
 import { Celebration } from './Celebration';
 import { HelpSheet } from './HelpSheet';
 import { placement } from './placement';
+import { setTipBox } from './tipBox';
 
 import type { TipTestGroup } from './tips';
 
@@ -89,15 +92,16 @@ export function BookyOverlay() {
 }
 
 function PlacedTip({ tip, onTabs }: { tip: ShownTip; onTabs: boolean }) {
-  const { dismissTip, runAction } = useBooky();
+  const { dismissTip, runAction, muteTip } = useBooky();
   const { spacing, sizes } = useTheme();
   const insets = useSafeAreaInsets();
   const win = useWindowDimensions();
   const layers = useLayers();
   const keyboardHeight = useKeyboardHeight();
   const [bubbleHeight, setBubbleHeight] = useState(0);
+  const host = useRef<View | null>(null);
 
-  if (layers.blocking > 0) return null;
+  const blocked = layers.blocking > 0;
   const place = placement({
     window: win,
     dock: insets.bottom + spacing.md + (onTabs ? sizes.tabBar : 0),
@@ -109,25 +113,38 @@ function PlacedTip({ tip, onTabs }: { tip: ShownTip; onTabs: boolean }) {
     obstacles: layers.obstacles,
     keyboardHeight,
   });
-  if (!place.visible) return null;
+  const shown = !blocked && place.visible;
+  // Escape puts the tip away (web), unless a dialog has Escape for itself.
+  useEscapeKey(shown ? dismissTip : null);
+  useEffect(() => {
+    if (!shown) setTipBox(null);
+    return () => setTipBox(null);
+  }, [shown]);
+  if (!shown) return null;
 
   const ids = testIds[tip.tip.testGroup ?? 'booky'];
   const action = tip.action;
-  const actions: BookyAction[] = action
-    ? [
-        {
-          label: action.label,
-          testID: action.id === 'help-more' ? Testids.booky.helpMore : ids.action,
-          onPress: () => {
-            if (action.href) {
-              dismissTip();
-              router.navigate(action.href as Href);
-            } else runAction(tip);
-          },
-        },
-      ]
-    : [];
-  const onLayout = (e: LayoutChangeEvent) => setBubbleHeight(Math.round(e.nativeEvent.layout.height));
+  const actions: BookyAction[] = [];
+  if (action) {
+    actions.push({
+      label: action.label,
+      testID: action.id === 'help-more' ? Testids.booky.helpMore : ids.action,
+      onPress: () => {
+        if (action.href) {
+          dismissTip();
+          router.navigate(action.href as Href);
+        } else runAction(tip);
+      },
+    });
+  }
+  // Help is asked for, and a celebration is a moment: neither is a tip to mute.
+  if (tip.tip.kind !== 'help' && !tip.tip.celebration) {
+    actions.push({ label: 'Don’t show tips like this', variant: 'ghost', onPress: () => muteTip(tip.tip.id), testID: Testids.booky.mute });
+  }
+  const onLayout = (e: LayoutChangeEvent) => {
+    setBubbleHeight(Math.round(e.nativeEvent.layout.height));
+    host.current?.measureInWindow?.((x, y, width, height) => setTipBox({ x, y, width, height }));
+  };
 
   if (tip.tip.celebration) {
     return (
@@ -146,7 +163,9 @@ function PlacedTip({ tip, onTabs }: { tip: ShownTip; onTabs: boolean }) {
     );
   }
   return (
-    <View style={[styles.host, { left: place.left, width: place.width, bottom: place.bottom }]} testID={ids.root} onLayout={onLayout}>
+    <View ref={host} style={[styles.host, { left: place.left, width: place.width, bottom: place.bottom }]} testID={ids.root} onLayout={onLayout}>
+      {/* A tip without an action goes away by itself after a while (not with a screen reader on). */}
+      {actions.some((a) => a.testID !== Testids.booky.mute) ? null : <AutoDismiss key={tip.showId} onDismiss={dismissTip} />}
       <BookyBubble
         key={tip.showId}
         message={tip.text}
@@ -161,6 +180,20 @@ function PlacedTip({ tip, onTabs }: { tip: ShownTip; onTabs: boolean }) {
       />
     </View>
   );
+}
+
+/** Tips without an action close themselves after this long (PLAN §8). */
+export const AUTO_DISMISS_MS = 8000;
+
+/** Closes the tip after `AUTO_DISMISS_MS`; paused while a screen reader is on, so nobody loses a tip mid-sentence. */
+function AutoDismiss({ onDismiss }: { onDismiss: () => void }) {
+  const screenReader = useScreenReader();
+  useEffect(() => {
+    if (screenReader) return;
+    const timer = setTimeout(onDismiss, AUTO_DISMISS_MS);
+    return () => clearTimeout(timer);
+  }, [screenReader, onDismiss]);
+  return null;
 }
 
 const styles = StyleSheet.create({
