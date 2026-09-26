@@ -1,0 +1,151 @@
+{
+  "identifiers": {
+    "librarything": [
+      "17992577"
+    ],
+    "goodreads": [
+      "30809689"
+    ]
+  },
+  "title": "Norse mythology",
+  "publish_date": "2017",
+  "publishers": [
+    "W. W. Norton & Company",
+    "W.W. Norton & Company"
+  ],
+  "covers": [
+    12824590,
+    11223195
+  ],
+  "publish_places": [
+    "New York"
+  ],
+  "languages": [
+    {
+      "key": "/languages/eng"
+    }
+  ],
+  "pagination": "299 p. :",
+  "source_records": [
+    "amazon:039360909X",
+    "marc:marc_openlibraries_sanfranciscopubliclibrary/sfpl_chq_2018_12_24_run05.mrc:405845035:14328",
+    "bwb:9780393609097",
+    "marc:marc_columbia/Columbia-extract-20221130-025.mrc:182981453:2894",
+    "marc:marc_nuls/NULS_PHC_180925.mrc:65206657:2319",
+    "midcolumbia:1327893",
+    "marc:harvard_bibliographic_metadata/20220215_003.bib.mrc:306914018:5100"
+  ],
+  "edition_name": "1st ed.",
+  "local_id": [
+    "urn:sfpl:31223113629225",
+    "urn:sfpl:31223123026818",
+    "urn:sfpl:31223123026826",
+    "urn:sfpl:31223123026834",
+    "urn:sfpl:31223113629134",
+    "urn:sfpl:31223123026842",
+    "urn:sfpl:31223108237893",
+    "urn:sfpl:31223121239751",
+    "urn:sfpl:31223123026883",
+    "urn:sfpl:31223108237901",
+    "urn:sfpl:31223113629217",
+    "urn:sfpl:31223123026891",
+    "urn:sfpl:31223113629241",
+    "urn:sfpl:31223123026909",
+    "urn:sfpl:31223121239769",
+    "urn:sfpl:31223123026917",
+    "urn:sfpl:31223108237919",
+    "urn:sfpl:31223121239777",
+    "urn:sfpl:31223121727235",
+    "urn:sfpl:31223121727219",
+    "urn:sfpl:31223121727201",
+    "urn:sfpl:31223121727227",
+    "urn:sfpl:31223118831800",
+    "urn:sfpl:31223118831818",
+    "urn:sfpl:31223108237877",
+    "urn:sfpl:31223108237885",
+    "urn:sfpl:31223113627757",
+    "urn:sfpl:31223113627740",
+    "urn:sfpl:31223121239785",
+    "urn:sfpl:31223123026925",
+    "urn:sfpl:31223123026933",
+    "urn:sfpl:31223108237976",
+    "urn:sfpl:31223113629332",
+    "urn:sfpl:31223123026941",
+    "urn:sfpl:31223123026958",
+    "urn:sfpl:31223108237984",
+    "urn:sfpl:31223113629142",
+    "urn:sfpl:31223113629274",
+    "urn:sfpl:31223123026966",
+    "urn:sfpl:31223113629266",
+    "urn:sfpl:31223108237992",
+    "urn:sfpl:31223121239793",
+    "urn:sfpl:31223123026982",
+    "urn:sfpl:31223123026974",
+    "urn:sfpl:31223113629209",
+    "urn:sfpl:31223123026990",
+    "urn:sfpl:31223113629258",
+    "urn:sfpl:31223123027006",
+    "urn:sfpl:31223113627724",
+    "urn:sfpl:31223113629324",
+    "urn:sfpl:31223113629316",
+    "urn:sfpl:31223113629357",
+    "urn:sfpl:31223123027014",
+    "urn:sfpl:31223108238644",
+    "urn:sfpl:31223123027022",
+    "urn:sfpl:31223123027030",
+    "urn:sfpl:31223123027055",
+    "urn:sfpl:31223108238685",
+    "urn:sfpl:31223123027063",
+    "urn:sfpl:31223108238693",
+    "urn:sfpl:31223123027071",
+    "urn:sfpl:31223113629126",
+    "urn:sfpl:31223123027097"
+  ],
+  "by_statement": "Neil Gaiman.",
+  "type": {
+    "key": "/type/edition"
+  },
+  "isbn_13": [
+    "9780393609097"
+  ],
+  "lccn": [
+    "2016046917"
+  ],
+  "oclc_numbers": [
+    "953222837",
+    "980547254"
+  ],
+  "ocaid": "norsemythology0000gaim_v7j7",
+  "dewey_decimal_class": [
+    "293/.13"
+  ],
+  "lc_classifications": [
+    "BL860 .G35 2017",
+    "BL860.G35 2017"
+  ],
+  "author": [
+    "Gaiman, Neil, author."
+  ],
+  "lexile": "830",
+  "key": "/books/OL26224196M",
+  "number_of_pages": 299,
+  "works": [
+    {
+      "key": "/works/OL17619634W"
+    }
+  ],
+  "description": {
+    "type": "/type/text",
+    "value": "Neil Gaiman stays true to the myths in envisioning the major Norse pantheon: Odin, the highest of the high, wise, daring, and cunning; Thor, Odin's son, incredibly strong yet not the wisest of gods; and Loki, son of a giant, blood brother to Odin, and a trickster and unsurpassable manipulator. Gaiman fashions these primeval stories into a novelistic arc that begins with the genesis of the legendary nine worlds and delves into the exploits of deities, dwarfs, and giants. Once, when Thor's hammer is stolen, Thor must disguise himself as a woman -- difficult with his beard and huge appetite -- to steal it back. More poignant is the tale in which the blood of Kvasir -- the most sagacious of gods -- is turned into a mead that infuses drinkers with poetry. The work culminates in Ragnarok, the twilight of the gods and rebirth of a new time and people."
+  },
+  "latest_revision": 18,
+  "revision": 18,
+  "created": {
+    "type": "/type/datetime",
+    "value": "2017-02-10T23:39:23.020511"
+  },
+  "last_modified": {
+    "type": "/type/datetime",
+    "value": "2025-05-21T18:15:18.099390"
+  }
+}

@@ -1,0 +1,140 @@
+{
+  "bio": "Neil Richard MacKinnon Gaiman born Neil Richard Gaiman, 10 November 1960) is an English author of short fiction, novels, comic books, graphic novels, audio theatre, and films. His notable works include the comic book series The Sandman and novels Stardust, American Gods, Coraline, and The Graveyard Book. He has won numerous awards, including the Hugo, Nebula, and Bram Stoker awards, as well as the Newbery and Carnegie medals. He is the first author to win both the Newbery and the Carnegie medals for the same work, The Graveyard Book (2008). In 2013, The Ocean at the End of the Lane was voted Book of the Year in the British National Book Awards.",
+  "personal_name": "Neil Gaiman",
+  "key": "/authors/OL53305A",
+  "birth_date": "10 November 1960",
+  "remote_ids": {
+    "viaf": "103859257",
+    "storygraph": "df7894b6-3d99-4dfd-b694-85b5cd4bd97c",
+    "amazon": "B000AQ01G2",
+    "wikidata": "Q210059",
+    "isni": "000000012146227X",
+    "goodreads": "1221698",
+    "bookbrainz": "0fcd19b7-d57a-40e7-b428-7f340ef946be",
+    "musicbrainz": "5eb430b0-1c07-41bd-bc04-e0e7a4a8ad1f",
+    "librarything": "gaimanneil",
+    "imdb": "nm0301274",
+    "lc_naf": "n90640849",
+    "gnd": "120365820",
+    "youtube": "channel/UCfmyX1Iy25WXJy630H7q8SQ",
+    "inventaire": "wd:Q210059"
+  },
+  "links": [
+    {
+      "title": "Official Website",
+      "url": "https://neilgaiman.com",
+      "type": {
+        "key": "/type/link"
+      }
+    },
+    {
+      "title": "Official Website for Young Readers",
+      "url": "https://www.mousecircus.com",
+      "type": {
+        "key": "/type/link"
+      }
+    },
+    {
+      "title": "Official Journal",
+      "url": "https://journal.neilgaiman.com",
+      "type": {
+        "key": "/type/link"
+      }
+    },
+    {
+      "title": "Author's Tumblr",
+      "url": "https://neil-gaiman.tumblr.com",
+      "type": {
+        "key": "/type/link"
+      }
+    },
+    {
+      "title": "Fantastic Fiction Author Entry",
+      "url": "https://www.fantasticfiction.com/g/neil-gaiman/",
+      "type": {
+        "key": "/type/link"
+      }
+    },
+    {
+      "title": "ISFDB Author Entry",
+      "url": "https://www.isfdb.org/cgi-bin/ea.cgi?410",
+      "type": {
+        "key": "/type/link"
+      }
+    },
+    {
+      "title": "SFE Author Entry",
+      "url": "https://sf-encyclopedia.com/entry/gaiman_neil",
+      "type": {
+        "key": "/type/link"
+      }
+    }
+  ],
+  "type": {
+    "key": "/type/author"
+  },
+  "alternate_names": [
+    "Neil Richard Gaiman",
+    "NEil Gaiman",
+    "N. Gaiman",
+    "Gaiman",
+    "GAIMAN",
+    "Neil Richard MacKinnon Gaiman",
+    "NEIL GAIMAN",
+    "Neil Galman"
+  ],
+  "name": "Neil Gaiman",
+  "source_records": [
+    "amazon:1408864363",
+    "amazon:0060528842",
+    "amazon:0062956655",
+    "amazon:2226401644",
+    "ia:howmarquisgothis0000gaim",
+    "amazon:8535929657",
+    "amazon:8374805382",
+    "amazon:152269871X",
+    "amazon:1595824278",
+    "amazon:1472208668",
+    "amazon:2846261180",
+    "ia:batmanwhateverha0000unse",
+    "promise:bwb_daily_pallets_2023-02-07:P8-ARE-048",
+    "amazon:9123598220",
+    "amazon:8551006754",
+    "amazon:9873684239",
+    "promise:bwb_daily_pallets_2022-05-23:KQ-651-726",
+    "promise:bwb_daily_pallets_2022-03-17",
+    "amazon:9877246392",
+    "amazon:9751019044",
+    "amazon:0545700620",
+    "amazon:994469987X",
+    "promise:bwb_daily_pallets_2021-06-17",
+    "amazon:6053756938",
+    "amazon:6053757616",
+    "amazon:8468477362",
+    "bwb:9781401282011",
+    "amazon:8499189369",
+    "amazon:8528624021",
+    "amazon:152269840X",
+    "amazon:8498856698",
+    "amazon:1448730090",
+    "promise:bwb_daily_pallets_2023-06-02:T1-AYC-763",
+    "bwb:9781803360003",
+    "bwb:9781452964553",
+    "promise:bwb_daily_pallets_2024-01-04:KT-772-688",
+    "ia:bwb_P9-AGB-316",
+    "promise:bwb_daily_pallets_2024-11-27:S0-BZH-323"
+  ],
+  "photos": [
+    7277125
+  ],
+  "latest_revision": 45,
+  "revision": 45,
+  "created": {
+    "type": "/type/datetime",
+    "value": "2008-04-01T03:28:50.625462"
+  },
+  "last_modified": {
+    "type": "/type/datetime",
+    "value": "2026-03-23T21:06:07.206308"
+  }
+}

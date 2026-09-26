@@ -1,0 +1,33 @@
+{
+  "type": {
+    "key": "/type/author"
+  },
+  "personal_name": "Jack Cohen",
+  "name": "Jack Cohen",
+  "alternate_names": [
+    "Jack Cohen",
+    "Jack S. Cohen"
+  ],
+  "birth_date": "19 September 1933",
+  "source_records": [
+    "bwb:9780091891800"
+  ],
+  "key": "/authors/OL2624340A",
+  "death_date": "6 May 2019",
+  "remote_ids": {
+    "isni": "0000000107740050",
+    "viaf": "54243625",
+    "wikidata": "Q472872"
+  },
+  "bio": "Jack Cohen, FRSB was a British reproductive biologist also known for his science books and involvement with science fiction. *--Wikipedia*",
+  "latest_revision": 4,
+  "revision": 4,
+  "created": {
+    "type": "/type/datetime",
+    "value": "2008-04-29T13:35:46.876380"
+  },
+  "last_modified": {
+    "type": "/type/datetime",
+    "value": "2023-03-21T13:13:44.271682"
+  }
+}

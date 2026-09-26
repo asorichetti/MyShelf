@@ -1,0 +1,125 @@
+{
+  "name": "Brandon Sanderson",
+  "bio": "Brandon Sanderson (born December 19, 1975) is an American author known for his intricate and imaginative works in the genres of fantasy and science fiction. Born in Lincoln, Nebraska, Sanderson developed a passion for writing at a young age. He attended Brigham Young University, where he studied English and later earned a master's degree in creative writing.\r\n\r\nSanderson is best known for creating the Cosmere, a vast fictional universe that encompasses many of his fantasy novels, where they share subtle connections and a common mythology, including the *Mistborn* series and *The Stormlight Archive*. The *Mistborn* trilogy, starting with the novel [*Mistborn: The Final Empire*][3], is a thrilling fantasy heist story set in a dystopian world ruled by a tyrannical lord. *The Stormlight Archive*, starting with the novel [*The Way of Kings*][8], is an epic fantasy series that combines political intrigue, war, and extensive world-building.\r\n\r\nIn addition to his work within the Cosmere, Sanderson completed [Robert Jordan's][4] epic fantasy series \"The Wheel of Time\" after Jordan's passing. He has also authored several young adult series, such as *The Reckoners* and the *Skyward* series.\r\n\r\nSanderson's analytical approach to world-building includes his \"Sanderson's Laws of Magic,\" which distinguish between \"hard\" and \"soft\" magic systems in fantasy literature. His ability to create immersive worlds and compelling characters has earned him a dedicated fan base and numerous accolades, including the Hugo Award in 2013 for his novella [*The Emperor's Soul*][5], the Romantic Times Reviewers' Choice Award for his novels [*Elantris*][6] in 2005, and [The Hero of Ages][7] in 2008, as well as David Gemmell Legend Awards in 2011 for [*The Way of Kings*][8] and in 2015 for [*Words of Radiance*][9]. In 2022, Sanderson's Kickstarter campaign for four secret novels became the most successful in history, raising over $41 million.\r\n\r\nAs of 2022, he is a co-creator and former host of the *Writing Excuses* podcast, an educational podcast for writers by writers that was started in 2008.\r\n\r\n(Sources: [1][1],[2][2])\r\n\r\n[1]: https://www.brandonsanderson.com/pages/hello-my-names-brandon\r\n[2]: https://en.wikipedia.org/wiki/Brandon_Sanderson\r\n[3]: https://openlibrary.org/works/OL5738148W\r\n[4]: https://openlibrary.org/authors/OL233594A\r\n[5]: https://openlibrary.org/works/OL19960448W\r\n[6]: https://openlibrary.org/works/OL5738147W\r\n[7]: https://openlibrary.org/works/OL5738154W\r\n[8]: https://openlibrary.org/works/OL15358691W\r\n[9]: https://openlibrary.org/works/OL16813053W",
+  "birth_date": "19 December 1975",
+  "remote_ids": {
+    "wikidata": "Q457608",
+    "viaf": "50418535",
+    "isni": "0000000114724577",
+    "bookbrainz": "272a2e3c-159a-4469-a62a-b8fabb0380e4",
+    "musicbrainz": "b7b9f742-8de0-44fd-afd3-fa536701d27e",
+    "goodreads": "38550",
+    "librarything": "sandersonbrandon",
+    "lc_naf": "n2004036176",
+    "imdb": "nm7124506",
+    "gnd": "133523829",
+    "youtube": "UC3g-w83Cb5pEAu5UmRrge-A",
+    "amazon": "B001IGFHW6",
+    "storygraph": "2ee3fed7-9bff-4a19-868c-d194ca72ce26",
+    "opac_sbn": "MODV639885"
+  },
+  "alternate_names": [
+    "BRANDON SANDERSON",
+    "Sanderson  Brandon",
+    "B. Sanderson",
+    "Sanderson, Brandon",
+    "Sanderson, B.",
+    "2023 Tor Author to be Announced"
+  ],
+  "photos": [
+    14851192,
+    7252549
+  ],
+  "links": [
+    {
+      "title": "Official Author's Website",
+      "url": "http://www.brandonsanderson.com/",
+      "type": {
+        "key": "/type/link"
+      }
+    },
+    {
+      "title": "Amazon Author Page",
+      "url": "http://www.amazon.com/Brandon-Sanderson/e/B001IGFHW6",
+      "type": {
+        "key": "/type/link"
+      }
+    },
+    {
+      "title": "Goodreads Author Page",
+      "url": "http://www.goodreads.com/author/show/38550.Brandon_Sanderson",
+      "type": {
+        "key": "/type/link"
+      }
+    },
+    {
+      "title": "The Coppermind Wiki - 17th Shard, the Official Brandon Sanderson Fansite",
+      "url": "https://coppermind.net/wiki/",
+      "type": {
+        "key": "/type/link"
+      }
+    },
+    {
+      "title": "17th Shard, the Official Brandon Sanderson Fansite",
+      "url": "https://www.17thshard.com/",
+      "type": {
+        "key": "/type/link"
+      }
+    },
+    {
+      "title": "Official FAQ Website",
+      "url": "https://faq.brandonsanderson.com/",
+      "type": {
+        "key": "/type/link"
+      }
+    },
+    {
+      "title": "Brandon Sanderson Books in Order",
+      "url": "https://www.littlestack.com/author/brandon-sanderson",
+      "type": {
+        "key": "/type/link"
+      }
+    }
+  ],
+  "type": {
+    "key": "/type/author"
+  },
+  "source_records": [
+    "amazon:1511359935",
+    "amazon:0593567854",
+    "amazon:9123988622",
+    "ia:steelheart0000sand_g0e1",
+    "amazon:6053753068",
+    "amazon:8418037423",
+    "bwb:9781938570322",
+    "amazon:1616964022",
+    "bwb:9781399602150",
+    "amazon:8374800801",
+    "amazon:0593433874",
+    "bwb:9780575097391",
+    "promise:bwb_daily_pallets_2022-03-17",
+    "promise:bwb_daily_pallets_2023-01-27:KS-155-150",
+    "amazon:8375069418",
+    "bwb:9781803364674",
+    "bwb:9781466877726",
+    "promise:bwb_daily_pallets_2023-10-11:W8-ADQ-239",
+    "bwb:9781399614931",
+    "bwb:9781399622325",
+    "bwb:9781250899675",
+    "marc:harvard_bibliographic_metadata/ab.bib.13.20150123.full.mrc:544131434:810",
+    "bwb:9781399631402",
+    "ia:bwb_S0-AJY-155"
+  ],
+  "personal_name": "Brandon Sanderson",
+  "key": "/authors/OL1394865A",
+  "latest_revision": 41,
+  "revision": 41,
+  "created": {
+    "type": "/type/datetime",
+    "value": "2008-04-01T03:28:50.625462"
+  },
+  "last_modified": {
+    "type": "/type/datetime",
+    "value": "2025-12-17T18:47:36.515989"
+  }
+}

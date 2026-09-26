@@ -1,0 +1,54 @@
+{
+  "name": "Anna Llisterri",
+  "key": "/authors/OL7932826A",
+  "type": {
+    "key": "/type/author"
+  },
+  "bio": {
+    "type": "/type/text",
+    "value": "Anna Llisteri i Boix (Barcelona, 1969) és una filologa i traductora catalana. Ha traduït al català quaranta (2017) llibres, principalment de l'anglès.\r\nCom a membre de l'Associació de Traductors i Intèrprets de Catalunya el 2008 va col·laborar en la creació de l'Associació Professional de Traductors i Intèrprets de Catalunya de la qual va ser secretària el primer any."
+  },
+  "birth_date": "1969",
+  "alternate_names": [
+    "Anna Llisterri i Boix",
+    "Llisterri, Anna",
+    "Anna Llisterri i Boix traductora catalana",
+    "Llisterri, Anna, 1969-....",
+    "Llisterri, Anna, 1969-"
+  ],
+  "remote_ids": {
+    "goodreads": "7503201",
+    "lc_naf": "no2013113347",
+    "wikidata": "Q93415301",
+    "viaf": "305116346"
+  },
+  "links": [
+    {
+      "title": "Anna Llisterri - LindedIn",
+      "url": "https://www.linkedin.com/in/anna-llisterri-boix/",
+      "type": {
+        "key": "/type/link"
+      }
+    },
+    {
+      "title": "Anna Llisterri - Datos BNE.es",
+      "url": "https://datos.bne.es/persona/XX5090182.html",
+      "type": {
+        "key": "/type/link"
+      }
+    }
+  ],
+  "photos": [
+    15242451
+  ],
+  "latest_revision": 3,
+  "revision": 3,
+  "created": {
+    "type": "/type/datetime",
+    "value": "2020-05-28T16:26:06.462314"
+  },
+  "last_modified": {
+    "type": "/type/datetime",
+    "value": "2026-07-31T22:59:30.449816"
+  }
+}

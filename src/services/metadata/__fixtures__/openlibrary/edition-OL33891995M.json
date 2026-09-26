@@ -1,0 +1,70 @@
+{
+  "works": [
+    {
+      "key": "/works/OL27482W"
+    }
+  ],
+  "title": "The Hobbit",
+  "publishers": [
+    "Mariner Books"
+  ],
+  "publish_date": "2012",
+  "key": "/books/OL33891995M",
+  "type": {
+    "key": "/type/edition"
+  },
+  "identifiers": {
+    "goodreads": [
+      "44293307"
+    ]
+  },
+  "covers": [
+    12003329
+  ],
+  "ocaid": "hobbitortherebac0000tolk_y8a9",
+  "isbn_10": [
+    "054792822X"
+  ],
+  "isbn_13": [
+    "9780547928227"
+  ],
+  "oclc_numbers": [
+    "772099491",
+    "993990772"
+  ],
+  "classifications": {},
+  "lc_classifications": [
+    "PZ7.T5744HO 2007",
+    "PZ7.T5744Ho 2012"
+  ],
+  "pagination": "300p.",
+  "physical_format": "Paperback",
+  "edition_name": "75th Anniversary Edition; First Mariner Books Edition (1)",
+  "languages": [
+    {
+      "key": "/languages/eng"
+    }
+  ],
+  "copyright_date": "1995",
+  "description": {
+    "type": "/type/text",
+    "value": "Bilbo Baggins is a hobbit who enjoys a comfortable, unambitious life, rarely traveling any farther than his pantry or cellar. But his contentment is disturbed when the wizard Gandalf and a company of dwarves arrive on his doorstep one day to whisk him away on an adventure. They have launched a plot to raid the treasure hoard guarded by Smaug the Magnificent, a large and very dangerous dragon. Bilbo reluctantly joins their quest, unaware that on his journey to the Lonely Mountain he will encounter both a magic ring and a frightening creature known as Gollum.\r\n(back cover)"
+  },
+  "publish_places": [
+    "Boston"
+  ],
+  "number_of_pages": 300,
+  "source_records": [
+    "bwb:9780547928227"
+  ],
+  "latest_revision": 9,
+  "revision": 9,
+  "created": {
+    "type": "/type/datetime",
+    "value": "2021-09-26T14:35:40.276435"
+  },
+  "last_modified": {
+    "type": "/type/datetime",
+    "value": "2024-09-18T11:15:30.969568"
+  }
+}

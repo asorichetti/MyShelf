@@ -1,0 +1,116 @@
+{
+  "subtitle": "Adventures of a Curious Character",
+  "description": "The biography of the physicist and Nobel prize winner Richard P. Feynman - a collection of short stories, chapters told to and written down by Ralph Leighton.\r\nFeynman tells of his childhood and youth and goes into his adult life, both personally and professionally.",
+  "links": [
+    {
+      "title": "\"Surely You're Joking, Mr Feynman!\" Wikipedia entry",
+      "url": "http://en.wikipedia.org/wiki/Surely_You%27re_Joking,_Mr._Feynman!",
+      "type": {
+        "key": "/type/link"
+      }
+    },
+    {
+      "url": "http://writtenandread.net/surely-youre-joking-mr-feynman/",
+      "title": "\"Surely You're Joking, Mr Feynman!\" review at WrittenAndRead.net",
+      "type": {
+        "key": "/type/link"
+      }
+    }
+  ],
+  "title": "\"Surely You're Joking, Mr. Feynman\"",
+  "covers": [
+    9274698,
+    539630,
+    539885,
+    4637310,
+    249301,
+    7109640,
+    8103353,
+    8826086,
+    9250533,
+    10356120
+  ],
+  "subject_places": [
+    "Brazil",
+    "Far Rockaway",
+    "Los Alamos",
+    "MIT",
+    "Princeton",
+    "United States",
+    "mei guo"
+  ],
+  "subjects": [
+    "Anecdotes",
+    "Anecdotes, facetiae, satire",
+    "Art",
+    "Biography",
+    "Humor",
+    "Music",
+    "Physicists",
+    "Professors",
+    "Richard Phillips Feynman",
+    "Samba",
+    "Science",
+    "University",
+    "Feynman, richard p. (richard phillips), 1918-1988",
+    "Long Now Manual for Civilization",
+    "Open Library Staff Picks",
+    "Physicists, biography",
+    "Wu li xue jia",
+    "Sheng ping shi ji",
+    "Autobiografie",
+    "Feynman, Richard P.",
+    "Erlebnisbericht",
+    "Physiker",
+    "Autobiographie",
+    "Naturwissenschaft",
+    "Physiciens",
+    "Biographies"
+  ],
+  "subject_people": [
+    "Albert Einstein",
+    "J. Robert Oppenheimer"
+  ],
+  "key": "/works/OL514629W",
+  "authors": [
+    {
+      "author": {
+        "key": "/authors/OL35793A"
+      },
+      "type": {
+        "key": "/type/author_role"
+      }
+    },
+    {
+      "author": {
+        "key": "/authors/OL892424A"
+      },
+      "type": {
+        "key": "/type/author_role"
+      }
+    }
+  ],
+  "subject_times": [
+    "1930s",
+    "1940s",
+    "1950s",
+    "1960s",
+    "xian dai"
+  ],
+  "type": {
+    "key": "/type/work"
+  },
+  "genres": [
+    "/tags/OL172T"
+  ],
+  "latest_revision": 22,
+  "revision": 22,
+  "created": {
+    "type": "/type/datetime",
+    "value": "2009-12-08T04:11:50.315352"
+  },
+  "last_modified": {
+    "type": "/type/datetime",
+    "value": "2026-09-09T08:43:29.103219"
+  }
+}

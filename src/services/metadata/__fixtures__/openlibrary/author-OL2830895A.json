@@ -1,0 +1,74 @@
+{
+  "remote_ids": {
+    "viaf": "85887056",
+    "wikidata": "Q514546",
+    "isni": "0000000081612105",
+    "bookbrainz": "52b694c3-8097-423e-9747-677aca77dac0",
+    "musicbrainz": "a83346a0-9a86-45b1-a8cd-024af78cfa3b",
+    "storygraph": "54ef1a29-5f5e-4246-b9cb-c2c5034ca3a8",
+    "librarything": "rothfusspatrick",
+    "imdb": "nm5899467",
+    "goodreads": "108424",
+    "amazon": "B001DAHXZQ",
+    "lc_naf": "nb2008008043"
+  },
+  "source_records": [
+    "amazon:0756410576",
+    "bwb:9780356504421",
+    "amazon:1473211891",
+    "amazon:1473232287",
+    "amazon:9504966365",
+    "amazon:0756407303",
+    "promise:bwb_daily_pallets_2022-12-16",
+    "bwb:9788401032974",
+    "amazon:0756411335",
+    "amazon:950644174X"
+  ],
+  "bio": {
+    "type": "/type/text",
+    "value": "Patrick Rothfuss (born June 6, 1973) is an American author, best known for his epic fantasy series *The Kingkiller Chronicle*. Born in Madison, Wisconsin, he matriculated at the University of Wisconsin-Stevens Point, initially studying chemical engineering before switching to English.\r\n\r\nRothfuss spent nearly a decade working on his debut novel, [*The Name of the Wind*][1], which was published in 2007 to critical acclaim. The novel won the Quill Award and became a New York Times Bestseller. The success of his first book allowed him to focus on writing full-time, leading to the publication of the second book in the series, [*The Wise Man's Fear*][2], in 2011, which also topped the New York Times Bestseller list.\r\n\r\nIn addition to his writing, Rothfuss founded Worldbuilders, a charity fundraiser.\r\n\r\n([Source][3])\r\n\r\n\r\n  [1]: https://openlibrary.org/works/OL8479867W\r\n  [2]: https://openlibrary.org/works/OL8479869W\r\n  [3]: https://patrickrothfuss.com/content/author.html"
+  },
+  "key": "/authors/OL2830895A",
+  "alternate_names": [
+    "Pat Rothfuss",
+    "PATRICK ROTHFUSS",
+    "P. Rothfuss",
+    "Rothfuss Patrick",
+    "PatrickRothfuss",
+    "ROTHFUSS"
+  ],
+  "photos": [
+    6691222
+  ],
+  "name": "Patrick Rothfuss",
+  "birth_date": "6 June 1973",
+  "links": [
+    {
+      "title": "Personal Website",
+      "url": "http://www.patrickrothfuss.com/",
+      "type": {
+        "key": "/type/link"
+      }
+    },
+    {
+      "title": "Blog",
+      "url": "http://blog.patrickrothfuss.com/",
+      "type": {
+        "key": "/type/link"
+      }
+    }
+  ],
+  "type": {
+    "key": "/type/author"
+  },
+  "latest_revision": 18,
+  "revision": 18,
+  "created": {
+    "type": "/type/datetime",
+    "value": "2008-04-29T15:03:11.581851"
+  },
+  "last_modified": {
+    "type": "/type/datetime",
+    "value": "2026-01-18T08:42:19.774471"
+  }
+}

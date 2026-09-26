@@ -1,0 +1,97 @@
+{
+  "type": {
+    "key": "/type/author"
+  },
+  "key": "/authors/OL6982995A",
+  "alternate_names": [
+    "James S.A. Corey",
+    "James Corey",
+    "Corey, James S.A.",
+    "Corey, James S. A.",
+    "Corey, James",
+    "Джеймс С. А. Кори",
+    "Džejms S. A. Kori",
+    "Джеймс Кори",
+    "James SA Corey",
+    "Corey, James SA",
+    "Corey S.A. James",
+    "James S. A. Corey."
+  ],
+  "personal_name": "James S. A. Corey",
+  "entity_type": "org",
+  "photos": [
+    14853100,
+    14853099,
+    11112303
+  ],
+  "bio": {
+    "type": "/type/text",
+    "value": "James S.A. Corey is the pen name used by collaborators [Daniel Abraham][1] and [Ty Franck][2].\r\n\r\nThe first and last name are taken from Abraham's and Franck's middle names, respectively, and S.A. are the initials of Abraham's daughter.\r\n\r\n\r\n[1]: https://openlibrary.org/authors/OL1427729A\r\n[2]: https://openlibrary.org/authors/OL7523472A"
+  },
+  "source_records": [
+    "amazon:1478933771",
+    "amazon:1528822218",
+    "amazon:1456121650",
+    "bwb:9780356510385",
+    "amazon:0678452547",
+    "bwb:9780356517773",
+    "amazon:8366409090",
+    "amazon:8834730984",
+    "bwb:9781637999127"
+  ],
+  "links": [
+    {
+      "title": "Official Website",
+      "url": "https://www.jamessacorey.com",
+      "type": {
+        "key": "/type/link"
+      }
+    },
+    {
+      "title": "Fantastic Fiction Author Entry",
+      "url": "https://www.fantasticfiction.com/c/james-s-a-corey/",
+      "type": {
+        "key": "/type/link"
+      }
+    },
+    {
+      "title": "ISFDB Author Entry",
+      "url": "https://www.isfdb.org/cgi-bin/ea.cgi?155601",
+      "type": {
+        "key": "/type/link"
+      }
+    },
+    {
+      "title": "SFE Author Entry",
+      "url": "https://sf-encyclopedia.com/entry/corey_james_s_a",
+      "type": {
+        "key": "/type/link"
+      }
+    }
+  ],
+  "remote_ids": {
+    "isni": "0000000382626033",
+    "viaf": "266413968",
+    "wikidata": "Q6142591",
+    "bookbrainz": "c5c71242-f54c-4327-9510-a81064a9a852",
+    "musicbrainz": "e6d85c46-97ff-4f89-b30e-aa846961b01d",
+    "gnd": "1021590762",
+    "lc_naf": "n2010072366",
+    "goodreads": "4192148",
+    "librarything": "coreyjamessa",
+    "amazon": "B004AQ1W8Y",
+    "storygraph": "81537b1a-6604-4db0-98e7-7d548a310022",
+    "inventaire": "wd:Q6142591"
+  },
+  "name": "James S. A. Corey",
+  "latest_revision": 20,
+  "revision": 20,
+  "created": {
+    "type": "/type/datetime",
+    "value": "2011-10-20T08:06:05.906616"
+  },
+  "last_modified": {
+    "type": "/type/datetime",
+    "value": "2026-09-25T21:02:08.929723"
+  }
+}

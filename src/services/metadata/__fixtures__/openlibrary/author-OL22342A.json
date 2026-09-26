@@ -1,0 +1,52 @@
+{
+  "name": "Ian Stewart",
+  "bio": {
+    "type": "/type/text",
+    "value": "Ian Nicholas Stewart FRS CMath FIMA is a British mathematician and a popular-science and science-fiction writer. He is Emeritus Professor of Mathematics at the University of Warwick, England. *--Wikipedia*"
+  },
+  "type": {
+    "key": "/type/author"
+  },
+  "personal_name": "Stewart, Ian",
+  "source_records": [
+    "bwb:9783030921910"
+  ],
+  "alternate_names": [
+    "Ian Nicholas Stewart"
+  ],
+  "birth_date": "24 September 1945",
+  "photos": [
+    7273236
+  ],
+  "remote_ids": {
+    "viaf": "64096103",
+    "wikidata": "Q372182",
+    "isni": "000000010801021X",
+    "bookbrainz": "1430e9ca-38f5-4fe9-9c82-64b8f8340001",
+    "goodreads": "10336",
+    "imdb": "nm0829440",
+    "lc_naf": "n50023086",
+    "librarything": "stewartian-1",
+    "opac_sbn": "UFIV033040"
+  },
+  "links": [
+    {
+      "url": "https://ianstewartjoat.weebly.com/",
+      "title": "Author's Site",
+      "type": {
+        "key": "/type/link"
+      }
+    }
+  ],
+  "key": "/authors/OL22342A",
+  "latest_revision": 9,
+  "revision": 9,
+  "created": {
+    "type": "/type/datetime",
+    "value": "2008-04-01T03:28:50.625462"
+  },
+  "last_modified": {
+    "type": "/type/datetime",
+    "value": "2025-10-30T19:17:17.338649"
+  }
+}

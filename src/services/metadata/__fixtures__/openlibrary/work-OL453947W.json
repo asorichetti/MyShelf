@@ -1,0 +1,87 @@
+{
+  "subjects": [
+    "Fantasy fiction",
+    "Cosmology",
+    "Discworld (Imaginary place)",
+    "Fiction",
+    "Scientists",
+    "Wizards",
+    "Elves",
+    "FICTION / Alternative History",
+    "FICTION / Fantasy / Contemporary",
+    "FICTION / Science Fiction / Adventure",
+    "Evolution (Biology)",
+    "Fiction, science fiction, action & adventure",
+    "Discworld (imaginary place), fiction",
+    "Scientists, fiction",
+    "Fantasy fiction, history and criticism",
+    "General",
+    "Science / General",
+    "Fiction - General"
+  ],
+  "key": "/works/OL453947W",
+  "title": "The Science of Discworld",
+  "authors": [
+    {
+      "author": {
+        "key": "/authors/OL25712A"
+      },
+      "type": {
+        "key": "/type/author_role"
+      }
+    },
+    {
+      "author": {
+        "key": "/authors/OL22342A"
+      },
+      "type": {
+        "key": "/type/author_role"
+      }
+    },
+    {
+      "author": {
+        "key": "/authors/OL2624340A"
+      },
+      "type": {
+        "key": "/type/author_role"
+      }
+    },
+    {
+      "type": {
+        "key": "/type/author_role"
+      },
+      "author": {
+        "key": "/authors/OL6816277A"
+      }
+    },
+    {
+      "type": {
+        "key": "/type/author_role"
+      },
+      "author": {
+        "key": "/authors/OL718949A"
+      }
+    }
+  ],
+  "type": {
+    "key": "/type/work"
+  },
+  "covers": [
+    14646576
+  ],
+  "description": "Contains a story by Terry Pratchett, around which Stewart and Cohen write about the Discworld.",
+  "location": "/works/OL453947W",
+  "genres": [
+    "/tags/OL169T"
+  ],
+  "latest_revision": 22,
+  "revision": 22,
+  "created": {
+    "type": "/type/datetime",
+    "value": "2009-12-08T02:23:09.948630"
+  },
+  "last_modified": {
+    "type": "/type/datetime",
+    "value": "2026-09-07T08:58:54.545185"
+  }
+}

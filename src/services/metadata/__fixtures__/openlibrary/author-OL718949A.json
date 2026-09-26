@@ -1,0 +1,19 @@
+{
+  "name": "Jack Cohen",
+  "personal_name": "Cohen, Jack.",
+  "created": {
+    "type": "/type/datetime",
+    "value": "2008-04-01T03:28:50.625462"
+  },
+  "last_modified": {
+    "type": "/type/datetime",
+    "value": "2010-04-12T10:56:14.621255"
+  },
+  "latest_revision": 2,
+  "key": "/authors/OL718949A",
+  "type": {
+    "key": "/type/author"
+  },
+  "id": 2142107,
+  "revision": 2
+}

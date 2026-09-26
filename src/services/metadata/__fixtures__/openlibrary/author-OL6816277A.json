@@ -1,0 +1,17 @@
+{
+  "name": "Ian Stewart",
+  "created": {
+    "type": "/type/datetime",
+    "value": "2010-06-30T19:33:30.712606"
+  },
+  "last_modified": {
+    "type": "/type/datetime",
+    "value": "2010-06-30T19:33:30.712606"
+  },
+  "latest_revision": 1,
+  "key": "/authors/OL6816277A",
+  "type": {
+    "key": "/type/author"
+  },
+  "revision": 1
+}

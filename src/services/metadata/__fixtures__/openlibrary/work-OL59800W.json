@@ -1,0 +1,121 @@
+{
+  "subjects": [
+    "Ciencia-ficción",
+    "Hugo Award Winner",
+    "award:hugo_award=1970",
+    "award:hugo_award=novel",
+    "human nature",
+    "gender",
+    "space travel",
+    "ice age",
+    "Science fiction",
+    "American literature",
+    "Fiction, science fiction, general",
+    "LGBTQ gender identity",
+    "LGBTQ science fiction & fantasy",
+    "award:nebula_award=novel",
+    "Life on other planets",
+    "Fiction",
+    "American Science fiction",
+    "Extraterrestrial anthropology",
+    "Sex role",
+    "Long Now Manual for Civilization",
+    "Human-alien encounters",
+    "Gender identity",
+    "Ethnologists",
+    "Loyalty",
+    "Betrayal",
+    "Vie extraterrestre",
+    "Romans, nouvelles",
+    "Rencontres avec les extraterrestres",
+    "Identité de genre",
+    "Ethnologues",
+    "Loyauté",
+    "Trahison (Morale)",
+    "LGBTQ fiction before Stonewall",
+    "General",
+    "Classics",
+    "Literary",
+    "collection:otherwise_tiptree_award=retroaward",
+    "Fantasy"
+  ],
+  "key": "/works/OL59800W",
+  "title": "The Left Hand of Darkness",
+  "authors": [
+    {
+      "author": {
+        "key": "/authors/OL31353A"
+      },
+      "type": {
+        "key": "/type/author_role"
+      }
+    }
+  ],
+  "type": {
+    "key": "/type/work"
+  },
+  "covers": [
+    10618463,
+    13483103,
+    11932333,
+    12375574,
+    463132,
+    1047597,
+    9888938,
+    570729,
+    8429581,
+    8449070,
+    8595010,
+    8622758,
+    10293231,
+    10648784,
+    380013,
+    10290871,
+    10513774,
+    10952947,
+    11477279,
+    12071186,
+    8789568,
+    1009250,
+    8456814,
+    8785719,
+    10672051,
+    13955545,
+    13955546,
+    10328037,
+    13656442,
+    8512913,
+    12321219,
+    11218115,
+    13908173,
+    14920821,
+    11727865
+  ],
+  "description": "[Comment by Kim Stanley Robinson, on The Guardian's website][1]:\r\nThe Left Hand of Darkness by Ursula K Le Guin (1969)\r\n\r\n> One of my favorite novels is The Left Hand of Darkness, by Ursula K Le Guin. For more than 40 years I've been recommending this book to people who want to try science fiction for the first time, and it still serves very well for that. One of the things I like about it is how clearly it demonstrates that science fiction can have not only the usual virtues and pleasures of the novel, but also the startling and transformative power of the thought experiment.\r\n\r\n> In this case, the thought experiment is quickly revealed: \"The king was pregnant,\" the book tells us early on, and after that we learn more and more about this planet named Winter, stuck in an ice age, where the humans are most of the time neither male nor female, but with the potential to become either. The man from Earth investigating this situation has a lot to learn, and so do we; and we learn it in the course of a thrilling adventure story, including a great \"crossing of the ice\". Le Guin's language is clear and clean, and has within it both the anthropological mindset of her father Alfred Kroeber, and the poetry of stories as magical things that her mother Theodora Kroeber found in native American tales. This worldly wisdom applied to the romance of other planets, and to human nature at its deepest, is Le Guin's particular gift to us, and something science fiction will always be proud of. Try it and see – you will never think about people in quite the same way again.\r\n\r\n\r\n  [1]: https://www.theguardian.com/books/2011/may/14/science-fiction-authors-choice",
+  "subject_places": [
+    "Winter (fictional planet)"
+  ],
+  "identifiers": {
+    "librarything": [
+      "23117"
+    ],
+    "wikidata": [
+      "Q2008211"
+    ]
+  },
+  "genres": [
+    "/tags/OL179T",
+    "/tags/OL174T",
+    "/tags/OL169T"
+  ],
+  "latest_revision": 39,
+  "revision": 39,
+  "created": {
+    "type": "/type/datetime",
+    "value": "2009-10-16T00:22:57.847081"
+  },
+  "last_modified": {
+    "type": "/type/datetime",
+    "value": "2026-08-29T15:46:44.465094"
+  }
+}

@@ -1,0 +1,106 @@
+{
+  "type": {
+    "key": "/type/author"
+  },
+  "key": "/authors/OL107571A",
+  "title": "comte.",
+  "photos": [
+    6388033,
+    14465336,
+    14465317,
+    14465289
+  ],
+  "bio": "Victor-Marie Hugo was a French poet, playwright, novelist, essayist, visual artist, statesman, human rights activist and exponent of the Romantic movement in France.\r\n\r\nIn France, Hugo's literary fame comes first from his poetry but also rests upon his novels and his dramatic achievements. Among many volumes of poetry, Les Contemplations and La Légende des siècles stand particularly high in critical esteem, and Hugo is sometimes identified as the greatest French poet. Outside France, his best-known works are the novels Les Misérables and Notre-Dame de Paris (known in English also as The Hunchback of Notre-Dame).\r\n\r\nThough a committed conservative royalist when he was young, Hugo grew more liberal as the decades passed; he became a passionate supporter of republicanism, and his work touches upon most of the political and social issues and artistic trends of his time. He is buried in the Panthéon.\r\n\r\n([Source][1])\r\n\r\n\r\n  [1]: http://en.wikipedia.org/wiki/Victor_Hugo",
+  "remote_ids": {
+    "viaf": "9847974",
+    "isni": "0000000121200982",
+    "wikidata": "Q535",
+    "bookbrainz": "d786f763-01ce-4357-b6c7-2301b5b68665",
+    "musicbrainz": "c0c99c8f-4779-4c35-9497-67d60a73310a",
+    "goodreads": "13661",
+    "imdb": "nm0401076",
+    "lc_naf": "n79091479",
+    "librarything": "hugovictor",
+    "librivox": "706",
+    "project_gutenberg": "85",
+    "opac_sbn": "CFIV000163"
+  },
+  "source_records": [
+    "amazon:9463994947",
+    "amazon:1519371756",
+    "amazon:1345917414",
+    "bwb:9798523068638",
+    "bwb:9798565961768",
+    "bwb:9798623385062",
+    "promise:bwb_daily_pallets_2022-10-17",
+    "amazon:2356412565",
+    "amazon:9871208812",
+    "amazon:2070424677",
+    "bwb:9798447033934",
+    "bwb:9781080547906",
+    "bwb:9798557412353",
+    "bwb:9798526133227",
+    "promise:bwb_daily_pallets_2022-04-01",
+    "amazon:8415824343",
+    "promise:bwb_daily_pallets_2023-06-22:O9-ALN-796",
+    "promise:bwb_daily_pallets_2023-07-26:T3-CFK-515",
+    "ia:bwb_T2-EYP-913",
+    "ia:bwb_W9-CJO-680",
+    "ia:collectiondauteu0000vict"
+  ],
+  "links": [
+    {
+      "title": "Hugo Online",
+      "url": "http://www.hugo-online.org/",
+      "type": {
+        "key": "/type/link"
+      }
+    },
+    {
+      "title": "Jardin des citations",
+      "url": "https://jardindescitations.com/auteurs/@victorHugo",
+      "type": {
+        "key": "/type/link"
+      }
+    },
+    {
+      "title": "Victor Hugo: A Titan of Literature",
+      "url": "https://love-books-review.com/reviews-by-author/victor-hugo/",
+      "type": {
+        "key": "/type/link"
+      }
+    }
+  ],
+  "birth_date": "26 February 1802",
+  "personal_name": "Victor Hugo",
+  "name": "Victor Hugo",
+  "death_date": "22 May 1885",
+  "alternate_names": [
+    "Victor Marie Hugo",
+    "Victor Victor Hugo",
+    "Víctor Hugo",
+    "victor hugo",
+    "Victor HUGO",
+    "VICTOR HUGO",
+    "Victor Hugo (Auteur)",
+    "VICTOR HUGO,",
+    "Victor Victor hugo",
+    "Victor Hugo Hugo",
+    "victor victor Hugo",
+    "Víctor HUGO",
+    "VÍCTOR HUGO",
+    "Victor. Hugo",
+    "Victor hugo",
+    "Victor HUgo"
+  ],
+  "latest_revision": 24,
+  "revision": 24,
+  "created": {
+    "type": "/type/datetime",
+    "value": "2008-04-01T03:28:50.625462"
+  },
+  "last_modified": {
+    "type": "/type/datetime",
+    "value": "2026-07-24T20:10:48.724905"
+  }
+}

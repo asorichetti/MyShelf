@@ -1,0 +1,108 @@
+{
+  "description": "Story of Jean Valjean, the ex-convict who rises against all odds from galley slave to mayor, and the fanatical police inspector Javert who dedicates his life to recapturing him.",
+  "series": [
+    "Signet classics"
+  ],
+  "subject_times": [
+    "July Revolution, 1830"
+  ],
+  "full_title": "Les misérables",
+  "key": "/books/OL27211583M",
+  "authors": [
+    {
+      "key": "/authors/OL107571A"
+    }
+  ],
+  "contributions": [
+    "Fahnestock, Lee, translator",
+    "MacAfee, Norman, translator",
+    "Bohjalian, Chris, 1962- contributor"
+  ],
+  "subjects": [
+    "Social conditions",
+    "Ex-convicts",
+    "Fiction",
+    "Orphans",
+    "History"
+  ],
+  "pagination": "xix, 1468 pages",
+  "source_records": [
+    "marc:marc_openlibraries_sanfranciscopubliclibrary/sfpl_chq_2018_12_24_run05.mrc:327096134:3800",
+    "ia:lesmisrables0000hugo_k1i0",
+    "bwb:9780451419439",
+    "promise:bwb_daily_pallets_2021-05-14",
+    "idb:9780451419439"
+  ],
+  "title": "Les misérables",
+  "notes": {
+    "type": "/type/text",
+    "value": "Originally published: 1987.\r\n\r\n\"The only complete and unabridged paperback edition\"--Cover.\r\n\r\n\"Basis of the magnificent theater musical with a new afterword by Chris Bohjalian\"--Cover.\r\n\r\nIncludes bibliographical references (pages 1467-1468)."
+  },
+  "number_of_pages": 1468,
+  "languages": [
+    {
+      "key": "/languages/eng"
+    }
+  ],
+  "subject_places": [
+    "Paris (France)",
+    "France"
+  ],
+  "local_id": [
+    "urn:sfpl:31223116626863",
+    "urn:sfpl:31223116626806",
+    "urn:sfpl:31223116626814",
+    "urn:sfpl:31223116626855",
+    "urn:sfpl:31223116626848",
+    "urn:sfpl:31223116626822",
+    "urn:sfpl:31223116626830",
+    "urn:bwbsku:O7-CKE-025"
+  ],
+  "publish_date": "2013",
+  "publish_country": "nyu",
+  "by_statement": "Victor Hugo ; an unabridged translation by Lee Fahnestock and Norman MacAfee, based on the classic C.E. Wilson translation ; with an introduction by Lee Fahnestock ; and a new afterword by Chris Bohjalian",
+  "works": [
+    {
+      "key": "/works/OL1063588W"
+    }
+  ],
+  "type": {
+    "key": "/type/edition"
+  },
+  "covers": [
+    14832159,
+    12940454,
+    12729221
+  ],
+  "identifiers": {},
+  "ocaid": "lesmisrables0000hugo_k1i0",
+  "isbn_10": [
+    "045141943X"
+  ],
+  "isbn_13": [
+    "9780451419439"
+  ],
+  "oclc_numbers": [
+    "860844132"
+  ],
+  "classifications": {},
+  "dewey_decimal_class": [
+    "[Fic]"
+  ],
+  "lc_classifications": [
+    "PQ2286 .H8 2013"
+  ],
+  "publishers": [
+    "Signet"
+  ],
+  "latest_revision": 11,
+  "revision": 11,
+  "created": {
+    "type": "/type/datetime",
+    "value": "2019-07-19T13:50:20.207903"
+  },
+  "last_modified": {
+    "type": "/type/datetime",
+    "value": "2025-01-01T11:11:35.579294"
+  }
+}

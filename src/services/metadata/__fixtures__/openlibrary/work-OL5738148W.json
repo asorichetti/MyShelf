@@ -1,0 +1,87 @@
+{
+  "subjects": [
+    "form:novel",
+    "series:The Mistborn Saga",
+    "series:Mistborn Original Trilogy",
+    "genre:high fantasy",
+    "Courts and courtiers",
+    "Women revolutionaries",
+    "Fiction",
+    "Adventure",
+    "Magic",
+    "Thieves",
+    "Nobility",
+    "Covert Operations",
+    "Mystical powers",
+    "Upraising",
+    "Epic",
+    "Good and evil",
+    "Slaves",
+    "Fantasía",
+    "Ficción",
+    "Magia",
+    "Adulto"
+  ],
+  "key": "/works/OL5738148W",
+  "title": "The Final Empire",
+  "authors": [
+    {
+      "author": {
+        "key": "/authors/OL1394865A"
+      },
+      "type": {
+        "key": "/type/author_role"
+      }
+    }
+  ],
+  "type": {
+    "key": "/type/work"
+  },
+  "covers": [
+    14658160
+  ],
+  "links": [
+    {
+      "title": "Authors Website",
+      "url": "http://brandonsanderson.com/portal/Mistborn-Trilogy",
+      "type": {
+        "key": "/type/link"
+      }
+    }
+  ],
+  "location": "/works/OL5738148W",
+  "description": "For a thousand years ashes have fallen from the sky.  For a thousand years nothing has flourished.  For a thousand years the skaa have been enslaved and live in misery, mired in inevitable fear.  For a thousand years the Lord Ruler has reigned with absolute power, ruling thanks to terror, his powers and his immortality, aided by \"benders\" and \"inquisitors\", along with the powerful magic of Allomancy.",
+  "identifiers": {
+    "bookbrainz": [
+      "797946a0-32b3-43fb-b58d-cd12343a9c07"
+    ],
+    "musicbrainz": [
+      "99af749c-6c57-4899-ae7e-0ab9153d4fec"
+    ],
+    "wikidata": [
+      "Q2778373"
+    ]
+  },
+  "excerpts": [
+    {
+      "pages": "1",
+      "excerpt": "Sometimes I worry that I’m not the hero everyone thinks I am.\r\n\r\nThe philosophers assure me that this is the time, that the signs have been met. But I still wonder if they have the wrong man. So many people depend on me. They say I will hold the future of the entire world on my arms.\r\n\r\nWhat would they think if they knew that their champion—the Hero of Ages, their savior—doubted himself? Perhaps they wouldn’t be shocked at all. In a way, this is what worries me most. Maybe in their hearts they wonder—just as I do.\r\n\r\nWhen they see me, do they see a liar?",
+      "author": {
+        "key": "/people/joshdaugherty"
+      }
+    }
+  ],
+  "genres": [
+    "/tags/OL164T"
+  ],
+  "latest_revision": 40,
+  "revision": 40,
+  "created": {
+    "type": "/type/datetime",
+    "value": "2009-12-10T11:11:21.289926"
+  },
+  "last_modified": {
+    "type": "/type/datetime",
+    "value": "2026-09-04T14:45:36.692814"
+  }
+}

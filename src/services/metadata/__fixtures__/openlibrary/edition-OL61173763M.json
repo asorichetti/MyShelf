@@ -1,0 +1,62 @@
+{
+  "works": [
+    {
+      "key": "/works/OL5738148W"
+    }
+  ],
+  "title": "The Final Empire",
+  "publishers": [
+    "Tor Fantasy"
+  ],
+  "publish_date": "2007",
+  "key": "/books/OL61173763M",
+  "type": {
+    "key": "/type/edition"
+  },
+  "identifiers": {},
+  "isbn_10": [
+    "0765350386"
+  ],
+  "publish_places": [
+    "New York, USA"
+  ],
+  "copyright_date": "2006",
+  "edition_name": "Mass Market Edition",
+  "series": [
+    "Mistborn"
+  ],
+  "contributors": [
+    {
+      "role": "Editor",
+      "name": "Moshe Feder"
+    },
+    {
+      "role": "Illustrator",
+      "name": "Isaac S\\tweard"
+    }
+  ],
+  "languages": [
+    {
+      "key": "/languages/eng"
+    }
+  ],
+  "description": {
+    "type": "/type/text",
+    "value": "\"A fascinating world...one that deserves a sequel.\" -The Washington Post Book World \r\n\r\nThe Mists rule the night. \r\nThe Lord Ruler owns the world. \r\n\r\nOnce, a hero arose to save the world. A young man with a mysterious heritage courageously challenged the darkness that strangled the land. \r\n\r\nHe failed. \r\n\r\nFor a thousand years since, the world has been a wasteland of ash and mist ruled by the immortal emperor known as the Lord Ruler. Every revolt has failed miserably. \r\n\r\nYet somehow, hope survives. Hope that dares to dream of ending the empire and even the Lord Ruler himself. A new kind of uprising is being planned, one built around the ultimate caper, one that depends on the cunning of a brilliant criminal mastermind and the determination of an unlikely heroine, a street urchin who must learn to master Allomancy,the power of a Mistborn. \r\n\r\n\"An exceedingly satisfying book!\" -Romantic Times BOOKReviews"
+  },
+  "physical_format": "Paperback",
+  "number_of_pages": 657,
+  "covers": [
+    15164217
+  ],
+  "latest_revision": 3,
+  "revision": 3,
+  "created": {
+    "type": "/type/datetime",
+    "value": "2026-01-24T15:04:24.777683"
+  },
+  "last_modified": {
+    "type": "/type/datetime",
+    "value": "2026-01-24T15:13:48.570670"
+  }
+}

@@ -1,0 +1,67 @@
+{
+  "publishers": [
+    "Ace"
+  ],
+  "number_of_pages": 304,
+  "ia_box_id": [
+    "IA141724"
+  ],
+  "covers": [
+    284550
+  ],
+  "physical_format": "Paperback",
+  "ia_loaded_id": [
+    "lefthandofdarkne000legu"
+  ],
+  "key": "/books/OL7525849M",
+  "authors": [
+    {
+      "key": "/authors/OL31353A"
+    }
+  ],
+  "source_records": [
+    "amazon:0441478123:bk:2713306961:275172",
+    "ia:lefthandofdarkne000legu"
+  ],
+  "title": "The Left Hand of Darkness",
+  "identifiers": {
+    "goodreads": [
+      "118028"
+    ],
+    "librarything": [
+      "23117"
+    ]
+  },
+  "languages": [
+    {
+      "key": "/languages/eng"
+    }
+  ],
+  "publish_date": "March 15, 1987",
+  "works": [
+    {
+      "key": "/works/OL59800W"
+    }
+  ],
+  "type": {
+    "key": "/type/edition"
+  },
+  "first_sentence": "I'LL MAKE my report as if I told a story, for I was taught as a child on my homeworld that Truth is a matter of the imagination.",
+  "ocaid": "lefthandofdarkne000legu",
+  "isbn_10": [
+    "0441478123"
+  ],
+  "isbn_13": [
+    "9780441478125"
+  ],
+  "latest_revision": 12,
+  "revision": 12,
+  "created": {
+    "type": "/type/datetime",
+    "value": "2008-04-29T13:35:46.876380"
+  },
+  "last_modified": {
+    "type": "/type/datetime",
+    "value": "2025-01-16T22:33:21.582684"
+  }
+}

@@ -1,0 +1,140 @@
+{
+  "publishers": [
+    "Little, Brown and Company"
+  ],
+  "identifiers": {
+    "wikidata": [
+      "Q102078304"
+    ],
+    "goodreads": [
+      "35959740"
+    ],
+    "amazon": [
+      "B07B2SLRLD"
+    ]
+  },
+  "source_records": [
+    "marc:marc_openlibraries_sanfranciscopubliclibrary/sfpl_chq_2018_12_24_run06.mrc:107645213:12660",
+    "bwb:9780316556347",
+    "promise:bwb_daily_pallets_2021-05-14",
+    "marc:marc_columbia/Columbia-extract-20221130-027.mrc:93639167:4068",
+    "amazon:0316556343",
+    "marc:marc_nuls/NULS_PHC_180925.mrc:304407051:1237",
+    "idb:9780316556347",
+    "marc:harvard_bibliographic_metadata/20220215_067.bib.mrc:206593366:5367"
+  ],
+  "title": "Circe",
+  "type": {
+    "key": "/type/edition"
+  },
+  "number_of_pages": 393,
+  "isbn_13": [
+    "9780316556347"
+  ],
+  "covers": [
+    8283869,
+    -1
+  ],
+  "local_id": [
+    "urn:sfpl:31223122394787",
+    "urn:sfpl:31223122394662",
+    "urn:sfpl:31223122394639",
+    "urn:sfpl:31223129756111",
+    "urn:sfpl:31223129771714",
+    "urn:sfpl:31223129958022",
+    "urn:sfpl:31223122394589",
+    "urn:sfpl:31223129756129",
+    "urn:sfpl:31223129771722",
+    "urn:sfpl:31223122394647",
+    "urn:sfpl:31223129756137",
+    "urn:sfpl:31223129771730",
+    "urn:sfpl:31223129756145",
+    "urn:sfpl:31223122394654",
+    "urn:sfpl:31223129756152",
+    "urn:sfpl:31223129771748",
+    "urn:sfpl:31223129756160",
+    "urn:sfpl:31223122394753",
+    "urn:sfpl:31223122394712",
+    "urn:sfpl:31223129756327",
+    "urn:sfpl:31223129756335",
+    "urn:sfpl:31223129756343",
+    "urn:sfpl:31223129771821",
+    "urn:sfpl:31223129771839",
+    "urn:sfpl:31223124938292",
+    "urn:sfpl:31223124938284",
+    "urn:sfpl:31223124938276",
+    "urn:sfpl:31223122394761",
+    "urn:sfpl:31223129756178",
+    "urn:sfpl:31223129771755",
+    "urn:sfpl:31223129756186",
+    "urn:sfpl:31223129756194",
+    "urn:sfpl:31223129771763",
+    "urn:sfpl:31223129756202",
+    "urn:sfpl:31223129756210",
+    "urn:sfpl:31223129771771",
+    "urn:sfpl:31223122394555",
+    "urn:sfpl:31223129756228",
+    "urn:sfpl:31223129756236",
+    "urn:sfpl:31223129756244",
+    "urn:sfpl:31223122394563",
+    "urn:sfpl:31223122394571",
+    "urn:sfpl:31223129756251",
+    "urn:sfpl:31223129771789",
+    "urn:sfpl:31223129756269",
+    "urn:sfpl:31223129756277",
+    "urn:sfpl:31223122394720",
+    "urn:sfpl:31223122394738",
+    "urn:sfpl:31223129756285",
+    "urn:sfpl:31223129771797",
+    "urn:sfpl:31223122394746",
+    "urn:sfpl:31223129756293",
+    "urn:sfpl:31223129771805",
+    "urn:sfpl:31223129756301",
+    "urn:sfpl:31223122394852",
+    "urn:sfpl:31223129756319",
+    "urn:sfpl:31223129771813",
+    "urn:sfpl:31223122394860",
+    "urn:bwbsku:O7-CIB-564"
+  ],
+  "languages": [
+    {
+      "key": "/languages/eng"
+    }
+  ],
+  "isbn_10": [
+    "0316556343"
+  ],
+  "publish_date": "April 10th 2018",
+  "key": "/books/OL26591039M",
+  "works": [
+    {
+      "key": "/works/OL18012166W"
+    }
+  ],
+  "physical_format": "Hardcover",
+  "lc_classifications": [
+    "PS3613.I5445C57",
+    "PS3613.I5445 C57 2018b",
+    "PS3613.I5445 C57 2018"
+  ],
+  "lccn": [
+    "2017945141"
+  ],
+  "oclc_numbers": [
+    "1029608347"
+  ],
+  "description": {
+    "type": "/type/text",
+    "value": "In the house of Helios, god of the sun and mightiest of the Titans, a daughter is born. But Circe is a strange child -- not powerful, like her father, nor viciously alluring like her mother. Turning to the world of mortals for companionship, she discovers that she does possess power -- the power of witchcraft, which can transform rivals into monsters and menace the gods themselves. Threatened, Zeus banishes her to a deserted island, where she hones her occult craft, tames wild beasts and crosses paths with many of the most famous figures in all of mythology, including the Minotaur, Daedalus and his doomed son Icarus, the murderous Medea, and, of course, wily Odysseus. But there is danger, too, for a woman who stands alone, and Circe unwittingly draws the wrath of both men and gods, ultimately finding herself pitted against one of the most terrifying and vengeful of the Olympians. To protect what she loves most, Circe must summon all her strength and choose, once and for all, whether she belongs with the gods she is born from, or the mortals she has come to love."
+  },
+  "latest_revision": 14,
+  "revision": 14,
+  "created": {
+    "type": "/type/datetime",
+    "value": "2018-11-29T13:43:16.958888"
+  },
+  "last_modified": {
+    "type": "/type/datetime",
+    "value": "2025-05-20T10:00:11.867957"
+  }
+}

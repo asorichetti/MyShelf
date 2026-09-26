@@ -1,0 +1,217 @@
+{
+  "description": "The Hobbit is a tale of high adventure, undertaken by a company of dwarves in search of dragon-guarded gold. A reluctant partner in this perilous quest is Bilbo Baggins, a comfort-loving unambitious hobbit, who surprises even himself by his resourcefulness and skill as a burglar.\r\n\r\nEncounters with trolls, goblins, dwarves, elves, and giant spiders, conversations with the dragon, Smaug, and a rather unwilling presence at the Battle of Five Armies are just some of the adventures that befall Bilbo.\r\n\r\nBilbo Baggins has taken his place among the ranks of the immortals of children’s fiction. Written by Professor Tolkien for his children, The Hobbit met with instant critical acclaim when published.",
+  "authors": [
+    {
+      "author": {
+        "key": "/authors/OL26320A"
+      },
+      "type": {
+        "key": "/type/author_role"
+      }
+    }
+  ],
+  "key": "/works/OL27482W",
+  "title": "The Hobbit",
+  "type": {
+    "key": "/type/work"
+  },
+  "links": [
+    {
+      "title": "Tolkien Estate | The Hobbit",
+      "url": "http://www.tolkienestate.com/en/writing/tales-of-middle-earth/the-hobbit.html",
+      "type": {
+        "key": "/type/link"
+      }
+    },
+    {
+      "title": "The Hobbit by JRR Tolkien - review",
+      "url": "https://www.theguardian.com/childrens-books-site/2013/jul/18/review-the-hobbit-jrr-tolkien",
+      "type": {
+        "key": "/type/link"
+      }
+    },
+    {
+      "title": "The Hobbit by JRR Tolkien book review",
+      "url": "http://www.fantasybookreview.co.uk/JRR-Tolkien/The-Hobbit.html",
+      "type": {
+        "key": "/type/link"
+      }
+    },
+    {
+      "title": "The Hobbit at 80: What were JRR Tolkien's inspirations behind his first fantasy tale of Middle Earth?",
+      "url": "https://www.independent.co.uk/arts-entertainment/books/news/the-hobbit-80-jrr-tolkien-anniversary-published-lord-of-the-rings-middle-earth-fantasy-inspiration-a7957321.html",
+      "type": {
+        "key": "/type/link"
+      }
+    },
+    {
+      "title": "The Hobbit by J.R.R. Tolkien - Tolkien Library",
+      "url": "http://www.tolkienlibrary.com/booksbytolkien/hobbit/description.htm",
+      "type": {
+        "key": "/type/link"
+      }
+    }
+  ],
+  "covers": [
+    14627509
+  ],
+  "first_sentence": {
+    "type": "/type/text",
+    "value": "In a hole in the ground there lived a hobbit. Not a nasty diry wet hole, filled with ends of worms and an oozy smell..."
+  },
+  "subject_places": [
+    "Middle-earth",
+    "Lonely Mountain",
+    "Lake-town",
+    "Rivendell",
+    "Iron Hills",
+    "Misty Mountains",
+    "Mirkwood",
+    "the Shire"
+  ],
+  "first_publish_date": "January 1938",
+  "subject_people": [
+    "Bilbo Baggins",
+    "Gandalf",
+    "Thorin Oakenshield",
+    "Fili",
+    "Kili",
+    "Balin",
+    "Dwalin",
+    "Oin",
+    "Gloin",
+    "Dori",
+    "Nori",
+    "Ori",
+    "Bifur",
+    "Bofur",
+    "Bombur",
+    "Lake-men",
+    "Smaug",
+    "Wargs",
+    "Wood-elves",
+    "Beorn",
+    "Bard the Bowman",
+    "Elrond",
+    "The Elvenking",
+    "Gollum",
+    "J. R. R. Tolkien (1892-1973)"
+  ],
+  "excerpts": [
+    {
+      "excerpt": "In a hole in the ground there lived a hobbit.",
+      "comment": "first sentence",
+      "author": {
+        "key": "/people/seabelis"
+      }
+    }
+  ],
+  "subjects": [
+    "Fantasy",
+    "Arkenstone",
+    "Battle of Five Armies",
+    "invisibility",
+    "thrushes",
+    "eagles",
+    "hobbits",
+    "wizards",
+    "dragons",
+    "dwarves",
+    "elves",
+    "men",
+    "trolls",
+    "goblins",
+    "giant spiders",
+    "the one ring",
+    "juvenile fantasy",
+    "YOUNG ADULT FICTION",
+    "Fantasy fiction",
+    "Juvenile fiction",
+    "Fiction",
+    "Classics",
+    "General",
+    "Media Tie-In",
+    "children's books",
+    "juvenile works",
+    "Teen & Young Adult literature",
+    "English Fantasy fiction",
+    "Specimens",
+    "Juvenile Fantasy fiction",
+    "Toy and movable books",
+    "Magic in fiction",
+    "Open Library Staff Picks",
+    "juvenile literature",
+    "Pictorial works",
+    "Magic",
+    "Quests (Expeditions)",
+    "Graphic novels",
+    "Dragons in fiction",
+    "Children's stories",
+    "Ficción fantástica inglesa",
+    "Fantasy in fiction",
+    "Translations into Russian",
+    "Ficción",
+    "Middle Earth (Imaginary place)",
+    "Tierra Media (Lugar imaginario)",
+    "Bilbo Baggins (Fictitious character)",
+    "Dwarfs",
+    "Comic books, strips",
+    "Reading Level-Grade 11",
+    "Reading Level-Grade 12",
+    "British and irish fiction (fictional works by one author)",
+    "Fiction, fantasy, general",
+    "Middle earth (imaginary place), fiction",
+    "Comics & graphic novels, fantasy",
+    "Science fiction, fantasy, horror",
+    "Child and youth fiction",
+    "Gollum (Fictitious character)",
+    "Hobbits (Fictitious characters)",
+    "Baggins, bilbo (fictitious character), fiction",
+    "Children's fiction",
+    "Gandalf (fictitious character), fiction",
+    "Baggins, frodo (fictitious character), fiction",
+    "Characters",
+    "Characters and characteristics",
+    "Hobbit, an unexpected journey (Motion picture)",
+    "Hobbit (Tolkien, J.R.R.)",
+    "YOUNG ADULT FICTION / Classics",
+    "YOUNG ADULT FICTION / Fantasy / General",
+    "YOUNG ADULT FICTION / Media Tie-In",
+    "Motion pictures",
+    "Fiction, fantasy, epic",
+    "English literature",
+    "Fiction, media tie-in",
+    "Courage",
+    "Literatura angielska dla młodzieży",
+    "Tłumaczenia polskie",
+    "Novela Inglesa",
+    "Spanish language materials",
+    "Untranslated",
+    "Terre du Milieu (Lieu imaginaire)",
+    "Romans, nouvelles",
+    "Hobbits (Personnages fictifs)",
+    "Novela fantástica",
+    "Magiciens",
+    "Schultheater",
+    "Fiction, fairy tales, folk tales, legends & mythology",
+    "Fiction, fantasy, dragons & mythical creatures",
+    "Comics & graphic novels, fantasy, general",
+    "Good and evil",
+    "English Fantasy literature",
+    "English fiction",
+    "Adventure stories"
+  ],
+  "subject_times": [
+    "Third-Age"
+  ],
+  "latest_revision": 27,
+  "revision": 27,
+  "created": {
+    "type": "/type/datetime",
+    "value": "2009-10-13T02:46:28.838662"
+  },
+  "last_modified": {
+    "type": "/type/datetime",
+    "value": "2026-09-13T07:28:40.920779"
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "works": [
+    {
+      "key": "/works/OL1168083W"
+    }
+  ],
+  "title": "1984",
+  "publishers": [
+    "Signet Classic"
+  ],
+  "publish_date": "1984",
+  "key": "/books/OL62592264M",
+  "type": {
+    "key": "/type/edition"
+  },
+  "isbn_10": [
+    "0451524934"
+  ],
+  "ocaid": "bwb_Y0-BAN-899",
+  "languages": [
+    {
+      "key": "/languages/eng"
+    }
+  ],
+  "covers": [
+    15257377
+  ],
+  "latest_revision": 3,
+  "revision": 3,
+  "created": {
+    "type": "/type/datetime",
+    "value": "2026-09-22T13:22:41.957115"
+  },
+  "last_modified": {
+    "type": "/type/datetime",
+    "value": "2026-09-22T13:23:36.429241"
+  }
+}

@@ -1,0 +1,59 @@
+{
+  "description": {
+    "type": "/type/text",
+    "value": "In a peaceful retirement village, four unlikely friends meet weekly in the Jigsaw Room to discuss unsolved crimes; together they call themselves The Thursday Murder Club. When a local developer is found dead with a mysterious photograph left next to the body, the Thursday Murder Club suddenly find themselves in the middle of their first live case. As the bodies begin to pile up, can our unorthodox but brilliant gang catch the killer, before it's too late?"
+  },
+  "subjects": [
+    "Mystery",
+    "English literature",
+    "nyt:trade-fiction-paperback=2021-08-22",
+    "New York Times bestseller",
+    "Older people",
+    "Fiction",
+    "Murder",
+    "Investigation",
+    "Clubs",
+    "Book clubs (Discussion groups)",
+    "Retirement communities",
+    "FICTION / Mystery & Detective / Amateur Sleuth",
+    "FICTION / Mystery & Detective / General",
+    "FICTION / Mystery & Detective / Cozy / General",
+    "Elderly",
+    "Homicide",
+    "Real estate developers",
+    "Organized crime"
+  ],
+  "key": "/works/OL20878311W",
+  "title": "The Thursday Murder Club",
+  "authors": [
+    {
+      "author": {
+        "key": "/authors/OL7973935A"
+      },
+      "type": {
+        "key": "/type/author_role"
+      }
+    }
+  ],
+  "type": {
+    "key": "/type/work"
+  },
+  "covers": [
+    10201431,
+    10427091,
+    11130964
+  ],
+  "genres": [
+    "/tags/OL175T"
+  ],
+  "latest_revision": 11,
+  "revision": 11,
+  "created": {
+    "type": "/type/datetime",
+    "value": "2020-06-19T17:21:43.699543"
+  },
+  "last_modified": {
+    "type": "/type/datetime",
+    "value": "2026-08-27T15:11:16.058586"
+  }
+}

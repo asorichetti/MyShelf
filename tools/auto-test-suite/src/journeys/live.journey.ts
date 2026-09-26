@@ -6,7 +6,7 @@
 import { COVERS_URL_PATTERN } from '../browser/covers.ts';
 import { sendToRealNetwork } from '../mockapi/route.ts';
 import { Testids, tid } from '../selectors.ts';
-import { coverState, openFixture, waitForCount, waitForPath, waitVisible } from './helpers.ts';
+import { coverState, GOODREADS_CSV, openFixture, upload, waitForCount, waitForPath, waitVisible } from './helpers.ts';
 import { expect, q, register, type Context } from './registry.ts';
 
 const row = tid(Testids.home.row);
@@ -170,5 +170,45 @@ register({
     );
     await c.snap('live-lookup-saved');
     await c.checkGates(`${path} (live cover)`);
+  },
+});
+
+register({
+  name: 'live-goodreads-import-covers',
+  suite: 'live',
+  desc: 'Real Open Library and real covers: import the Goodreads export fixture (20 books) → the cover backfill finds real portrait covers for the imported books, newest additions first (The Final Empire, The Name of the Wind, Leviathan Wakes)',
+  async run(c) {
+    await loadRealCovers(c);
+    sendToRealNetwork(c.page.context(), ['openlibrary.org']);
+    await openFixture(c, 'empty', '/settings');
+    // Keyless Google Books is quota-blocked; Open Library alone finds these covers.
+    await c.page.locator(tid(Testids.settings.googleBooksToggle)).click();
+    await c.page.locator(tid(Testids.settings.importCsv)).click();
+    await waitForPath(c, '/settings/import-csv', '/settings -> import');
+    await upload(c, tid(Testids.csvImport.pick), GOODREADS_CSV, '/settings/import-csv');
+    await waitVisible(c, tid(Testids.csvImport.confirm), '/settings/import-csv (preview)');
+    await c.page.locator(tid(Testids.csvImport.confirm)).click();
+    await waitVisible(c, tid(Testids.csvImport.report), '/settings/import-csv (report)');
+    await c.page.locator(tid(Testids.csvImport.done)).click();
+    await waitForPath(c, '/', '/settings/import-csv -> shelf');
+
+    for (const title of ['The Final Empire', 'The Name of the Wind', 'Leviathan Wakes']) {
+      const sel = `${row}[aria-label^="${title},"]`;
+      await c.page
+        .waitForFunction(
+          ([s, min]) => [...(document.querySelector(s as string)?.querySelectorAll('img') ?? [])].some((i) => i.complete && i.naturalHeight >= (min as number)),
+          [sel, REAL_MIN_HEIGHT] as const,
+          { timeout: 60_000 },
+        )
+        .catch(() => {});
+      const cover = await coverState(c, sel);
+      expect(
+        cover.loaded === 1 && cover.fallbacks === 0 && (cover.natural?.height ?? 0) >= REAL_MIN_HEIGHT,
+        `/ (${title}): expected the backfill to bring a real portrait cover (>= ${REAL_MIN_HEIGHT}px tall), found ${q(cover)}`,
+      );
+    }
+    await c.page.locator(`${row}[aria-label^="The Final Empire,"]`).scrollIntoViewIfNeeded();
+    await c.snap('live-import-covers');
+    await c.checkGates('/ (imported books with real covers)');
   },
 });

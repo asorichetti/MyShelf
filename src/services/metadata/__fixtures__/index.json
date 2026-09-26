@@ -232,6 +232,182 @@
     {
       "url": "https://openlibrary.org/search.json?title=nobody's%20girl&author=virginia%20roberts%20giuffre&fields=key%2Ctitle%2Cauthor_name%2Cfirst_publish_year%2Cedition_count%2Cisbn%2Ccover_i%2Csubject%2Clanguage&limit=10",
       "body": "openlibrary/search-nobody-s-girl-virginia-roberts-giuffre.json"
+    },
+    {
+      "url": "https://openlibrary.org/isbn/9780060853983.json",
+      "body": "openlibrary/edition-OL7283145M.json"
+    },
+    {
+      "url": "https://openlibrary.org/isbn/9780547928227.json",
+      "body": "openlibrary/edition-OL33891995M.json"
+    },
+    {
+      "url": "https://openlibrary.org/isbn/9780451524935.json",
+      "body": "openlibrary/edition-OL62592264M.json"
+    },
+    {
+      "url": "https://openlibrary.org/isbn/9780756404741.json",
+      "body": "openlibrary/edition-OL26231137M.json"
+    },
+    {
+      "url": "https://openlibrary.org/isbn/9780765350381.json",
+      "body": "openlibrary/edition-OL61173763M.json"
+    },
+    {
+      "url": "https://openlibrary.org/isbn/9780593135204.json",
+      "body": "openlibrary/edition-OL30036715M.json"
+    },
+    {
+      "url": "https://openlibrary.org/isbn/9780316556347.json",
+      "body": "openlibrary/edition-OL26591039M.json"
+    },
+    {
+      "url": "https://openlibrary.org/isbn/9781984880963.json",
+      "body": "openlibrary/edition-OL28274140M.json"
+    },
+    {
+      "url": "https://openlibrary.org/isbn/9780316129084.json",
+      "body": "openlibrary/edition-OL25001749M.json"
+    },
+    {
+      "url": "https://openlibrary.org/isbn/9780441478125.json",
+      "body": "openlibrary/edition-OL7525849M.json"
+    },
+    {
+      "url": "https://openlibrary.org/isbn/9780393609097.json",
+      "body": "openlibrary/edition-OL26224196M.json"
+    },
+    {
+      "url": "https://openlibrary.org/isbn/9780393316049.json",
+      "body": "openlibrary/edition-OL7453403M.json"
+    },
+    {
+      "url": "https://openlibrary.org/isbn/9780091865153.json",
+      "body": "openlibrary/edition-OL7314926M.json"
+    },
+    {
+      "url": "https://openlibrary.org/isbn/9780451419439.json",
+      "body": "openlibrary/edition-OL27211583M.json"
+    },
+    {
+      "url": "https://openlibrary.org/authors/OL107571A.json",
+      "body": "openlibrary/author-OL107571A.json"
+    },
+    {
+      "url": "https://openlibrary.org/authors/OL35793A.json",
+      "body": "openlibrary/author-OL35793A.json"
+    },
+    {
+      "url": "https://openlibrary.org/authors/OL6982995A.json",
+      "body": "openlibrary/author-OL6982995A.json"
+    },
+    {
+      "url": "https://openlibrary.org/authors/OL7973935A.json",
+      "body": "openlibrary/author-OL7973935A.json"
+    },
+    {
+      "url": "https://openlibrary.org/authors/OL892424A.json",
+      "body": "openlibrary/author-OL892424A.json"
+    },
+    {
+      "url": "https://openlibrary.org/works/OL1063588W.json",
+      "body": "openlibrary/work-OL1063588W.json"
+    },
+    {
+      "url": "https://openlibrary.org/works/OL1168083W.json",
+      "body": "openlibrary/work-OL1168083W.json"
+    },
+    {
+      "url": "https://openlibrary.org/works/OL16114008W.json",
+      "body": "openlibrary/work-OL16114008W.json"
+    },
+    {
+      "url": "https://openlibrary.org/works/OL17619634W.json",
+      "body": "openlibrary/work-OL17619634W.json"
+    },
+    {
+      "url": "https://openlibrary.org/works/OL18012166W.json",
+      "body": "openlibrary/work-OL18012166W.json"
+    },
+    {
+      "url": "https://openlibrary.org/works/OL20878311W.json",
+      "body": "openlibrary/work-OL20878311W.json"
+    },
+    {
+      "url": "https://openlibrary.org/works/OL21745884W.json",
+      "body": "openlibrary/work-OL21745884W.json"
+    },
+    {
+      "url": "https://openlibrary.org/works/OL27482W.json",
+      "body": "openlibrary/work-OL27482W.json"
+    },
+    {
+      "url": "https://openlibrary.org/works/OL453936W.json",
+      "body": "openlibrary/work-OL453936W.json"
+    },
+    {
+      "url": "https://openlibrary.org/works/OL453947W.json",
+      "body": "openlibrary/work-OL453947W.json"
+    },
+    {
+      "url": "https://openlibrary.org/works/OL514629W.json",
+      "body": "openlibrary/work-OL514629W.json"
+    },
+    {
+      "url": "https://openlibrary.org/works/OL5738148W.json",
+      "body": "openlibrary/work-OL5738148W.json"
+    },
+    {
+      "url": "https://openlibrary.org/works/OL59800W.json",
+      "body": "openlibrary/work-OL59800W.json"
+    },
+    {
+      "url": "https://openlibrary.org/works/OL8479867W.json",
+      "body": "openlibrary/work-OL8479867W.json"
+    },
+    {
+      "url": "https://openlibrary.org/authors/OL1394865A.json",
+      "body": "openlibrary/author-OL1394865A.json"
+    },
+    {
+      "url": "https://openlibrary.org/authors/OL15318546A.json",
+      "body": "openlibrary/author-OL15318546A.json"
+    },
+    {
+      "url": "https://openlibrary.org/authors/OL1926056A.json",
+      "body": "openlibrary/author-OL1926056A.json"
+    },
+    {
+      "url": "https://openlibrary.org/authors/OL22342A.json",
+      "body": "openlibrary/author-OL22342A.json"
+    },
+    {
+      "url": "https://openlibrary.org/authors/OL2624340A.json",
+      "body": "openlibrary/author-OL2624340A.json"
+    },
+    {
+      "url": "https://openlibrary.org/authors/OL2830895A.json",
+      "body": "openlibrary/author-OL2830895A.json"
+    },
+    {
+      "url": "https://openlibrary.org/authors/OL53305A.json",
+      "body": "openlibrary/author-OL53305A.json"
+    },
+    {
+      "url": "https://openlibrary.org/authors/OL6816277A.json",
+      "body": "openlibrary/author-OL6816277A.json"
+    },
+    {
+      "url": "https://openlibrary.org/authors/OL718949A.json",
+      "body": "openlibrary/author-OL718949A.json"
+    },
+    {
+      "url": "https://openlibrary.org/authors/OL7932826A.json",
+      "body": "openlibrary/author-OL7932826A.json"
+    },
+    {
+      "url": "https://openlibrary.org/authors/OL9118672A.json",
+      "body": "openlibrary/author-OL9118672A.json"
     }
   ]
 }

@@ -1,0 +1,41 @@
+{
+  "name": "Ralph Leighton",
+  "bio": {
+    "type": "/type/text",
+    "value": "American biographer"
+  },
+  "links": [
+    {
+      "url": "https://en.wikipedia.org/wiki/Ralph_Leighton",
+      "type": {
+        "key": "/type/link"
+      },
+      "title": "Wikipedia"
+    }
+  ],
+  "personal_name": "Ralph Leighton",
+  "birth_date": "13 November 1949",
+  "type": {
+    "key": "/type/author"
+  },
+  "remote_ids": {
+    "viaf": "39500491",
+    "wikidata": "Q7287789",
+    "isni": "0000000108900482",
+    "musicbrainz": "c44bbe69-0f09-4901-81e6-19f344d85222",
+    "goodreads": "3755",
+    "imdb": "nm2295075",
+    "lc_naf": "n84078085"
+  },
+  "key": "/authors/OL892424A",
+  "latest_revision": 6,
+  "revision": 6,
+  "created": {
+    "type": "/type/datetime",
+    "value": "2008-04-01T03:28:50.625462"
+  },
+  "last_modified": {
+    "type": "/type/datetime",
+    "value": "2025-08-01T02:11:11.457900"
+  }
+}

@@ -1,4 +1,7 @@
 // Small helpers shared by journeys.
+import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
 import { Testids, tid } from '../selectors.ts';
 import { expect, q, type Context } from './registry.ts';
 
@@ -108,3 +111,21 @@ export async function coverState(c: Context, scope: string): Promise<CoverState>
     [image, tid(Testids.cover.fallback)],
   );
 }
+
+/** Clicks `selector` and answers the browser's file chooser with `path`. */
+export async function upload(c: Context, selector: string, path: string, where: string): Promise<void> {
+  const chooser = c.page.waitForEvent('filechooser', { timeout: 10_000 });
+  await c.page.locator(selector).click();
+  try {
+    await (await chooser).setFiles(path);
+  } catch (err) {
+    expect(false, `${where}: expected a file chooser after clicking ${selector}: ${(err as Error).message.split('\n')[0]}`);
+  }
+}
+
+/** Backup and CSV files shared with the app's Jest tests. */
+const BACKUP_FIXTURES = fileURLToPath(new URL('../../../../src/services/backup/__fixtures__/', import.meta.url));
+/** A Goodreads "Export library" file: 20 books with Goodreads' real columns and quirks. */
+export const GOODREADS_CSV = join(BACKUP_FIXTURES, 'goodreads_library_export.csv');
+/** A backup from schema version 1 (three Earthsea books), to restore through the migrations. */
+export const SCHEMA1_BACKUP = join(BACKUP_FIXTURES, 'backup-schema1.json');

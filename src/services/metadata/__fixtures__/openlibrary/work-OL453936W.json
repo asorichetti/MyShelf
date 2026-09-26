@@ -1,0 +1,100 @@
+{
+  "description": "Armageddon only happens once, you know. They don't let you go around again until you get it right.\r\n\r\nAccording to the Nice and Accurate Prophecies of Agnes Nutter, Witch - the world's only totally reliable guide to the future, written in 1655, before she exploded - the world will end on a Saturday.\r\n\r\nNext Saturday, in fact. Just after tea...\r\n\r\nPeople have been predicting the end of the world almost from its very beginning, so it's only natural to be sceptical when a new date is set for Judgement Day.\r\n\r\nThis time though, the armies of Good and Evil really do appear to be massing. The four Bikers of the Apocalypse are hitting the road. But both the angels and demons - well, one fast-living demon and a somewhat fussy angel - would quite like the Rapture not to happen.\r\n\r\nOh, and someone seems to have misplaced the Antichrist...",
+  "title": "Good Omens",
+  "covers": [
+    10482258
+  ],
+  "subject_places": [
+    "Lower Tadfield",
+    "Slough",
+    "Manchester",
+    "London"
+  ],
+  "subjects": [
+    "End of the world",
+    "Humorous",
+    "Fantasy fiction",
+    "Fiction",
+    "Prophecies",
+    "Occult fiction",
+    "Witches",
+    "Humorous fiction",
+    "Apocalypse",
+    "Roman",
+    "Sorcières",
+    "Antichrist",
+    "Angels",
+    "Fiction, fantasy, contemporary",
+    "Fiction, humorous",
+    "fantasy",
+    "humor",
+    "Fiction, fantasy, general",
+    "nyt:trade-fiction-paperback=2019-06-23",
+    "New York Times bestseller",
+    "New York Times reviewed",
+    "Fiction, humorous, general",
+    "Fin du monde",
+    "Romans, nouvelles",
+    "Large type books",
+    "Prophéties",
+    "Livres en gros caractères",
+    "Large print books"
+  ],
+  "key": "/works/OL453936W",
+  "authors": [
+    {
+      "author": {
+        "key": "/authors/OL25712A"
+      },
+      "type": {
+        "key": "/type/author_role"
+      }
+    },
+    {
+      "author": {
+        "key": "/authors/OL53305A"
+      },
+      "type": {
+        "key": "/type/author_role"
+      }
+    }
+  ],
+  "type": {
+    "key": "/type/work"
+  },
+  "links": [
+    {
+      "title": "New York Times review",
+      "url": "http://www.nytimes.com/1990/10/07/books/the-four-bikers-of-the-apocalypse.html",
+      "type": {
+        "key": "/type/link"
+      }
+    }
+  ],
+  "location": "/works/OL453936W",
+  "excerpts": [
+    {
+      "excerpt": "It was a nice day.",
+      "comment": "first sentence",
+      "author": {
+        "key": "/people/lexid523"
+      }
+    }
+  ],
+  "subtitle": "The Nice and Accurate Prophecies of Agnes Nutter, Witch",
+  "genres": [
+    "/tags/OL169T",
+    "/tags/OL171T",
+    "/tags/OL172T"
+  ],
+  "latest_revision": 62,
+  "revision": 62,
+  "created": {
+    "type": "/type/datetime",
+    "value": "2009-12-08T02:23:09.948630"
+  },
+  "last_modified": {
+    "type": "/type/datetime",
+    "value": "2026-09-08T00:28:00.776071"
+  }
+}

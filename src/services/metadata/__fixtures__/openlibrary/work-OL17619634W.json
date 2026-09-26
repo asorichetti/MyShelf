@@ -1,0 +1,80 @@
+{
+  "description": "Neil Gaiman has long been inspired by ancient mythology in creating the fantastical realms of his fiction. Now he turns his attention back to the source, presenting a bravura rendition of the great northern tales.\r\n\r\nIn Norse Mythology, Gaiman stays true to the myths in envisioning the major Norse pantheon: Odin, the highest of the high, wise, daring, and cunning; Thor, Odin’s son, incredibly strong yet not the wisest of gods; and Loki―son of a giant―blood brother to Odin and a trickster and unsurpassable manipulator.\r\n\r\nGaiman fashions these primeval stories into a novelistic arc that begins with the genesis of the legendary nine worlds and delves into the exploits of deities, dwarfs, and giants. Once, when Thor’s hammer is stolen, Thor must disguise himself as a woman―difficult with his beard and huge appetite―to steal it back. More poignant is the tale in which the blood of Kvasir―the most sagacious of gods―is turned into a mead that infuses drinkers with poetry. The work culminates in Ragnarok, the twilight of the gods and rebirth of a new time and people.\r\n\r\nThrough Gaiman’s deft and witty prose emerge these gods with their fiercely competitive natures, their susceptibility to being duped and to duping others, and their tendency to let passion ignite their actions, making these long-ago myths breathe pungent life again.",
+  "title": "Norse Mythology",
+  "covers": [
+    7898682,
+    9899926,
+    10252334,
+    10662414,
+    10850046,
+    12227213,
+    12496702,
+    13652030
+  ],
+  "subject_places": [
+    "Asgard",
+    "Midgard"
+  ],
+  "subjects": [
+    "Norse Mythology",
+    "FICTION / Literary",
+    "FICTION / Fairy Tales, Folk Tales, Legends & Mythology",
+    "Mythology, norse",
+    "Fiction",
+    "Fantasy",
+    "nyt:combined-print-and-e-book-fiction=2017-02-26",
+    "New York Times bestseller",
+    "New York Times reviewed"
+  ],
+  "subject_people": [
+    "Thor",
+    "Loki",
+    "Odin",
+    "Freya"
+  ],
+  "key": "/works/OL17619634W",
+  "authors": [
+    {
+      "author": {
+        "key": "/authors/OL53305A"
+      },
+      "type": {
+        "key": "/type/author_role"
+      }
+    },
+    {
+      "author": {
+        "key": "/authors/OL7932826A"
+      },
+      "type": {
+        "key": "/type/author_role"
+      }
+    }
+  ],
+  "type": {
+    "key": "/type/work"
+  },
+  "links": [
+    {
+      "title": "New York Times review",
+      "url": "https://www.nytimes.com/2017/05/15/books/review/norse-mythology-neil-gaiman-audio.html",
+      "type": {
+        "key": "/type/link"
+      }
+    }
+  ],
+  "location": "/works/OL17619634W",
+  "genres": [
+    "/tags/OL169T"
+  ],
+  "latest_revision": 24,
+  "revision": 24,
+  "created": {
+    "type": "/type/datetime",
+    "value": "2017-02-10T23:39:23.020511"
+  },
+  "last_modified": {
+    "type": "/type/datetime",
+    "value": "2026-08-31T14:25:48.274273"
+  }
+}

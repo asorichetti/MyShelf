@@ -1,0 +1,20 @@
+{
+  "type": {
+    "key": "/type/author"
+  },
+  "name": "Marc Simonetti",
+  "key": "/authors/OL9118672A",
+  "source_records": [
+    "amazon:226621182X"
+  ],
+  "latest_revision": 1,
+  "revision": 1,
+  "created": {
+    "type": "/type/datetime",
+    "value": "2021-03-12T20:03:01.911335"
+  },
+  "last_modified": {
+    "type": "/type/datetime",
+    "value": "2021-03-12T20:03:01.911335"
+  }
+}

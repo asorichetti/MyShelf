@@ -1,0 +1,296 @@
+{
+  "description": "Nineteen Eighty-Four: A Novel, often referred to as 1984, is a dystopian social science fiction novel by the English novelist George Orwell (the pen name of Eric Arthur Blair). It was published on 8 June 1949 by Secker & Warburg as Orwell's ninth and final book completed in his lifetime. Thematically, Nineteen Eighty-Four centres on the consequences of totalitarianism, mass surveillance, and repressive regimentation of persons and behaviours within society. Orwell, himself a democratic socialist, modelled the authoritarian government in the novel after Stalinist Russia. More broadly, the novel examines the role of truth and facts within politics and the ways in which they are manipulated.\r\n\r\n----------\t\t\r\nAlso contained in:\t\t\r\n[Novels (Animal Farm / Burmese Days / Clergyman's Daughter / Coming Up for Air / Keep the Aspidistra Flying / Nineteen Eighty-Four)](https://openlibrary.org/works/OL1168045W)\t\t\r\n[Novels (Animal Farm / Nineteen Eighty-Four)](https://openlibrary.org/works/OL1167981W)\r\n[Orwell's Nineteen Eighty-Four: Text, Sources, Criticism](https://openlibrary.org/works/OL1168095W)",
+  "title": "Nineteen Eighty-Four",
+  "key": "/works/OL1168083W",
+  "authors": [
+    {
+      "author": {
+        "key": "/authors/OL15318546A"
+      },
+      "type": {
+        "key": "/type/author_role"
+      }
+    }
+  ],
+  "type": {
+    "key": "/type/work"
+  },
+  "links": [
+    {
+      "title": "Nineteen Eighty-Four - Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/Nineteen_Eighty-Four",
+      "type": {
+        "key": "/type/link"
+      }
+    },
+    {
+      "title": "Nineteen Eighty-four | Summary, Characters, Analysis, & Facts ...",
+      "url": "https://www.britannica.com/topic/Nineteen-Eighty-four",
+      "type": {
+        "key": "/type/link"
+      }
+    },
+    {
+      "title": "1984: The masterpiece that killed George Orwell | Books | The Guardian",
+      "url": "https://www.theguardian.com/books/2009/may/10/1984-george-orwell",
+      "type": {
+        "key": "/type/link"
+      }
+    },
+    {
+      "title": "The 100 best novels: No 70 – Nineteen Eighty-Four by George Orwell ...",
+      "url": "https://www.theguardian.com/books/2015/jan/19/100-best-novels-1984-george-orwell-nineteen-eighty-four-robert-mccrum",
+      "type": {
+        "key": "/type/link"
+      }
+    },
+    {
+      "title": "The Dystopian Depths of 1984",
+      "url": "https://love-books-review.com/blog/1984-george-orwell/",
+      "type": {
+        "key": "/type/link"
+      }
+    },
+    {
+      "title": "1984-Ebookzy",
+      "url": "https://ebookzy.com/1984-george-orwell/",
+      "type": {
+        "key": "/type/link"
+      }
+    }
+  ],
+  "covers": [
+    9267242,
+    14416004,
+    12804575,
+    8579152,
+    10507965,
+    107837,
+    10096094,
+    10308909,
+    10447490,
+    10483577,
+    10509172,
+    10538061,
+    10856490,
+    10522004,
+    10867263,
+    10867262,
+    11185286,
+    11185285,
+    10740338,
+    10856341,
+    10524811,
+    11377284,
+    11963963,
+    10833087,
+    11384764,
+    12373832,
+    10497578,
+    12255380,
+    12270312,
+    12302903,
+    12359001,
+    12369992,
+    12554163,
+    11317779,
+    12459175,
+    12509941,
+    11394456,
+    -1,
+    11187836,
+    13195444,
+    13459134,
+    13614819,
+    13770046,
+    13009792,
+    13451438,
+    13622349,
+    13873094,
+    14059002,
+    14059003,
+    14254419,
+    14301221,
+    14301222,
+    14301223,
+    14301224,
+    15026601,
+    14934776,
+    14862408,
+    14911098,
+    15196195
+  ],
+  "subject_places": [
+    "England",
+    "London",
+    "Londres (Inglaterra)",
+    "Airstrip One",
+    "Oceania",
+    "Eastasia",
+    "Ministry of Truth",
+    "Ministry of Love",
+    "Ministry of Plenty",
+    "Ministry of Peace",
+    "Room 101",
+    "Eurasia",
+    "Records Department",
+    "Great Britain",
+    "London (England)",
+    "United States",
+    "Oceanía"
+  ],
+  "subjects": [
+    "futurology",
+    "censorship",
+    "surveillance",
+    "rebels",
+    "sting operations",
+    "historical negationism",
+    "memory holes",
+    "thoughtcrime",
+    "Outer Party",
+    "resistance movements",
+    "Newspeak",
+    "perpetual war",
+    "telescreens",
+    "cult of personality",
+    "Ingsoc",
+    "Satirical literature",
+    "English science fiction",
+    "FICTION CLASSICS",
+    "CLASSICS",
+    "CONTEMPORARY FICTION",
+    "Man-woman relationships",
+    "Politique",
+    "Political fiction",
+    "Totalitarisme",
+    "Fiction",
+    "Romans",
+    "Facsimiles",
+    "Totalitarismo",
+    "Husbands",
+    "Classic Literature",
+    "Manuscripts",
+    "Novela política",
+    "Middle aged men",
+    "Insurance agents",
+    "open_syllabus_project",
+    "Distopías",
+    "Dystopias",
+    "Ficción",
+    "Ciencia-ficción",
+    "Cautionary tales and verse",
+    "Dystopias in literature",
+    "Suburban life",
+    "English fiction",
+    "Totalitarianism",
+    "Indic fiction (English)",
+    "Science Fiction",
+    "Traducciones al español",
+    "Novela",
+    "Novela inglesa",
+    "Zukunft",
+    "Polizeistaat",
+    "English Political fiction",
+    "Totalitarianism and literature",
+    "History and criticism",
+    "Reading Level-Grade 11",
+    "Reading Level-Grade 12",
+    "British and irish fiction (fictional works by one author)",
+    "London (england), fiction",
+    "Fiction, political",
+    "Fiction, dystopian",
+    "Fiction, science fiction, general",
+    "English literature",
+    "Correspondence",
+    "Journalists",
+    "English Authors",
+    "Correspondence..",
+    "Authors and publishers",
+    "Fiction, short stories (single author)",
+    "British and irish drama (dramatic works by one author)",
+    "Brainwashing",
+    "Authoritarianism",
+    "NOVELAS INGLESAS",
+    "Fiction, historical, general",
+    "Political science",
+    "Satire",
+    "Romans, nouvelles",
+    "Literature",
+    "Fiction, general",
+    "Psychological fiction",
+    "Drama",
+    "Dystopian plays",
+    "Essays",
+    "Literary",
+    "Nationalism",
+    "Lexicography",
+    "Language & literary studies",
+    "English manuscripts",
+    "Translations into russian",
+    "Translations into urdu",
+    "Fantasy",
+    "Translations into spanish",
+    "Nineteen eighty-four (orwell, george)",
+    "Translating and interpreting",
+    "Comic books, strips",
+    "Adaptations",
+    "Totalitarianism--fiction",
+    "Pr6029.r8 n49 2003",
+    "Long now manual for civilization",
+    "Dystopies",
+    "SciFi",
+    "Fiction, visionary & metaphysical",
+    "Social sciences",
+    "Computers",
+    "1984",
+    "mil novecientos ochenta y cuatro",
+    "Big Brother",
+    "Translations into Arabic"
+  ],
+  "subject_people": [
+    "Big Brother",
+    "Emmanuel Goldstein",
+    "Thought Police",
+    "Winston Smith",
+    "Julia",
+    "O'Brien",
+    "Aaronson",
+    "Jones",
+    "Rutherford",
+    "Ampleforth",
+    "God",
+    "Rudyard Kipling",
+    "Charrington",
+    "Katharine Smith",
+    "Tom Parsons",
+    "Mrs. Parsons",
+    "Syme",
+    "Leonard Moore",
+    "René-Noël Raimbault",
+    "George Orwell (1862-1931)"
+  ],
+  "subject_times": [
+    "20th century",
+    "1984"
+  ],
+  "excerpts": [
+    {
+      "excerpt": "It was a bright cold day in April, and the clocks were striking thirteen.",
+      "comment": "first sentence",
+      "author": {
+        "key": "/people/seabelis"
+      }
+    }
+  ],
+  "latest_revision": 59,
+  "revision": 59,
+  "created": {
+    "type": "/type/datetime",
+    "value": "2009-12-09T20:37:56.502212"
+  },
+  "last_modified": {
+    "type": "/type/datetime",
+    "value": "2026-09-25T23:14:03.568443"
+  }
+}

@@ -1,0 +1,205 @@
+{
+  "description": {
+    "type": "/type/text",
+    "value": "***The Name of the Wind***, also called ***The Kingkiller Chronicle: Day One***, is a heroic fantasy novel written by American author Patrick Rothfuss. It is the first book in the ongoing fantasy trilogy ***The Kingkiller Chronicle***. It was published on March 27, 2007, by DAW Books, the novel has been hailed as a masterpiece of high fantasy.\r\n\r\nThe story begins the tale of Kvothe (pronounced \"quothe\"), a young man who becomes the most notorious magician his world has ever known. Kvothe narrates his own journey, from his childhood in a troupe of traveling players to his years as a near-feral orphan in a crime-ridden city, and his daring entrance into a prestigious and perilous school of magic.\r\n\r\nPatrick Rothfuss's debut novel has been praised for its fresh and earthy originality, transporting readers into the mind of a wizard and the world that shaped him. It explores the truth behind the legend of a hero and how one can become entangled in their own mythology. Rothfuss's powerful storytelling and robust writing have earned him comparisons to renowned fantasy authors such as [Tad Williams][1], [George R. R. Martin][2], and [Robert Jordan][3].\r\n\r\nFollowed by: [***The Wise Man's Fear***][4]\r\n\r\n\r\n([Source: special note from the publisher][5])\r\n\r\n  [1]: https://openlibrary.org/authors/OL292141A/\r\n  [2]: https://openlibrary.org/authors/OL234664A/\r\n  [3]: https://openlibrary.org/authors/OL233594A\r\n  [4]: https://openlibrary.org/works/OL8479869W\r\n  [5]: https://patrickrothfuss.com/content/note.html"
+  },
+  "links": [
+    {
+      "title": "Wikipedia Entry",
+      "url": "https://en.wikipedia.org/wiki/The_Name_of_the_Wind",
+      "type": {
+        "key": "/type/link"
+      }
+    },
+    {
+      "title": "Patrick Rothfuss's Official Website - The Name of the Wind",
+      "url": "https://patrickrothfuss.com/content/books.html#thenameofthewind",
+      "type": {
+        "key": "/type/link"
+      }
+    },
+    {
+      "title": "The Name of the Wind (Literature) - TV Tropes",
+      "url": "https://tvtropes.org/pmwiki/pmwiki.php/Literature/TheNameOfTheWind",
+      "type": {
+        "key": "/type/link"
+      }
+    },
+    {
+      "title": "The Name of The Wind",
+      "url": "https://openlibrary.org/works/OL8479867W/The_Name_of_the_Wind",
+      "type": {
+        "key": "/type/link"
+      }
+    }
+  ],
+  "title": "The Name of the Wind",
+  "covers": [
+    11480483,
+    8118709,
+    8259359,
+    10132698,
+    10643548,
+    11218173,
+    8761267,
+    10526441,
+    12292096,
+    8785162,
+    12325299,
+    12619704,
+    13409756,
+    13169445,
+    12335164,
+    12339516,
+    13234856,
+    13987314,
+    13987315,
+    8774673
+  ],
+  "subject_places": [
+    "Newarre",
+    "Tarbean",
+    "The University"
+  ],
+  "subjects": [
+    "orphans",
+    "American fantasy fiction",
+    "Adult books for young adults",
+    "epic fiction",
+    "series",
+    "Juvenile audience",
+    "demons",
+    "quests",
+    "loss (psychology)",
+    "fate and fatalism",
+    "voyages and travels",
+    "heroes and heroines",
+    "murder",
+    "rulers",
+    "gods and goddesses",
+    "imaginary places",
+    "good and evil",
+    "fantasy fiction",
+    "The Kingkiller Chronicle",
+    "fantasy",
+    "assassins",
+    "Quill Award winner",
+    "Alex Award winner",
+    "Magic",
+    "Magician",
+    "Wizards",
+    "Fiction",
+    "Magicians",
+    "Magos",
+    "Magia",
+    "Asesinos",
+    "Novela fantástica",
+    "Ficción",
+    "Homeless children",
+    "Antiheroes",
+    "Storytelling",
+    "Legends",
+    "Fiction, fantasy, epic",
+    "nyt:mass-market-paperback=2015-01-04",
+    "New York Times bestseller",
+    "Fantasy Kingiller Chronicles",
+    "Coming-of-age",
+    "Adventure",
+    "Music",
+    "Mystery",
+    "Revenge",
+    "School",
+    "Orphan",
+    "Inn",
+    "University",
+    "Chandrian",
+    "Kvothe",
+    "Fiction, fantasy, general",
+    "Novelas estadounidenses",
+    "American literature"
+  ],
+  "subject_people": [
+    "Kvothe",
+    "Chronicler",
+    "Abenthy",
+    "Bast",
+    "Denna",
+    "Ambrose",
+    "Simmon",
+    "Wilem",
+    "Fela",
+    "Cinder",
+    "Lord Haliax",
+    "Lanre",
+    "Master Hemme",
+    "Elodin",
+    "Taborlin the Great",
+    "the Chandrian",
+    "the Fae"
+  ],
+  "key": "/works/OL8479867W",
+  "authors": [
+    {
+      "author": {
+        "key": "/authors/OL2830895A"
+      },
+      "type": {
+        "key": "/type/author_role"
+      }
+    },
+    {
+      "type": {
+        "key": "/type/author_role"
+      },
+      "author": {
+        "key": "/authors/OL9118672A"
+      }
+    }
+  ],
+  "excerpts": [
+    {
+      "excerpt": "It was night again.",
+      "comment": "first sentence",
+      "author": {
+        "key": "/people/seabelis"
+      }
+    }
+  ],
+  "type": {
+    "key": "/type/work"
+  },
+  "identifiers": {
+    "bookbrainz": [
+      "f208ae16-8705-4cc5-be28-adb45f466eec"
+    ],
+    "wikidata": [
+      "Q1195989"
+    ],
+    "musicbrainz": [
+      "ff25a379-64b3-41f4-93f2-59d6e6b92d45"
+    ]
+  },
+  "series": [
+    {
+      "series": {
+        "key": "/series/OL337960L"
+      },
+      "position": "1"
+    }
+  ],
+  "genres": [
+    "/tags/OL169T",
+    "/tags/OL164T",
+    "/tags/OL175T"
+  ],
+  "latest_revision": 39,
+  "revision": 39,
+  "created": {
+    "type": "/type/datetime",
+    "value": "2009-12-10T22:50:49.125618"
+  },
+  "last_modified": {
+    "type": "/type/datetime",
+    "value": "2026-08-29T13:36:18.802114"
+  }
+}

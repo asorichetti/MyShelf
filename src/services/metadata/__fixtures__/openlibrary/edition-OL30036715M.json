@@ -1,0 +1,83 @@
+{
+  "notes": "Source title: Project Hail Mary: A Novel",
+  "identifiers": {
+    "wikidata": [
+      "Q107545582"
+    ]
+  },
+  "title": "Project Hail Mary",
+  "authors": [
+    {
+      "key": "/authors/OL7234434A"
+    }
+  ],
+  "publish_date": "May 04, 2021",
+  "publishers": [
+    "Ballantine Books"
+  ],
+  "covers": [
+    12455001,
+    12455000,
+    10415294
+  ],
+  "physical_format": "hardcover",
+  "full_title": "Project Hail Mary A Novel",
+  "source_records": [
+    "amazon:0593135202",
+    "bwb:9780593135204",
+    "promise:bwb_daily_pallets_2022-03-17",
+    "marc:marc_columbia/Columbia-extract-20221130-033.mrc:12583303:5012",
+    "marc:harvard_bibliographic_metadata/20220215_067.bib.mrc:57700554:7573"
+  ],
+  "type": {
+    "key": "/type/edition"
+  },
+  "first_sentence": "\"What's two plus two?\"",
+  "key": "/books/OL30036715M",
+  "number_of_pages": 496,
+  "works": [
+    {
+      "key": "/works/OL21745884W"
+    }
+  ],
+  "isbn_10": [
+    "0593135202"
+  ],
+  "isbn_13": [
+    "9780593135204"
+  ],
+  "classifications": {},
+  "lc_classifications": [
+    "PS3623.E4324494P76",
+    "PS3623.E4324494 P76 2021"
+  ],
+  "languages": [
+    {
+      "key": "/languages/eng"
+    }
+  ],
+  "local_id": [
+    "urn:bwbsku:P7-DXG-371"
+  ],
+  "lccn": [
+    "2020015821"
+  ],
+  "oclc_numbers": [
+    "1149223512"
+  ],
+  "description": {
+    "type": "/type/text",
+    "value": "The sole survivor on a desperate, last-chance mission to save both humanity and the earth, Ryland Grace is hurtled into the depths of space when he must conquer an extinction-level threat to our species.\n\nA lone astronaut. An impossible mission. An ally he never imagined. Ryland Grace is the sole survivor on a desperate, last-chance mission--and if he fails, humanity and Earth itself will perish. Except that right now, he doesn't know that. He can't even remember his own name, let alone the nature of his assignment or how to complete it. All he knows is that he's been asleep for a very, very long time. And he's just been awakened to find himself millions of miles from home, with nothing but two corpses for company. His crewmates dead, his memories fuzzily returning, Ryland realizes that an impossible task now confronts him. Hurtling through space on this tiny ship, it's up to him to puzzle out an impossible scientific mystery--and conquer an extinction-level threat to  our species. And with the clock ticking down and th enearest human being light-years away, he's got to do it all alone. Or does he? An irresistible interstellar adventure as only Andy Weir could imagine it, Project Hail Mary is a tale of discvoery, speculation, and survival to rival The Martian-while taking us to places it never dreamed of going. --"
+  },
+  "physical_dimensions": "24.2 x 16.2 x 3.9 centimeters",
+  "latest_revision": 13,
+  "revision": 13,
+  "created": {
+    "type": "/type/datetime",
+    "value": "2020-09-02T18:43:36.895251"
+  },
+  "last_modified": {
+    "type": "/type/datetime",
+    "value": "2026-09-22T18:49:28.976137"
+  }
+}

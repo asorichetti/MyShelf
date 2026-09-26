@@ -1,0 +1,59 @@
+{
+  "identifiers": {
+    "librarything": [
+      "5794"
+    ],
+    "goodreads": [
+      "12067"
+    ]
+  },
+  "title": "Good Omens",
+  "subtitle": "The Nice and Accurate Prophecies of Agnes Nutter, Witch",
+  "publish_date": "2006",
+  "publishers": [
+    "HarperTorch"
+  ],
+  "languages": [
+    {
+      "key": "/languages/eng"
+    }
+  ],
+  "source_records": [
+    "ia:goodomensniceac00gaim",
+    "midcolumbia:1444296"
+  ],
+  "covers": [
+    10482245
+  ],
+  "type": {
+    "key": "/type/edition"
+  },
+  "ocaid": "goodomensniceac00gaim",
+  "isbn_10": [
+    "0060853980"
+  ],
+  "isbn_13": [
+    "9780060853983"
+  ],
+  "author": [
+    "Gaiman, Neil."
+  ],
+  "lexile": "830",
+  "key": "/books/OL7283145M",
+  "number_of_pages": 432,
+  "works": [
+    {
+      "key": "/works/OL453936W"
+    }
+  ],
+  "latest_revision": 13,
+  "revision": 13,
+  "created": {
+    "type": "/type/datetime",
+    "value": "2008-04-29T13:35:46.876380"
+  },
+  "last_modified": {
+    "type": "/type/datetime",
+    "value": "2025-03-11T00:58:04.125177"
+  }
+}

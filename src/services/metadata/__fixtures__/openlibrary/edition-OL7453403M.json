@@ -1,0 +1,101 @@
+{
+  "publishers": [
+    "W. W. Norton & Company"
+  ],
+  "identifiers": {
+    "librarything": [
+      "5655"
+    ],
+    "goodreads": [
+      "5544"
+    ]
+  },
+  "isbn_10": [
+    "0393316041"
+  ],
+  "covers": [
+    249301
+  ],
+  "key": "/books/OL7453403M",
+  "authors": [
+    {
+      "key": "/authors/OL35793A"
+    },
+    {
+      "key": "/authors/OL892424A"
+    }
+  ],
+  "contributions": [
+    "Edward Hutchings (Editor)",
+    "Albert R. Hibbs (Introduction)"
+  ],
+  "languages": [
+    {
+      "key": "/languages/eng"
+    }
+  ],
+  "source_records": [
+    "ia:surelyyourejokin00feyn_406",
+    "marc:marc_openlibraries_sanfranciscopubliclibrary/sfpl_chq_2018_12_24_run05.mrc:216117563:5143",
+    "bwb:9780393316049",
+    "promise:bwb_daily_pallets_2021-04-07",
+    "marc:marc_columbia/Columbia-extract-20221130-013.mrc:313257467:1893",
+    "promise:bwb_daily_pallets_2021-06-28",
+    "idb:9780393316049",
+    "marc:harvard_bibliographic_metadata/ab.bib.09.20150123.full.mrc:789179606:2588",
+    "marc:harvard_bibliographic_metadata/20220215_020.bib.mrc:4541279:3304"
+  ],
+  "title": "Surely You're Joking, Mr. Feynman! (Adventures of a Curious Character)",
+  "number_of_pages": 350,
+  "isbn_13": [
+    "9780393316049"
+  ],
+  "local_id": [
+    "urn:sfpl:31223118410167",
+    "urn:sfpl:31223113394135",
+    "urn:sfpl:31223113394093",
+    "urn:sfpl:31223113394101",
+    "urn:sfpl:31223118453050",
+    "urn:sfpl:31223113394143",
+    "urn:sfpl:31223118453043",
+    "urn:sfpl:31223113394168",
+    "urn:sfpl:31223118453076",
+    "urn:sfpl:31223118410175",
+    "urn:bwbsku:O7-CZN-751",
+    "urn:bwbsku:O7-CGA-786"
+  ],
+  "publish_date": "April 1997",
+  "works": [
+    {
+      "key": "/works/OL514629W"
+    }
+  ],
+  "type": {
+    "key": "/type/edition"
+  },
+  "first_sentence": {
+    "type": "/type/text",
+    "value": "WHEN I WAS about eleven or twelve I set up a lab in my house."
+  },
+  "oclc_numbers": [
+    "37123233"
+  ],
+  "lc_classifications": [
+    "QC16.F49A37 1985",
+    "QC16.F49 A37 1997"
+  ],
+  "description": {
+    "type": "/type/text",
+    "value": "In this phenomenal bestseller, Nobel Prize-winning physicist Richard P. Feynman recounts his adventures trading ideas on atomic physics with Einstein and Bohr and ideas on gambling with Nick the Greek, painting a naked female toreador, accompanying a ballet on his bongo drums--and much else of an eyebrow-raising and hilarious nature. Photos."
+  },
+  "latest_revision": 19,
+  "revision": 19,
+  "created": {
+    "type": "/type/datetime",
+    "value": "2008-04-29T13:35:46.876380"
+  },
+  "last_modified": {
+    "type": "/type/datetime",
+    "value": "2025-10-23T05:28:57.955678"
+  }
+}

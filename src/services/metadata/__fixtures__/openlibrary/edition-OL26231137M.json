@@ -1,0 +1,85 @@
+{
+  "publishers": [
+    "Daw Books"
+  ],
+  "number_of_pages": 722,
+  "subtitle": "The Kingkiller Chronicle, Day One",
+  "description": "My name is Kvothe.\r\n \r\nI have stolen princesses back from sleeping barrow kings. I burned down the town of Trebon. I have spent the night with Felurian and left with both my sanity and my life. I was expelled from the University at a younger age than most people are allowed in. I tread paths by moonlight that others fear to speak of during day. I have talked to Gods, loved women, and written songs that make the minstrels weep.\r\n \r\nYou may have heard of me.\r\n \r\nSo begins a tale unequaled in fantasy literature—the story of a hero told in his own voice. It is a tale of sorrow, a tale of survival, a tale of one man’s search for meaning in his universe, and how that search, and the indomitable will that drove it, gave birth to a legend.  \r\n\r\nSource: back cover",
+  "series": [
+    "The Kingkiller Chronicle, Day 1; Daw Books Collectors #1396"
+  ],
+  "covers": [
+    8259445
+  ],
+  "physical_format": "Mass Market Paperback",
+  "lc_classifications": [
+    "PS3618.O8685 N36 2007"
+  ],
+  "latest_revision": 11,
+  "key": "/books/OL26231137M",
+  "publish_places": [
+    "New York, USA"
+  ],
+  "isbn_13": [
+    "9780756404741"
+  ],
+  "pagination": "722p.",
+  "classifications": {},
+  "title": "The Name of the Wind",
+  "dewey_decimal_class": [
+    "813/.6"
+  ],
+  "notes": "US / CAN Edition",
+  "identifiers": {
+    "alibris_id": [
+      "9780756404741"
+    ],
+    "google": [
+      "2EounwEACAAJ"
+    ],
+    "amazon": [
+      "0756404746"
+    ],
+    "goodreads": [
+      "22917961"
+    ]
+  },
+  "created": {
+    "type": "/type/datetime",
+    "value": "2017-02-27T05:39:37.730488"
+  },
+  "languages": [
+    {
+      "key": "/languages/eng"
+    }
+  ],
+  "isbn_10": [
+    "0756404746"
+  ],
+  "publish_date": "2008 April",
+  "last_modified": {
+    "type": "/type/datetime",
+    "value": "2020-05-28T09:52:30.629059"
+  },
+  "copyright_date": "2007",
+  "oclc_numbers": [
+    "225538273",
+    "814367085",
+    "1016589161",
+    "820784774",
+    "835185428",
+    "907024585",
+    "317482896",
+    "1023399254",
+    "848211953"
+  ],
+  "works": [
+    {
+      "key": "/works/OL8479867W"
+    }
+  ],
+  "type": {
+    "key": "/type/edition"
+  },
+  "revision": 11
+}

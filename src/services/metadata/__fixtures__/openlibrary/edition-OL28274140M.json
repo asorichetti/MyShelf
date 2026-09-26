@@ -1,0 +1,76 @@
+{
+  "publishers": [
+    "Pamela Dorman Books"
+  ],
+  "subtitle": "A Novel",
+  "covers": [
+    10201431
+  ],
+  "physical_format": "hardcover",
+  "full_title": "The Thursday Murder Club : A Novel",
+  "lc_classifications": [
+    "PR6115.S58T49 2020",
+    "PR6115.S58 T49 2020"
+  ],
+  "key": "/books/OL28274140M",
+  "authors": [
+    {
+      "key": "/authors/OL7973935A"
+    }
+  ],
+  "source_records": [
+    "amazon:1984880969",
+    "bwb:9781984880963",
+    "promise:bwb_daily_pallets_2022-03-17",
+    "marc:harvard_bibliographic_metadata/20220215_019.bib.mrc:180885845:5437"
+  ],
+  "title": "The Thursday Murder Club",
+  "notes": {
+    "type": "/type/text",
+    "value": "Source title: The Thursday Murder Club: A Novel"
+  },
+  "number_of_pages": 368,
+  "isbn_13": [
+    "9781984880963"
+  ],
+  "isbn_10": [
+    "1984880969"
+  ],
+  "publish_date": "Sep 22, 2020",
+  "works": [
+    {
+      "key": "/works/OL20878311W"
+    }
+  ],
+  "type": {
+    "key": "/type/edition"
+  },
+  "local_id": [
+    "urn:bwbsku:O7-CPR-913"
+  ],
+  "lccn": [
+    "2020008501"
+  ],
+  "oclc_numbers": [
+    "1102469625"
+  ],
+  "languages": [
+    {
+      "key": "/languages/eng"
+    }
+  ],
+  "description": {
+    "type": "/type/text",
+    "value": "\"In a peaceful retirement village, four unlikely friends meet weekly in the Jigsaw Room to discuss unsolved crimes; together they call themselves The Thursday Murder Club. There's Red Ron, the infamous former socialist firebrand, still causing trouble; gentle Joyce, widowed, pining for another resident, but surely not as innocent as she seems; Ibrahim, a former therapist who understands the darker side of human nature; and Elizabeth? Well, no one is quite sure who she really is, but she's definitely not a woman to underestimate. When a local developer is found dead, the Thursday Murder Club suddenly find themselves in the middle of their first live case. The friends might be septuagenarians, but they are cleverer than most. Can our unorthodox but brilliant gang catch the killer before its too late?"
+  },
+  "latest_revision": 6,
+  "revision": 6,
+  "created": {
+    "type": "/type/datetime",
+    "value": "2020-06-19T17:21:43.699543"
+  },
+  "last_modified": {
+    "type": "/type/datetime",
+    "value": "2025-10-21T10:02:27.483130"
+  }
+}

@@ -1,0 +1,80 @@
+{
+  "name": "Madeline Miller",
+  "bio": {
+    "type": "/type/text",
+    "value": "Madeline Miller was born in Boston and grew up in New York City and Philadelphia. She attended Brown University, where she earned her BA and MA in Classics. For the last ten years she has been teaching and tutoring Latin, Greek and Shakespeare to high school students. She also studied in the Dramaturgy department at Yale School of Drama, where she focused on the adaptation of classical texts to modern forms. She currently lives near Philadelphia, PA. The Song of Achilles is her first novel. Her second novel, Circe, will be published in April 2018. Visit her website at: www.madelinemiller.com"
+  },
+  "alternate_names": [
+    "مادلين ميلر",
+    "Миллер, Мадлен",
+    "മെഡലിൻ മില്ലർ",
+    "Miller Madeline",
+    "Miller, Madeline",
+    "Miller, M."
+  ],
+  "personal_name": "Madeline Miller",
+  "birth_date": "24 July 1978",
+  "remote_ids": {
+    "librarything": "millermadeline-1",
+    "wikidata": "Q469349",
+    "goodreads": "176372",
+    "isni": "0000000356348164",
+    "viaf": "186605056",
+    "amazon": "B005GG116K",
+    "bookbrainz": "fc37fc73-1cc9-47e0-aab8-5113f157d6b5",
+    "gnd": "1015237886",
+    "lc_naf": "no2011167554",
+    "imdb": "nm10876718",
+    "musicbrainz": "2b65cffa-77a4-4c82-b4e8-416331671bbb",
+    "storygraph": "b4589ebc-1d32-441c-98f5-3760e4282ec4",
+    "inventaire": "wd:Q469349",
+    "opac_sbn": "MODV649412"
+  },
+  "photos": [
+    14853654,
+    14853653,
+    14853652,
+    14853651,
+    8283886
+  ],
+  "source_records": [
+    "amazon:1526610140"
+  ],
+  "type": {
+    "key": "/type/author"
+  },
+  "links": [
+    {
+      "title": "Official Website",
+      "url": "https://madelinemiller.com",
+      "type": {
+        "key": "/type/link"
+      }
+    },
+    {
+      "title": "Fantastic Fiction Author Entry",
+      "url": "https://www.fantasticfiction.com/m/madeline-miller/",
+      "type": {
+        "key": "/type/link"
+      }
+    },
+    {
+      "title": "ISFDB Author Entry",
+      "url": "https://www.isfdb.org/cgi-bin/ea.cgi?183294",
+      "type": {
+        "key": "/type/link"
+      }
+    }
+  ],
+  "key": "/authors/OL1926056A",
+  "latest_revision": 12,
+  "revision": 12,
+  "created": {
+    "type": "/type/datetime",
+    "value": "2008-04-01T03:28:50.625462"
+  },
+  "last_modified": {
+    "type": "/type/datetime",
+    "value": "2025-07-31T19:14:47.414665"
+  }
+}

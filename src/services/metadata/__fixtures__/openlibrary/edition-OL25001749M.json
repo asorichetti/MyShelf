@@ -1,0 +1,111 @@
+{
+  "publishers": [
+    "Orbit"
+  ],
+  "identifiers": {
+    "wikidata": [
+      "Q62521463"
+    ]
+  },
+  "description": {
+    "type": "/type/text",
+    "value": "When Captain Jim Holden's ice miner stumbles across a derelict, abandoned ship, he uncovers a secret that threatens to throw the entire system into war. Attacked by a stealth ship belonging to the Mars fleet, Holden must find a way to uncover the motives behind the attack, stop a war and find the truth behind a vast conspiracy that threatens the entire human race."
+  },
+  "links": [
+    {
+      "url": "http://www.loc.gov/catdir/enhancements/fy1114/2010046442-b.html",
+      "title": "Contributor biographical information"
+    },
+    {
+      "url": "http://www.loc.gov/catdir/enhancements/fy1114/2010046442-d.html",
+      "title": "Publisher description"
+    }
+  ],
+  "series": [
+    "The expanse -- bk. 1"
+  ],
+  "covers": [
+    8185009
+  ],
+  "local_id": [
+    "urn:sfpl:31223096044434",
+    "urn:sfpl:31223096044533",
+    "urn:sfpl:31223096044541",
+    "urn:sfpl:31223096044426",
+    "urn:sfpl:31223096044400"
+  ],
+  "full_title": "Leviathan wakes",
+  "lc_classifications": [
+    "PS3601.B677 L48 2011",
+    "PS3601.B677L48 2011"
+  ],
+  "key": "/books/OL25001749M",
+  "authors": [
+    {
+      "key": "/authors/OL6982995A"
+    }
+  ],
+  "ocaid": "leviathanwakes0000core",
+  "publish_places": [
+    "New York"
+  ],
+  "subjects": [
+    "Space warfare",
+    "Interplanetary voyages",
+    "Fiction"
+  ],
+  "languages": [
+    {
+      "key": "/languages/eng"
+    }
+  ],
+  "pagination": "582 p. ;",
+  "source_records": [
+    "marc:marc_loc_updates/v39.i34.records.utf8:10131575:1431",
+    "marc:marc_loc_updates/v40.i02.records.utf8:33643423:1431",
+    "marc:marc_openlibraries_sanfranciscopubliclibrary/sfpl_chq_2018_12_24_run04.mrc:151197310:2827",
+    "ia:leviathanwakes0000core",
+    "bwb:9780316129084",
+    "marc:marc_loc_2016/BooksAll.2016.part37.utf8:168677501:1431",
+    "marc:harvard_bibliographic_metadata/ab.bib.12.20150123.full.mrc:689315853:1549"
+  ],
+  "title": "Leviathan wakes",
+  "dewey_decimal_class": [
+    "813/.6"
+  ],
+  "number_of_pages": 582,
+  "isbn_13": [
+    "9780316129084"
+  ],
+  "edition_name": "1st ed.",
+  "lccn": [
+    "2010046442"
+  ],
+  "isbn_10": [
+    "0316129089"
+  ],
+  "publish_date": "2011",
+  "publish_country": "nyu",
+  "by_statement": "James S.A. Corey",
+  "oclc_numbers": [
+    "668192559"
+  ],
+  "works": [
+    {
+      "key": "/works/OL16114008W"
+    }
+  ],
+  "type": {
+    "key": "/type/edition"
+  },
+  "latest_revision": 10,
+  "revision": 10,
+  "created": {
+    "type": "/type/datetime",
+    "value": "2011-10-20T08:06:05.906616"
+  },
+  "last_modified": {
+    "type": "/type/datetime",
+    "value": "2023-01-05T08:41:09.630120"
+  }
+}

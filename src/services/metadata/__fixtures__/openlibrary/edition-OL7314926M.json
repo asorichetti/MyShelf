@@ -1,0 +1,73 @@
+{
+  "number_of_pages": 336,
+  "source_records": [
+    "ia:scienceofdiscwor0000prat_u4k1",
+    "amazon:0091865158",
+    "bwb:9780091865153",
+    "marc:harvard_bibliographic_metadata/20220215_027.bib.mrc:71999300:2243"
+  ],
+  "title": "The Science of Discworld",
+  "identifiers": {
+    "librarything": [
+      "1045558"
+    ],
+    "goodreads": [
+      "1038998"
+    ]
+  },
+  "covers": [
+    14646576
+  ],
+  "languages": [
+    {
+      "key": "/languages/eng"
+    }
+  ],
+  "key": "/books/OL7314926M",
+  "works": [
+    {
+      "key": "/works/OL453947W"
+    }
+  ],
+  "type": {
+    "key": "/type/edition"
+  },
+  "classifications": {},
+  "publishers": [
+    "Ebury Press"
+  ],
+  "publish_date": "1999",
+  "ocaid": "scienceofdiscwor0000prat_u4k1",
+  "isbn_10": [
+    "0091865158"
+  ],
+  "isbn_13": [
+    "9780091865153"
+  ],
+  "copyright_date": "1999",
+  "physical_format": "Paperback",
+  "publish_places": [
+    "London, UK"
+  ],
+  "pagination": "336p.",
+  "lc_classifications": [
+    "PR6066.R34 S34 1999"
+  ],
+  "oclc_numbers": [
+    "59421598"
+  ],
+  "description": {
+    "type": "/type/text",
+    "value": "Contains a story by Terry Pratchett, around which Stewart and Cohen write about the Discworld."
+  },
+  "latest_revision": 14,
+  "revision": 14,
+  "created": {
+    "type": "/type/datetime",
+    "value": "2008-04-29T13:35:46.876380"
+  },
+  "last_modified": {
+    "type": "/type/datetime",
+    "value": "2026-01-11T22:26:34.118076"
+  }
+}

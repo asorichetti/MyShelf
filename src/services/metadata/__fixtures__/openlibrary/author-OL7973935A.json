@@ -1,0 +1,47 @@
+{
+  "name": "Richard Osman",
+  "bio": {
+    "type": "/type/text",
+    "value": "English television director and producer"
+  },
+  "type": {
+    "key": "/type/author"
+  },
+  "alternate_names": [
+    "Osman  Richard"
+  ],
+  "remote_ids": {
+    "storygraph": "f6f22856-323b-40c9-a8e6-5199c64967c8",
+    "amazon": "B074KL81KM",
+    "viaf": "310665412",
+    "goodreads": "6173710",
+    "wikidata": "Q7328202",
+    "isni": "0000000123847050",
+    "librarything": "osmanrichard",
+    "musicbrainz": "3af58ea6-6d2a-4772-91d2-167bb1cb2597",
+    "imdb": "nm0652066",
+    "lc_naf": "nb2014019683"
+  },
+  "personal_name": "Richard Osman",
+  "birth_date": "November 28, 1970",
+  "source_records": [
+    "amazon:0241425433",
+    "amazon:9124131083",
+    "amazon:9124143464",
+    "bwb:9780241608364"
+  ],
+  "photos": [
+    14433972
+  ],
+  "key": "/authors/OL7973935A",
+  "latest_revision": 6,
+  "revision": 6,
+  "created": {
+    "type": "/type/datetime",
+    "value": "2020-06-12T05:03:49.953885"
+  },
+  "last_modified": {
+    "type": "/type/datetime",
+    "value": "2025-08-01T01:57:51.438791"
+  }
+}

@@ -434,6 +434,7 @@ it weekly and uploads the screenshots. Run it by hand with
 | `live-covers-detail` | live | Good Omens, Dune, The Colour of Magic and Pride and Prejudice each show a real portrait cover on book detail; a screenshot per book |
 | `live-covers-shelf` | live | Every demo book with a cover shows a real one in the list and the covers grid; only The Farthest Shore (no cover) and The Murder of Roger Ackroyd (Open Library's 1x1 "no cover" GIF) show the generated cover; screenshots of the list, the grid while loading, and the settled grid |
 | `live-lookup-isbn-cover` | live | Real Open Library and real covers (Google Books stays mocked): look up ISBN 9780552166591 on the add form → choose → save → the book page shows a real portrait cover (≥ 400 px tall), not the generated one |
+| `live-goodreads-import-covers` | live | Real Open Library and real covers (Google Books switched off in Settings): import the Goodreads export fixture → The Final Empire, The Name of the Wind and Leviathan Wakes get real portrait covers (≥ 400 px tall) from the cover backfill |
 
 ### Waivers
 
@@ -519,6 +520,16 @@ Re-export after changing app code: `--serve` tests whatever is in `dist/`.
 | `scan-duplicate` | p03 | Fixture `demo`: scan Pride and Prejudice’s ISBN → "Already on your shelf" sheet (`role="dialog"`) → Add another copy → 13 rows |
 | `scan-batch-review` | p03 | Scan several: 3 ISBNs → tray count 3 → Review → drop one → Save 2 books → 2 rows on the Shelf, tray empty |
 | `scan-e2e-inject` | p03 | `/e2e/scan?isbn=9780553418026` hands the scan to the Scan tab → the picker shows The Martian |
+| `settings-overview` | p08 | Settings tab: Library, Lookups, Lending, Backup & data and About in order; every row a named link or switch ≥ 48 px; switches report `aria-checked`; screenshots `settings-top.png`, `settings-bottom.png` |
+| `backup-roundtrip` | p08 | Fixture `demo`: save a backup (the browser download is captured and parsed) → erase → restore it with Replace through the file chooser → the same 12 Shelf rows, and a second backup has identical rows in every table; screenshots `backup-saved.png`, `restore-ready.png`, `restore-done.png` |
+| `restore-undo` | p08 | Fixture `demo`: restore the schema 1 fixture backup (brought forward by the migrations in an in-memory database in the browser) → its 3 books → Undo restore → the 12 demo books |
+| `restore-corrupt-file` | p08 | A cut-off backup and a foreign JSON file each show `restore.error` (role alert) and no Restore button; still 12 books; screenshot `restore-error.png` |
+| `csv-export` | p08 | The downloaded CSV starts with a BOM and the header, has 12 rows and no loan columns; with "Include lending details" on, Dune is on loan to Sam |
+| `csv-import-goodreads` | p08 | Fixture `empty`, Google Books off: the Goodreads export fixture → the Goodreads preset is picked by itself → 10 preview rows, "20 books will be added" → import → "Imported 20 books" with shelves as groups → 20 books; the cover backfill gives The Final Empire and The Name of the Wind real covers through the mocked Open Library; screenshots `import-mapping.png`, `import-preview.png`, `import-report.png`, `import-shelf-covers.png` |
+| `erase-library` | p08 | Explain step (counts, "Save a backup first", reset checkbox) → Erase disabled until ERASE is typed → the empty Shelf and a snackbar; the saved loan length survives |
+| `preferences-persist` | p08 | Newest first, 14-day loans, ISO dates, Google Books off → a reload keeps them → the Shelf opens newest first and the lend sheet offers a due date 14 days on, written in ISO |
+| `about-page` | p08 | Version and build, the data credits and MIT licence; the GitHub link opens `https://github.com/asorichetti/MyShelf` (`window.open` is stubbed); hundreds of packages in the licence list |
+| `settings-borrowers-pending` | p08 | Settings → Borrowers: Sam and Priya with loan counts; removing Priya is refused with an alert; renaming Sam shows on the Loans tab; Pending lookups is empty |
 
 ### Adding a journey
 
