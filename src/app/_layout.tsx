@@ -18,6 +18,7 @@ import { LoadingScreen } from '@/features/navigation/LoadingScreen';
 import { AppErrorBoundary, screenErrorLayout } from '@/features/navigation/ScreenErrorBoundary';
 import { OnboardingGate } from '@/features/onboarding/OnboardingGate';
 import { SettingsWatchers } from '@/features/settings/SettingsWatchers';
+import { useKeyboardActivation } from '@/hooks/useKeyboardActivation';
 import { ThemeProvider, useTheme } from '@/theme';
 import { appFonts } from '@/theme/fonts';
 
@@ -62,6 +63,8 @@ export default function RootLayout() {
   const [dbState, setDbState] = useState<DatabaseStatus['state']>('loading');
   const fontsReady = fontsLoaded || fontError != null;
   const ready = fontsReady && dbState !== 'loading';
+  // Web: Enter and Space work on every pressable, as they would on a native control.
+  useKeyboardActivation();
 
   useEffect(() => {
     if (fontError) console.warn('Fonts failed to load; falling back to system fonts.', fontError);
