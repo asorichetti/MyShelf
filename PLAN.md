@@ -163,7 +163,7 @@ MyShelf/
 │   │   ├── index.tsx           [main] placeholder home (replaced by tabs in P00-11)
 │   │   ├── (tabs)/             P00-11 shelf · scan · loans · groups · settings
 │   │   ├── book/[id].tsx       P01-06
-│   │   └── e2e.tsx             P01-01 test-fixture loader (E2E builds only)
+│   │   └── e2e/                P01-01 fixture loader, P03-07 scan injection (E2E builds only)
 │   ├── components/
 │   │   ├── ui/                 P00-09 Button, Text, Card, TextField, Chip, Stamp …
 │   │   ├── booky/              P00-10 Booky, BookyBubble, useBooky
@@ -542,7 +542,7 @@ A Go command-line tool in `tools/auto-test-suite` (Cobra + playwright-go) that d
   | `network` | any same-origin request fails or returns ≥ 400, or an **unmocked** request leaves the machine |
   | `a11y` | axe-core reports a `serious` or `critical` violation, an interactive element lacks an accessible name, or a tap target is smaller than 44 × 44 px |
 
-- **Journeys self-register.** Each journey is a Go file in `tools/auto-test-suite/internal/journeys/` whose `init()` calls `journeys.Register(...)` with a name, tags (`smoke`, `p01`, …) and steps. Each journey runs in a **fresh browser context**, starts from a known fixture (`/e2e?fixture=<name>&next=<route>`, P01-01), and uses only selectors from the generated `selectors` package.
+- **Journeys self-register.** Each journey is a Go file in `tools/auto-test-suite/internal/journeys/` whose `init()` calls `journeys.Register(...)` with a name, tags (`smoke`, `p01`, …) and steps. Each journey runs in a **fresh browser**, starts from a known fixture (`/e2e?fixture=<name>&next=<route>`, P01-01), and uses only selectors from the generated `selectors` package.
 - **API mocking.** `--mock-api` serves recorded Open Library / Google Books responses via Playwright routing, so journeys are deterministic and the network gate can forbid real external calls.
 
 ### 10.3 Maestro (on device)
