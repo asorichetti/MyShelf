@@ -39,6 +39,15 @@ export function deleteCover(bookId: number): boolean {
   return true;
 }
 
+/** Deletes every downloaded or picked cover ("Erase library"). Returns how many files went. */
+export function deleteAllCovers(): number {
+  const dir = coversDirectory();
+  if (!dir.exists) return 0;
+  const count = dir.list().length;
+  dir.delete();
+  return count;
+}
+
 /** Whether `uri` is already a book's stored cover (so saving the book need not copy it). */
 export function isStoredCover(bookId: number, uri: string | null | undefined): boolean {
   return !!uri && uri === coverFile(bookId).uri;

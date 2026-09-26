@@ -37,3 +37,4 @@ export {
   type SkippedRow,
 } from './importCsv';
 export { CSV_MIME, JSON_MIME, type OutgoingFile, type PickedFile, type ShareOutcome } from './fileTypes';
+export { eraseAll, type EraseAllOptions, type EraseAllResult } from './eraseAll';

@@ -14,6 +14,11 @@ export function deleteCover(_bookId: number): boolean {
   return false;
 }
 
+/** The web build stores no cover files. */
+export function deleteAllCovers(): number {
+  return 0;
+}
+
 export function isStoredCover(_bookId: number, _uri: string | null | undefined): boolean {
   return true;
 }

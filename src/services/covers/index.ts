@@ -1,4 +1,4 @@
-export { deleteCover, downloadCover, isStoredCover, storeCoverFile, type DownloadCoverOptions } from './downloadCover';
+export { deleteAllCovers, deleteCover, downloadCover, isStoredCover, storeCoverFile, type DownloadCoverOptions } from './downloadCover';
 export { combineCoverSources, coverSourceFromBook, coverSourceFromCandidate } from './coverSource';
 export {
   coverCandidates,
