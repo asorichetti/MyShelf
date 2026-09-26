@@ -136,7 +136,7 @@ export function RestoreScreen() {
     >
       {stage.kind === 'done' ? (
         <View style={{ gap: spacing.md }}>
-          <SettingsNotice tone="success" title={stage.result.mode === 'merge' ? 'Books added' : 'Library restored'} testID={T.summary}>
+          <SettingsNotice tone="success" title={stage.result.mode === 'merge' ? 'Books added' : 'Library restored'} testID={T.summary} focusOnShow>
             {describeResult(stage.result)}
           </SettingsNotice>
           {stage.result.upgradedFrom ? (

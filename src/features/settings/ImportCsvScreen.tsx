@@ -142,7 +142,7 @@ export function ImportCsvScreen() {
         <View style={{ alignItems: 'center' }}>
           <Booky expression="excited" size={96} />
         </View>
-        <SettingsNotice tone="success" title={`Imported ${books(report.imported)}`} testID={T.report}>
+        <SettingsNotice tone="success" title={`Imported ${books(report.imported)}`} testID={T.report} focusOnShow>
           {[
             report.groupsCreated.length ? `New groups: ${report.groupsCreated.join(', ')}.` : null,
             report.imported ? 'Covers are being found in the background; they’ll appear on your shelf as they arrive.' : null,
@@ -233,7 +233,9 @@ export function ImportCsvScreen() {
           <View style={{ gap: spacing.sm }} testID={T.preview}>
             <Heading level={2}>Preview</Heading>
             <Text role="status" aria-live="polite">
-              {`${books(plan.books.length)} will be added${plan.skipped.length ? `; ${rowsWord(plan.skipped.length)} will be skipped` : ''}.${loaded.table.rows.length > PREVIEW_ROWS ? ` The first ${PREVIEW_ROWS} rows:` : ''}`}
+              {importing
+                ? `Importing ${books(plan.books.length)}…`
+                : `${books(plan.books.length)} will be added${plan.skipped.length ? `; ${rowsWord(plan.skipped.length)} will be skipped` : ''}.${loaded.table.rows.length > PREVIEW_ROWS ? ` The first ${PREVIEW_ROWS} rows:` : ''}`}
             </Text>
             <View role="list" aria-label="First rows" style={{ gap: spacing.xs }}>
               {plan.outcomes.slice(0, PREVIEW_ROWS).map((o) => (

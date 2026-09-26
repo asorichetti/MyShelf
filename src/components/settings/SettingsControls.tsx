@@ -1,7 +1,9 @@
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { useEffect, useRef } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Text } from '@/components/ui';
+import { focusView } from '@/components/ui/focusView';
 import { useTheme, type ColorRole } from '@/theme';
 
 import type { ReactNode } from 'react';
@@ -24,16 +26,28 @@ export interface SettingsNoticeProps {
   role?: 'alert' | 'status' | 'none';
   /** Buttons under the text. */
   actions?: ReactNode;
+  /**
+   * Take focus when shown: for a result that replaces the button that asked
+   * for it (an import's report, a finished restore), so focus is not lost
+   * and a screen reader reads the result out.
+   */
+  focusOnShow?: boolean;
 }
 
 /** A soft coloured box for a result, a warning or an error, with an icon so colour is never the only signal. */
-export function SettingsNotice({ tone = 'info', title, children, testID, role, actions }: SettingsNoticeProps) {
+export function SettingsNotice({ tone = 'info', title, children, testID, role, actions, focusOnShow = false }: SettingsNoticeProps) {
   const { colors, spacing, radii, sizes } = useTheme();
+  const box = useRef<View>(null);
+  useEffect(() => {
+    if (focusOnShow) focusView(box.current);
+  }, [focusOnShow]);
   const c = toneColors[tone];
   const liveRole = role ?? (tone === 'danger' ? 'alert' : 'status');
   return (
     <View
+      ref={box}
       testID={testID}
+      {...(focusOnShow ? { tabIndex: -1 as const } : {})}
       role={liveRole === 'none' ? undefined : liveRole}
       aria-live={liveRole === 'alert' ? 'assertive' : liveRole === 'status' ? 'polite' : undefined}
       accessibilityLiveRegion={liveRole === 'alert' ? 'assertive' : liveRole === 'status' ? 'polite' : undefined}

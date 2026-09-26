@@ -125,6 +125,19 @@ describe('SnackbarProvider and SnackbarHost', () => {
     expect(screen.queryByTestId(Testids.snackbar.root)).toBeNull();
   });
 
+  it('is one live region that is there before the message, so each message is read out (P09-01)', () => {
+    renderHost({ message: 'Lent to Sam' });
+    const regions = () => screen.UNSAFE_root.findAll((n) => typeof n.type === 'string' && n.props.role === 'status');
+    expect(regions()).toHaveLength(1);
+    expect(regions()[0]!.props['aria-live']).toBe('polite');
+    expect(regions()[0]!.props.accessibilityLiveRegion).toBe('polite');
+    fireEvent.press(screen.getByRole('button', { name: 'show' }));
+    // Still one region: the bar inside is not a second one.
+    expect(regions()).toHaveLength(1);
+    expect(regions()[0]).toContainElement(screen.getByText('Lent to Sam'));
+    expect(screen.getByTestId(Testids.snackbar.root).props.role).toBeUndefined();
+  });
+
   it('keeps an action snackbar longer, and the action runs once and closes it', () => {
     const onUndo = jest.fn();
     renderHost({ message: 'Removed', action: { label: 'Undo', onPress: onUndo } });

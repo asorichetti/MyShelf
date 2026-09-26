@@ -17,20 +17,24 @@ export interface SnackbarProps {
   action?: SnackbarAction;
   /** Called when the action is focused or blurred, so a host can pause its timer. */
   onFocusChange?: (focused: boolean) => void;
+  /**
+   * Be its own polite live region (default). `SnackbarHost` turns this off
+   * and is the live region itself, since a region that appears already
+   * holding its message is often not read out.
+   */
+  live?: boolean;
   testID?: string;
   style?: StyleProp<ViewStyle>;
 }
 
 /** A short message on a dark strip, with an optional action such as Undo. Announced politely. */
-export function Snackbar({ message, action, onFocusChange, testID = Testids.snackbar.root, style }: SnackbarProps) {
+export function Snackbar({ message, action, onFocusChange, live = true, testID = Testids.snackbar.root, style }: SnackbarProps) {
   const theme = useTheme();
   const { colors, spacing, radii, sizes } = theme;
   return (
     <View
       testID={testID}
-      role="status"
-      aria-live="polite"
-      accessibilityLiveRegion="polite"
+      {...(live ? { role: 'status' as const, 'aria-live': 'polite' as const, accessibilityLiveRegion: 'polite' as const } : {})}
       style={[
         styles.bar,
         {
@@ -150,17 +154,26 @@ export function SnackbarHost({ style }: { style?: StyleProp<ViewStyle> }) {
     return () => clearTimeout(timer);
   }, [snack, paused, dismiss]);
 
-  if (!snack) return null;
-  const action = snack.action && {
+  const action = snack?.action && {
     label: snack.action.label,
     onPress: () => {
       dismiss('action');
       snack.action!.onPress();
     },
   };
+  // The host is always there as an empty live region, so each message is read out as it arrives.
   return (
-    <View ref={attachObstacle} onLayout={layoutObstacle} style={[styles.host, { left: spacing.md, right: spacing.md, bottom: spacing.md }, style]}>
-      <Snackbar key={snack.id} message={snack.message} action={action} onFocusChange={(focused) => setPausedId(focused ? snack.id : null)} />
+    <View
+      ref={attachObstacle}
+      onLayout={layoutObstacle}
+      role="status"
+      aria-live="polite"
+      accessibilityLiveRegion="polite"
+      style={[styles.host, { left: spacing.md, right: spacing.md, bottom: spacing.md }, style]}
+    >
+      {snack ? (
+        <Snackbar key={snack.id} live={false} message={snack.message} action={action ?? undefined} onFocusChange={(focused) => setPausedId(focused ? snack.id : null)} />
+      ) : null}
     </View>
   );
 }
