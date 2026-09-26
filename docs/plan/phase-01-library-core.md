@@ -58,7 +58,7 @@ A usable, offline catalogue: the user can add a book by hand, see it on the Shel
 - **Files:** `src/components/book/ShelfToolbar.tsx`, `src/features/shelf/ShelfScreen.tsx`, `src/domain/settings.ts` (`shelfSort` in `AppSettings` and `settingDefaults`).
 - **Acceptance:** typing filters results; sort survives app restart; screen reader announces result count.
 - **Tests:** `src/components/book/__tests__/ShelfToolbar.test.tsx`, `src/__tests__/shelf.search.test.tsx`.
-- **Delivered:** the sort menu is a disclosure (`aria-expanded`) that opens an inline panel of radio chips plus a direction button (`home.sortDirection`: "A to Z" / "Z to A", "Oldest first" / "Newest first"); picking "Recently added" starts newest first. The result count is a polite live region under the toolbar (`home.resultCount`: "Showing all 12 books", "4 of 12 books match “prat”"). The debounce is `useDebouncedValue` in `src/hooks`.
+- **Delivered:** the sort menu is a disclosure (`aria-expanded`) that opens an inline panel of radio chips plus a direction button (`home.sortDirection`: "A to Z" / "Z to A", "Oldest first" / "Newest first"); picking "Recently added" starts newest first. (Phase 11 replaced the menu with the Sort sheet; see P11-03.) The result count is a polite live region under the toolbar (`home.resultCount`: "Showing all 12 books", "4 of 12 books match “prat”"). The debounce is `useDebouncedValue` in `src/hooks`.
 
 ### P01-05 Book form model and validation — done
 

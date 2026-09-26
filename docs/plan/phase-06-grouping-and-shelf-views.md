@@ -31,7 +31,7 @@ Let the user browse the collection the way they think about it: by genre, series
 - **Files:** `src/db/repositories/shelfSections.ts`, `src/features/shelf/useShelf.ts`, `src/components/book/SectionHeader.tsx`, `src/features/shelf/ShelfScreen.tsx`; a `brass` colour role in `src/theme/tokens.ts` for the shelf edge.
 - **Acceptance:** section counts match `demo`; search and sort apply within sections; series sections ordered by position.
 - **Tests:** `src/db/repositories/__tests__/shelfSections.test.ts`, `src/__tests__/shelf.groupBy.test.tsx`.
-- **Delivered:** `listShelfSections` (`shelfSectionsRepo`) runs `listBookItems` (search, filters and sort in SQL, plus the author query) and one membership query per grouping, rather than calling the `groupBooksBy*` helpers, which load every book's full row and know nothing of search or filters: three queries whatever the grouping. Sections are `{ sectionKey, sectionTitle, groupBy, id, items }`; empty sections are left out; the ungrouped bucket is "No genre", "Not in a series", "No author" or "Not in a group". Books keep the Shelf's sort inside a section except series, which are in reading order. `SectionHeader` is a level-2 heading named "Fantasy, 23 books" with a chevron that opens the genre, series, author or group page. The `brass` role already existed (Phase 01 covers), so no token was added. The Shelf is a `SectionList` in every mode (one untitled section when not grouped).
+- **Delivered:** `listShelfSections` (`shelfSectionsRepo`) runs `listBookItems` (search, filters and sort in SQL, plus the author query) and one membership query per grouping, rather than calling the `groupBooksBy*` helpers, which load every book's full row and know nothing of search or filters: three queries whatever the grouping. Sections are `{ sectionKey, sectionTitle, groupBy, id, items }`; empty sections are left out; the ungrouped bucket is "No genre", "Not in a series", "No author" or "Not in a group". Books keep the Shelf's sort inside a section except series, which are in reading order (since P11-05 series sections follow the sort too; "Series reading order" gives reading order). `SectionHeader` is a level-2 heading named "Fantasy, 23 books" with a chevron that opens the genre, series, author or group page. The `brass` role already existed (Phase 01 covers), so no token was added. The Shelf is a `SectionList` in every mode (one untitled section when not grouped).
 
 ### P06-02 Genre management — done
 
@@ -149,7 +149,7 @@ Each journey is added by the card that builds its screen. Suite `core` journeys 
 
 | Journey | Suite | Steps |
 |---|---|---|
-| `shelf-group-by-genre` | `p06` | fixture `demo`; group by genre → 4 section headers with counts; group by series → reading order |
+| `shelf-group-by-genre` | `p06` | fixture `demo`; group by genre → 4 section headers with counts; group by series → the sort inside each series (P11-05) |
 | `shelf-view-modes` | `p06` | switch List → Covers → Spines; screenshot each; render gate checks overflow; spines grouped by genre |
 | `shelf-filters` | `p06` | filter genre Fantasy + on loan → chips shown → remove one → clear all |
 | `shelf-prefs-persist` | `p06` | group by author, Covers, sort by year, a genre filter → all survive a reload |

@@ -49,7 +49,7 @@ no contrast finding in either theme.
 
 | Area | Screens and states |
 |---|---|
-| Shelf | list, covers grid, spine shelf, a search with results and with none, grouped by genre, selection mode, the filter sheet, the sort and group-by panels, Booky's help tip, an Undo snackbar, the empty Shelf |
+| Shelf | list, covers grid, spine shelf, a search with results and with none, grouped by genre, selection mode, the filter sheet, the Sort sheet and the group-by panel, Booky's help tip, an Undo snackbar, the empty Shelf |
 | Book | detail (at home, on loan, overdue, from a series), the add form (empty, with lookup results), the edit form, Refresh details, the More menu, the delete dialog, the lend sheet with its date fields, the return sheet, the group picker |
 | Lookup and scan | Scan (barcode and cover modes, batch toggle), the edition picker (one edition; works grouped with editions), the scan tray review (empty and with scans) |
 | Series | the series list, a series with a gap, its More menu |
@@ -285,6 +285,22 @@ preview APK. Tick each line; anything that fails, note what TalkBack said.
       clear); double tap clears.
 - [ ] Back on the Shelf, the book's row ends "…, rated N out of 5".
 - [ ] In the edit form, "Your rating" works the same way and Save keeps it.
+
+**5. Sort the Shelf (Phase 11)**
+
+- [ ] On the Shelf, the sort button reads "Sort: <the whole sort>, button";
+      double tap opens "Sort your shelf" with focus inside.
+- [ ] The presets are radio buttons ("Library order, checked"); choosing one
+      announces "Sorted by Library order".
+- [ ] Each level reads "Level 2: Then by Author, A to Z"; its buttons read
+      "Then by: Author. Change", "Author order: A to Z. Reverse", "Move
+      Author up", "Move Author down" and "Remove Author".
+- [ ] Moving a level announces "Author moved to level 1 of 3", and TalkBack's
+      focus stays on the level.
+- [ ] Save as preset → type a name → Save preset: "Saved “<name>”" is
+      announced and the preset is under "Your presets", with Rename and
+      Delete buttons named after it.
+- [ ] Close the sheet: the line under the toolbar reads "Sorted by …".
 
 **Throughout**
 

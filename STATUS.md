@@ -19,7 +19,8 @@ On `main`: the scaffold (P00-01 to P00-07), the design system, Booky, tabs, data
 | [Phase 08](docs/plan/phase-08-settings-backup.md) | Settings, backup, export and import | 8 / 10 |
 | [Phase 09](docs/plan/phase-09-polish-a11y-release.md) | Polish, accessibility and release | 6 / 12 |
 | [Phase 10](docs/plan/phase-10-ratings.md) | Ratings | 9 / 9 |
-| **Total** | | **123 / 141** |
+| [Phase 11](docs/plan/phase-11-sorting.md) | Sorting | 7 / 7 |
+| **Total** | | **130 / 148** |
 
 ## Phase 00 — Foundation
 
@@ -216,3 +217,15 @@ On `main`: the scaffold (P00-01 to P00-07), the design system, Booky, tabs, data
 - [x] P10-07 Ratings in CSV export and import
 - [x] P10-08 Ratings in backups
 - [x] P10-09 Booky: how to rate
+
+## Phase 11 — Sorting
+
+[Phase document](docs/plan/phase-11-sorting.md)
+
+- [x] P11-01 Sort model and key registry
+- [x] P11-02 The keys
+- [x] P11-03 The Sort sheet
+- [x] P11-04 Presets and saved presets
+- [x] P11-05 Grouping and sorting together
+- [x] P11-06 Keeping the sort, and old settings
+- [x] P11-07 Performance with 10,000 books
