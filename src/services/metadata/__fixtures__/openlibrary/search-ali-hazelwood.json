@@ -1,0 +1,338 @@
+{
+  "numFound": 30,
+  "start": 0,
+  "numFoundExact": true,
+  "num_found": 30,
+  "documentation_url": "https://openlibrary.org/dev/docs/api/search",
+  "q": "",
+  "offset": null,
+  "docs": [
+    {
+      "author_name": [
+        "Ali Hazelwood"
+      ],
+      "cover_i": 10601402,
+      "edition_count": 13,
+      "first_publish_year": 2021,
+      "isbn": [
+        "1408734257",
+        "9780593336823",
+        "9899096482",
+        "0593336828",
+        "8820074052",
+        "9780593336830",
+        "9788418945502",
+        "8418945508",
+        "9044364855",
+        "1638082154",
+        "9789044364859",
+        "1408725762",
+        "9788418945182",
+        "9788820074050",
+        "9798217196128",
+        "9781638082156",
+        "9781408734254",
+        "9789899096486",
+        "9781408725764",
+        "8418945184",
+        "0593336836"
+      ],
+      "key": "/works/OL24178205W",
+      "language": [
+        "ita",
+        "spa",
+        "eng",
+        "por",
+        "dut"
+      ],
+      "title": "The Love Hypothesis",
+      "subject": [
+        "American literature",
+        "New York Times bestseller",
+        "Romantic fiction",
+        "rom-com",
+        "romance",
+        "College Life",
+        "Women authors",
+        "women in STEM",
+        "Contemporary Romance",
+        "Contemporary",
+        "Fiction",
+        "Adult",
+        "New Adult",
+        "Young adults"
+      ]
+    },
+    {
+      "author_name": [
+        "Ali Hazelwood"
+      ],
+      "cover_i": 12931937,
+      "edition_count": 5,
+      "first_publish_year": 2022,
+      "isbn": [
+        "1638084718",
+        "9780593336854",
+        "9781408725771",
+        "0593336852",
+        "9780593336847",
+        "9781638084716",
+        "1408725770",
+        "0593336844"
+      ],
+      "key": "/works/OL26350090W",
+      "language": [
+        "eng"
+      ],
+      "title": "Love on the Brain",
+      "subject": [
+        "American literature",
+        "New York Times bestseller",
+        "love hypothesis",
+        "ali hazelwood",
+        "love on the brain",
+        "marie curie",
+        "enemies to lovers",
+        "grad school",
+        "women in stem",
+        "bee and levi",
+        "levi ward",
+        "got mail",
+        "slow burn"
+      ]
+    },
+    {
+      "author_name": [
+        "Ali Hazelwood"
+      ],
+      "cover_i": 13264824,
+      "edition_count": 8,
+      "first_publish_year": 2023,
+      "isbn": [
+        "1638088446",
+        "0593336879",
+        "9044366866",
+        "0593638859",
+        "9781408725795",
+        "1408725797",
+        "9780593336878",
+        "9780593641293",
+        "9781638088448",
+        "9780593336861",
+        "9780593638859",
+        "9789044366860",
+        "0593641299",
+        "0593336860"
+      ],
+      "key": "/works/OL28803485W",
+      "language": [
+        "eng",
+        "dut"
+      ],
+      "title": "Love Theoretically",
+      "subject": [
+        "nyt:combined-print-and-e-book-fiction=2023-07-02",
+        "New York Times bestseller",
+        "Love & Romance"
+      ]
+    },
+    {
+      "author_name": [
+        "Ali Hazelwood"
+      ],
+      "cover_i": 13818883,
+      "edition_count": 4,
+      "first_publish_year": 2023,
+      "isbn": [
+        "0593619919",
+        "9780593698440",
+        "9780593619919",
+        "0525489797",
+        "0593698444",
+        "9781408727614",
+        "9780525489795",
+        "1408727617"
+      ],
+      "key": "/works/OL34955803W",
+      "language": [
+        "eng"
+      ],
+      "title": "Check & Mate",
+      "subject": [
+        "nyt:young-adult-paperback-monthly=2023-12-10",
+        "New York Times bestseller",
+        "Romance",
+        "Young Adult",
+        "Contemporary"
+      ]
+    },
+    {
+      "author_name": [
+        "Ali Hazelwood"
+      ],
+      "cover_i": 14591818,
+      "edition_count": 5,
+      "first_publish_year": 2024,
+      "isbn": [
+        "9798885799942",
+        "1408728877",
+        "9780593550403",
+        "0593641035",
+        "9781408728864",
+        "1408728869",
+        "0593550404",
+        "9780593641033",
+        "9781408728871"
+      ],
+      "key": "/works/OL37588041W",
+      "language": [
+        "eng"
+      ],
+      "title": "Bride",
+      "subject": [
+        "American literature",
+        "nyt:combined-print-and-e-book-fiction=2024-02-25",
+        "New York Times bestseller"
+      ]
+    },
+    {
+      "author_name": [
+        "Ali Hazelwood"
+      ],
+      "cover_i": 15120659,
+      "edition_count": 6,
+      "first_publish_year": 2025,
+      "isbn": [
+        "9781420518580",
+        "9000397014",
+        "0593550455",
+        "9780593550458",
+        "9789000397013",
+        "1420518585",
+        "9780593641057",
+        "0593641051",
+        "9781408728888",
+        "9780593550441",
+        "0593550447",
+        "1408728885"
+      ],
+      "key": "/works/OL42413995W",
+      "language": [
+        "dut",
+        "eng"
+      ],
+      "title": "Deep End",
+      "subject": [
+        "American literature"
+      ]
+    },
+    {
+      "author_name": [
+        "Ali Hazelwood"
+      ],
+      "cover_i": 13188132,
+      "edition_count": 5,
+      "first_publish_year": 2023,
+      "isbn": [
+        "1638086419",
+        "9780593638835",
+        "0593638832",
+        "059363800X",
+        "9780593437803",
+        "9781638086413",
+        "1408726777",
+        "9780593638002",
+        "0593437802",
+        "9781408726778"
+      ],
+      "key": "/works/OL27814241W",
+      "language": [
+        "eng"
+      ],
+      "title": "Love to Loathe You",
+      "subject": [
+        "American literature",
+        "New York Times bestseller"
+      ]
+    },
+    {
+      "author_name": [
+        "Ali Hazelwood"
+      ],
+      "cover_i": 12993358,
+      "edition_count": 1,
+      "first_publish_year": 2022,
+      "isbn": [
+        "9788418945403",
+        "8418945400"
+      ],
+      "key": "/works/OL28961613W",
+      "language": [
+        "spa"
+      ],
+      "title": "La química del amor"
+    },
+    {
+      "author_name": [
+        "Ali Hazelwood"
+      ],
+      "cover_i": 14817057,
+      "edition_count": 6,
+      "first_publish_year": 2024,
+      "isbn": [
+        "9780593550434",
+        "0593550420",
+        "0593550439",
+        "0593818873",
+        "9780593641040",
+        "9798891641860",
+        "0593641043",
+        "9780593818879",
+        "9781408728901",
+        "9780593550427",
+        "1408728907"
+      ],
+      "key": "/works/OL37588709W",
+      "language": [
+        "eng"
+      ],
+      "title": "Not in Love",
+      "subject": [
+        "nyt:combined-print-and-e-book-fiction=2024-06-30",
+        "New York Times bestseller",
+        "Romance fiction"
+      ]
+    },
+    {
+      "author_name": [
+        "Ali Hazelwood"
+      ],
+      "cover_i": 15096054,
+      "edition_count": 3,
+      "first_publish_year": 2025,
+      "isbn": [
+        "900040097X",
+        "9781408729885",
+        "1408729881",
+        "9798217188123",
+        "9789000400973"
+      ],
+      "key": "/works/OL43548572W",
+      "language": [
+        "eng",
+        "dut"
+      ],
+      "title": "Problematic Summer Romance",
+      "subject": [
+        "Romance",
+        "Contemporary",
+        "Summer",
+        "Contemporary Romance",
+        "Fiction",
+        "Adult",
+        "Fiction, romance, friends to lovers",
+        "Fiction, romance, contemporary"
+      ]
+    }
+  ]
+}

@@ -216,6 +216,22 @@
       "url": "https://www.googleapis.com/books/v1/volumes?q=the%20colour%20of%20magic%20terry%20pratchett&maxResults=10&printType=books&fields=totalItems%2Citems(id%2CvolumeInfo(title%2Csubtitle%2Cauthors%2Cpublisher%2CpublishedDate%2Cdescription%2CindustryIdentifiers%2CpageCount%2Ccategories%2CimageLinks%2Clanguage%2CseriesInfo))",
       "body": "googlebooks/synthetic-search-colour-of-magic.json",
       "note": "the synthetic title/author search, reused for the free-text query"
+    },
+    {
+      "url": "https://openlibrary.org/search.json?title=problematic%20summer%20bromance&author=ali%20hazelwood&fields=key%2Ctitle%2Cauthor_name%2Cfirst_publish_year%2Cedition_count%2Cisbn%2Ccover_i%2Csubject%2Clanguage&limit=10",
+      "body": "openlibrary/search-problematic-summer-bromance-ali-hazelwood.json"
+    },
+    {
+      "url": "https://openlibrary.org/search.json?author=ali%20hazelwood&fields=key%2Ctitle%2Cauthor_name%2Cfirst_publish_year%2Cedition_count%2Cisbn%2Ccover_i%2Csubject%2Clanguage&limit=10",
+      "body": "openlibrary/search-ali-hazelwood.json"
+    },
+    {
+      "url": "https://openlibrary.org/search.json?title=practical%20magic&author=alice%20hoffman&fields=key%2Ctitle%2Cauthor_name%2Cfirst_publish_year%2Cedition_count%2Cisbn%2Ccover_i%2Csubject%2Clanguage&limit=10",
+      "body": "openlibrary/search-practical-magic-alice-hoffman.json"
+    },
+    {
+      "url": "https://openlibrary.org/search.json?title=nobody's%20girl&author=virginia%20roberts%20giuffre&fields=key%2Ctitle%2Cauthor_name%2Cfirst_publish_year%2Cedition_count%2Cisbn%2Ccover_i%2Csubject%2Clanguage&limit=10",
+      "body": "openlibrary/search-nobody-s-girl-virginia-roberts-giuffre.json"
     }
   ]
 }

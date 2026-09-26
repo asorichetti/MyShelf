@@ -1,0 +1,137 @@
+{
+  "synthetic": false,
+  "note": "Recorded with Apple Vision (scripts/record-ocr-fixture.swift) from a developer's phone photo of the cover, as a stand-in for ML Kit, which cannot run on a Mac. The photo is not committed (the cover art is copyrighted). Replace with an ML Kit capture from a device when a development build can record one.",
+  "description": "Handheld photo. Title over two lines at the top (NOBODY'S / GIRL), a two-line memoir subtitle, and the author split over two lines of the same size (Virginia Roberts / Giuffre), set larger than the title.",
+  "expected": {
+    "title": "Nobody’s Girl",
+    "author": "Virginia Roberts Giuffre"
+  },
+  "imageSize": {
+    "height": 1620,
+    "width": 1215
+  },
+  "result": {
+    "blocks": [
+      {
+        "frame": {
+          "height": 104,
+          "width": 737,
+          "x": 194,
+          "y": 693
+        },
+        "lines": [
+          {
+            "frame": {
+              "height": 104,
+              "width": 737,
+              "x": 194,
+              "y": 693
+            },
+            "text": "NOBODY'S"
+          }
+        ],
+        "text": "NOBODY'S"
+      },
+      {
+        "frame": {
+          "height": 86,
+          "width": 355,
+          "x": 371,
+          "y": 868
+        },
+        "lines": [
+          {
+            "frame": {
+              "height": 86,
+              "width": 355,
+              "x": 371,
+              "y": 868
+            },
+            "text": "GIRL"
+          }
+        ],
+        "text": "GIRL"
+      },
+      {
+        "frame": {
+          "height": 49,
+          "width": 705,
+          "x": 202,
+          "y": 1029
+        },
+        "lines": [
+          {
+            "frame": {
+              "height": 49,
+              "width": 705,
+              "x": 202,
+              "y": 1029
+            },
+            "text": "A Memoir of Surviving Abuse"
+          }
+        ],
+        "text": "A Memoir of Surviving Abuse"
+      },
+      {
+        "frame": {
+          "height": 59,
+          "width": 584,
+          "x": 256,
+          "y": 1103
+        },
+        "lines": [
+          {
+            "frame": {
+              "height": 59,
+              "width": 584,
+              "x": 256,
+              "y": 1103
+            },
+            "text": "and Fighting for Justice"
+          }
+        ],
+        "text": "and Fighting for Justice"
+      },
+      {
+        "frame": {
+          "height": 108,
+          "width": 830,
+          "x": 140,
+          "y": 1228
+        },
+        "lines": [
+          {
+            "frame": {
+              "height": 108,
+              "width": 830,
+              "x": 140,
+              "y": 1228
+            },
+            "text": "Virginia Roberts"
+          }
+        ],
+        "text": "Virginia Roberts"
+      },
+      {
+        "frame": {
+          "height": 107,
+          "width": 368,
+          "x": 351,
+          "y": 1384
+        },
+        "lines": [
+          {
+            "frame": {
+              "height": 107,
+              "width": 368,
+              "x": 351,
+              "y": 1384
+            },
+            "text": "Giuffre"
+          }
+        ],
+        "text": "Giuffre"
+      }
+    ]
+  }
+}

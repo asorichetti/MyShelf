@@ -1,0 +1,157 @@
+{
+  "synthetic": false,
+  "note": "Recorded with Apple Vision (scripts/record-ocr-fixture.swift) from a developer's phone photo of the cover, as a stand-in for ML Kit, which cannot run on a Mac. The photo is not committed (the cover art is copyrighted). Replace with an ML Kit capture from a device when a development build can record one.",
+  "description": "Handheld photo with uneven light. The \"&\" between PRACTICAL and MAGIC reads as \"+\", and the author is split over two stacked lines, ALICE / HOFFMAN, under a bestseller strap.",
+  "expected": {
+    "title": "Practical Magic",
+    "author": "Alice Hoffman"
+  },
+  "imageSize": {
+    "height": 1620,
+    "width": 1215
+  },
+  "result": {
+    "blocks": [
+      {
+        "frame": {
+          "height": 113,
+          "width": 531,
+          "x": 341,
+          "y": 370
+        },
+        "lines": [
+          {
+            "frame": {
+              "height": 113,
+              "width": 531,
+              "x": 341,
+              "y": 370
+            },
+            "text": "PRACTICAL"
+          }
+        ],
+        "text": "PRACTICAL"
+      },
+      {
+        "frame": {
+          "height": 101,
+          "width": 400,
+          "x": 385,
+          "y": 478
+        },
+        "lines": [
+          {
+            "frame": {
+              "height": 101,
+              "width": 400,
+              "x": 385,
+              "y": 478
+            },
+            "text": "+ MAGIC"
+          }
+        ],
+        "text": "+ MAGIC"
+      },
+      {
+        "frame": {
+          "height": 90,
+          "width": 271,
+          "x": 506,
+          "y": 984
+        },
+        "lines": [
+          {
+            "frame": {
+              "height": 90,
+              "width": 271,
+              "x": 506,
+              "y": 984
+            },
+            "text": "ALICE"
+          }
+        ],
+        "text": "ALICE"
+      },
+      {
+        "frame": {
+          "height": 76,
+          "width": 467,
+          "x": 403,
+          "y": 1088
+        },
+        "lines": [
+          {
+            "frame": {
+              "height": 76,
+              "width": 467,
+              "x": 403,
+              "y": 1088
+            },
+            "text": "HOFFMAN"
+          }
+        ],
+        "text": "HOFFMAN"
+      },
+      {
+        "frame": {
+          "height": 38,
+          "width": 450,
+          "x": 420,
+          "y": 1166
+        },
+        "lines": [
+          {
+            "frame": {
+              "height": 38,
+              "width": 450,
+              "x": 420,
+              "y": 1166
+            },
+            "text": "NEW YORK TIMES BESTSELLING AUTHOR"
+          }
+        ],
+        "text": "NEW YORK TIMES BESTSELLING AUTHOR"
+      },
+      {
+        "frame": {
+          "height": 31,
+          "width": 274,
+          "x": 507,
+          "y": 1200
+        },
+        "lines": [
+          {
+            "frame": {
+              "height": 31,
+              "width": 274,
+              "x": 507,
+              "y": 1200
+            },
+            "text": "OF THE RULES OF MAGIC"
+          }
+        ],
+        "text": "OF THE RULES OF MAGIC"
+      },
+      {
+        "frame": {
+          "height": 82,
+          "width": 96,
+          "x": 785,
+          "y": 1250
+        },
+        "lines": [
+          {
+            "frame": {
+              "height": 82,
+              "width": 96,
+              "x": 785,
+              "y": 1250
+            },
+            "text": "-"
+          }
+        ],
+        "text": "-"
+      }
+    ]
+  }
+}

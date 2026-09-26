@@ -4,16 +4,22 @@ import { join } from 'node:path';
 import { buildQueriesFromOcr, cleanOcrLine, isNameLike, isNoiseLine, queriesFromTypedText, type OcrResult } from '../ocrQuery';
 
 interface OcrFixture {
+  synthetic: boolean;
   description: string;
-  expected: { title: string; author: string | null };
+  /** The book on the cover; `ocrTitle` when the recogniser misread the title itself. */
+  expected: { title: string; author: string | null; ocrTitle?: string };
   result: OcrResult;
 }
 
 const dir = join(__dirname, '..', '__fixtures__', 'ocr');
-const fixtures = readdirSync(dir)
+const all = readdirSync(dir)
   .filter((f) => f.endsWith('.json'))
   .sort()
   .map((f) => [f.replace(/\.json$/, ''), JSON.parse(readFileSync(join(dir, f), 'utf8')) as OcrFixture] as const);
+/** Hand-written to the ML Kit output shape, tuned against while the builder was written. */
+const fixtures = all.filter(([, f]) => f.synthetic);
+/** Recorded from developer photos with Apple Vision (scripts/record-ocr-fixture.swift), a stand-in for ML Kit. */
+const real = all.filter(([, f]) => !f.synthetic);
 
 const line = (text: string, y: number, height: number) => {
   const frame = { x: 40, y, width: 800, height };
@@ -46,6 +52,45 @@ describe('buildQueriesFromOcr on synthetic covers', () => {
     expect(queries.some((q) => q.title === f.expected.title || q.text?.startsWith(f.expected.title))).toBe(true);
     for (const q of queries) expect(JSON.stringify(q)).not.toMatch(/bestseller|novel of all|introduction|£|winner|penguin classics|corgi/i);
     if (f.expected.author) expect(queries[0]).toEqual({ title: f.expected.title, author: f.expected.author });
+  });
+});
+
+describe('buildQueriesFromOcr on real captures (Apple Vision stand-in)', () => {
+  it('has the three recorded covers, and every fixture says which kind it is', () => {
+    expect(real.map(([name]) => name)).toEqual(['real-nobodys-girl', 'real-practical-magic', 'real-problematic-summer-romance']);
+    expect(all.every(([, f]) => typeof f.synthetic === 'boolean')).toBe(true);
+  });
+
+  it.each([
+    [
+      // The author, split over two lines of the same size and set larger than the title, is joined;
+      // the possessive keeps "NOBODY'S" out of the names; the memoir subtitle is not the title.
+      'real-nobodys-girl',
+      [
+        { title: "nobody's girl", author: 'virginia roberts giuffre' },
+        { title: "nobody's girl" },
+        { text: "nobody's girl virginia roberts giuffre" },
+      ],
+    ],
+    [
+      // "+" (an ampersand's flourish) is dropped; "ALICE" / "HOFFMAN" is one name; the larger "PRACTICAL MAGIC" is the title.
+      'real-practical-magic',
+      [{ title: 'practical magic', author: 'alice hoffman' }, { title: 'practical magic' }, { text: 'practical magic alice hoffman' }],
+    ],
+    [
+      // The stray "~" is dropped; the misread "BROMANCE" is left for the search fallback (coverSearch) to forgive.
+      'real-problematic-summer-romance',
+      [
+        { title: 'problematic summer bromance', author: 'ali hazelwood' },
+        { title: 'problematic summer bromance' },
+        { text: 'problematic summer bromance ali hazelwood' },
+      ],
+    ],
+  ])('%s', (name, queries) => {
+    const f = real.find(([n]) => n === name)![1];
+    expect(buildQueriesFromOcr(f.result)).toEqual(queries);
+    expect(queries[0].author).toBe(f.expected.author!.toLowerCase());
+    expect(queries[0].title).toBe((f.expected.ocrTitle ?? f.expected.title).toLowerCase().replace('’', "'"));
   });
 });
 
@@ -106,8 +151,20 @@ describe('line helpers', () => {
     expect(isNameLike(text)).toBe(name);
   });
 
-  it('cleans stray punctuation and spaces', () => {
+  it('cleans stray punctuation, symbols and spaces', () => {
     expect(cleanOcrLine('  — THE   COLOUR ,  ')).toBe('THE COLOUR');
+    expect(cleanOcrLine('~ PROBLEMATIC')).toBe('PROBLEMATIC');
+    expect(cleanOcrLine('+ MAGIC')).toBe('MAGIC');
+    expect(cleanOcrLine('PRACTICAL + MAGIC')).toBe('PRACTICAL MAGIC');
+    expect(cleanOcrLine('NEIL GAIMAN & TERRY PRATCHETT')).toBe('NEIL GAIMAN & TERRY PRATCHETT');
+    expect(cleanOcrLine('& MORE')).toBe('MORE');
+    expect(cleanOcrLine('-')).toBe('');
+  });
+
+  it('treats a memoir subtitle as furniture, and a possessive as a title word', () => {
+    expect(isNoiseLine('A Memoir of Surviving Abuse')).toBe(true);
+    expect(isNameLike("NOBODY'S GIRL")).toBe(false);
+    expect(isNameLike('Virginia Roberts Giuffre')).toBe(true);
   });
 });
 

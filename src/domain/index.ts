@@ -32,3 +32,4 @@ export * from './shelfFilters';
 export * from './shelfView';
 export * from './summary';
 export * from './text';
+export * from './titleMatch';

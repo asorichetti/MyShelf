@@ -1,0 +1,138 @@
+{
+  "synthetic": false,
+  "note": "Recorded with Apple Vision (scripts/record-ocr-fixture.swift) from a developer's phone photo of the cover, as a stand-in for ML Kit, which cannot run on a Mac. The photo is not committed (the cover art is copyrighted). Replace with an ML Kit capture from a device when a development build can record one.",
+  "description": "Handheld, angled photo on a busy background. Vision misreads the tick-box \"?ROMANCE\" as \"BROMANCE\" and puts a stray \"~\" before PROBLEMATIC; the byline sits at the top over a bestseller strap.",
+  "expected": {
+    "title": "Problematic Summer Romance",
+    "author": "Ali Hazelwood",
+    "ocrTitle": "problematic summer bromance"
+  },
+  "imageSize": {
+    "height": 1620,
+    "width": 1215
+  },
+  "result": {
+    "blocks": [
+      {
+        "frame": {
+          "height": 48,
+          "width": 571,
+          "x": 369,
+          "y": 275
+        },
+        "lines": [
+          {
+            "frame": {
+              "height": 48,
+              "width": 571,
+              "x": 369,
+              "y": 275
+            },
+            "text": "ALI HAZELWOOD"
+          }
+        ],
+        "text": "ALI HAZELWOOD"
+      },
+      {
+        "frame": {
+          "height": 31,
+          "width": 602,
+          "x": 355,
+          "y": 325
+        },
+        "lines": [
+          {
+            "frame": {
+              "height": 31,
+              "width": 602,
+              "x": 355,
+              "y": 325
+            },
+            "text": "New York Times Bestselling Author of Deep End"
+          }
+        ],
+        "text": "New York Times Bestselling Author of Deep End"
+      },
+      {
+        "frame": {
+          "height": 179,
+          "width": 603,
+          "x": 391,
+          "y": 951
+        },
+        "lines": [
+          {
+            "frame": {
+              "height": 179,
+              "width": 603,
+              "x": 391,
+              "y": 951
+            },
+            "text": "~ PROBLEMATIC"
+          }
+        ],
+        "text": "~ PROBLEMATIC"
+      },
+      {
+        "frame": {
+          "height": 153,
+          "width": 460,
+          "x": 383,
+          "y": 1061
+        },
+        "lines": [
+          {
+            "frame": {
+              "height": 153,
+              "width": 460,
+              "x": 383,
+              "y": 1061
+            },
+            "text": "SUMMER"
+          }
+        ],
+        "text": "SUMMER"
+      },
+      {
+        "frame": {
+          "height": 157,
+          "width": 467,
+          "x": 366,
+          "y": 1173
+        },
+        "lines": [
+          {
+            "frame": {
+              "height": 157,
+              "width": 467,
+              "x": 366,
+              "y": 1173
+            },
+            "text": "BROMANCE"
+          }
+        ],
+        "text": "BROMANCE"
+      },
+      {
+        "frame": {
+          "height": 33,
+          "width": 102,
+          "x": 850,
+          "y": 1289
+        },
+        "lines": [
+          {
+            "frame": {
+              "height": 33,
+              "width": 102,
+              "x": 850,
+              "y": 1289
+            },
+            "text": "a novel"
+          }
+        ],
+        "text": "a novel"
+      }
+    ]
+  }
+}

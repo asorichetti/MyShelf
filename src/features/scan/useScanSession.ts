@@ -13,8 +13,9 @@ import {
 import { useMetadataService } from '@/features/lookup/metadataService';
 import { usePendingLookupsContext } from '@/features/lookup/PendingLookupsProvider';
 import { isAbortError, OfflineError } from '@/services/http';
-import { toIsbn13, type BookCandidate, type MetadataService } from '@/services/metadata';
+import { toIsbn13, type MetadataService } from '@/services/metadata';
 
+import { searchCover as runCoverSearch } from './coverSearch';
 import { tick } from './haptics';
 import { createSession, type ScanSession } from './sessionStore';
 
@@ -167,16 +168,10 @@ export function useScanSession({ service: injected, onFound }: UseScanSessionOpt
       if (!queries.length) return setState({ phase: 'error', reason: 'invalid', message: photoUri ? scanMessages.noCoverRead : scanMessages.noCoverText });
       const abort = begin('cover', `Searching for “${queries[0].title ?? queries[0].text}”…`);
       try {
-        let candidates: BookCandidate[] = [];
-        let used = queries[0];
-        for (const q of queries) {
-          ({ candidates } = await service.search(q, { signal: abort.signal }));
-          used = q;
-          if (abort.signal.aborted || candidates.length) break;
-        }
+        const { candidates, used } = await runCoverSearch((q, signal) => service.search(q, { signal }), queries, { signal: abort.signal });
         if (abort.signal.aborted) return;
         if (!candidates.length) return setState({ phase: 'not-found', kind: 'cover', isbn13: null, guess: queries[0] });
-        found(createSession({ source: 'cover', candidates, guess: used, photoUri }));
+        found(createSession({ source: 'cover', candidates, guess: used ?? queries[0], photoUri }));
       } catch (error) {
         if (abort.signal.aborted || isAbortError(error)) return;
         setState({

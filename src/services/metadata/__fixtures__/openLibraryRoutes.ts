@@ -27,8 +27,12 @@ import edition_OL47313596M from './openlibrary/edition-OL47313596M.json';
 import edition_OL7814893M from './openlibrary/edition-OL7814893M.json';
 import edition_OL9567312M from './openlibrary/edition-OL9567312M.json';
 import editions_OL453657W from './openlibrary/editions-OL453657W.json';
+import search_ali_hazelwood from './openlibrary/search-ali-hazelwood.json';
 import search_q_colour_of_magic_pratchett from './openlibrary/search-colour-of-magic-pratchett.json';
 import search_colour_of_magic from './openlibrary/search-colour-of-magic.json';
+import search_nobodys_girl from './openlibrary/search-nobody-s-girl-virginia-roberts-giuffre.json';
+import search_practical_magic from './openlibrary/search-practical-magic-alice-hoffman.json';
+import search_problematic_bromance from './openlibrary/search-problematic-summer-bromance-ali-hazelwood.json';
 import search_q_dune from './openlibrary/search-q-dune.json';
 import search_q_the_colour_of_magic_terry_pratchett from './openlibrary/search-the-colour-of-magic-terry-pratchett.json';
 import work_OL10263W from './openlibrary/work-OL10263W.json';
@@ -108,6 +112,11 @@ export const openLibraryRoutes: FixtureRoutes = {
   [withQuery(`${OL}/search.json`, { q: 'the colour of magic terry pratchett', fields: SEARCH_FIELDS, limit: 10 })]:
     json(search_q_the_colour_of_magic_terry_pratchett),
   [`${OL}/works/OL453657W/editions.json?limit=50`]: json(editions_OL453657W),
+  // The searches the real cover captures (src/domain/__fixtures__/ocr/real-*.json) make, recorded September 2026.
+  [withQuery(`${OL}/search.json`, { title: 'problematic summer bromance', author: 'ali hazelwood', fields: SEARCH_FIELDS, limit: 10 })]: json(search_problematic_bromance),
+  [withQuery(`${OL}/search.json`, { author: 'ali hazelwood', fields: SEARCH_FIELDS, limit: 10 })]: json(search_ali_hazelwood),
+  [withQuery(`${OL}/search.json`, { title: 'practical magic', author: 'alice hoffman', fields: SEARCH_FIELDS, limit: 10 })]: json(search_practical_magic),
+  [withQuery(`${OL}/search.json`, { title: "nobody's girl", author: 'virginia roberts giuffre', fields: SEARCH_FIELDS, limit: 10 })]: json(search_nobodys_girl),
 };
 
 /** Raw fixtures for mapper tests. */

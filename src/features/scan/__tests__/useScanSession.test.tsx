@@ -119,12 +119,17 @@ describe('useScanSession: typed input (P03-07)', () => {
     expect(session.candidates.length).toBeGreaterThan(1);
   });
 
-  it('tries the next query when one finds nothing, and keeps the best guess when none does', async () => {
+  it('falls back through the author, then the other queries, and keeps the best guess when none finds anything', async () => {
     const { result } = render();
     const search = jest.spyOn(metadata.service, 'search').mockResolvedValue({ candidates: [], warnings: [] });
     act(() => result.current.submitCoverText('Mort\nTerry Pratchett'));
     await settle();
-    expect(search.mock.calls.map((c) => c[0])).toEqual([{ title: 'mort', author: 'terry pratchett' }, { title: 'mort' }, { text: 'mort terry pratchett' }]);
+    expect(search.mock.calls.map((c) => c[0])).toEqual([
+      { title: 'mort', author: 'terry pratchett' },
+      { author: 'terry pratchett' },
+      { title: 'mort' },
+      { text: 'mort terry pratchett' },
+    ]);
     expect(result.current.state).toEqual({ phase: 'not-found', kind: 'cover', isbn13: null, guess: { title: 'mort', author: 'terry pratchett' } });
   });
 });

@@ -16,6 +16,8 @@ export interface OcrFrame {
 export interface OcrLine {
   text: string;
   frame: OcrFrame;
+  /** 0–1, when the recogniser reports one. */
+  confidence?: number;
 }
 
 export interface OcrBlock {
@@ -40,6 +42,8 @@ export interface OcrQuery {
 const NOISE: RegExp[] = [
   /^(a|an|the)?\s*(novel|romance|thriller|memoir|mystery|story|stories|tale)$/i,
   /^(a|an)\s+.+\s+(novel|mystery|thriller|romance|story|adventure)$/i,
+  // A subtitle that says what kind of book it is: "A Memoir of Surviving Abuse", "A Novel of the Sea".
+  /^(a|an|the)\s+(memoir|novel|biography|autobiography|true story|history|life|guide|thriller|romance)\b/i,
   /\bbest-?sell/i,
   /\bwinner\b|\bwinning\b|\bprize\b|\baward\b|\bshortlisted\b|\blonglisted\b/i,
   /\b(introduction|foreword|afterword|preface|translated|illustrated|edited|read|narrated)\s+by\b/i,
@@ -59,12 +63,22 @@ const SERIES_LINE = /^(book|volume|vol\.?|part)\s+([ivxlc]+|\d+|one|two|three|fo
 
 const letters = (s: string) => s.replace(/[^\p{L}]/gu, '');
 
-/** Collapses whitespace and trims stray punctuation OCR picks up around a line. */
+/**
+ * Collapses whitespace and drops what OCR picks up around the words: stray
+ * symbols at either end ("~ PROBLEMATIC") and tokens with no letters or
+ * digits ("PRACTICAL + MAGIC", where "+" was an ampersand's flourish). A lone
+ * "&" between names stays.
+ */
 export function cleanOcrLine(text: string): string {
-  return text
+  const tokens = text
     .replace(/[‘’]/g, "'")
-    .replace(/\s+/g, ' ')
-    .replace(/^[\s\-–—•·*_|:;,.'"“”]+|[\s\-–—•·*_|:;,'"“”]+$/g, '')
+    .split(/\s+/)
+    .filter((t) => t === '&' || /[\p{L}\p{N}]/u.test(t));
+  while (tokens[0] === '&') tokens.shift();
+  while (tokens[tokens.length - 1] === '&') tokens.pop();
+  return tokens
+    .join(' ')
+    .replace(/^[^\p{L}\p{N}"“'‘]+|[\s\-–—•·*_|:;,'"“”~+=^<>\\/]+$/gu, '')
     .trim();
 }
 
@@ -87,18 +101,23 @@ const NAME_WORD = /^(?:\p{Lu}[\p{L}'’-]*\.?|\p{Lu}\.(?:\p{Lu}\.)*|(?:de|van|vo
 /** Words that start titles but never names ("THE COLOUR", "OF MAGIC"). */
 const TITLE_WORDS = new Set(['the', 'of', 'and', 'a', 'an', 'in', 'on', 'at', 'to', 'for', 'with', 'from', 'or', 'is', 'it', 'as', 'my', 'his', 'her', 'our', 'your', 'their', 'into', 'over', 'under']);
 
+/** A word that could be part of a person's name: capitalised (or ALL CAPS), an initial or a particle; never a possessive. */
+function isNameWord(w: string): boolean {
+  if (TITLE_WORDS.has(w.toLowerCase())) return false;
+  if (/['’]s$/i.test(w)) return false; // "NOBODY'S" is a title word
+  // ALL-CAPS covers: "TERRY PRATCHETT" is as name-like as "Terry Pratchett".
+  return NAME_WORD.test(w) || NAME_WORD.test(w.charAt(0) + w.slice(1).toLowerCase());
+}
+
 function isOneName(part: string): boolean {
   const words = part.split(' ').filter(Boolean);
-  if (words.length < 2 || words.length > 4) return false;
-  if (words.some((w) => TITLE_WORDS.has(w.toLowerCase()))) return false;
-  // ALL-CAPS covers: "TERRY PRATCHETT" is as name-like as "Terry Pratchett".
-  return words.every((w) => NAME_WORD.test(w) || NAME_WORD.test(w.charAt(0) + w.slice(1).toLowerCase()));
+  return words.length >= 2 && words.length <= 4 && words.every(isNameWord);
 }
 
 /**
  * The people a line names, if it reads like a byline: 2–4 capitalised words
  * (initials and particles allowed, no digits, no title words like "The" or
- * "Of"), or several such names joined by "&" or "and".
+ * "Of", no possessives), or several such names joined by "&" or "and".
  */
 export function namesInLine(text: string): string[] {
   const t = cleanOcrLine(text).replace(/^by\s+/i, '');
@@ -122,23 +141,66 @@ function queryText(parts: string[]): string {
     .toLowerCase();
 }
 
-interface Line {
+/** One line of text on the cover, or several lines read as one (a name split over two lines). */
+interface Unit {
   text: string;
+  /** The tallest line's height: the size the text is set in. */
   height: number;
   top: number;
   bottom: number;
   left: number;
+  right: number;
 }
 
-function linesOf(result: OcrResult): Line[] {
-  const out: Line[] = [];
+function linesOf(result: OcrResult): Unit[] {
+  const out: Unit[] = [];
   for (const block of result.blocks ?? []) {
     const lines = block.lines?.length ? block.lines : [{ text: block.text, frame: block.frame }];
     for (const l of lines) {
       const text = cleanOcrLine(l.text ?? '');
       if (!text || !l.frame) continue;
-      out.push({ text, height: l.frame.height, top: l.frame.y, bottom: l.frame.y + l.frame.height, left: l.frame.x });
+      const f = l.frame;
+      out.push({ text, height: f.height, top: f.y, bottom: f.y + f.height, left: f.x, right: f.x + f.width });
     }
+  }
+  return out.sort((a, b) => a.top - b.top || a.left - b.left);
+}
+
+/** Every word could belong to a name ("ALICE", "Virginia Roberts", "&"). */
+const nameish = (u: Unit) => {
+  const words = u.text.split(' ');
+  return words.length <= 3 && words.every((w) => w === '&' || isNameWord(w)) && !/\d/.test(u.text);
+};
+
+/**
+ * Joins a name set over two or three stacked lines ("ALICE" / "HOFFMAN",
+ * "Virginia Roberts" / "Giuffre"): adjacent lines of about the same size,
+ * centred on each other, every word name-like, and together a name.
+ */
+function joinSplitNames(units: Unit[]): Unit[] {
+  const out: Unit[] = [];
+  for (const u of units) {
+    const prev = out[out.length - 1];
+    if (prev && nameish(prev) && nameish(u)) {
+      const big = Math.max(prev.height, u.height);
+      const similar = Math.min(prev.height, u.height) >= big * 0.75;
+      const stacked = u.top - prev.bottom <= big * 1.2 && u.top >= prev.top + Math.min(prev.height, u.height) * 0.5;
+      const width = Math.max(prev.right - prev.left, u.right - u.left);
+      const centred = Math.abs((prev.left + prev.right) / 2 - (u.left + u.right) / 2) <= width * 0.25;
+      const joined = `${prev.text} ${u.text}`;
+      if (similar && stacked && centred && joined.split(' ').length <= 5 && isNameLike(joined)) {
+        out[out.length - 1] = {
+          text: joined,
+          height: big,
+          top: Math.min(prev.top, u.top),
+          bottom: Math.max(prev.bottom, u.bottom),
+          left: Math.min(prev.left, u.left),
+          right: Math.max(prev.right, u.right),
+        };
+        continue;
+      }
+    }
+    out.push(u);
   }
   return out;
 }
@@ -147,6 +209,13 @@ function linesOf(result: OcrResult): Line[] {
  * Up to three searches for a photographed cover, most likely first:
  * `{ title, author }`, `{ title }`, then `{ text }` (title and author as
  * free text). Empty when nothing on the cover looks like a title.
+ *
+ * The byline is found first: names split over stacked lines are joined; of
+ * several name-like texts the smallest is the byline (a title such as
+ * "PRACTICAL MAGIC" can look like a name, but is set larger); a lone
+ * name-like text that dwarfs everything else is the title, not an author.
+ * The title is then the largest remaining text, preferring the top of the
+ * cover, with neighbours set nearly as large (a title over two lines).
  */
 export function buildQueriesFromOcr(result: OcrResult): OcrQuery[] {
   const all = linesOf(result);
@@ -154,37 +223,50 @@ export function buildQueriesFromOcr(result: OcrResult): OcrQuery[] {
   const imageTop = Math.min(...all.map((l) => l.top));
   const imageBottom = Math.max(...all.map((l) => l.bottom));
   const span = Math.max(1, imageBottom - imageTop);
-  const lines = all.filter((l) => !isNoiseLine(l.text));
-  if (!lines.length) return [];
+  const units = joinSplitNames(all.filter((l) => !isNoiseLine(l.text)));
+  if (!units.length) return [];
 
-  // Author first: a byline near the top or bottom edge. The largest line on
-  // the cover is only a byline when something else is at least half its
-  // size (an author set bigger than the title); otherwise it is the title.
-  const largest = Math.max(...lines.map((l) => l.height));
-  const secondLargest = Math.max(0, ...lines.filter((l) => l.height < largest).map((l) => l.height));
-  const bylines = lines.filter((l) => isNameLike(l.text) && (l.height < largest || secondLargest >= largest * 0.5));
-  const edgeDistance = (l: Line) => Math.min(l.top - imageTop, imageBottom - l.bottom) / span; // 0 at an edge
-  // Nearest an edge wins; when two are about as near (title on top, author at the foot), the smaller one is the byline.
-  const authorLine = [...bylines].sort((a, b) => {
-    const d = edgeDistance(a) - edgeDistance(b);
-    return Math.abs(d) > 0.05 ? d : a.height - b.height;
-  })[0];
-  const author = authorLine ? queryText([namesInLine(authorLine.text)[0]]) : '';
+  const largest = Math.max(...units.map((u) => u.height));
+  // "MURDER ON THE / ORIENT EXPRESS": a name-like line set in the same size right against a title line continues the title.
+  const stackedWith = (u: Unit, v: Unit) => {
+    const big = Math.max(u.height, v.height);
+    const width = Math.max(u.right - u.left, v.right - v.left);
+    return (
+      Math.min(u.height, v.height) >= big * 0.75 &&
+      Math.min(Math.abs(u.top - v.bottom), Math.abs(v.top - u.bottom)) <= big * 1.2 &&
+      Math.abs((u.left + u.right) / 2 - (v.left + v.right) / 2) <= width * 0.35
+    );
+  };
+  const names = units.filter((u) => isNameLike(u.text) && !units.some((v) => v !== u && !isNameLike(v.text) && stackedWith(u, v)));
+  const dominant = (u: Unit) => u.height === largest && !units.some((o) => o !== u && o.height >= largest * 0.5);
+  const edgeDistance = (u: Unit) => Math.min(u.top - imageTop, imageBottom - u.bottom) / span; // 0 at an edge
+  const byline =
+    names.length === 1 && dominant(names[0])
+      ? undefined
+      : [...names].sort((a, b) => {
+          const size = a.height - b.height;
+          return Math.abs(size) > Math.max(a.height, b.height) * 0.1 ? size : edgeDistance(a) - edgeDistance(b);
+        })[0];
+  const author = byline ? queryText([namesInLine(byline.text)[0]]) : '';
 
-  // Title: the largest remaining line, plus neighbours set nearly as large (a title split across lines).
-  const rest = lines.filter((l) => l !== authorLine);
+  const rest = units.filter((u) => u !== byline);
   if (!rest.length) return author ? [{ text: author }] : [];
+  // The title: the largest text, preferring the upper part of the cover when something there is nearly as large.
+  const upper = imageTop + span * 0.6;
+  const biggest = Math.max(...rest.map((u) => u.height));
+  const anchor =
+    [...rest].filter((u) => u.top < upper && u.height >= biggest * 0.8).sort((a, b) => b.height - a.height || a.top - b.top)[0] ??
+    [...rest].sort((a, b) => b.height - a.height || a.top - b.top)[0];
+  const titleUnits = [anchor];
   const bySize = [...rest].sort((a, b) => b.height - a.height || a.top - b.top);
-  const anchor = bySize[0];
-  const titleLines = [anchor];
-  for (const l of bySize) {
-    if (titleLines.length >= 3 || l === anchor) continue;
-    const bigEnough = l.height >= anchor.height * 0.7;
-    const near = titleLines.some((t) => Math.abs(l.top - t.bottom) <= anchor.height * 1.5 || Math.abs(t.top - l.bottom) <= anchor.height * 1.5);
-    if (bigEnough && near) titleLines.push(l);
+  for (const u of bySize) {
+    if (titleUnits.length >= 3 || u === anchor) continue;
+    const bigEnough = u.height >= anchor.height * 0.7;
+    const near = titleUnits.some((t) => Math.abs(u.top - t.bottom) <= anchor.height * 1.5 || Math.abs(t.top - u.bottom) <= anchor.height * 1.5);
+    if (bigEnough && near) titleUnits.push(u);
   }
-  titleLines.sort((a, b) => a.top - b.top || a.left - b.left);
-  const title = queryText(titleLines.map((l) => l.text));
+  titleUnits.sort((a, b) => a.top - b.top || a.left - b.left);
+  const title = queryText(titleUnits.map((u) => u.text));
 
   const out: OcrQuery[] = [];
   const push = (q: OcrQuery) => {

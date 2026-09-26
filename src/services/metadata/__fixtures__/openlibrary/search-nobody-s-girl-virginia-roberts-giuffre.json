@@ -1,0 +1,69 @@
+{
+  "numFound": 3,
+  "start": 0,
+  "numFoundExact": true,
+  "num_found": 3,
+  "documentation_url": "https://openlibrary.org/dev/docs/api/search",
+  "q": "",
+  "offset": null,
+  "docs": [
+    {
+      "author_name": [
+        "Virginia Roberts Giuffre"
+      ],
+      "cover_i": 15134796,
+      "edition_count": 1,
+      "first_publish_year": 2025,
+      "isbn": [
+        "9780593493120",
+        "0593493125"
+      ],
+      "key": "/works/OL44269610W",
+      "language": [
+        "eng"
+      ],
+      "title": "Nobody's Girl",
+      "subject": [
+        "Memoir",
+        "Nonfiction",
+        "True Crime"
+      ]
+    },
+    {
+      "author_name": [
+        "Virginia Roberts Giuffre"
+      ],
+      "edition_count": 3,
+      "first_publish_year": 2025,
+      "isbn": [
+        "9781529985252",
+        "9798217347599",
+        "1529985242",
+        "9781529985245",
+        "1529985250"
+      ],
+      "key": "/works/OL44544570W",
+      "language": [
+        "eng"
+      ],
+      "title": "Nobody's Girl"
+    },
+    {
+      "author_name": [
+        "Virginia Roberts Giuffre",
+        "Gemma Deza  Guil"
+      ],
+      "edition_count": 1,
+      "first_publish_year": 2026,
+      "isbn": [
+        "9786073944434",
+        "6073944438"
+      ],
+      "key": "/works/OL45622848W",
+      "language": [
+        "spa"
+      ],
+      "title": "Chica de Nadie : Mi Historia de Supervivencia y Lucha Por la Justicia / Nobody's Girl"
+    }
+  ]
+}
