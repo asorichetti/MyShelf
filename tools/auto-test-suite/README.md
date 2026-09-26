@@ -215,9 +215,10 @@ auto-test-suite screenshot --url / --viewports mobile,tablet,desktop --schemes l
 | `--schemes` | `light,dark` |
 | `--marker`, `--wait` | as for `navigate` |
 
-The render gate runs at each combination's own viewport. (The app only has a
-light theme today, so the dark captures look the same; the emulated
-`prefers-color-scheme` does reach the page.)
+The render gate runs at each combination's own viewport. The app follows the
+emulated `prefers-color-scheme` (its Appearance setting defaults to System), so
+the `dark` captures show the dark theme, with the `--ms-*` tokens on `:root`
+switched to its values.
 
 ### `interact`
 
@@ -489,7 +490,7 @@ Re-export after changing app code: `--serve` tests whatever is in `dist/`.
 | `not-found` | core | `/missing-shelf__expected-404` renders the app's not-found screen: its title is the `<h1>` "Page not found" inside `main`, and the URL does not change |
 | `tabs-navigate` | core | Clicking each tab (`Testids.tabs.*`) lands on its route with exactly one visible h1 naming the screen; `aria-selected="true"` on the active tab only (the web tab bar sets no `aria-current`); the page gates run on every tab screen; Booky is visible in the empty Shelf; one screenshot per tab |
 | `booky-empty-shelf` | core | Booky (`booky-avatar`, role img, "Booky..." label) is in the empty Shelf's `empty-state`; "What can Booky do?" opens `booky-bubble` with non-empty `booky-bubble-text`; the page gates run again with the bubble open (dismiss button included); `booky-dismiss` closes it; screenshot `booky-tip-open.png` |
-| `theme-tokens` | p00 | `--ms-color-primary` on `:root` is `#6B3FA8`; the computed body background equals `--ms-color-paper` and the body font starts with `--ms-font-body` |
+| `theme-tokens` | p00 | Light scheme: `--ms-color-primary` on `:root` is `#6B3FA8`; the computed body background equals `--ms-color-paper` and the body font starts with `--ms-font-body` |
 | `shelf-empty` | core | Fixture `empty`: `empty-state` with Booky (`booky-avatar`), its title and message, the Scan and Add manually actions, no rows and no search box; screenshot `shelf-empty.png` |
 | `shelf-demo-list` | core | Fixture `demo`: 12 `home-row`s, each a button named "Title, by Author, Year" (Dune's adds "on loan to Sam"), the "12 books catalogued" stamp and a polite live result count; the first rows show real cover images (loaded, no fallback) and the book without a cover shows the generated one; screenshot `shelf-demo.png` |
 | `book-add-manual` | core | Fixture `empty`: Add manually, type title, author (Enter), year and genre (Enter), save; the detail page shows title, author, call number `FIC TOL 1937` and genre with a "Saved" snackbar (page gates run there); Back lists one row |
@@ -543,6 +544,13 @@ Re-export after changing app code: `--serve` tests whatever is in `dist/`.
 | `booky-modes` | p07 | Settings → Booky: Off hides every Booky and help opens the sheet without him; Quiet: a scanned book gets no "Shelved!" |
 | `booky-motion` | p07 | Booky's transform changes over time; with `prefers-reduced-motion` it never does, and the bubble does not move the page |
 | `booky-keyboard` | p07 | Keyboard only: the help button opens a tip without moving focus, the tip is in the polite announcer (and only there), More help and ✕ are reachable with Tab, Enter on ✕ closes it |
+| `theme-dark-follows-system` | p09 | With Appearance on System, flipping `prefers-color-scheme` under the running app (`page.emulateMedia`) switches `data-theme`, `color-scheme`, the `--ms-*` tokens, the body and the screen's paper and the h1's colour to the dark theme's values (read from `src/theme/tokens.ts` through `src/themeTokens.ts`) and back; page gates in the dark |
+| `theme-dark-gallery` | p09 | Dark scheme, fixture `demo`: the Shelf, Booky's help tip, book detail, the edit form, Loans, Groups, Settings and Shelf and lending each paint the dark tokens and pass the page gates; fixture `empty`: Booky on the empty Shelf; screenshots `dark-*.png` |
+| `theme-setting-persist` | p09 | Light scheme: Appearance → Dark turns the app dark at once; reopening the screen from the Shelf reads it back from the database; after a reload it is still dark; System brings light back |
+| `shelf-large-scroll` | p09 | Fixture `large` (2,000 books): a cold reload's first query, then a fling to the end of the list one viewport per frame; frame timings (long, dropped and blank frames) in `timing.json` |
+| `shelf-huge-search` | p09 | Fixture `huge` (10,000 books): searches by title, author, series and prefix give the right counts, with each query's time taken from the Shelf's User Timing measure (`myshelf:shelf-query`); the median must be under 100 ms; clearing the search and a fling to the end are timed too; all in `timing.json` |
+| `error-boundary` | p09 | `/e2e?…&crash=loans` makes the Loans tab throw: Booky's "Something went wrong here" (one h1, Try again, Copy error details, which puts the details on the clipboard); the tab bar stays; Try again renders Loans. `crash=book/[id]`: a book page crashes, Go to my shelf leads to a working Shelf and tabs, and the book opens normally next time. The console gate is waived for this journey, which checks that every logged error is the planted one |
+| `db-open-failure` | p09 | `/?e2e-db-fault=migrate` and `=open` fail the first database open: "I couldn't open your library" with concerned Booky and the error (page gates run on it); Try again opens the Shelf. Console gate waived as for `error-boundary`, with the same check |
 
 ### Adding a journey
 
