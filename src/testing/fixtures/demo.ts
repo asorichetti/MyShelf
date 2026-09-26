@@ -2,14 +2,13 @@ import type { Fixture } from './types';
 
 /**
  * Real Open Library cover URLs, so screens show real covers (the golden
- * path). Cover ids come from the recorded Open Library fixtures in
- * src/services/metadata/__fixtures__; books without a recorded id use the
- * ISBN endpoint (`default=false` makes a missing cover a 404, which falls
- * back to the generated cover). The auto test suite answers these with
- * synthetic JPEGs, so journeys never need the internet.
+ * path). Each id is the cover the app's own chain (src/services/covers)
+ * chose and validated for that book's ISBN against the live APIs (September
+ * 2026): a portrait image around 300x500 on covers.openlibrary.org. The
+ * offline journeys answer these URLs with synthetic JPEGs; the `live` suite
+ * loads the real images.
  */
 const coverById = (id: number) => `https://covers.openlibrary.org/b/id/${id}-L.jpg`;
-const coverByIsbn = (isbn: string) => `https://covers.openlibrary.org/b/isbn/${isbn}-L.jpg?default=false`;
 /** A cover that is always missing (it carries the suite's expected-404 marker), to prove the fallback. */
 export const BROKEN_COVER = 'https://covers.openlibrary.org/b/id/__expected-404-L.jpg';
 
@@ -24,7 +23,7 @@ export const demo: Fixture = {
   books: [
     {
       title: 'The Colour of Magic',
-      coverUri: coverById(14647238),
+      coverUri: coverById(7892565),
       authors: ['Terry Pratchett'],
       genres: ['Fantasy'],
       series: { name: 'Discworld', position: 1 },
@@ -38,7 +37,7 @@ export const demo: Fixture = {
     },
     {
       title: 'The Light Fantastic',
-      coverUri: coverByIsbn('9780552128483'),
+      coverUri: coverById(7892569),
       authors: ['Terry Pratchett'],
       genres: ['Fantasy'],
       series: { name: 'Discworld', position: 2 },
@@ -52,7 +51,7 @@ export const demo: Fixture = {
     },
     {
       title: 'Mort',
-      coverUri: coverByIsbn('9780552131063'),
+      coverUri: coverById(7892579),
       authors: ['Terry Pratchett'],
       genres: ['Fantasy'],
       series: { name: 'Discworld', position: 4 },
@@ -66,7 +65,7 @@ export const demo: Fixture = {
     },
     {
       title: 'Good Omens',
-      coverUri: coverByIsbn('9780575048003'),
+      coverUri: coverById(379638),
       subtitle: 'The Nice and Accurate Prophecies of Agnes Nutter, Witch',
       authors: ['Terry Pratchett', 'Neil Gaiman'],
       genres: ['Fantasy'],
@@ -81,7 +80,7 @@ export const demo: Fixture = {
     },
     {
       title: 'A Wizard of Earthsea',
-      coverUri: coverByIsbn('9780140304770'),
+      coverUri: coverById(9641870),
       authors: ['Ursula K. Le Guin'],
       genres: ['Fantasy'],
       series: { name: 'Earthsea', position: 1 },
@@ -107,7 +106,7 @@ export const demo: Fixture = {
     },
     {
       title: 'The Left Hand of Darkness',
-      coverUri: coverByIsbn('9780441478125'),
+      coverUri: coverById(284550),
       authors: ['Ursula K. Le Guin'],
       genres: ['Science Fiction'],
       publisher: 'Ace',
@@ -120,7 +119,7 @@ export const demo: Fixture = {
     },
     {
       title: 'Dune',
-      coverUri: coverById(11481354),
+      coverUri: coverById(15166231),
       authors: ['Frank Herbert'],
       genres: ['Science Fiction'],
       publisher: 'Ace',
@@ -139,7 +138,7 @@ export const demo: Fixture = {
     },
     {
       title: 'Murder on the Orient Express',
-      coverUri: coverByIsbn('9780007119318'),
+      coverUri: coverById(10252139),
       authors: ['Agatha Christie'],
       genres: ['Mystery'],
       publisher: 'HarperCollins',
@@ -164,7 +163,7 @@ export const demo: Fixture = {
     },
     {
       title: 'The Hound of the Baskervilles',
-      coverUri: coverByIsbn('9780141034324'),
+      coverUri: coverById(13347460),
       authors: ['Arthur Conan Doyle'],
       genres: ['Mystery', 'Classics'],
       publisher: 'Penguin',
