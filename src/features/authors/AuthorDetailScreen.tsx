@@ -79,26 +79,27 @@ function MergeAuthorSheet({ author, authors, onPick, onClose }: { author: Author
       footer={<Button variant="secondary" label="Cancel" onPress={onClose} />}
     >
       <TextField label="Find an author" value={query} onChangeText={setQuery} autoCapitalize="none" />
-      <View role="list" style={{ gap: spacing.xxs }}>
+      <View role="list" aria-label="Authors to merge into" style={{ gap: spacing.xxs }}>
         {others.slice(0, 50).map((a) => (
-          <Pressable
-            key={a.id}
-            role="button"
-            accessibilityLabel={`${a.name}, ${books(a.count)}`}
-            onPress={() => onPick(a)}
-            testID={Testids.authors.mergeOption}
-            style={({ pressed }) => [styles.option, { minHeight: sizes.touchTarget, paddingHorizontal: spacing.md, gap: spacing.md, borderRadius: radii.md }, pressed && { backgroundColor: colors.surfaceTint }]}
-          >
-            <Text variant="bodyStrong" style={styles.flex}>
-              {a.name}
-            </Text>
-            <Text variant="caption" color="inkMuted">
-              {books(a.count)}
-            </Text>
-          </Pressable>
+          <View role="listitem" key={a.id}>
+            <Pressable
+              role="button"
+              accessibilityLabel={`${a.name}, ${books(a.count)}`}
+              onPress={() => onPick(a)}
+              testID={Testids.authors.mergeOption}
+              style={({ pressed }) => [styles.option, { minHeight: sizes.touchTarget, paddingHorizontal: spacing.md, gap: spacing.md, borderRadius: radii.md }, pressed && { backgroundColor: colors.surfaceTint }]}
+            >
+              <Text variant="bodyStrong" style={styles.flex}>
+                {a.name}
+              </Text>
+              <Text variant="caption" color="inkMuted">
+                {books(a.count)}
+              </Text>
+            </Pressable>
+          </View>
         ))}
-        {others.length === 0 ? <Text color="inkMuted">No other author matches.</Text> : null}
       </View>
+      {others.length === 0 ? <Text color="inkMuted">No other author matches.</Text> : null}
     </Sheet>
   );
 }

@@ -5,6 +5,7 @@ import { SnackbarProvider } from '@/components/ui/Snackbar';
 import { ThemeProvider } from '@/theme';
 
 import type { ReactElement, ReactNode } from 'react';
+import type { ReactTestInstance } from 'react-test-renderer';
 
 const metrics = {
   frame: { x: 0, y: 0, width: 390, height: 844 },
@@ -19,6 +20,14 @@ export function AppTestProviders({ children }: { children: ReactNode }) {
       </ThemeProvider>
     </SafeAreaProvider>
   );
+}
+
+/**
+ * Host views with a given `role`. Testing Library's `*ByRole` skips views
+ * that are not accessible elements, such as a list item wrapping a button.
+ */
+export function hostsWithRole(root: ReactTestInstance, role: string): ReactTestInstance[] {
+  return root.findAll((n) => typeof n.type === 'string' && n.props.role === role);
 }
 
 /** Renders inside the same theme and safe-area providers the app uses. */

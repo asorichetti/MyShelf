@@ -193,30 +193,31 @@ export function GenresScreen() {
         onClose={close}
         footer={<Button variant="secondary" label="Cancel" onPress={close} />}
       >
-        <View role="list" style={{ gap: spacing.xs }}>
+        <View role="list" aria-label="Genres to merge into" style={{ gap: spacing.xs }}>
           {pending?.kind === 'pickMerge'
             ? genres
                 .filter((g) => g.id !== pending.genre.id)
                 .map((g) => (
-                  <Pressable
-                    key={g.id}
-                    role="button"
-                    accessibilityLabel={`${g.name}, ${books(g.count)}`}
-                    onPress={() => setPending({ kind: 'confirmMerge', source: pending.genre, target: g, fromRename: false })}
-                    testID={Testids.genres.mergeOption}
-                    style={({ pressed }) => [
-                      styles.option,
-                      { minHeight: sizes.touchTarget, paddingHorizontal: spacing.md, borderRadius: radii.md, gap: spacing.md },
-                      pressed && { backgroundColor: colors.surfaceTint },
-                    ]}
-                  >
-                    <Text variant="bodyStrong" style={styles.flex}>
-                      {g.name}
-                    </Text>
-                    <Text variant="caption" color="inkMuted">
-                      {books(g.count)}
-                    </Text>
-                  </Pressable>
+                  <View role="listitem" key={g.id}>
+                    <Pressable
+                      role="button"
+                      accessibilityLabel={`${g.name}, ${books(g.count)}`}
+                      onPress={() => setPending({ kind: 'confirmMerge', source: pending.genre, target: g, fromRename: false })}
+                      testID={Testids.genres.mergeOption}
+                      style={({ pressed }) => [
+                        styles.option,
+                        { minHeight: sizes.touchTarget, paddingHorizontal: spacing.md, borderRadius: radii.md, gap: spacing.md },
+                        pressed && { backgroundColor: colors.surfaceTint },
+                      ]}
+                    >
+                      <Text variant="bodyStrong" style={styles.flex}>
+                        {g.name}
+                      </Text>
+                      <Text variant="caption" color="inkMuted">
+                        {books(g.count)}
+                      </Text>
+                    </Pressable>
+                  </View>
                 ))
             : null}
         </View>

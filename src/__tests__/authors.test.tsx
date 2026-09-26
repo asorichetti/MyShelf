@@ -5,6 +5,7 @@ import { AuthorDetailScreen } from '@/features/authors/AuthorDetailScreen';
 import { AuthorsScreen } from '@/features/authors/AuthorsScreen';
 import { createTestDb } from '@/testing/createTestDb';
 import { loadFixture } from '@/testing/loadFixture';
+import { hostsWithRole } from '@/testing/render';
 import { renderApp, stubScreen } from '@/testing/renderApp';
 import { Testids } from '@/testing/testids.gen';
 
@@ -41,6 +42,11 @@ describe('Authors screen', () => {
       'Ursula K. Le Guin, 3 books',
       'Terry Pratchett, 4 books',
     ]);
+    // Each letter's authors are a list of their own, named after the letter, with one item per author (P09-01).
+    const underP = screen.getByLabelText('Authors under P');
+    expect(underP.props.role).toBe('list');
+    expect(hostsWithRole(underP, 'listitem')).toHaveLength(1);
+    expect(hostsWithRole(screen.UNSAFE_root, 'listitem')).toHaveLength(7);
     const letters = screen.getAllByTestId(Testids.authors.letter);
     expect(letters.map((l) => l.props.accessibilityLabel)).toEqual(['Jump to A', 'Jump to C', 'Jump to D', 'Jump to G', 'Jump to H', 'Jump to L', 'Jump to P']);
     expect(screen.getByRole('button', { name: 'Jump to P' })).toBeOnTheScreen();

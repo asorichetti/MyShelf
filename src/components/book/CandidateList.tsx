@@ -23,15 +23,18 @@ export function CandidateList({ candidates, onChoose, initialCount = 5, label, t
   const [shown, setShown] = useState(initialCount);
   const visible = candidates.slice(0, shown);
   return (
-    <View testID={testID} role="list" aria-label={label} style={{ gap: spacing.sm }}>
+    <View testID={testID} style={{ gap: spacing.sm }}>
       <Text variant="label" color="inkMuted" aria-live="polite" accessibilityLiveRegion="polite">
         {label}
       </Text>
-      {visible.map((c, i) => (
-        <View role="listitem" key={`${c.source}-${i}-${c.title}`}>
-          <CandidateCard candidate={c} onPress={() => onChoose(i)} />
-        </View>
-      ))}
+      {/* Only the cards are list items; the count above and "Show more" below sit outside the list. */}
+      <View role="list" aria-label={label} style={{ gap: spacing.sm }}>
+        {visible.map((c, i) => (
+          <View role="listitem" key={`${c.source}-${i}-${c.title}`}>
+            <CandidateCard candidate={c} onPress={() => onChoose(i)} />
+          </View>
+        ))}
+      </View>
       {candidates.length > shown ? (
         <Button
           variant="ghost"

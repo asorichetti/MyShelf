@@ -1,7 +1,7 @@
 import { fireEvent, screen } from '@testing-library/react-native';
 
 import { GroupPickerSheet } from '@/components/groups/GroupPickerSheet';
-import { renderWithTheme } from '@/testing/render';
+import { hostsWithRole, renderWithTheme } from '@/testing/render';
 import { Testids } from '@/testing/testids.gen';
 
 const groups = [
@@ -16,6 +16,15 @@ describe('GroupPickerSheet', () => {
     expect(screen.getAllByTestId(Testids.groups.pickerOption)).toHaveLength(2);
     fireEvent.press(screen.getByRole('button', { name: 'Signed, 1 book' }));
     expect(onPick).toHaveBeenCalledWith(2);
+  });
+
+  it('is a labelled list whose items are the groups (P09-01)', () => {
+    renderWithTheme(<GroupPickerSheet visible title="Add" groups={groups} onPick={jest.fn()} onNew={jest.fn()} onClose={jest.fn()} />);
+    const list = screen.getByLabelText('Your groups');
+    expect(list.props.role).toBe('list');
+    const items = hostsWithRole(screen.UNSAFE_root, 'listitem');
+    expect(items).toHaveLength(2);
+    expect(items[0]).toContainElement(screen.getByRole('button', { name: 'Favourites, 3 books' }));
   });
 
   it('does not offer a group the book is already in', () => {

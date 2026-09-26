@@ -73,35 +73,36 @@ export function AuthorsScreen() {
                   {section.letter}
                 </Heading>
                 <View style={[styles.rule, { backgroundColor: colors.brass, borderRadius: radii.sm }]} aria-hidden />
-                <View role="list" style={{ gap: spacing.xxs }}>
+                <View role="list" aria-label={section.letter === '#' ? 'Authors under numbers and symbols' : `Authors under ${section.letter}`} style={{ gap: spacing.xxs }}>
                   {section.authors.map((a) => (
-                    <Pressable
-                      key={a.id}
-                      role="link"
-                      accessibilityLabel={`${a.name}, ${books(a.count)}`}
-                      aria-label={`${a.name}, ${books(a.count)}`}
-                      onPress={() => router.navigate({ pathname: '/authors/[id]', params: { id: String(a.id) } })}
-                      testID={Testids.authors.row}
-                      style={({ pressed }) => [
-                        styles.row,
-                        { minHeight: sizes.touchTarget, paddingHorizontal: spacing.md, borderRadius: radii.md, gap: spacing.md },
-                        { backgroundColor: pressed ? colors.surfaceTint : colors.surface },
-                      ]}
-                    >
-                      <View style={styles.fill}>
-                        <Text variant="bodyStrong" style={{ fontFamily: theme.fonts.heading }}>
-                          {a.name}
-                        </Text>
-                        {a.sortName && a.sortName !== a.name ? (
-                          <Text variant="mono" color="inkMuted">
-                            {a.sortName}
+                    <View role="listitem" key={a.id}>
+                      <Pressable
+                        role="link"
+                        accessibilityLabel={`${a.name}, ${books(a.count)}`}
+                        aria-label={`${a.name}, ${books(a.count)}`}
+                        onPress={() => router.navigate({ pathname: '/authors/[id]', params: { id: String(a.id) } })}
+                        testID={Testids.authors.row}
+                        style={({ pressed }) => [
+                          styles.row,
+                          { minHeight: sizes.touchTarget, paddingHorizontal: spacing.md, borderRadius: radii.md, gap: spacing.md },
+                          { backgroundColor: pressed ? colors.surfaceTint : colors.surface },
+                        ]}
+                      >
+                        <View style={styles.fill}>
+                          <Text variant="bodyStrong" style={{ fontFamily: theme.fonts.heading }}>
+                            {a.name}
                           </Text>
-                        ) : null}
-                      </View>
-                      <Text variant="caption" color="inkMuted">
-                        {books(a.count)}
-                      </Text>
-                    </Pressable>
+                          {a.sortName && a.sortName !== a.name ? (
+                            <Text variant="mono" color="inkMuted">
+                              {a.sortName}
+                            </Text>
+                          ) : null}
+                        </View>
+                        <Text variant="caption" color="inkMuted">
+                          {books(a.count)}
+                        </Text>
+                      </Pressable>
+                    </View>
                   ))}
                 </View>
               </View>
