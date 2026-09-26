@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { View } from 'react-native';
 
 import { StarRating, Text, useSnackbar } from '@/components/ui';
@@ -19,10 +19,14 @@ export function BookRating({ bookId, rating }: { bookId: number; rating: number 
   const { spacing } = useTheme();
   const { show } = useSnackbar();
   const [value, setValue] = useState<number | null>(rating);
+  const [stored, setStored] = useState<number | null>(rating);
   const [status, setStatus] = useState('');
 
   // The stored rating wins whenever it changes underneath (another screen, a restore).
-  useEffect(() => setValue(rating), [rating]);
+  if (rating !== stored) {
+    setStored(rating);
+    setValue(rating);
+  }
 
   const change = async (next: Rating | null) => {
     const before = value;
