@@ -114,6 +114,18 @@ export async function renderAudit(cfg: RenderAuditConfig): Promise<RenderAuditFi
     add('fonts-error', errored.length + ' font(s) failed to load: ' + errored.map((f) => f.family).join(', '), { errored: errored.map((f) => f.family) });
   }
 
+  // Images still downloading are not broken yet: give them up to 5 s to load or fail.
+  const inFlight = [...document.images].filter((img) => !img.complete);
+  if (inFlight.length) {
+    const settled = inFlight.map(
+      (img) =>
+        new Promise<void>((resolve) => {
+          img.addEventListener('load', () => resolve(), { once: true });
+          img.addEventListener('error', () => resolve(), { once: true });
+        }),
+    );
+    await Promise.race([Promise.all(settled), new Promise<void>((resolve) => setTimeout(resolve, 5000))]);
+  }
   // Images loaded: complete alone is true for a 404, so check naturalWidth too.
   const deliberate = (img: HTMLImageElement) => !!cfg.expectedMissing && (img.currentSrc || img.src).includes(cfg.expectedMissing);
   const broken = [...document.images].filter((img) => !(img.complete && img.naturalWidth > 0) && !deliberate(img));
