@@ -5,7 +5,7 @@
 
 ## Context
 
-The project is built incrementally by several contributors, including automated agents. It needs fast feedback, high confidence that nothing regressed, and evidence that UI work actually renders well — not just that code compiles.
+The project is built incrementally, often with several pieces of work in flight at once. It needs fast feedback, high confidence that nothing regressed, and evidence that UI work actually renders well — not just that code compiles.
 
 ## Decision
 

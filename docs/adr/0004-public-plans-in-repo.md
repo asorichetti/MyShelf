@@ -5,7 +5,7 @@
 
 ## Context
 
-MyShelf is a public portfolio project and is built by a mix of people and automated coding agents working in parallel. Everyone needs the same, current picture of the architecture, the remaining work and what "done" means. Keeping plans in a private tool would hide the design thinking that makes the repo a good portfolio piece.
+MyShelf is a public portfolio project and work on it often happens in parallel. Anyone picking up a task, including someone new to the codebase, needs the same, current picture of the architecture, the remaining work and what "done" means. Keeping plans in a private tool would hide the design thinking that makes the repo a good portfolio piece.
 
 ## Decision
 

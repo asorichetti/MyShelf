@@ -5,7 +5,7 @@
 
 ## Context
 
-The repository is a public portfolio piece; its history should read as a clean, reviewable record of the work. Some contributors use coding assistants, whose tooling tends to add attribution trailers or footers by default. The owner does not want any such attribution anywhere in the project.
+The repository is a public portfolio piece; its history should read as a clean, reviewable record of the work. Some developer tooling adds attribution trailers or footers to commits by default. The owner does not want any such attribution anywhere in the project.
 
 ## Decision
 
