@@ -46,7 +46,9 @@
           "cameraPermission": "MyShelf uses the camera so you can photograph a book's cover.",
           "microphonePermission": false
         }
-      ]
+      ],
+      "@react-native-community/datetimepicker",
+      "expo-notifications"
     ],
     "scheme": "myshelf",
     "experiments": {
