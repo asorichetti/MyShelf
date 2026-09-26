@@ -259,23 +259,25 @@ register({
     await openFixture(c, 'demo', '/', TODAY);
     await waitForCount(c, row, 12, '/');
     await c.page.locator(tid(Testids.home.sortButton)).click();
-    await c.page.locator(tid(Testids.home.sortRating)).click();
-    expect((await c.page.locator(tid(Testids.home.sortRating)).getAttribute('aria-checked')) === 'true', '/: expected the Rating sort option checked');
+    await c.page.locator(tid(Testids.sortSheet.levelKey)).click();
+    await c.page.locator(`${tid(Testids.sortSheet.levelKeyOption)}[aria-label="Rating"]`).click();
+    const level = await c.page.locator(tid(Testids.sortSheet.level)).getAttribute('aria-label');
+    expect(level === 'Level 1: Sort by Rating, Highest first', `/: expected the sort sheet to sort by rating, highest first, found ${q(level)}`);
     await c.page.waitForFunction((sel) => /rated 5 out of 5$/.test(document.querySelector(sel)?.getAttribute('aria-label') ?? ''), row, { timeout: 10_000 }).catch(() => {});
     const stars = (names: string[]) => names.map((n) => Number(/, rated (\d) out of 5/.exec(n)?.[1] ?? 0));
     const desc = stars(await rowNames(c));
     expect(JSON.stringify(desc) === JSON.stringify([5, 5, 5, 4, 4, 3, 3, 0, 0, 0, 0, 0]), `/ (rating, highest first): expected 5,5,5,4,4,3,3 then 5 unrated, found ${q(desc)}`);
     const button = await text(c, tid(Testids.home.sortButton));
-    expect(button.endsWith('Sort: Rating, Highest first'), `/: expected the sort button to say ${q('Sort: Rating, Highest first')}, found ${q(button)}`);
+    expect(button.endsWith('Sort: Rating'), `/: expected the sort button to say ${q('Sort: Rating')}, found ${q(button)}`);
     await c.checkGates('/ (sort by rating)');
     await c.snap('rating-sort-light');
 
-    await c.page.locator(tid(Testids.home.sortDirection)).click();
+    await c.page.locator(tid(Testids.sortSheet.levelDirection)).click();
     await c.page.waitForFunction((sel) => /rated 3 out of 5/.test(document.querySelector(sel)?.getAttribute('aria-label') ?? ''), row, { timeout: 10_000 }).catch(() => {});
     const asc = stars(await rowNames(c));
     expect(JSON.stringify(asc) === JSON.stringify([3, 3, 4, 4, 5, 5, 5, 0, 0, 0, 0, 0]), `/ (rating, lowest first): expected 3,3,4,4,5,5,5 then the unrated, found ${q(asc)}`);
-    await c.page.locator(tid(Testids.home.sortDirection)).click();
-    await c.page.locator(tid(Testids.home.sortButton)).click();
+    await c.page.locator(tid(Testids.sortSheet.levelDirection)).click();
+    await c.page.locator(tid(Testids.sortSheet.done)).click();
 
     await c.page.locator(tid(sv.filterButton)).click();
     await waitVisible(c, tid(sv.filterSheet), '/ filter sheet');
@@ -314,7 +316,7 @@ register({
     await c.goto('/');
     await waitForCount(c, row, 5, '/ after reload');
     const kept = await text(c, tid(Testids.home.sortButton));
-    expect(kept.endsWith('Sort: Rating, Highest first'), `/ after reload: expected the rating sort kept, found ${q(kept)}`);
+    expect(kept.endsWith('Sort: Rating'), `/ after reload: expected the rating sort kept, found ${q(kept)}`);
     await c.page.locator(`${tid(sv.filterChipRemove)}[aria-label="Remove filter 4 stars and up"]`).click();
     await waitForCount(c, row, 12, '/ (filter removed)');
   },
@@ -470,7 +472,7 @@ register({
 register({
   name: 'rating-dark',
   suite: 'p10',
-  desc: 'Dark system scheme, fixture "demo": the stars on a book\'s page, in the edit form, on Shelf rows, under covers and in the sort menu and filter sheet paint the dark theme\'s primary (filled) and outline (empty) and pass the page gates; a screenshot of each',
+  desc: 'Dark system scheme, fixture "demo": the stars on a book\'s page, in the edit form, on Shelf rows, under covers and in the Sort sheet and filter sheet paint the dark theme\'s primary (filled) and outline (empty) and pass the page gates; a screenshot of each',
   async run(c) {
     await c.page.emulateMedia({ colorScheme: 'dark' });
     await openFixture(c, 'demo', '/', TODAY);
@@ -482,10 +484,11 @@ register({
     await c.snap('rating-shelf-rows-dark');
 
     await c.page.locator(tid(Testids.home.sortButton)).click();
-    await c.page.locator(tid(Testids.home.sortRating)).click();
+    await c.page.locator(tid(Testids.sortSheet.levelKey)).click();
+    await c.page.locator(`${tid(Testids.sortSheet.levelKeyOption)}[aria-label="Rating"]`).click();
     await c.checkGates('/ (dark, sort by rating)');
     await c.snap('rating-sort-dark');
-    await c.page.locator(tid(Testids.home.sortButton)).click();
+    await c.page.locator(tid(Testids.sortSheet.done)).click();
     await c.page.locator(tid(sv.filterButton)).click();
     await waitVisible(c, tid(sv.filterSheet), '/ filter sheet (dark)');
     const choice = c.page.locator(`${tid(sv.filterRating)}[aria-label="4 stars and up"]`);

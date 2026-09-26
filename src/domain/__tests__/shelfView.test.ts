@@ -6,7 +6,6 @@ describe('shelf view preferences', () => {
     expect(parseShelfGroupBy('genre')).toBe('genre');
     expect(parseShelfGroupBy('colour')).toBeNull();
     expect(parseShelfGroupBy('rating')).toBe('rating');
-    expect(parseShelfSort({ sort: 'rating', direction: 'desc' })).toEqual({ sort: 'rating', direction: 'desc' });
     expect(parseShelfViewMode('spines')).toBe('spines');
     expect(parseShelfViewMode(3)).toBeNull();
   });

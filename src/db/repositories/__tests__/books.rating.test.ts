@@ -5,6 +5,7 @@ import { booksRepo, getSchemaVersion, LATEST_VERSION, migrate, migrations, shelf
 import { openNodeDatabase } from '@/db/node';
 import { draftFromDetail, noFilters, validateBookDraft, type ValidBookDraft } from '@/domain';
 import { createFtsTestDb, createTestDb } from '@/testing/createTestDb';
+import { oneKey } from '@/testing/sorts';
 
 describe('migration 0007_book_rating', () => {
   it('is the next migration after the search index', () => {
@@ -168,8 +169,8 @@ describe('the Shelf with ratings', () => {
   });
 
   it('sorts by rating, highest or lowest first, unrated last either way, ties by title', async () => {
-    expect(await titles({ sort: 'rating', direction: 'desc' })).toEqual(['Mort', 'Dune', 'The Hobbit', 'Beloved', 'Aesop', 'Emma']);
-    expect(await titles({ sort: 'rating', direction: 'asc' })).toEqual(['Beloved', 'Dune', 'The Hobbit', 'Mort', 'Aesop', 'Emma']);
+    expect(await titles({ sort: oneKey('rating', 'desc') })).toEqual(['Mort', 'Dune', 'The Hobbit', 'Beloved', 'Aesop', 'Emma']);
+    expect(await titles({ sort: oneKey('rating', 'asc') })).toEqual(['Beloved', 'Dune', 'The Hobbit', 'Mort', 'Aesop', 'Emma']);
   });
 
   it('filters by a minimum rating, leaving unrated books out', async () => {
@@ -187,7 +188,7 @@ describe('the Shelf with ratings', () => {
   });
 
   it('groups by rating, best first, with the unrated books last', async () => {
-    const { sections, count } = await shelfSectionsRepo.listShelfSections(db, { groupBy: 'rating', sort: 'title', direction: 'asc' });
+    const { sections, count } = await shelfSectionsRepo.listShelfSections(db, { groupBy: 'rating', sort: oneKey('title') });
     expect(count).toBe(6);
     expect(sections.map((s) => [s.sectionKey, s.sectionTitle, s.items.map((i) => i.title)])).toEqual([
       ['rating:5', '5 stars', ['Mort']],
