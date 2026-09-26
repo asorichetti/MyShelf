@@ -112,6 +112,9 @@ export const Testids = {
     genreAdd: 'book-form-genre-add',
     genreSuggestion: 'book-form-genre-suggestion',
     genreChip: 'book-form-genre-chip',
+    coverPick: 'book-form-cover-pick',
+    coverCamera: 'book-form-cover-camera',
+    coverRemove: 'book-form-cover-remove',
     seriesName: 'book-form-series-name',
     seriesPosition: 'book-form-series-position',
     summary: 'book-form-summary',
@@ -127,6 +130,11 @@ export const Testids = {
   },
   menu: {
     root: 'menu-root',
+  },
+  cover: {
+    image: 'cover-image',
+    placeholder: 'cover-placeholder',
+    fallback: 'cover-fallback',
   },
   dialog: {
     root: 'dialog-root',

@@ -285,7 +285,7 @@ All run in one `page.evaluate`, after `document.fonts.ready`.
 | `text-font` | The first real text inside `main` computes to the default serif |
 | `fonts-loaded` | No `document.fonts` entry has status `loaded` |
 | `fonts-error` | Any `document.fonts` entry has status `error` |
-| `images` | An `<img>` is not `complete` with `naturalWidth > 0` |
+| `images` | An `<img>` is not `complete` with `naturalWidth > 0` (images whose URL carries the expected-missing marker are skipped) |
 | `overflow` | `scrollWidth > clientWidth + 1`, or a visible element extends past the right edge outside a horizontal scroll container. The finding names the outermost offending elements |
 | `landmarks` | A selector in `render.landmarks` (default `main`) is missing, hidden or zero-size |
 
@@ -352,8 +352,19 @@ one journey buries the next real bug. It is currently empty.
 A journey that tests the not-found screen requests a missing route on purpose.
 Do **not** allowlist 404s for it. Put `ExpectedMissingMarker`
 (`__expected-404`, in `src/uxgates/expected.ts`) in the URL instead; the
-console and network gates both skip URLs and messages containing it, and
-nothing else.
+console and network gates both skip URLs and messages containing it, the
+render gate's `images` rule skips images whose URL contains it, and nothing
+else. The demo fixture's deliberately broken cover uses it too.
+
+### Book covers
+
+Every page the suite opens routes `https://covers.openlibrary.org/**` to two
+synthetic JPEGs in `src/browser/fixtures/` (`src/browser/covers.ts`): a 2:3
+test cover, and a white-padded square for the ids in `PADDED_COVER_IDS` (some
+Open Library scans are padded like that). A URL with the expected-missing
+marker gets a real 404. So the demo fixture's real cover URLs render real
+images offline and deterministically. The images are plain shapes, not cover
+art; `makeTestCovers.ts` next to them regenerates them.
 
 ### Waivers
 
@@ -409,12 +420,14 @@ Re-export after changing app code: `--serve` tests whatever is in `dist/`.
 | `booky-empty-shelf` | core | Booky (`booky-avatar`, role img, "Booky..." label) is in the empty Shelf's `empty-state`; "What can Booky do?" opens `booky-bubble` with non-empty `booky-bubble-text`; the page gates run again with the bubble open (dismiss button included); `booky-dismiss` closes it; screenshot `booky-tip-open.png` |
 | `theme-tokens` | p00 | `--ms-color-primary` on `:root` is `#6B3FA8`; the computed body background equals `--ms-color-paper` and the body font starts with `--ms-font-body` |
 | `shelf-empty` | core | Fixture `empty`: `empty-state` with Booky (`booky-avatar`), its title and message, the Scan and Add manually actions, no rows and no search box; screenshot `shelf-empty.png` |
-| `shelf-demo-list` | core | Fixture `demo`: 12 `home-row`s, each a button named "Title, by Author, Year" (Dune's adds "on loan"), the "12 books catalogued" stamp and a polite live result count; screenshot `shelf-demo.png` |
+| `shelf-demo-list` | core | Fixture `demo`: 12 `home-row`s, each a button named "Title, by Author, Year" (Dune's adds "on loan"), the "12 books catalogued" stamp and a polite live result count; the first rows show real cover images (loaded, no fallback) and the book without a cover shows the generated one; screenshot `shelf-demo.png` |
 | `book-add-manual` | core | Fixture `empty`: Add manually, type title, author (Enter), year and genre (Enter), save; the detail page shows title, author, call number `FIC TOL 1937` and genre with a "Saved" snackbar (page gates run there); Back lists one row |
 | `shelf-search-sort` | p01 | Search "prat" leaves Pratchett's 4 books and announces "4 of 12 books match “prat”"; clear restores 12; the sort button reports `aria-expanded`, Year is checked and re-orders the list, and the order survives a reload |
 | `book-add-invalid-isbn` | p01 | ISBN `9780000000000` blocks saving: `book-form-error` is `role="alert"` and names ISBN, the field is `aria-invalid` and focused, the form stays open |
 | `book-edit` | p01 | Fixture `demo`: first book → Edit (year field holds 1983) → 1984 → save → the detail page shows `FIC PRA 1984` and "Saved your changes" |
 | `book-delete-undo` | p01 | Fixture `demo`: Dune → More (`role="menu"`) → Delete → `alertdialog` naming the book and its loan, with focus inside → Remove → 11 rows and an Undo snackbar (page gates run) → Undo → 12 rows, Dune still on loan |
+| `book-covers` | p01 | Fixture `demo`: Pride and Prejudice's white-padded scan renders whole (`naturalWidth` 300, `object-fit: contain`, no fallback); The Murder of Roger Ackroyd's broken cover URL and The Farthest Shore's missing one show `cover-fallback`; Dune's real cover renders; the page gates run on the broken-cover page |
+| `book-cover-pick` | p01 | Fixture `empty`: "Choose a photo" in the add form answered through the web file chooser with the synthetic test cover; the preview and the saved book's detail page show it as a real image, also after a reload |
 | `book-form-discard` | p01 | A dirty form asks before leaving: Escape closes the dialog, keeps the text and returns focus to Cancel; Discard goes back to the empty Shelf |
 | `book-detail-missing` | p01 | `/book/99999` shows `page-error` with the h1 "Book not found" and Booky; the `pagestate/error-marker` finding is waived because the error page is the point; Back to shelf goes to `/` |
 | `home-responsive` | responsive | Viewport meta has `width=device-width, initial-scale=1`; at mobile, tablet and desktop the title is fully on screen and the page does not scroll sideways; one screenshot per width |

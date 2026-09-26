@@ -38,3 +38,21 @@ export function deleteCover(bookId: number): boolean {
   file.delete();
   return true;
 }
+
+/** Whether `uri` is already a book's stored cover (so saving the book need not copy it). */
+export function isStoredCover(bookId: number, uri: string | null | undefined): boolean {
+  return !!uri && uri === coverFile(bookId).uri;
+}
+
+/**
+ * Copies a picked or photographed image (a temporary `file://` from the
+ * picker) to `<documentDirectory>/covers/<bookId>.jpg`, replacing any old
+ * cover, and returns its URI for `books.cover_uri`.
+ */
+export function storeCoverFile(bookId: number, sourceUri: string): string {
+  coversDirectory().create({ intermediates: true, idempotent: true });
+  const target = coverFile(bookId);
+  if (target.exists) target.delete();
+  new File(sourceUri).copy(target);
+  return target.uri;
+}

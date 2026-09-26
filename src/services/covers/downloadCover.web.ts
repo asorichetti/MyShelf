@@ -13,3 +13,12 @@ export async function downloadCover(_bookId: number, url: string, _options: Down
 export function deleteCover(_bookId: number): boolean {
   return false;
 }
+
+export function isStoredCover(_bookId: number, _uri: string | null | undefined): boolean {
+  return true;
+}
+
+/** The web build keeps the picked image's own URI (a data: URI from the file picker). */
+export function storeCoverFile(_bookId: number, sourceUri: string): string {
+  return sourceUri;
+}

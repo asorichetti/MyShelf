@@ -5,6 +5,7 @@ import { booksRepo, libraryRepo, loansRepo, seriesRepo, settingsRepo, type Db } 
 import { isValidIsbn13, setToday } from '@/domain';
 import { createTestDb } from '@/testing/createTestDb';
 import { fixtureNames, fixtures, isFixtureName } from '@/testing/fixtures';
+import { BROKEN_COVER } from '@/testing/fixtures/demo';
 import { loadFixture } from '@/testing/loadFixture';
 
 let db: Db;
@@ -61,7 +62,12 @@ describe('loadFixture', () => {
     ]);
     expect((await loansRepo.listOverdueLoans(db, '2026-06-15')).map((l) => l.bookTitle)).toEqual(['The Murder of Roger Ackroyd']);
 
-    for (const book of await booksRepo.listBooks(db)) {
+    const books = await booksRepo.listBooks(db);
+    // Real covers are the norm; one book has none and one a broken URL, to prove the fallback.
+    expect(books.filter((b) => b.coverUri?.startsWith('https://covers.openlibrary.org/'))).toHaveLength(11);
+    expect(books.filter((b) => b.coverUri == null).map((b) => b.title)).toEqual(['The Farthest Shore']);
+    expect(books.filter((b) => b.coverUri === BROKEN_COVER).map((b) => b.title)).toEqual(['The Murder of Roger Ackroyd']);
+    for (const book of books) {
       expect(isValidIsbn13(book.isbn13!)).toBe(true);
       expect(book.isbn10).toHaveLength(10);
       expect(book.source).toBe('manual');

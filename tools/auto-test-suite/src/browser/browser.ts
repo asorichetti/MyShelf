@@ -6,6 +6,7 @@ import { dirname, join } from 'node:path';
 import { chromium, type Browser as PWBrowser, type BrowserContext, type Page } from 'playwright';
 
 import { errorMessage } from '../errors.ts';
+import { routeCovers } from './covers.ts';
 
 export interface Size {
   width: number;
@@ -120,6 +121,8 @@ export class Browser {
     });
     this.contexts.push(ctx);
     await ctx.addInitScript({ content: EVALUATE_SHIM });
+    // Book covers come from ./fixtures, never from the internet (covers.ts).
+    await routeCovers(ctx);
     return ctx.newPage();
   }
 

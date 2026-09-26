@@ -97,7 +97,9 @@ describe('listBookItems rows', () => {
     expect(omens.authors).toEqual(['Terry Pratchett', 'Neil Gaiman']);
     expect(omens.subtitle).toMatch(/Agnes Nutter/);
     const mort = items.find((b) => b.title === 'Mort')!;
-    expect(mort).toMatchObject({ seriesName: 'Discworld', seriesPosition: 4, publicationYear: 1987, onLoan: false, coverUri: null });
+    expect(mort).toMatchObject({ seriesName: 'Discworld', seriesPosition: 4, publicationYear: 1987, onLoan: false });
+    expect(mort.coverUri).toMatch(/^https:\/\/covers\.openlibrary\.org\//);
+    expect(items.find((b) => b.title === 'The Farthest Shore')!.coverUri).toBeNull();
     expect(items.filter((b) => b.onLoan).map((b) => b.title).sort()).toEqual(['Dune', 'The Murder of Roger Ackroyd']);
   });
 

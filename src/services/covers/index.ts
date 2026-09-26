@@ -1,4 +1,4 @@
-export { deleteCover, downloadCover, type DownloadCoverOptions } from './downloadCover';
+export { deleteCover, downloadCover, isStoredCover, storeCoverFile, type DownloadCoverOptions } from './downloadCover';
 
 /** True for a cover stored on the device (as opposed to a remote URL). */
 export function isLocalCover(uri: string | null | undefined): boolean {

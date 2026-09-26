@@ -6,6 +6,7 @@ import { Booky } from '@/components/booky';
 import { ConfirmDialog, Screen, Text, useSnackbar } from '@/components/ui';
 
 import { BookMissing, goBackOrShelf } from './BookDetailScreen';
+import { pickCover, type CoverSource } from './pickCover';
 import { parseBookId } from './useBook';
 import { useBookForm } from './useBookForm';
 import { useUnsavedChangesGuard } from './useUnsavedChangesGuard';
@@ -29,6 +30,17 @@ function BookFormScreen({ bookId }: { bookId: number | null }) {
       </Screen>
     );
   }
+
+  const chooseCover = async (source: CoverSource) => {
+    try {
+      const result = await pickCover(source);
+      if (result.status === 'picked') form.setField('coverUri', result.uri);
+      else if (result.status === 'denied') show({ message: 'I need the camera to photograph a cover. You can allow it in your phone’s settings.' });
+    } catch (e) {
+      console.error('Could not pick a cover', e);
+      show({ message: 'Sorry, I couldn’t open the photos. Please try again.' });
+    }
+  };
 
   const save = async () => {
     try {
@@ -68,6 +80,8 @@ function BookFormScreen({ bookId }: { bookId: number | null }) {
         saving={form.saving}
         onSave={save}
         onCancel={goBackOrShelf}
+        onPickCover={chooseCover}
+        // onFindCoverOnline arrives with online cover search (P02-11).
       />
       <ConfirmDialog
         visible={guard.asking}

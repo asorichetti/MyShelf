@@ -1,5 +1,6 @@
+import { TEST_COVER_PATH } from '../browser/covers.ts';
 import { Testids, tid } from '../selectors.ts';
-import { openFixture, rowNames, waitForCount, waitForPath, waitVisible } from './helpers.ts';
+import { coverState, openFixture, rowNames, waitForCount, waitForPath, waitVisible } from './helpers.ts';
 import { expect, q, register, type Context } from './registry.ts';
 
 const row = tid(Testids.home.row);
@@ -228,5 +229,76 @@ register({
     expect((await booky.count()) === 1, '/book/99999: expected a concerned Booky');
     await c.page.locator(tid(Testids.bookMissing.back)).click();
     await waitForPath(c, '/', '/book/99999 -> Back to shelf');
+  },
+});
+
+register({
+  name: 'book-covers',
+  suite: 'p01',
+  desc: 'Real covers render (a padded square scan whole, with object-fit contain, no fallback); a book with no cover or a broken cover URL shows the generated cover',
+  async run(c) {
+    await openFixture(c, 'demo', '/');
+    await waitForCount(c, row, 12, '/');
+
+    // Pride and Prejudice's cover is served as a white-padded 300x300 scan.
+    let path = await openRow(c, 'Pride and Prejudice');
+    let cover = await coverState(c, tid(d.root));
+    expect(cover.images === 1 && cover.loaded === 1, `${path}: expected the real cover to render, found ${q(cover)}`);
+    expect(cover.fallbacks === 0, `${path}: expected no generated cover next to a real one, found ${cover.fallbacks}`);
+    expect(cover.natural?.width === 300 && cover.natural.height === 300, `${path}: expected the padded 300x300 scan, found ${q(cover.natural)}`);
+    expect(cover.natural?.fit === 'contain', `${path}: expected the cover fitted whole (object-fit: contain), found ${q(cover.natural?.fit)}`);
+    await c.snap('cover-padded');
+
+    // A broken cover URL falls back to the generated cover (the marker makes the 404 deliberate).
+    await c.page.locator(tid(d.back)).click();
+    await waitForPath(c, '/', `${path} -> back`);
+    path = await openRow(c, 'The Murder of Roger Ackroyd');
+    await c.page.locator(`${tid(d.root)} ${tid(Testids.cover.fallback)}`).waitFor({ state: 'attached', timeout: 10_000 }).catch(() => {});
+    cover = await coverState(c, tid(d.root));
+    expect(cover.images === 0 && cover.fallbacks === 1, `${path}: expected the generated cover after the broken URL, found ${q(cover)}`);
+    await c.checkGates(`${path} (broken cover)`);
+    await c.snap('cover-broken');
+
+    await c.page.locator(tid(d.back)).click();
+    await waitForPath(c, '/', `${path} -> back`);
+    path = await openRow(c, 'Dune');
+    cover = await coverState(c, tid(d.root));
+    expect(cover.images === 1 && cover.loaded === 1 && cover.fallbacks === 0, `${path}: expected Dune's real cover, found ${q(cover)}`);
+    await c.snap('cover-real');
+  },
+});
+
+register({
+  name: 'book-cover-pick',
+  suite: 'p01',
+  desc: 'Choose a photo of the cover in the add form (the web file picker gets a synthetic JPEG): the form previews it and the saved book shows it as its real cover',
+  async run(c) {
+    await openFixture(c, 'empty', '/book/new');
+    await waitVisible(c, tid(f.coverPick), '/book/new');
+    const before = await coverState(c, tid(f.root));
+    expect(before.images === 0 && before.fallbacks === 1, `/book/new: expected the generated cover before choosing one, found ${q(before)}`);
+
+    const chooser = c.page.waitForEvent('filechooser', { timeout: 10_000 });
+    await c.page.locator(tid(f.coverPick)).click();
+    await (await chooser).setFiles(TEST_COVER_PATH);
+    await waitVisible(c, tid(f.coverRemove), '/book/new (photo chosen)');
+    const preview = await coverState(c, tid(f.root));
+    expect(preview.images === 1 && preview.loaded === 1 && preview.fallbacks === 0, `/book/new: expected the chosen photo as the cover, found ${q(preview)}`);
+        await c.snap('cover-picked');
+
+    await c.page.locator(tid(f.title)).fill('A Photographed Book');
+    await c.page.locator(tid(f.save)).click();
+    const path = await waitForPath(c, /^\/book\/\d+$/, '/book/new -> save');
+    await waitVisible(c, tid(d.title), path);
+    const saved = await coverState(c, tid(d.root));
+    expect(saved.images === 1 && saved.loaded === 1 && saved.fallbacks === 0, `${path}: expected the saved book to show the chosen cover, found ${q(saved)}`);
+    await c.checkGates(`${path} (picked cover)`);
+    await c.snap('cover-picked-saved');
+
+    // The picked image is stored with the book, so it survives a reload.
+    await c.page.reload();
+    await waitVisible(c, tid(d.title), `${path} after reload`);
+    const reloaded = await coverState(c, tid(d.root));
+    expect(reloaded.images === 1 && reloaded.loaded === 1, `${path} after reload: expected the chosen cover to still show, found ${q(reloaded)}`);
   },
 });

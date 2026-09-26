@@ -8,6 +8,7 @@ import { Testids } from '@/testing/testids.gen';
 import { useTheme } from '@/theme';
 
 import { AuthorsInput } from './AuthorsInput';
+import { CoverImage } from './CoverImage';
 import { GenresInput } from './GenresInput';
 
 export const formatLabels: Record<BookFormat, string> = {
@@ -66,6 +67,13 @@ export interface BookFormProps {
   saving: boolean;
   onSave: () => void;
   onCancel: () => void;
+  /** Choose a photo of the cover, or take one. */
+  onPickCover: (source: 'library' | 'camera') => void;
+  /**
+   * Online cover search (P02-11). When given, the Cover section offers
+   * "Find a cover online"; until then the section offers photos only.
+   */
+  onFindCoverOnline?: () => void;
   ref?: Ref<BookFormHandle>;
 }
 
@@ -101,6 +109,8 @@ export function BookForm({
   saving,
   onSave,
   onCancel,
+  onPickCover,
+  onFindCoverOnline,
   ref,
 }: BookFormProps) {
   const theme = useTheme();
@@ -177,6 +187,42 @@ export function BookForm({
             </Text>
           </View>
         ) : null}
+
+        <Section title="Cover">
+          <View style={[styles.cover, { gap: spacing.lg }]}>
+            <CoverImage uri={draft.coverUri} title={draft.title.trim() || 'New book'} author={draft.authors[0]?.name} size="medium" />
+            <View style={[styles.coverActions, { gap: spacing.sm }]}>
+              <Text variant="caption" color="inkMuted">
+                {draft.coverUri ? 'This cover goes on the catalogue card.' : 'No cover yet: your shelf shows a cloth binding until you add one.'}
+              </Text>
+              <Button
+                variant="secondary"
+                label="Choose a photo"
+                icon={<MaterialCommunityIcons name="image-outline" size={sizes.icon} color={colors.onPrimaryContainer} />}
+                onPress={() => onPickCover('library')}
+                testID={Testids.bookForm.coverPick}
+              />
+              <Button
+                variant="secondary"
+                label="Take a photo"
+                icon={<MaterialCommunityIcons name="camera-outline" size={sizes.icon} color={colors.onPrimaryContainer} />}
+                onPress={() => onPickCover('camera')}
+                testID={Testids.bookForm.coverCamera}
+              />
+              {onFindCoverOnline ? (
+                <Button
+                  variant="secondary"
+                  label="Find a cover online"
+                  icon={<MaterialCommunityIcons name="web" size={sizes.icon} color={colors.onPrimaryContainer} />}
+                  onPress={onFindCoverOnline}
+                />
+              ) : null}
+              {draft.coverUri ? (
+                <Button variant="ghost" label="Remove cover" onPress={() => onChange('coverUri', null)} testID={Testids.bookForm.coverRemove} />
+              ) : null}
+            </View>
+          </View>
+        </Section>
 
         <Section title="The book">
           <TextField label="Title (required)" ref={titleRef} value={draft.title} onChangeText={(v) => onChange('title', v)} errorText={errors.title} testID={Testids.bookForm.title} autoCapitalize="words" maxLength={400} />
@@ -304,5 +350,7 @@ const styles = StyleSheet.create({
   wide: { flexGrow: 3, flexBasis: 180 },
   narrow: { flexGrow: 1, flexBasis: 100 },
   wrap: { flexDirection: 'row', flexWrap: 'wrap' },
+  cover: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'flex-start' },
+  coverActions: { flex: 1, minWidth: 180 },
   bar: { flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center', borderTopWidth: 1 },
 });

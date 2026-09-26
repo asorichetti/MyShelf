@@ -10,6 +10,7 @@ function renderForm(props: Partial<BookFormProps> = {}) {
   const onChange = jest.fn();
   const onSave = jest.fn();
   const onCancel = jest.fn();
+  const onPickCover = jest.fn();
   const ref = createRef<BookFormHandle>();
   renderWithTheme(
     <BookForm
@@ -27,10 +28,11 @@ function renderForm(props: Partial<BookFormProps> = {}) {
       saving={false}
       onSave={onSave}
       onCancel={onCancel}
+      onPickCover={onPickCover}
       {...props}
     />,
   );
-  return { onChange, onSave, onCancel, ref };
+  return { onChange, onSave, onCancel, onPickCover, ref };
 }
 
 describe('BookForm', () => {
@@ -104,6 +106,31 @@ describe('BookForm', () => {
     fireEvent.press(screen.getByTestId(Testids.bookForm.cancel));
     expect(onSave).toHaveBeenCalled();
     expect(onCancel).toHaveBeenCalled();
+  });
+
+  it('offers to choose or take a photo of the cover', () => {
+    const { onPickCover } = renderForm();
+    expect(screen.getByText(/No cover yet/)).toBeOnTheScreen();
+    expect(screen.queryByTestId(Testids.bookForm.coverRemove)).toBeNull();
+    fireEvent.press(screen.getByTestId(Testids.bookForm.coverPick));
+    fireEvent.press(screen.getByTestId(Testids.bookForm.coverCamera));
+    expect(onPickCover.mock.calls).toEqual([['library'], ['camera']]);
+  });
+
+  it('shows the chosen cover and can remove it', () => {
+    const { onChange } = renderForm({ draft: { ...emptyDraft(), title: 'Dune', coverUri: 'file:///covers/1.jpg' } });
+    expect(screen.getByText('This cover goes on the catalogue card.')).toBeOnTheScreen();
+    fireEvent.press(screen.getByTestId(Testids.bookForm.coverRemove));
+    expect(onChange).toHaveBeenCalledWith('coverUri', null);
+  });
+
+  it('offers online cover search only once it exists (P02-11)', () => {
+    renderForm();
+    expect(screen.queryByRole('button', { name: 'Find a cover online' })).toBeNull();
+    const onFindCoverOnline = jest.fn();
+    renderForm({ onFindCoverOnline });
+    fireEvent.press(screen.getByRole('button', { name: 'Find a cover online' }));
+    expect(onFindCoverOnline).toHaveBeenCalled();
   });
 
   it('summarises one or several field errors', () => {

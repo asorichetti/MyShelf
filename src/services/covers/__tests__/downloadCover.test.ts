@@ -1,4 +1,4 @@
-import { deleteCover, downloadCover, isLocalCover } from '../index';
+import { deleteCover, downloadCover, isLocalCover, isStoredCover, storeCoverFile } from '../index';
 
 // An in-memory stand-in for expo-file-system's File/Directory/Paths API.
 jest.mock('expo-file-system', () => {
@@ -36,6 +36,11 @@ jest.mock('expo-file-system', () => {
     }
     delete() {
       files.delete(this.uri);
+    }
+    copy(target: File) {
+      if (!files.has(this.uri)) throw new Error('source missing');
+      if (files.has(target.uri)) throw new Error('target exists');
+      files.set(target.uri, files.get(this.uri)!);
     }
   }
   return { __esModule: true, Directory, File, Paths: { document: new Directory('file:///data/docs') }, __files: files };
@@ -89,6 +94,22 @@ describe('downloadCover (native)', () => {
   });
 });
 
+describe('storeCoverFile (native)', () => {
+  it('copies a picked photo into <documents>/covers/<bookId>.jpg, replacing an old cover', () => {
+    fs.__files.set('file:///cache/picker/abc.jpg', JPEG);
+    const uri = storeCoverFile(9, 'file:///cache/picker/abc.jpg');
+    expect(uri).toBe('file:///data/docs/covers/9.jpg');
+    expect(fs.__files.get(uri)).toEqual(JPEG);
+    expect(isStoredCover(9, uri)).toBe(true);
+    expect(isStoredCover(9, 'file:///cache/picker/abc.jpg')).toBe(false);
+
+    const newer = new Uint8Array([0xff, 0xd8, 9]);
+    fs.__files.set('file:///cache/picker/def.jpg', newer);
+    storeCoverFile(9, 'file:///cache/picker/def.jpg');
+    expect(fs.__files.get(uri)).toEqual(newer);
+  });
+});
+
 describe('downloadCover (web)', () => {
   const web = jest.requireActual<typeof import('../downloadCover.web')>('../downloadCover.web');
 
@@ -97,5 +118,10 @@ describe('downloadCover (web)', () => {
     await expect(web.downloadCover(1, COVER_URL, { http })).resolves.toBe(COVER_URL);
     expect(http.getBinary).not.toHaveBeenCalled();
     expect(web.deleteCover(1)).toBe(false);
+  });
+
+  it('keeps a picked image as it is', () => {
+    expect(web.storeCoverFile(1, 'data:image/jpeg;base64,xyz')).toBe('data:image/jpeg;base64,xyz');
+    expect(web.isStoredCover(1, 'data:image/jpeg;base64,xyz')).toBe(true);
   });
 });

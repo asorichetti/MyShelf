@@ -14,6 +14,7 @@ import {
   type BookDraftField,
 } from '@/domain';
 import { emit } from '@/features/events';
+import { isStoredCover, storeCoverFile } from '@/services/covers';
 
 export type SubmitResult = { ok: true; id: number; title: string } | { ok: false; firstInvalid: BookDraftField | null };
 
@@ -113,6 +114,12 @@ export function useBookForm(id: number | null): BookFormState {
     setSaving(true);
     try {
       const savedId = await booksRepo.saveBookDraft(db, result.value, id ?? undefined);
+      // A picked or photographed cover is a temporary file: keep a copy with the book.
+      const cover = result.value.coverUri;
+      if (cover && cover.startsWith('file:') && !isStoredCover(savedId, cover)) {
+        const stored = storeCoverFile(savedId, cover);
+        await booksRepo.updateBook(db, savedId, { coverUri: stored });
+      }
       setInitial(full);
       emit('library-changed');
       return { ok: true, id: savedId, title: result.value.title };

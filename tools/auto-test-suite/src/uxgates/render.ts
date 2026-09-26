@@ -1,6 +1,7 @@
 
 import { errorMessage } from '../errors.ts';
 import { getConfig, skippedList } from './config.ts';
+import { ExpectedMissingMarker } from './expected.ts';
 import { newResult, type RawFinding, type Result } from './gate.ts';
 
 import type { Page } from 'playwright';
@@ -9,6 +10,12 @@ export interface RenderAuditConfig {
   tokens: string[];
   landmarks: string[];
   disabled: string[];
+  /**
+   * Images whose URL contains this marker are missing on purpose (a fixture's
+   * broken cover, which the app replaces with its fallback), so the `images`
+   * rule skips them like the console and network gates do.
+   */
+  expectedMissing?: string;
 }
 
 export interface RenderAuditFinding {
@@ -108,7 +115,8 @@ export async function renderAudit(cfg: RenderAuditConfig): Promise<RenderAuditFi
   }
 
   // Images loaded: complete alone is true for a 404, so check naturalWidth too.
-  const broken = [...document.images].filter((img) => !(img.complete && img.naturalWidth > 0));
+  const deliberate = (img: HTMLImageElement) => !!cfg.expectedMissing && (img.currentSrc || img.src).includes(cfg.expectedMissing);
+  const broken = [...document.images].filter((img) => !(img.complete && img.naturalWidth > 0) && !deliberate(img));
   if (broken.length) {
     add(
       'images',
@@ -175,6 +183,7 @@ export async function renderGate(page: Page, target: string): Promise<Result> {
       tokens: cfg.requiredTokens,
       landmarks: cfg.landmarks,
       disabled: Object.keys(cfg.disabled),
+      expectedMissing: ExpectedMissingMarker,
     });
     for (const f of raw) findings.push({ rule: f.rule, message: f.message, evidence: f.evidence });
   } catch (err) {

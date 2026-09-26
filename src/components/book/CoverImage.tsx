@@ -1,11 +1,16 @@
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { Image } from 'expo-image';
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { useReducedMotion } from '@/hooks/useReducedMotion';
+import { Testids } from '@/testing/testids.gen';
 import { useTheme, type CoverSize } from '@/theme';
 
 import { GeneratedCover } from './GeneratedCover';
+
+/** How long a loaded cover takes to fade in over its placeholder. */
+export const COVER_FADE_MS = 200;
 
 export interface CoverImageProps {
   uri?: string | null;
@@ -22,16 +27,24 @@ export interface CoverImageProps {
 }
 
 /**
- * A book cover: the image when there is one (cached by expo-image), with the
- * generated cover underneath as the placeholder and as the fallback when the
- * image cannot load. A broken image is removed rather than left broken.
+ * A book cover. The real cover (`cover_uri`: a `file://` copy on the device, a
+ * remote URL on web) is the golden path: it sits in a 2:3 frame on card
+ * stock, with a soft placeholder while it loads and a short fade-in. It is
+ * fitted with `contain`, never cropped, so a cover with a different shape (or
+ * one padded with white bars, as some Open Library scans are) shows whole on
+ * the near-white card instead of losing its title or looking broken. Only
+ * when there is no cover, or it fails to load, does the generated cloth
+ * binding take its place.
  */
 export function CoverImage({ uri, title, author, size = 'thumb', decorative = true, testID }: CoverImageProps) {
   const theme = useTheme();
+  const { colors, radii, sizes } = theme;
   const reduceMotion = useReducedMotion();
   const [failedUri, setFailedUri] = useState<string | null>(null);
+  const [loadedUri, setLoadedUri] = useState<string | null>(null);
   const { width, height } = theme.coverSizes[size];
   const showImage = Boolean(uri) && failedUri !== uri;
+  const loaded = showImage && loadedUri === uri;
   const label = `Cover of ${title}`;
 
   return (
@@ -40,24 +53,47 @@ export function CoverImage({ uri, title, author, size = 'thumb', decorative = tr
       {...(decorative
         ? { 'aria-hidden': true, accessibilityElementsHidden: true, importantForAccessibility: 'no-hide-descendants' as const }
         : { role: 'img' as const, accessible: true, accessibilityLabel: label, 'aria-label': label })}
-      style={[styles.frame, { width, height, borderRadius: theme.radii.sm, boxShadow: theme.elevation.low }]}
+      style={[
+        styles.frame,
+        {
+          width,
+          height,
+          borderRadius: radii.sm,
+          boxShadow: theme.elevation.low,
+          backgroundColor: showImage ? colors.surface : 'transparent',
+          borderColor: showImage ? colors.border : 'transparent',
+        },
+      ]}
     >
-      <GeneratedCover title={title} author={author} size={size} />
       {showImage ? (
-        <Image
-          source={{ uri: uri! }}
-          alt=""
-          accessibilityLabel=""
-          contentFit="cover"
-          transition={reduceMotion ? 0 : 150}
-          onError={() => setFailedUri(uri!)}
-          style={[StyleSheet.absoluteFill, { borderRadius: theme.radii.sm }]}
-        />
-      ) : null}
+        <>
+          {loaded ? null : (
+            <View testID={Testids.cover.placeholder} style={[StyleSheet.absoluteFill, styles.center, { backgroundColor: colors.surfaceTint }]}>
+              <MaterialCommunityIcons name="book-open-page-variant-outline" size={Math.min(width / 2, sizes.icon * 2)} color={colors.border} />
+            </View>
+          )}
+          <Image
+            testID={Testids.cover.image}
+            source={{ uri: uri! }}
+            alt=""
+            accessibilityLabel=""
+            contentFit="contain"
+            // A device file can be replaced in place (a new photo of the cover), so it is never cached.
+            cachePolicy={uri!.startsWith('file:') ? 'none' : 'disk'}
+            transition={reduceMotion ? 0 : COVER_FADE_MS}
+            onLoad={() => setLoadedUri(uri!)}
+            onError={() => setFailedUri(uri!)}
+            style={StyleSheet.absoluteFill}
+          />
+        </>
+      ) : (
+        <GeneratedCover title={title} author={author} size={size} testID={Testids.cover.fallback} />
+      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  frame: { overflow: 'hidden' },
+  frame: { overflow: 'hidden', borderWidth: StyleSheet.hairlineWidth },
+  center: { alignItems: 'center', justifyContent: 'center' },
 });

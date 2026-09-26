@@ -133,6 +133,7 @@ Versions below are what is installed on `main` today (from `package-lock.json`).
 | Icons | @expo/vector-icons | 15.1.1 | `MaterialCommunityIcons` (tab bar, close buttons) |
 | Safe areas | react-native-safe-area-context | 5.7.0 | used by `Screen` and the tab bar |
 | Images | expo-image | 57.0.5 | cached cover images (P01-10) |
+| Cover photos | expo-image-picker | 57.0.20 | choose or take a photo of a cover in the book form (P01-10) |
 | Camera + barcodes | expo-camera | *planned* (P03-03) | `CameraView` barcode scanning (EAN-13) |
 | OCR | @react-native-ml-kit/text-recognition | *planned* (P03-05) | on-device Google ML Kit; needs a development build |
 | Dev builds | expo-dev-client | *planned* (P03-01) | |

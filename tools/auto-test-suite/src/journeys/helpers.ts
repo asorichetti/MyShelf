@@ -61,3 +61,49 @@ export async function waitForPath(c: Context, test: RegExp | string, where: stri
   }
   return new URL(c.page.url()).pathname;
 }
+
+export interface CoverState {
+  /** Real cover images present. */
+  images: number;
+  /** Of those, how many finished loading with pixels (naturalWidth > 0). */
+  loaded: number;
+  /** Natural size and CSS object-fit of the first image. */
+  natural: { width: number; height: number; fit: string } | null;
+  /** Generated fallback covers present. */
+  fallbacks: number;
+}
+
+/**
+ * Waits for the real cover images inside `scope` to finish loading, then
+ * reports what is shown: real images (and how many rendered pixels) and
+ * generated fallbacks. Images are lazy, so `scope` is scrolled into view.
+ */
+export async function coverState(c: Context, scope: string): Promise<CoverState> {
+  const el = c.page.locator(scope).first();
+  await el.scrollIntoViewIfNeeded();
+  const image = `${tid(Testids.cover.image)} img`;
+  await c.page
+    .waitForFunction(
+      // Loaded, and faded in (the app cross-fades a cover over its placeholder).
+      ([s, img]) =>
+        [...(document.querySelector(s as string)?.querySelectorAll<HTMLImageElement>(img as string) ?? [])].every(
+          (i) => i.complete && (i.naturalWidth === 0 || getComputedStyle(i).opacity === '1'),
+        ),
+      [scope, image] as const,
+      { timeout: 10_000 },
+    )
+    .catch(() => {});
+  return el.evaluate(
+    (root, [img, fallback]) => {
+      const imgs = [...root.querySelectorAll<HTMLImageElement>(img!)];
+      const first = imgs[0];
+      return {
+        images: imgs.length,
+        loaded: imgs.filter((i) => i.complete && i.naturalWidth > 0).length,
+        natural: first ? { width: first.naturalWidth, height: first.naturalHeight, fit: getComputedStyle(first).objectFit } : null,
+        fallbacks: root.querySelectorAll(fallback!).length,
+      };
+    },
+    [image, tid(Testids.cover.fallback)],
+  );
+}

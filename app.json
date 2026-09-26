@@ -38,7 +38,15 @@
       "expo-font",
       "expo-splash-screen",
       "expo-asset",
-      "expo-image"
+      "expo-image",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "MyShelf opens your photos so you can choose a picture of a book's cover.",
+          "cameraPermission": "MyShelf uses the camera so you can photograph a book's cover.",
+          "microphonePermission": false
+        }
+      ]
     ],
     "scheme": "myshelf",
     "experiments": {

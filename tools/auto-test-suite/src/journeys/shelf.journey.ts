@@ -1,5 +1,5 @@
 import { Testids, tid } from '../selectors.ts';
-import { openFixture, rowNames, waitForCount, waitVisible } from './helpers.ts';
+import { coverState, openFixture, rowNames, waitForCount, waitVisible } from './helpers.ts';
 import { expect, q, register } from './registry.ts';
 
 const row = tid(Testids.home.row);
@@ -44,6 +44,16 @@ register({
     expect(/^12 books catalogued$/i.test(count), `/ (demo): expected the stamp "12 books catalogued", found ${q(count)}`);
     const status = c.page.locator(tid(Testids.home.resultCount));
     expect((await status.getAttribute('aria-live')) === 'polite', `/ (demo): expected ${tid(Testids.home.resultCount)} to be a polite live region`);
+
+    // Real covers are the golden path: the rows on screen show real images, and
+    // only the book without a cover shows the generated one.
+    for (const title of ['The Colour of Magic', 'Dune', 'Good Omens']) {
+      const cover = await coverState(c, `${row}[aria-label^="${title},"]`);
+      expect(cover.images === 1 && cover.loaded === 1 && cover.fallbacks === 0, `/ (demo): expected ${q(title)} to show its real cover, found ${q(cover)}`);
+    }
+    const none = await coverState(c, `${row}[aria-label^="The Farthest Shore,"]`);
+    expect(none.images === 0 && none.fallbacks === 1, `/ (demo): expected the generated cover for a book without one, found ${q(none)}`);
+    await c.page.locator(row).first().scrollIntoViewIfNeeded();
     await c.snap('shelf-demo');
   },
 });

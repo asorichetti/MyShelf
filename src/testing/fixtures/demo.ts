@@ -1,15 +1,30 @@
 import type { Fixture } from './types';
 
 /**
+ * Real Open Library cover URLs, so screens show real covers (the golden
+ * path). Cover ids come from the recorded Open Library fixtures in
+ * src/services/metadata/__fixtures__; books without a recorded id use the
+ * ISBN endpoint (`default=false` makes a missing cover a 404, which falls
+ * back to the generated cover). The auto test suite answers these with
+ * synthetic JPEGs, so journeys never need the internet.
+ */
+const coverById = (id: number) => `https://covers.openlibrary.org/b/id/${id}-L.jpg`;
+const coverByIsbn = (isbn: string) => `https://covers.openlibrary.org/b/isbn/${isbn}-L.jpg?default=false`;
+/** A cover that is always missing (it carries the suite's expected-404 marker), to prove the fallback. */
+export const BROKEN_COVER = 'https://covers.openlibrary.org/b/id/__expected-404-L.jpg';
+
+/**
  * A small, realistic library: 12 books across 4 genres; Discworld (#1, #2, #4)
  * and Earthsea (#1, #3) each have a gap; Pratchett, Le Guin and Christie have
  * several books; Dune is on loan, Roger Ackroyd is overdue, Mort was lent and
- * returned; one group ("Holiday reads").
+ * returned; one group ("Holiday reads"). Ten books have a real cover URL,
+ * The Farthest Shore has none and The Murder of Roger Ackroyd's is broken.
  */
 export const demo: Fixture = {
   books: [
     {
       title: 'The Colour of Magic',
+      coverUri: coverById(14647238),
       authors: ['Terry Pratchett'],
       genres: ['Fantasy'],
       series: { name: 'Discworld', position: 1 },
@@ -23,6 +38,7 @@ export const demo: Fixture = {
     },
     {
       title: 'The Light Fantastic',
+      coverUri: coverByIsbn('9780552128483'),
       authors: ['Terry Pratchett'],
       genres: ['Fantasy'],
       series: { name: 'Discworld', position: 2 },
@@ -36,6 +52,7 @@ export const demo: Fixture = {
     },
     {
       title: 'Mort',
+      coverUri: coverByIsbn('9780552131063'),
       authors: ['Terry Pratchett'],
       genres: ['Fantasy'],
       series: { name: 'Discworld', position: 4 },
@@ -49,6 +66,7 @@ export const demo: Fixture = {
     },
     {
       title: 'Good Omens',
+      coverUri: coverByIsbn('9780575048003'),
       subtitle: 'The Nice and Accurate Prophecies of Agnes Nutter, Witch',
       authors: ['Terry Pratchett', 'Neil Gaiman'],
       genres: ['Fantasy'],
@@ -63,6 +81,7 @@ export const demo: Fixture = {
     },
     {
       title: 'A Wizard of Earthsea',
+      coverUri: coverByIsbn('9780140304770'),
       authors: ['Ursula K. Le Guin'],
       genres: ['Fantasy'],
       series: { name: 'Earthsea', position: 1 },
@@ -88,6 +107,7 @@ export const demo: Fixture = {
     },
     {
       title: 'The Left Hand of Darkness',
+      coverUri: coverByIsbn('9780441478125'),
       authors: ['Ursula K. Le Guin'],
       genres: ['Science Fiction'],
       publisher: 'Ace',
@@ -100,6 +120,7 @@ export const demo: Fixture = {
     },
     {
       title: 'Dune',
+      coverUri: coverById(11481354),
       authors: ['Frank Herbert'],
       genres: ['Science Fiction'],
       publisher: 'Ace',
@@ -118,6 +139,7 @@ export const demo: Fixture = {
     },
     {
       title: 'Murder on the Orient Express',
+      coverUri: coverByIsbn('9780007119318'),
       authors: ['Agatha Christie'],
       genres: ['Mystery'],
       publisher: 'HarperCollins',
@@ -130,6 +152,7 @@ export const demo: Fixture = {
     },
     {
       title: 'The Murder of Roger Ackroyd',
+      coverUri: BROKEN_COVER,
       authors: ['Agatha Christie'],
       genres: ['Mystery'],
       publisher: 'HarperCollins',
@@ -141,6 +164,7 @@ export const demo: Fixture = {
     },
     {
       title: 'The Hound of the Baskervilles',
+      coverUri: coverByIsbn('9780141034324'),
       authors: ['Arthur Conan Doyle'],
       genres: ['Mystery', 'Classics'],
       publisher: 'Penguin',
@@ -153,6 +177,7 @@ export const demo: Fixture = {
     },
     {
       title: 'Pride and Prejudice',
+      coverUri: coverById(12645114),
       authors: ['Jane Austen'],
       genres: ['Classics'],
       publisher: 'Penguin Classics',

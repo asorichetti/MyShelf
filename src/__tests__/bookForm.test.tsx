@@ -3,10 +3,19 @@ import { act, fireEvent, screen } from 'expo-router/testing-library';
 import { booksRepo, type Db } from '@/db';
 import { BookDetailScreen } from '@/features/book/BookDetailScreen';
 import { AddBookScreen, EditBookScreen } from '@/features/book/BookFormScreen';
+import { pickCover } from '@/features/book/pickCover';
+import { storeCoverFile } from '@/services/covers';
 import { createTestDb } from '@/testing/createTestDb';
 import { loadFixture } from '@/testing/loadFixture';
 import { advance, renderApp } from '@/testing/renderApp';
 import { Testids } from '@/testing/testids.gen';
+
+jest.mock('@/features/book/pickCover', () => ({ pickCover: jest.fn() }));
+jest.mock('@/services/covers', () => ({
+  ...jest.requireActual('@/services/covers'),
+  isStoredCover: jest.fn((id: number, uri: string) => uri === `file:///docs/covers/${id}.jpg`),
+  storeCoverFile: jest.fn((id: number) => `file:///docs/covers/${id}.jpg`),
+}));
 
 let db: Db;
 beforeEach(async () => {
@@ -61,6 +70,27 @@ describe('Adding a book by hand', () => {
     expect(screen.getByTestId(Testids.bookForm.error)).toHaveTextContent(/Please check the ISBN field/);
     expect(screen.getByText('That ISBN doesn’t look right — check the last digit.')).toBeOnTheScreen();
     expect(await booksRepo.countBooks(db)).toBe(0);
+  });
+});
+
+describe('Choosing a cover', () => {
+  it('keeps a picked photo with the book when it is saved', async () => {
+    jest.mocked(pickCover).mockResolvedValueOnce({ status: 'picked', uri: 'file:///cache/picker/photo.jpg' });
+    await openAddForm();
+    fireEvent.changeText(screen.getByTestId(Testids.bookForm.title), 'Photographed');
+    await press(Testids.bookForm.coverPick);
+    expect(pickCover).toHaveBeenCalledWith('library');
+    await press(Testids.bookForm.save);
+    const [book] = await booksRepo.listBooks(db);
+    expect(storeCoverFile).toHaveBeenCalledWith(book.id, 'file:///cache/picker/photo.jpg');
+    expect(book.coverUri).toBe(`file:///docs/covers/${book.id}.jpg`);
+  });
+
+  it('explains when the camera is not allowed', async () => {
+    jest.mocked(pickCover).mockResolvedValueOnce({ status: 'denied' });
+    await openAddForm();
+    await press(Testids.bookForm.coverCamera);
+    expect(screen.getByTestId(Testids.snackbar.root)).toHaveTextContent(/I need the camera/);
   });
 });
 
