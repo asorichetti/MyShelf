@@ -105,9 +105,15 @@ describe('Button', () => {
     expect(screen.getByRole('button', { name: 'Add a book' })).toBeOnTheScreen();
   });
 
-  it.each(['primary', 'secondary', 'ghost'] as const)('renders the %s variant', (variant) => {
+  it.each([
+    ['primary', 'primary'],
+    ['secondary', 'primaryContainer'],
+    ['ghost', null],
+    ['danger', 'danger'],
+  ] as const)('renders the %s variant', (variant, bg) => {
     renderWithTheme(<Button label={variant} variant={variant} testID="btn" />);
-    expect(screen.getByTestId('btn')).toBeOnTheScreen();
+    expect(screen.getByTestId('btn')).toHaveStyle({ backgroundColor: bg ? lightTheme.colors[bg] : 'transparent' });
+    expect(screen.getByTestId('btn')).toHaveStyle({ minHeight: 48 });
   });
 
   it('does not fire when disabled and reports the state', () => {

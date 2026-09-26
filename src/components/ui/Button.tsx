@@ -5,7 +5,7 @@ import { useTheme, type ColorRole } from '@/theme';
 
 import { Text } from './Text';
 
-export type ButtonVariant = 'primary' | 'secondary' | 'ghost';
+export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger';
 
 export interface ButtonProps {
   /** Visible label; also the accessible name unless `accessibilityLabel` is given. */
@@ -35,6 +35,8 @@ const variantColors: Record<ButtonVariant, VariantColors> = {
   primary: { bg: 'primary', bgPressed: 'onPrimaryContainer', fg: 'onPrimary', border: null },
   secondary: { bg: 'primaryContainer', bgPressed: 'surfaceTint', fg: 'onPrimaryContainer', border: 'primary' },
   ghost: { bg: null, bgPressed: 'surfaceTint', fg: 'primary', border: null },
+  /** Destructive actions (delete, discard). */
+  danger: { bg: 'danger', bgPressed: 'onDangerContainer', fg: 'onDanger', border: null },
 };
 
 export function Button({
@@ -73,7 +75,7 @@ export function Button({
           backgroundColor: (pressed && v.bgPressed ? theme.colors[v.bgPressed] : v.bg ? theme.colors[v.bg] : 'transparent'),
           borderColor: v.border ? theme.colors[v.border] : 'transparent',
         },
-        variant === 'primary' && !inactive && { boxShadow: theme.elevation.low },
+        (variant === 'primary' || variant === 'danger') && !inactive && { boxShadow: theme.elevation.low },
         block && styles.block,
         inactive && styles.inactive,
         style,
