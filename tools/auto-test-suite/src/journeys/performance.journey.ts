@@ -7,7 +7,7 @@ import { writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { Testids, tid } from '../selectors.ts';
-import { waitVisible } from './helpers.ts';
+import { rowNames, waitVisible } from './helpers.ts';
 import { expect, q, register, type Context } from './registry.ts';
 
 const row = tid(Testids.home.row);
@@ -224,5 +224,75 @@ register({
     record(c, { fixture: 'huge', loadMs, startup, warm, searches, summary, all, scroll });
     expect(scroll.reachedEnd, `/ (huge): expected to reach the end of the list, stopped after ${scroll.totalMs} ms`);
     expect(summary.medianQueryMs < SEARCH_BUDGET_MS, `/ (huge): expected the median search query under ${SEARCH_BUDGET_MS} ms, found ${summary.medianQueryMs} ms (${q(searches.map((s) => [s.query, s.queryMs]))})`);
+  },
+});
+
+/** PLAN P11-06: each preset's Shelf query well under 100 ms with 10,000 books. */
+const SORT_BUDGET_MS = 100;
+
+interface SortTiming {
+  preset: string;
+  /** Each application's database query (listShelfSections + count), as the Shelf measured it. */
+  runs: number[];
+  medianMs: number;
+}
+
+/** Applies a Sort sheet preset (the sheet is open) and returns the query time the Shelf measured for it. */
+async function timePreset(c: Context, name: string): Promise<number> {
+  const before = await c.page.evaluate((n) => performance.getEntriesByName(n).length, SHELF_QUERY_MEASURE);
+  await c.page.locator(`${tid(Testids.sortSheet.preset)}[aria-label="${name}"]`).click();
+  try {
+    await c.page.waitForFunction(([n, count]) => performance.getEntriesByName(n as string).length > (count as number), [SHELF_QUERY_MEASURE, before] as const, { timeout: 30_000, polling: 'raf' });
+  } catch {
+    expect(false, `/ (huge): applying ${q(name)} never finished a Shelf query`);
+  }
+  return c.page.evaluate((n) => {
+    const all = performance.getEntriesByName(n);
+    return Math.round((all[all.length - 1]?.duration ?? -1) * 10) / 10;
+  }, SHELF_QUERY_MEASURE);
+}
+
+register({
+  name: 'shelf-huge-multisort',
+  suite: 'perf',
+  desc: 'Fixture "huge" (10,000 books): every Sort preset (Library order, series order, call number, newest, A–Z, by author, rainbow, surprise), three times each, and Library order grouped by genre, each with its Shelf query under 100 ms; timings in timing.json',
+  async run(c) {
+    const loadMs = await openBigFixture(c, 'huge');
+    await c.page.locator(tid(Testids.home.sortButton)).click();
+    await waitVisible(c, tid(Testids.sortSheet.root), '/ (huge, Sort sheet)');
+    const presets = ['Library order', 'Series reading order', 'Call number', 'Newest additions', 'A–Z by title', 'By author', 'Rainbow', 'Surprise me'];
+    // The first query after load warms the statement cache: recorded, not judged.
+    const warm = await timePreset(c, 'By author');
+    const timings: SortTiming[] = [];
+    for (const preset of presets) {
+      const runs: number[] = [];
+      for (let i = 0; i < 3; i++) {
+        runs.push(await timePreset(c, preset));
+        // Something else in between, so the next run is a real change of sort.
+        await timePreset(c, preset === 'A–Z by title' ? 'Newest additions' : 'A–Z by title');
+      }
+      timings.push({ preset, runs, medianMs: median(runs) });
+    }
+    await timePreset(c, 'Library order');
+    const first = (await rowNames(c))[0];
+    await c.page.locator(tid(Testids.sortSheet.done)).click();
+
+    // Grouped by genre: the same query plus the memberships, then the within-section order.
+    await c.page.locator(tid(Testids.shelfView.groupByButton)).click();
+    const beforeGroup = await c.page.evaluate((n) => performance.getEntriesByName(n).length, SHELF_QUERY_MEASURE);
+    await c.page.locator(tid(Testids.shelfView.groupByGenre)).click();
+    await c.page.waitForFunction(([n, count]) => performance.getEntriesByName(n as string).length > (count as number), [SHELF_QUERY_MEASURE, beforeGroup] as const, { timeout: 30_000, polling: 'raf' });
+    const groupedMs = await c.page.evaluate((n) => {
+      const all = performance.getEntriesByName(n);
+      return Math.round((all[all.length - 1]?.duration ?? -1) * 10) / 10;
+    }, SHELF_QUERY_MEASURE);
+
+    const summary = { maxMedianMs: Math.max(...timings.map((t) => t.medianMs)), groupedLibraryMs: groupedMs };
+    record(c, { fixture: 'huge', loadMs, warm, timings, summary });
+    expect(first.length > 0, '/ (huge, Library order): expected rows');
+    for (const t of timings) {
+      expect(t.medianMs < SORT_BUDGET_MS, `/ (huge): expected ${q(t.preset)} under ${SORT_BUDGET_MS} ms, found a median of ${t.medianMs} ms (${q(t.runs)})`);
+    }
+    expect(groupedMs < SORT_BUDGET_MS * 1.5, `/ (huge): expected Library order grouped by genre under ${SORT_BUDGET_MS * 1.5} ms, found ${groupedMs} ms`);
   },
 });

@@ -55,7 +55,7 @@ async function waitForSnack(c: Context, prefix: string, where: string): Promise<
 register({
   name: 'shelf-group-by-genre',
   suite: 'p06',
-  desc: 'Fixture "demo": group by genre shows 4 brass-edged sections with counts (a two-genre book in both); series sections are in reading order; None restores the flat list',
+  desc: 'Fixture "demo": group by genre shows 4 brass-edged sections with counts (a two-genre book in both); series sections follow the sort inside (Discworld by title here); None restores the flat list',
   async run(c) {
     await openFixture(c, 'demo', '/');
     await waitForCount(c, row, 12, '/');
@@ -77,7 +77,7 @@ register({
     await c.page.locator(tid(sv.groupBySeries)).click();
     await waitForSections(c, ['Discworld, 3 books', 'Earthsea, 2 books', 'Not in a series, 7 books'], '/ group by series');
     const names3 = (await rowNames(c)).slice(0, 3).map((n) => n.split(',')[0]);
-    expect(q(names3) === q(['The Colour of Magic', 'The Light Fantastic', 'Mort']), `/ group by series: expected Discworld in reading order, found ${q(names3)}`);
+    expect(q(names3) === q(['The Colour of Magic', 'The Light Fantastic', 'Mort']), `/ group by series: expected Discworld by title (the sort), found ${q(names3)}`);
     await c.snap('group-by-series');
 
     await c.page.locator(tid(sv.groupByNone)).click();
@@ -175,8 +175,9 @@ register({
     await groupBy(c, sv.groupByAuthor);
     await c.page.locator(tid(sv.modeCovers)).click();
     await c.page.locator(tid(Testids.home.sortButton)).click();
-    await c.page.locator(tid(Testids.home.sortYear)).click();
-    await c.page.locator(tid(Testids.home.sortButton)).click();
+    await c.page.getByRole('button', { name: 'Sort by: Title. Change' }).click();
+    await c.page.locator(`${tid(Testids.sortSheet.levelKeyOption)}[aria-label="Year published"]`).click();
+    await c.page.locator(tid(Testids.sortSheet.done)).click();
     await c.page.locator(tid(sv.filterButton)).click();
     await c.page.locator(`${tid(sv.filterGenre)}[aria-label^="Science Fiction,"]`).click();
     await c.page.locator(tid(sv.filterDone)).click();

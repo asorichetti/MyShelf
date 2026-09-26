@@ -80,15 +80,20 @@ register({
     const sortButton = c.page.locator(tid(Testids.home.sortButton));
     expect((await sortButton.getAttribute('aria-expanded')) === 'false', '/: the sort button should start collapsed');
     await sortButton.click();
-    expect((await sortButton.getAttribute('aria-expanded')) === 'true', '/: the sort button should report the open menu (aria-expanded="true")');
-    await c.page.locator(tid(Testids.home.sortYear)).click();
-    expect((await c.page.locator(tid(Testids.home.sortYear)).getAttribute('aria-checked')) === 'true', '/: expected the Year option to be checked');
+    await waitVisible(c, tid(Testids.sortSheet.root), '/ (Sort sheet)');
+    expect((await sortButton.getAttribute('aria-expanded')) === 'true', '/: the sort button should report the open sheet (aria-expanded="true")');
+    await c.page.getByRole('button', { name: 'Sort by: Title. Change' }).click();
+    await c.page.locator(`${tid(Testids.sortSheet.levelKeyOption)}[aria-label="Year published"]`).click();
     await c.page.waitForFunction((sel) => (document.querySelector(sel)?.getAttribute('aria-label') || '').startsWith('Pride and Prejudice'), row);
-    await c.checkGates('/ (sort menu open)');
+    await c.checkGates('/ (sort sheet open)');
     await c.snap('sort-year');
+    await c.page.locator(tid(Testids.sortSheet.done)).click();
 
-    // The sort is a setting: it must survive a reload.
+    // The sort is a setting: it must survive a reload. Settings reads it back first, so the save has landed.
+    await c.page.locator(tid(Testids.tabs.settings)).click();
+    await c.page.waitForFunction((sel) => /Year/.test((document.querySelector(sel) as HTMLElement | null)?.innerText ?? ''), tid(Testids.settings.preferences), { timeout: 10_000 });
     await c.page.reload();
+    await c.page.locator(tid(Testids.tabs.shelf)).click();
     await waitForCount(c, row, 12, '/ after reload');
     const first = (await rowNames(c))[0];
     expect(first.startsWith('Pride and Prejudice'), `/ after reload: expected the year sort to be kept (Pride and Prejudice first), found ${q(first)}`);

@@ -384,7 +384,7 @@ function OpenSortSheet({ visible, sort, groupBy, presets, onChange, onPresetsCha
 
 const styles = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center' },
-  wrap: { flexWrap: 'wrap' },
+  wrap: { flexDirection: 'row', flexWrap: 'wrap' },
   fill: { flex: 1 },
   push: { marginLeft: 'auto' },
   level: { borderWidth: 1 },
