@@ -16,13 +16,17 @@ export const BROKEN_COVER = 'https://covers.openlibrary.org/b/id/__expected-404-
  * A small, realistic library: 12 books across 4 genres; Discworld (#1, #2, #4)
  * and Earthsea (#1, #3) each have a gap; Pratchett, Le Guin and Christie have
  * several books; Dune is on loan, Roger Ackroyd is overdue, Mort was lent and
- * returned; one group ("Holiday reads"). Ten books have a real cover URL,
- * The Farthest Shore has none and The Murder of Roger Ackroyd's is broken.
+ * returned; one group ("Holiday reads"). Seven books are rated (Mort, Good
+ * Omens and Pride and Prejudice 5 stars; The Colour of Magic and Dune 4; A
+ * Wizard of Earthsea and The Hound of the Baskervilles 3), five are not.
+ * Ten books have a real cover URL, The Farthest Shore has none and The
+ * Murder of Roger Ackroyd's is broken.
  */
 export const demo: Fixture = {
   books: [
     {
       title: 'The Colour of Magic',
+      rating: 4,
       coverUri: coverById(7892565),
       authors: ['Terry Pratchett'],
       genres: ['Fantasy'],
@@ -51,6 +55,7 @@ export const demo: Fixture = {
     },
     {
       title: 'Mort',
+      rating: 5,
       coverUri: coverById(7892579),
       authors: ['Terry Pratchett'],
       genres: ['Fantasy'],
@@ -65,6 +70,7 @@ export const demo: Fixture = {
     },
     {
       title: 'Good Omens',
+      rating: 5,
       coverUri: coverById(379638),
       subtitle: 'The Nice and Accurate Prophecies of Agnes Nutter, Witch',
       authors: ['Terry Pratchett', 'Neil Gaiman'],
@@ -80,6 +86,7 @@ export const demo: Fixture = {
     },
     {
       title: 'A Wizard of Earthsea',
+      rating: 3,
       coverUri: coverById(9641870),
       authors: ['Ursula K. Le Guin'],
       genres: ['Fantasy'],
@@ -119,6 +126,7 @@ export const demo: Fixture = {
     },
     {
       title: 'Dune',
+      rating: 4,
       coverUri: coverById(15166231),
       authors: ['Frank Herbert'],
       genres: ['Science Fiction'],
@@ -163,6 +171,7 @@ export const demo: Fixture = {
     },
     {
       title: 'The Hound of the Baskervilles',
+      rating: 3,
       coverUri: coverById(13347460),
       authors: ['Arthur Conan Doyle'],
       genres: ['Mystery', 'Classics'],
@@ -176,6 +185,7 @@ export const demo: Fixture = {
     },
     {
       title: 'Pride and Prejudice',
+      rating: 5,
       coverUri: coverById(12645114),
       authors: ['Jane Austen'],
       genres: ['Classics'],
