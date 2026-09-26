@@ -41,7 +41,8 @@ var navigateCmd = &cobra.Command{
   auto-test-suite navigate --url /nope__expected-404 --marker 'text=Unmatched Route'
   auto-test-suite navigate --url / --wait 2000 --ux-gates fail`,
 	RunE: func(cmd *cobra.Command, _ []string) error {
-		res, err := navigateOnce("navigate", navigateOpts.url, viewport(), g.colorScheme, navigateOpts.marker, navigateOpts.wait)
+		vp := viewport()
+		res, err := navigateOnce("navigate", navigateOpts.url, vp, g.colorScheme, navigateOpts.marker, navigateOpts.wait, renderViewports(vp))
 		emit(res)
 		return err
 	},
@@ -56,7 +57,7 @@ func init() {
 }
 
 // navigateOnce is one fresh browser, one page, one bundle.
-func navigateOnce(name, path string, vp playwright.Size, scheme, marker string, waitMs int) (res navigateResult, err error) {
+func navigateOnce(name, path string, vp playwright.Size, scheme, marker string, waitMs int, renderAt []playwright.Size) (res navigateResult, err error) {
 	start := time.Now()
 	base, _ := baseURL()
 	target := resolveURL(base, path)
@@ -92,7 +93,7 @@ func navigateOnce(name, path string, vp playwright.Size, scheme, marker string, 
 		res.Status = resp.Status()
 	}
 	var errs []error
-	errs = append(errs, uxgates.CheckPage(run.Page, rec, path, uxgates.PageStateOptions{Marker: marker}, renderViewports(vp)))
+	errs = append(errs, uxgates.CheckPage(run.Page, rec, path, uxgates.PageStateOptions{Marker: marker}, renderAt))
 	if !rec.Enabled() && marker != "" {
 		if werr := run.Page.Locator(marker).First().WaitFor(); werr != nil {
 			errs = append(errs, fmt.Errorf("marker %s: %w", marker, werr))
