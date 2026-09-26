@@ -292,7 +292,7 @@ register({
 register({
   name: 'csv-import-goodreads',
   suite: 'p08',
-  desc: 'Fixture "empty": choose a Goodreads export (20 rows) → the Goodreads preset is chosen by itself → the preview shows 10 rows, "20 books will be added" → import → "Imported 20 books" with shelves as groups → 20 Shelf rows, and the cover backfill brings in real covers',
+  desc: 'Fixture "empty": choose a Goodreads export (20 rows) → the Goodreads preset is chosen by itself → the preview shows 10 rows, "20 books will be added" → import → "Imported 20 books" with shelves as groups → 20 Shelf rows, and the cover backfill brings in a real cover for every one of them',
   async run(c) {
     // Open Library only: the recorded fixtures cover it (Google Books refuses keyless recording at busy times).
     await openFixture(c, 'empty', '/settings', TODAY);
@@ -345,6 +345,31 @@ register({
       expect(cover.loaded === 1 && cover.fallbacks === 0, `/: expected ${q(title)} to show its real cover, found ${q(cover)}`);
     }
     await c.snap('import-shelf-covers');
+
+    // Then every one of the 20: the covers grid holds them all at once, so one condition watches them settle
+    // (19 through the batch cover-id search, The Colour of Magic, which has no ISBN, through its title search).
+    await c.page.locator(tid(Testids.shelfView.modeCovers)).click();
+    await waitForCount(c, tid(Testids.shelfView.coverCell), 20, '/ (covers grid)');
+    const gridAt = Date.now();
+    const everyCover = ([cell, img]: readonly [string, string]) =>
+      [...document.querySelectorAll(cell)].every((e) => [...e.querySelectorAll<HTMLImageElement>(img)].some((i) => i.complete && i.naturalWidth > 0));
+    const settled = await c.page
+      .waitForFunction(everyCover, [tid(Testids.shelfView.coverCell), `${tid(Testids.cover.image)} img`] as const, { timeout: 45_000, polling: 250 })
+      .then(() => true)
+      .catch(() => false);
+    const missingCovers = await c.page
+      .locator(tid(Testids.shelfView.coverCell))
+      .evaluateAll((els, img) => els.filter((e) => ![...e.querySelectorAll<HTMLImageElement>(img)].some((i) => i.complete && i.naturalWidth > 0)).map((e) => e.getAttribute('aria-label') ?? e.textContent), `${tid(Testids.cover.image)} img`);
+    c.logf(`covers grid: ${settled ? 'every cover shown' : 'covers missing'} after ${((Date.now() - gridAt) / 1000).toFixed(1)}s`);
+    expect(settled && missingCovers.length === 0, `/ (covers grid): expected all 20 imported books to show their cover, still missing ${q(missingCovers)}`);
+    await c.checkGates('/ (covers grid, every imported cover)');
+    // Let the last covers finish fading in over their placeholders before the screenshot.
+    await c.page
+      .waitForFunction(([cell, ph]) => [...document.querySelectorAll(cell)].every((e) => !e.querySelector(ph)), [tid(Testids.shelfView.coverCell), tid(Testids.cover.placeholder)] as const, {
+        timeout: 10_000,
+      })
+      .catch(() => {});
+    await c.snap('import-covers-grid');
   },
 });
 

@@ -413,6 +413,10 @@
       "url": "https://openlibrary.org/search.json?q=isbn*",
       "body": "openlibrary/search-isbn-batch.json",
       "note": "the cover backfill's batch search (findCoverIdsByIsbn): one real answer (September 2026) for every ISBN recorded here, served for any batch; each book takes only the entries matching its own ISBN"
+    },
+    {
+      "url": "https://openlibrary.org/search.json?title=The%20Colour%20of%20Magic&author=Terry%20Pratchett&fields=key%2Ctitle%2Cauthor_name%2Cfirst_publish_year%2Cedition_count%2Cisbn%2Ccover_i%2Csubject%2Clanguage&limit=10",
+      "body": "openlibrary/search-the-colour-of-magic-by-terry-pratchett.json"
     }
   ]
 }
