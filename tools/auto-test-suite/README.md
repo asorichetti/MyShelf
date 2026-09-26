@@ -362,9 +362,25 @@ Every page the suite opens routes `https://covers.openlibrary.org/**` to two
 synthetic JPEGs in `src/browser/fixtures/` (`src/browser/covers.ts`): a 2:3
 test cover, and a white-padded square for the ids in `PADDED_COVER_IDS` (some
 Open Library scans are padded like that). A URL with the expected-missing
-marker gets a real 404. So the demo fixture's real cover URLs render real
-images offline and deterministically. The images are plain shapes, not cover
-art; `makeTestCovers.ts` next to them regenerates them.
+marker gets what Open Library really sends for a cover it does not have:
+`200 OK` with a transparent 1x1 GIF, or a `404` when the URL asks for
+`default=false`. So the demo fixture's real cover URLs render real images
+offline and deterministically. The images are plain shapes, not cover art;
+`makeTestCovers.ts` next to them regenerates them.
+
+**The `live` suite** is the exception: its journeys call
+`context.unroute()` on the covers host, so the demo books load their real
+covers from covers.openlibrary.org, and fail if any book that has a cover
+shows a stand-in (a real cover is at least 400px tall; the stand-ins are at
+most 300px) or the generated fallback. It needs the internet, so the per-push
+CI leaves it out (`--exclude-suite live`); `.github/workflows/live.yml` runs
+it weekly and uploads the screenshots. Run it by hand with
+`npm run -s autotest -- journey --suite live --ux-gates fail`.
+
+| Journey | Suite | Checks |
+|---|---|---|
+| `live-covers-detail` | live | Good Omens, Dune, The Colour of Magic and Pride and Prejudice each show a real portrait cover on book detail; a screenshot per book |
+| `live-covers-shelf` | live | Every demo book with a cover shows a real one in the list and the covers grid; only The Farthest Shore (no cover) and The Murder of Roger Ackroyd (Open Library's 1x1 "no cover" GIF) show the generated cover; screenshots of the list, the grid while loading, and the settled grid |
 
 ### Waivers
 

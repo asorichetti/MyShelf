@@ -1,7 +1,7 @@
 name: Live APIs
 
 # Checks the real Open Library APIs still give well-known books real cover art
-# (npm run test:live). Scheduled rather than on every push: it depends on an
+# (npm run test:live), and that the app shows them (the `live` journey suite). Scheduled rather than on every push: it depends on an
 # outside service, and a failure here means the API or its data changed, not
 # that a commit broke something.
 on:
@@ -34,5 +34,33 @@ jobs:
         with:
           name: live-covers
           path: live-covers/
+          if-no-files-found: ignore
+          retention-days: 7
+
+  journeys:
+    name: Real covers in the app
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 23
+          cache: npm
+      - run: npm ci
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Export the web build
+        run: npm run export:web > expo-export.log 2>&1 || { cat expo-export.log; exit 1; }
+      # The live suite loads real covers from covers.openlibrary.org (every
+      # other journey answers them with offline stand-ins).
+      - name: Live journeys (gates fail)
+        run: npm run -s autotest -- journey --suite live --serve dist --ux-gates fail --headless=true
+      - name: Upload the screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: live-journey-screenshots
+          path: screenshots/
           if-no-files-found: ignore
           retention-days: 7
