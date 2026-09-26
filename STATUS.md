@@ -12,13 +12,13 @@ On `main`: the scaffold (P00-01 to P00-07), the design system, Booky, tabs, data
 | [Phase 01](docs/plan/phase-01-library-core.md) | Library core: CRUD and book detail | 0 / 12 |
 | [Phase 02](docs/plan/phase-02-metadata-providers.md) | Metadata providers | 10 / 13 |
 | [Phase 03](docs/plan/phase-03-scanning.md) | Scanning: barcode, OCR and edition picker | 0 / 13 |
-| [Phase 04](docs/plan/phase-04-series.md) | Series | 0 / 8 |
-| [Phase 05](docs/plan/phase-05-lending.md) | Lending | 0 / 10 |
+| [Phase 04](docs/plan/phase-04-series.md) | Series | 1 / 8 |
+| [Phase 05](docs/plan/phase-05-lending.md) | Lending | 1 / 10 |
 | [Phase 06](docs/plan/phase-06-grouping-and-shelf-views.md) | Grouping and shelf views | 0 / 11 |
 | [Phase 07](docs/plan/phase-07-booky-assistant.md) | Booky assistant | 0 / 9 |
 | [Phase 08](docs/plan/phase-08-settings-backup.md) | Settings, backup, export and import | 0 / 10 |
 | [Phase 09](docs/plan/phase-09-polish-a11y-release.md) | Polish, accessibility and release | 0 / 12 |
-| **Total** | | **38 / 128** |
+| **Total** | | **40 / 128** |
 
 ## Phase 00 — Foundation
 
@@ -112,7 +112,7 @@ On `main`: the scaffold (P00-01 to P00-07), the design system, Booky, tabs, data
 
 [Phase document](docs/plan/phase-04-series.md)
 
-- [ ] P04-01 Series repository
+- [x] P04-01 Series repository
 - [ ] P04-02 Series picker in the book form
 - [ ] P04-03 Confirm detected series on save
 - [ ] P04-04 Series list screen
@@ -126,7 +126,7 @@ On `main`: the scaffold (P00-01 to P00-07), the design system, Booky, tabs, data
 [Phase document](docs/plan/phase-05-lending.md)
 
 - [ ] P05-01 Borrowers repository and picker
-- [ ] P05-02 Loan domain rules
+- [x] P05-02 Loan domain rules
 - [ ] P05-03 Lend flow
 - [ ] P05-04 Return flow
 - [ ] P05-05 Loans tab
