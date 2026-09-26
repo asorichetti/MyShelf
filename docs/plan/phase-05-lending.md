@@ -32,12 +32,13 @@ Never lose a book to a friend again. The user records who borrowed a book and wh
 - **Acceptance:** case-insensitive de-duplication suggestion ("Sam already exists — use them?"); delete rules enforced.
 - **Tests:** `src/db/repositories/__tests__/borrowers.test.ts`, `src/components/loans/__tests__/BorrowerPicker.test.tsx`.
 
-### P05-02 Loan domain rules
+### P05-02 Loan domain rules — done
 
 - **Description:** Pure helpers in `src/domain/loans.ts`: `loanStatus(loan, today)` → `on-loan | due-soon (≤ 3 days) | overdue | returned`; `daysOverdue`; `defaultDueDate(lentOn, settings.loanDays)` (default 28 days, configurable in P08-07); validation (`due_on ≥ lent_on`, `returned_on ≥ lent_on`, no future `lent_on`). All dates are local `YYYY-MM-DD` strings; "today" comes from the injectable clock (P01-01).
 - **Files:** `src/domain/loans.ts`, `src/domain/dates.ts`.
 - **Acceptance:** boundary cases (due today = due-soon, not overdue; month/year rollovers; leap day).
 - **Tests:** `src/domain/__tests__/loans.test.ts`.
+- **Delivered:** `src/domain/loans.ts` has `loanStatus(loan, today)` and `loanStatusAt(loan, now)` (due-soon covers the three days before the due date and the due date itself), `isOverdue` (moved here from `loan.ts`), `daysOverdue`, `daysUntilDue`, `daysReturnedLate`, `defaultDueDate(lentOn, loanDays)` with `normaliseLoanDays` (a whole number from 1 to 3650, else 28), and `validateLoanDates(input, today?)` returning `{ field, code }` issues (`invalid-date`, `lent-in-future`, `due-before-lent`, `returned-before-lent`, `returned-in-future`), plus `assertValidLoanDates` / `LoanValidationError`. A past due date and a return after the due date are allowed. The setting `loanDays` (default 28) is added to `AppSettings` for P08-07 to expose. `src/domain/dates.ts` needed no change: `daysBetween` rounds, so 23- and 25-hour days count as one. Jest sandboxes `process.env`, so the timezone and DST tests run the domain module in child Node processes with `TZ` set (New York, London, Kolkata, Lord Howe, São Paulo's midnight DST gap and others).
 
 ### P05-03 Lend flow
 

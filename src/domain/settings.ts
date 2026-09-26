@@ -8,6 +8,8 @@ export interface AppSettings {
   mutedTips: string[];
   /** Ask Google Books as well as Open Library for book details (PLAN §6). Settings → Lookups (P08-05). */
   googleBooksEnabled: boolean;
+  /** Days from lending to the default due date (P05-02); configurable in Settings (P08-07). */
+  loanDays: number;
 }
 
 export type SettingKey = keyof AppSettings;
@@ -17,4 +19,5 @@ export const settingDefaults: Readonly<AppSettings> = Object.freeze({
   bookyMode: 'helpful',
   mutedTips: [],
   googleBooksEnabled: true,
+  loanDays: 28,
 });

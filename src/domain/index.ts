@@ -8,6 +8,7 @@ export * from './group';
 export * from './isbn';
 export * from './languages';
 export * from './loan';
+export * from './loans';
 export * from './series';
 export * from './seriesGaps';
 export * from './seriesParser';

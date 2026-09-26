@@ -28,8 +28,3 @@ export interface NewLoan {
   dueOn?: IsoDate | null;
   note?: string | null;
 }
-
-/** An open loan whose due date is before `today`. */
-export function isOverdue(loan: Pick<Loan, 'dueOn' | 'returnedOn'>, today: IsoDate): boolean {
-  return loan.returnedOn == null && loan.dueOn != null && loan.dueOn < today;
-}
