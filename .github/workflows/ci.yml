@@ -51,22 +51,33 @@ jobs:
         run: npx playwright install --with-deps chromium
       # Typecheck the tool and run its unit tests.
       - run: npm run autotest:check
-      - name: Start Expo web server
+      # Expo Router's typed routes (.expo/types/router.d.ts) are only written by
+      # the dev server; `expo export` does not generate them. Start it just long
+      # enough to write them, then stop it: the journeys run against the export.
+      - name: Generate typed routes
         run: |
           CI=1 npx expo start --web --port 8081 > expo-web.log 2>&1 &
+          pid=$!
           for _ in $(seq 1 120); do
-            if curl -sf http://localhost:8081/ > /dev/null; then echo "Expo web is up"; exit 0; fi
+            if [ -s .expo/types/router.d.ts ] && curl -sf http://localhost:8081/ > /dev/null; then break; fi
             sleep 1
           done
-          echo "Expo web did not start"; cat expo-web.log; exit 1
-      # The dev server writes Expo Router's typed routes (.expo/types), so this
-      # typecheck is strict about route links, unlike the one in the app job.
+          kill "$pid" || true
+          wait "$pid" 2> /dev/null || true
+          if [ ! -s .expo/types/router.d.ts ]; then echo "Typed routes were not generated"; cat expo-web.log; exit 1; fi
+      # With the route types present this typecheck is strict about route
+      # links, unlike the one in the app job.
       - name: Typecheck with generated route types
         run: npm run typecheck
+      # The journeys run against the static export served by --serve (SPA
+      # fallback, COOP/COEP, real 404s for missing assets): the shipped bundle,
+      # not the dev server's.
+      - name: Export the web build
+        run: npm run export:web > expo-export.log 2>&1 || { cat expo-export.log; exit 1; }
       - name: Smoke (core suite, gates fail)
-        run: npm run -s autotest -- smoke --env local --ux-gates fail --headless=true
+        run: npm run -s autotest -- smoke --serve dist --ux-gates fail --headless=true
       - name: Remaining journeys (gates fail)
-        run: npm run -s autotest -- journey --suite responsive --ux-gates fail --headless=true
+        run: npm run -s autotest -- journey --suite responsive --serve dist --ux-gates fail --headless=true
       - name: Upload evidence bundles
         if: failure()
         uses: actions/upload-artifact@v4
@@ -75,5 +86,6 @@ jobs:
           path: |
             screenshots/
             expo-web.log
+            expo-export.log
           if-no-files-found: warn
           retention-days: 14

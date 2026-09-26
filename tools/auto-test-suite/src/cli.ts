@@ -11,6 +11,7 @@ import { screenshotCommand } from './commands/screenshot.ts';
 import { smokeCommand } from './commands/smoke.ts';
 import { errorMessage } from './errors.ts';
 import { loadJourneys } from './journeys/registry.ts';
+import { startStaticServer, type StaticServer } from './server/static.ts';
 import { loadAllowlist, loadConfig } from './uxgates/config.ts';
 import { parseMode } from './uxgates/gate.ts';
 
@@ -18,6 +19,9 @@ const NAME = 'auto-test-suite';
 
 /** The command being run, for the JSON error document. */
 let current = NAME;
+
+/** The --serve server, stopped when the command ends. */
+let served: StaticServer | undefined;
 
 interface RawGlobals {
   env: string;
@@ -29,6 +33,7 @@ interface RawGlobals {
   colorScheme: string;
   gatesConfig: string;
   consoleAllowlist: string;
+  serve: string;
 }
 
 function buildProgram(): Command {
@@ -40,6 +45,9 @@ function buildProgram(): Command {
     )
     .option('--env <name>', `target environment (${Object.keys(Environments).sort().join(', ')})`, 'local')
     .addOption(new Option('--base-url <url>', 'base URL; overrides --env').default('', 'from --env'))
+    .addOption(
+      new Option('--serve <dir>', 'serve a static web export (e.g. dist) on a free local port and test that').default('', 'off'),
+    )
     .addOption(
       new Option('--headless [bool]', 'run Chromium headless; --headless=false for a visible window')
         .preset(true)
@@ -63,7 +71,7 @@ function buildProgram(): Command {
     })
     .showHelpAfterError(false);
 
-  const explicit = (flag: 'headless' | 'uxGates') => program.getOptionValueSource(flag) === 'cli';
+  const explicit = (flag: 'headless' | 'uxGates' | 'env' | 'baseUrl') => program.getOptionValueSource(flag) === 'cli';
 
   for (const sub of [navigateCommand(), journeyCommand(), smokeCommand(explicit), screenshotCommand(), interactCommand()]) {
     program.addCommand(sub.exitOverride().configureOutput({ outputError: () => {} }));
@@ -72,14 +80,20 @@ function buildProgram(): Command {
   program.hook('preSubcommand', (_this, sub) => {
     current = sub.name();
   });
-  program.hook('preAction', () => {
-    const o = program.opts<RawGlobals>();
+  program.hook('preAction', async () => {
+    const { serve, ...o } = program.opts<RawGlobals>();
     Object.assign(g, o);
     loadConfig(g.gatesConfig);
     loadAllowlist(g.consoleAllowlist);
     parseMode(g.uxGates);
     resolveViewport(g.viewport);
     parseColorScheme(g.colorScheme);
+    if (serve) {
+      if (explicit('baseUrl') || explicit('env')) throw new Error('--serve and --base-url/--env are mutually exclusive');
+      served = await startStaticServer(serve);
+      g.baseUrl = served.url;
+      logf(`serving ${serve} at ${served.url}`);
+    }
     baseURL(g.env, g.baseUrl);
   });
   return program;
@@ -102,6 +116,8 @@ async function main(): Promise<void> {
     if (!hasEmitted()) emit({ command: current, ok: false, error: msg });
     logf(`error: ${msg}`);
     process.exitCode = 1;
+  } finally {
+    await served?.close();
   }
 }
 

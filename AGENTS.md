@@ -24,8 +24,8 @@ Use `npx`, not `bunx` (this project uses npm; there is no `bun.lock`).
 | `npm start` / `npx expo start` | Metro dev server | available |
 | `npm run android` | open on a connected device/emulator | available |
 | `npm run web` | run the web build (http://localhost:8081); for the auto test suite use `CI=1 npx expo start --web --port 8081` (no file watcher; restart after adding a route) | available |
-| `npm run export:web` | static web build into `dist/` | available |
-| `npm run typecheck` | `tsc --noEmit`; route strings (`href`, `router.navigate`) are checked strictly only while `.expo/types/router.d.ts` exists, which a running dev server generates, so CI runs it again in the auto test suite job with the server up | available |
+| `npm run export:web` | static web build into `dist/`; test it with any auto test suite command plus `--serve dist` (no dev server needed) | available |
+| `npm run typecheck` | `tsc --noEmit`; route strings (`href`, `router.navigate`) are checked strictly only while `.expo/types/router.d.ts` exists, which only the dev server generates, so CI starts it briefly in the auto test suite job and runs the typecheck again | available |
 | `npm test` | Jest | available |
 | `npm run selectors:gen` | regenerate test ids from `src/testing/selectors.json` | available |
 | `npm run selectors:check` | fail if the generated test id file is stale | available |

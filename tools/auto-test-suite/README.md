@@ -20,6 +20,7 @@ tools/auto-test-suite/
     ├── errors.ts
     ├── commands/                root helpers, navigate, journey, smoke, screenshot, interact
     ├── browser/                 Chromium lifecycle, listeners, run bundle
+    ├── server/                  static file server for --serve (SPA fallback, COOP/COEP)
     ├── uxgates/                 pagestate, render, console, network, a11y, recorder
     │   ├── gates.config.json    render/a11y configuration
     │   └── console_allowlist.json
@@ -51,6 +52,13 @@ restart the server**; otherwise the new route renders the not-found screen and
 the pagestate gate (correctly) fails. The dev server also sets the COOP/COEP
 headers that expo-sqlite needs on web (`metro.config.js`); a server without
 them cannot open the database and the Shelf never leaves its loading state.
+
+Or test the static export instead, with no dev server at all:
+
+```bash
+npm run export:web                                 # writes dist/
+npm run -s autotest:smoke -- --serve dist          # serves dist on a free port for this run
+```
 
 Then:
 
@@ -136,6 +144,7 @@ Global flags may come before or after the command name.
 |---|---|---|
 | `--env` | `local` | `local` = `http://localhost:8081`. There is no preview environment yet |
 | `--base-url` | | Overrides `--env` (e.g. a server on another port) |
+| `--serve` | | Serve a static web export (e.g. `dist` from `npm run export:web`) on a free `127.0.0.1` port for this run and test that. Mutually exclusive with `--base-url` and an explicit `--env`. See [Serving the export](#serving-the-export) |
 | `--headless` | computed | `true` when `CI` is set; `false` when `DISPLAY`/`WAYLAND_DISPLAY` is set; otherwise `false` on macOS and `true` elsewhere (containers have no display). `--headless` alone means true; `--headless=false` shows the window |
 | `--screenshot-dir` | `./screenshots` | Parent directory for run bundles, relative to the current directory |
 | `--ux-gates` | `warn` | `off` (skip gates), `warn` (record findings, do not fail), `fail` |
@@ -352,6 +361,27 @@ reason, and the waiver is listed at the top of the file. Use it for screens the
 app does not own; fix the app instead where you can. No journey needs one
 today.
 
+### Serving the export
+
+`--serve <dir>` starts an in-process static server (`src/server/static.ts`,
+on `node:http`) before the command and stops it afterwards. It behaves like a
+production host rather than the dev server:
+
+- A path whose last segment has no extension (`/scan`, `/missing-shelf__expected-404`)
+  falls back to `index.html`, so Expo Router handles routing (`web.output: "single"`).
+- A path that looks like a file and is missing is a **real 404**, so a broken
+  asset reference shows up in `network.json` and fails the network gate.
+- Every response carries `Cross-Origin-Opener-Policy: same-origin` and
+  `Cross-Origin-Embedder-Policy: credentialless` (the values `metro.config.js`
+  sends), so the page is cross-origin isolated and expo-sqlite gets
+  `SharedArrayBuffer`; `.wasm` is served as `application/wasm`.
+- Only `GET`/`HEAD`; paths that escape the directory (`..`, encoded or not)
+  are refused; responses are `Cache-Control: no-store`.
+- The directory must contain `index.html`, or the command fails before a
+  browser starts.
+
+Re-export after changing app code: `--serve` tests whatever is in `dist/`.
+
 ### Dev-server caveats
 
 - The Expo dev server answers **every unknown path with `200 text/html`** (the
@@ -420,11 +450,20 @@ today.
   Jest).
 - **auto-test-suite smoke**: `npm ci`, install Chromium with its system
   dependencies (the browser download is cached per Playwright version),
-  `npm run autotest:check`, start the Expo web server on 8081, run
-  `npm run typecheck` again (now strict about route links, because the server
-  has generated Expo Router's route types), run `smoke` and the `responsive`
-  suite with `--ux-gates fail`, and upload `screenshots/` plus the Expo log as
-  an artifact when anything fails.
+  `npm run autotest:check`, start the Expo dev server just long enough to
+  write Expo Router's typed routes (`.expo/types/router.d.ts`; `expo export`
+  does not generate them) and stop it, run `npm run typecheck` again (now
+  strict about route links), `npm run export:web`, run `smoke` and the
+  `responsive` suite against `--serve dist` with `--ux-gates fail`, and upload
+  `screenshots/` plus the Expo logs as an artifact when anything fails.
+
+  Why the export and not the dev server: it is the bundle that ships, missing
+  assets are real 404s, and there is no lazy Metro bundling inside the first
+  journey. Measured locally with cold caches (`--clear`), four journeys: dev
+  server 1.2 s to start + 5.7 s of journeys (the first one waits 2.7 s for
+  Metro); export 4.5 s + 2.9 s of journeys. About the same today; the export
+  pays its cost once while the dev server's per-journey cost grows with the
+  suite.
 
 ## Proving the gates fire
 
