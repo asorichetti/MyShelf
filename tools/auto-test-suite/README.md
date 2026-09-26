@@ -183,9 +183,10 @@ auto-test-suite journey home-loads not-found   # by name
 auto-test-suite journey --suite core
 auto-test-suite journey --grep home            # JavaScript regexp over name and description
 auto-test-suite journey --all
+auto-test-suite journey --all --exclude-suite core   # everything smoke did not run (repeatable)
 ```
 
-`--list` combines with `--suite`/`--grep` to preview a selection. Each journey
+`--list` combines with `--suite`/`--exclude-suite`/`--grep` to preview a selection. Each journey
 runs in a **fresh browser, page and run directory**.
 
 ### `smoke`
@@ -455,8 +456,10 @@ Re-export after changing app code: `--serve` tests whatever is in `dist/`.
   `npm run autotest:check`, start the Expo dev server just long enough to
   write Expo Router's typed routes (`.expo/types/router.d.ts`; `expo export`
   does not generate them) and stop it, run `npm run typecheck` again (now
-  strict about route links), `npm run export:web`, run `smoke` and the
-  `responsive` suite against `--serve dist` with `--ux-gates fail`, and upload
+  strict about route links), `npm run export:web`, then against `--serve dist`
+  with `--ux-gates fail` run `smoke` (so a core failure is reported first)
+  and `journey --all --exclude-suite core` (every other suite, so a journey
+  in a new suite runs without a workflow change), and upload
   `screenshots/` plus the Expo logs as an artifact when anything fails.
 
   Why the export and not the dev server: it is the bundle that ships, missing

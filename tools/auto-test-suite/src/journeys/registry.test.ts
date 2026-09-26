@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { before, test } from 'node:test';
 
 import { ExpectationError, all, expect, get, loadJourneys, q, register } from './registry.ts';
+import { selectJourneys } from '../commands/journey.ts';
 
 before(() => loadJourneys());
 
@@ -27,4 +28,16 @@ test('expect produces a readable message', () => {
     () => expect(false, `/: expected h1 ${q('MyShelf')}, found ${q('MyShelff')}`),
     (err: unknown) => err instanceof ExpectationError && err.message === '/: expected h1 "MyShelf", found "MyShelff"',
   );
+});
+
+test('selectJourneys: --all --exclude-suite leaves that suite out and keeps every other', () => {
+  const { selected, label } = selectJourneys([], { all: true, excludeSuite: ['core'] });
+  assert.ok(selected.length > 0);
+  assert.ok(selected.every((j) => j.suite !== 'core'));
+  assert.deepEqual(
+    selected.map((j) => j.name),
+    all().filter((j) => j.suite !== 'core').map((j) => j.name),
+  );
+  assert.equal(label, 'all exclude-suite=core');
+  assert.throws(() => selectJourneys([], { all: true, excludeSuite: [...new Set(all().map((j) => j.suite))] }), /no journeys match/);
 });

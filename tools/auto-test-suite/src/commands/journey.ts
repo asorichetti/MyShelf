@@ -6,6 +6,8 @@ import { all, get, runOne, type Journey, type JourneyResult } from '../journeys/
 export interface JourneySelection {
   all?: boolean;
   suite?: string;
+  /** Suites to leave out, e.g. core when smoke already ran it. */
+  excludeSuite?: string[];
   list?: boolean;
   grep?: string;
 }
@@ -16,6 +18,7 @@ export function journeyCommand(): Command {
     .argument('[name...]', 'journey names')
     .option('--all', 'run every journey', false)
     .option('--suite <suite>', 'run every journey in this suite')
+    .option('--exclude-suite <suite>', 'leave out this suite (repeatable), e.g. --all --exclude-suite core', (v: string, acc: string[]) => [...acc, v], [] as string[])
     .option('--list', 'print the selected journeys (all when nothing is selected) instead of running them', false)
     .option('--grep <regexp>', 'run journeys whose name or description matches this regexp')
     .addHelpText(
@@ -26,7 +29,8 @@ Examples:
   auto-test-suite journey home-loads
   auto-test-suite journey --suite core --ux-gates fail
   auto-test-suite journey --grep home --viewport desktop
-  auto-test-suite journey --all`,
+  auto-test-suite journey --all
+  auto-test-suite journey --all --exclude-suite core`,
     )
     .action(async (names: string[], opts: JourneySelection) => {
       const { selected, label } = selectJourneys(names, opts);
@@ -63,6 +67,10 @@ export function selectJourneys(names: string[], opts: JourneySelection): { selec
   if (opts.suite) {
     out = out.filter((j) => j.suite === opts.suite);
     labels.push('suite=' + opts.suite);
+  }
+  for (const ex of opts.excludeSuite ?? []) {
+    out = out.filter((j) => j.suite !== ex);
+    labels.push('exclude-suite=' + ex);
   }
   if (opts.grep) {
     let re: RegExp;

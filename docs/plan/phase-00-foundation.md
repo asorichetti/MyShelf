@@ -213,8 +213,9 @@ Decisions made while building the foundation, all described in `PLAN.md`:
 - **Acceptance:** a pull request containing a commit whose message the hook rejects fails CI and names the commit; normal pull requests pass.
 - **Tests:** CI itself, proven once on a throwaway branch.
 
-### P00-23 CI runs every journey
+### P00-23 CI runs every journey — done
 
+- **Delivered:** `journey` gained `--exclude-suite <suite>` (repeatable). CI keeps `smoke` as its own step and then runs `journey --all --exclude-suite core --serve dist --ux-gates fail --headless=true`, so every non-core suite (`responsive`, `p00`, later `p01`…) runs without editing the workflow; the evidence upload still triggers on failure. Unit-tested selection; not yet proven on GitHub itself.
 - **Description:** Replace the CI step that runs `journey --suite responsive` with `npm run -s autotest -- journey --all --ux-gates fail --headless=true` (or `smoke` followed by every non-core suite discovered from `journey --list`), so journeys in new suites (`p00`, `p01`, …) are covered without editing the workflow each time. Keep `smoke` as its own step so a core failure is reported first.
 - **Files:** `.github/workflows/ci.yml`.
 - **Acceptance:** a journey registered in a new suite runs in CI without a workflow change; the evidence artifact still uploads on failure.
