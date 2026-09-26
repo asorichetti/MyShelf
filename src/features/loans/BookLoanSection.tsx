@@ -1,15 +1,20 @@
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
+import { Booky } from '@/components/booky';
 import { LendSheet, type LendSubmitResult, type LendValues } from '@/components/loans/LendSheet';
 import { LoanStamp } from '@/components/loans/LoanStamp';
-import { Button, Text, useSnackbar } from '@/components/ui';
+import { Button, Stamp, Text, useSnackbar } from '@/components/ui';
 import { dayCount, daysOverdue, formatDate, loanStatus, today as todayOf, type BookDetail } from '@/domain';
 import { Testids } from '@/testing/testids.gen';
 import { useTheme } from '@/theme';
 
+import { useReturnFlow } from './ReturnFlow';
 import { loanIssueMessage, useLend } from './useLend';
+
+/** How long the RETURNED stamp and Booky's welcome stay after a return. */
+export const WELCOME_HOME_MS = 5000;
 
 type OpenLoan = NonNullable<BookDetail['openLoan']>;
 
@@ -22,16 +27,26 @@ export function loanSummary(loan: OpenLoan, today: string): string {
 }
 
 /**
- * The Loan section of book detail: the ON LOAN stamp and loan details while
- * the book is out, "Lend" while it is home.
+ * The Loan section of book detail: the ON LOAN stamp and "Mark returned"
+ * while the book is out, "Lend" while it is home, a brief RETURNED stamp
+ * with Booky after a return.
  */
 export function BookLoanSection({ book }: { book: BookDetail }) {
   const { colors, spacing, sizes } = useTheme();
   const { show } = useSnackbar();
   const lending = useLend();
   const [lendOpen, setLendOpen] = useState(false);
+  const [welcome, setWelcome] = useState(false);
   const today = todayOf();
   const loan = book.openLoan;
+
+  useEffect(() => {
+    if (!welcome) return;
+    const timer = setTimeout(() => setWelcome(false), WELCOME_HOME_MS);
+    return () => clearTimeout(timer);
+  }, [welcome]);
+
+  const returning = useReturnFlow(() => setWelcome(true));
 
   const submit = useCallback(
     async (values: LendValues): Promise<LendSubmitResult> => {
@@ -60,10 +75,26 @@ export function BookLoanSection({ book }: { book: BookDetail }) {
           </View>
           <Text testID={Testids.bookLoan.summary}>{loanSummary(loan, today)}</Text>
           {loan.note ? <Text color="inkMuted">{`Note: ${loan.note}`}</Text> : null}
+          <View style={[styles.row, { gap: spacing.sm }]}>
+            <Button
+              label="Mark returned"
+              icon={<MaterialCommunityIcons name="book-arrow-left-outline" size={sizes.icon} color={colors.onPrimary} />}
+              onPress={() => returning.start({ ...loan, bookTitle: book.title })}
+              testID={Testids.returnLoan.open}
+            />
+          </View>
         </>
       ) : (
         <>
-          <Text color="inkMuted">On the shelf, not lent to anyone.</Text>
+          {welcome && !loan ? (
+            <View testID={Testids.bookLoan.welcome} role="status" aria-live="polite" accessibilityLiveRegion="polite" style={[styles.row, { gap: spacing.md }]}>
+              <Booky expression="happy" size={56} animated={false} />
+              <Stamp label="Returned" tone="success" />
+              <Text style={styles.flex}>{`Welcome home, “${book.title}”!`}</Text>
+            </View>
+          ) : (
+            <Text color="inkMuted">On the shelf, not lent to anyone.</Text>
+          )}
           <Button
             label="Lend"
             variant="secondary"
@@ -87,10 +118,12 @@ export function BookLoanSection({ book }: { book: BookDetail }) {
           onClose={() => setLendOpen(false)}
         />
       ) : null}
+      {returning.sheet}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap' },
+  flex: { flex: 1, minWidth: 160 },
 });

@@ -430,6 +430,7 @@ Re-export after changing app code: `--serve` tests whatever is in `dist/`.
 | `book-cover-pick` | p01 | Fixture `empty`: "Choose a photo" in the add form answered through the web file chooser with the synthetic test cover; the preview and the saved book's detail page show it as a real image, also after a reload |
 | `book-form-discard` | p01 | A dirty form asks before leaving: Escape closes the dialog, keeps the text and returns focus to Cancel; Discard goes back to the empty Shelf |
 | `book-detail-missing` | p01 | `/book/99999` shows `page-error` with the h1 "Book not found" and Booky; the `pagestate/error-marker` finding is waived because the error page is the point; Back to shelf goes to `/` |
+| `loan-double-lend-blocked` | p05 | Dune (on loan) has Mark returned and no Lend, with its loan summary |
 | `home-responsive` | responsive | Viewport meta has `width=device-width, initial-scale=1`; at mobile, tablet and desktop the title is fully on screen and the page does not scroll sideways; one screenshot per width |
 
 ### Adding a journey

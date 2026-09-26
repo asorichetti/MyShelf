@@ -55,6 +55,7 @@ Never lose a book to a friend again. The user records who borrowed a book and wh
 - **Files:** `src/features/loans/useReturn.ts`, `src/components/loans/ReturnSheet.tsx`.
 - **Acceptance:** returned loan moves to History; undo re-opens it (only if no other open loan exists).
 - **Tests:** `src/features/loans/__tests__/useReturn.test.tsx`, `src/db/repositories/__tests__/loans.return.test.ts`.
+- **Partly delivered:** "Mark returned" is on book detail, on each open Loans tab row and on borrower detail; all three open the same `ReturnSheet` through `useReturnFlow()` (`src/features/loans/ReturnFlow.tsx`), with "Came back on" (today; not before the lent date, not in the future). `useReturn` saves it, emits `loans-changed` and shows "Welcome home, “Dune”!" with Undo; Undo calls the new `loansRepo.reopenLoan`, which refuses (`BookAlreadyOnLoanError`) if the book has gone out again, and the snackbar then says so. On book detail a RETURNED stamp with happy Booky and the welcome line show for five seconds (`WELCOME_HOME_MS`) in a polite live region. The pure parts are `markReturned` and `undoReturn`. **Not built:** the swipe action on loan rows (there is no gesture library in the app yet); rows have a visible "Mark returned" button instead.
 
 ### P05-05 Loans tab
 

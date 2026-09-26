@@ -216,6 +216,23 @@ export async function returnLoan(db: Db, loanId: number, returnedOn: IsoDate): P
   return changes ? getLoan(db, loanId) : null;
 }
 
+/**
+ * Undoes a return: the loan is open again. Returns null if the loan does not
+ * exist or is already open; throws BookAlreadyOnLoanError if the book has
+ * gone out on another loan since.
+ */
+export async function reopenLoan(db: Db, loanId: number): Promise<Loan | null> {
+  const loan = await getLoan(db, loanId);
+  if (!loan || loan.returnedOn == null) return null;
+  try {
+    await db.run('UPDATE loans SET returned_on = NULL WHERE id = ?', [loanId]);
+  } catch (error) {
+    if (/UNIQUE constraint failed: loans\.book_id/i.test(String(error))) throw new BookAlreadyOnLoanError(loan.bookId);
+    throw error;
+  }
+  return getLoan(db, loanId);
+}
+
 /** Changes a loan's due date or note. Throws LoanValidationError for a bad due date. */
 export async function updateLoan(db: Db, loanId: number, patch: Partial<Pick<Loan, 'dueOn' | 'note'>>): Promise<Loan | null> {
   const current = await getLoan(db, loanId);

@@ -61,6 +61,14 @@ export const Testids = {
     cancel: 'lend-cancel',
     save: 'lend-save',
   },
+  returnLoan: {
+    open: 'return-open',
+    sheet: 'return-sheet',
+    date: 'return-date',
+    error: 'return-error',
+    cancel: 'return-cancel',
+    confirm: 'return-confirm',
+  },
   bookLoan: {
     stamp: 'book-loan-stamp',
     summary: 'book-loan-summary',
