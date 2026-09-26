@@ -28,3 +28,107 @@ export function toIso6391(code: string | null | undefined): string | null {
   if (/^[a-z]{2}(?:[-_][a-z0-9]+)?$/.test(c)) return c.slice(0, 2);
   return MARC_TO_ISO6391[c] ?? null;
 }
+
+/** A language a book can be catalogued in: ISO 639-1 code and English name. */
+export interface Language {
+  code: string;
+  name: string;
+}
+
+/** The languages offered in the book form, by English name: every code `toIso6391` can produce. */
+export const languages: readonly Language[] = [
+  { code: 'af', name: 'Afrikaans' },
+  { code: 'sq', name: 'Albanian' },
+  { code: 'ar', name: 'Arabic' },
+  { code: 'hy', name: 'Armenian' },
+  { code: 'eu', name: 'Basque' },
+  { code: 'be', name: 'Belarusian' },
+  { code: 'bn', name: 'Bengali' },
+  { code: 'bs', name: 'Bosnian' },
+  { code: 'br', name: 'Breton' },
+  { code: 'bg', name: 'Bulgarian' },
+  { code: 'ca', name: 'Catalan' },
+  { code: 'zh', name: 'Chinese' },
+  { code: 'hr', name: 'Croatian' },
+  { code: 'cs', name: 'Czech' },
+  { code: 'da', name: 'Danish' },
+  { code: 'nl', name: 'Dutch' },
+  { code: 'en', name: 'English' },
+  { code: 'eo', name: 'Esperanto' },
+  { code: 'et', name: 'Estonian' },
+  { code: 'fo', name: 'Faroese' },
+  { code: 'fi', name: 'Finnish' },
+  { code: 'fr', name: 'French' },
+  { code: 'fy', name: 'Frisian' },
+  { code: 'gl', name: 'Galician' },
+  { code: 'ka', name: 'Georgian' },
+  { code: 'de', name: 'German' },
+  { code: 'el', name: 'Greek' },
+  { code: 'gu', name: 'Gujarati' },
+  { code: 'he', name: 'Hebrew' },
+  { code: 'hi', name: 'Hindi' },
+  { code: 'hu', name: 'Hungarian' },
+  { code: 'is', name: 'Icelandic' },
+  { code: 'id', name: 'Indonesian' },
+  { code: 'ga', name: 'Irish' },
+  { code: 'it', name: 'Italian' },
+  { code: 'ja', name: 'Japanese' },
+  { code: 'kk', name: 'Kazakh' },
+  { code: 'ko', name: 'Korean' },
+  { code: 'ku', name: 'Kurdish' },
+  { code: 'la', name: 'Latin' },
+  { code: 'lv', name: 'Latvian' },
+  { code: 'lt', name: 'Lithuanian' },
+  { code: 'lb', name: 'Luxembourgish' },
+  { code: 'mk', name: 'Macedonian' },
+  { code: 'ms', name: 'Malay' },
+  { code: 'ml', name: 'Malayalam' },
+  { code: 'mt', name: 'Maltese' },
+  { code: 'mr', name: 'Marathi' },
+  { code: 'mn', name: 'Mongolian' },
+  { code: 'mi', name: 'Māori' },
+  { code: 'ne', name: 'Nepali' },
+  { code: 'no', name: 'Norwegian' },
+  { code: 'nb', name: 'Norwegian Bokmål' },
+  { code: 'nn', name: 'Norwegian Nynorsk' },
+  { code: 'fa', name: 'Persian' },
+  { code: 'pl', name: 'Polish' },
+  { code: 'pt', name: 'Portuguese' },
+  { code: 'pa', name: 'Punjabi' },
+  { code: 'ro', name: 'Romanian' },
+  { code: 'ru', name: 'Russian' },
+  { code: 'sa', name: 'Sanskrit' },
+  { code: 'gd', name: 'Scottish Gaelic' },
+  { code: 'sr', name: 'Serbian' },
+  { code: 'sk', name: 'Slovak' },
+  { code: 'sl', name: 'Slovenian' },
+  { code: 'so', name: 'Somali' },
+  { code: 'es', name: 'Spanish' },
+  { code: 'sw', name: 'Swahili' },
+  { code: 'sv', name: 'Swedish' },
+  { code: 'tl', name: 'Tagalog' },
+  { code: 'ta', name: 'Tamil' },
+  { code: 'te', name: 'Telugu' },
+  { code: 'th', name: 'Thai' },
+  { code: 'bo', name: 'Tibetan' },
+  { code: 'tr', name: 'Turkish' },
+  { code: 'uk', name: 'Ukrainian' },
+  { code: 'ur', name: 'Urdu' },
+  { code: 'uz', name: 'Uzbek' },
+  { code: 'vi', name: 'Vietnamese' },
+  { code: 'cy', name: 'Welsh' },
+  { code: 'yi', name: 'Yiddish' },
+  { code: 'zu', name: 'Zulu' },
+];
+
+const byCode = new Map(languages.map((l) => [l.code, l]));
+
+/** Whether a value is shaped like an ISO 639-1 code (lookups may bring codes outside the list). */
+export function isLanguageCode(code: string): boolean {
+  return /^[a-z]{2}$/.test(code);
+}
+
+/** "en" -> "English"; codes without a name are shown as they are. */
+export function languageName(code: string): string {
+  return byCode.get(code)?.name ?? code;
+}

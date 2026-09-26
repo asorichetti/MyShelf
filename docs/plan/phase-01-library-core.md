@@ -58,12 +58,13 @@ A usable, offline catalogue: the user can add a book by hand, see it on the Shel
 - **Acceptance:** typing filters results; sort survives app restart; screen reader announces result count.
 - **Tests:** `src/components/book/__tests__/ShelfToolbar.test.tsx`, `src/__tests__/shelf.search.test.tsx`.
 
-### P01-05 Book form model and validation
+### P01-05 Book form model and validation — done
 
 - **Description:** Pure `BookDraft` validation in `src/domain/bookDraft.ts`: title required (≤ 300 chars); ISBN optional but must pass checksum (accepts hyphens/spaces, ISBN-10 converted to ISBN-13 and both stored); year 1450–(current year + 1); page count positive integer; language from a list; format enum; series position ≥ 0 with up to one decimal. Returns field-level error messages in plain language ("That ISBN doesn't look right — check the last digit").
 - **Files:** `src/domain/bookDraft.ts`, `src/domain/languages.ts`.
 - **Acceptance:** every rule has a passing and failing case; messages are friendly.
 - **Tests:** `src/domain/__tests__/bookDraft.test.ts`.
+- **Delivered:** `validateBookDraft(draft, { currentYear })` returns `{ ok, value }` (cleaned `ValidBookDraft`: empty text becomes null, authors and genres trimmed and de-duplicated case-insensitively) or `{ ok: false, errors }`; also `emptyDraft`, `draftFromDetail`, `draftFieldOrder`, `firstInvalidField` and `draftsDiffer`. A series position needs a series name. A 979 ISBN-13 has no ISBN-10, so only the 13 is stored. `languages.ts` lists 31 languages with ISO 639-1 and MARC codes (`languageName`, `languageFromMarc` for Phase 02).
 
 ### P01-06 Book detail screen
 

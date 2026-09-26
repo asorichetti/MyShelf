@@ -1,5 +1,6 @@
 export * from './author';
 export * from './book';
+export * from './bookDraft';
 export * from './dates';
 export * from './genre';
 export * from './genreNormaliser';
