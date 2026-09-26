@@ -77,7 +77,7 @@ export const settingDefaults: Readonly<AppSettings> = Object.freeze<AppSettings>
   'series.pendingConfirmBookIds': [],
   shelfGroupBy: 'none',
   shelfViewMode: 'list',
-  shelfFilters: { genreIds: [], formats: [], languages: [], loan: 'any', series: 'any', yearFrom: null, yearTo: null, recentlyAdded: false },
+  shelfFilters: { genreIds: [], formats: [], languages: [], loan: 'any', series: 'any', yearFrom: null, yearTo: null, minRating: null, recentlyAdded: false },
   dateFormat: 'medium',
   appearance: 'system',
   coversOnMobileData: true,

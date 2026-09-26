@@ -11,11 +11,13 @@ import type { Db } from '../types';
  * user accepted them, in one transaction. Unlike a form save, genres keep
  * their origin: the ones in `userGenres` stay marked as the user's choice,
  * every other genre is marked as looked up (`user_edited = 0`), so a later
- * refresh may replace it but never the user's own.
+ * refresh may replace it but never the user's own. The rating is not
+ * written at all.
  */
 export async function refreshBook(db: Db, id: number, value: ValidBookDraft, { userGenres }: { userGenres: readonly string[] }): Promise<void> {
   await db.transaction(async (tx) => {
-    await saveBookDraft(tx, value, id);
+    // The rating is the reader's own opinion: a refresh never writes it, whatever the draft holds.
+    await saveBookDraft(tx, { ...value, rating: undefined }, id);
     const mine: number[] = [];
     for (const name of userGenres) {
       const genre = await findGenreByName(tx, name);

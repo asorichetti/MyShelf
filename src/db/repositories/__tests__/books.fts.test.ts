@@ -211,10 +211,13 @@ describe('FTS5 and the plain index agree', () => {
   });
 });
 
+// Every migration but the search index: the books table has today's columns (the repository reads them all).
+const withoutSearchIndex = migrations.filter((m) => m.version !== 6);
+
 describe('a database from before migration 0006', () => {
   it('still searches, with LIKE over titles, series and authors', async () => {
     const db = await openNodeDatabase();
-    await migrate(db, migrations.filter((m) => m.version <= 5));
+    await migrate(db, withoutSearchIndex);
     await seed(db);
     expect(await booksRepo.searchIndexKind(db)).toBeNull();
     expect(await search(db, 'pratchett')).toEqual(['The Colour of Magic', 'Good Omens', 'Mort']);
@@ -224,7 +227,7 @@ describe('a database from before migration 0006', () => {
 
   it('gets the index, filled from the existing books, when it migrates', async () => {
     const db = await openNodeDatabase();
-    await migrate(db, migrations.filter((m) => m.version <= 5));
+    await migrate(db, withoutSearchIndex);
     await seed(db);
     await migrate(db);
     expect(await booksRepo.searchIndexKind(db)).toBe('plain');

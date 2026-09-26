@@ -14,8 +14,8 @@ export const sortOptions: { key: ShelfSortKey; label: string; testID: string }[]
   { key: 'added', label: 'Recently added', testID: Testids.home.sortAdded },
 ];
 
-/** The natural first direction for each sort: A-Z, oldest year first, newest addition first. */
-export const defaultDirection: Record<ShelfSortKey, SortDirection> = { title: 'asc', author: 'asc', year: 'asc', added: 'desc' };
+/** The natural first direction for each sort: A-Z, oldest year first, newest addition first, best rated first. */
+export const defaultDirection: Record<ShelfSortKey, SortDirection> = { title: 'asc', author: 'asc', year: 'asc', added: 'desc', rating: 'desc' };
 
 export function directionLabel(sort: ShelfSort): string {
   if (sort.sort === 'title' || sort.sort === 'author') return sort.direction === 'asc' ? 'A to Z' : 'Z to A';

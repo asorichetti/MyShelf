@@ -1,7 +1,7 @@
 import { shelfSortKeys, type ShelfSort, type ShelfSortKey } from './book';
 
 /** How the Shelf is split into sections. */
-export const shelfGroupings = ['none', 'genre', 'series', 'author', 'group'] as const;
+export const shelfGroupings = ['none', 'genre', 'series', 'author', 'group', 'rating'] as const;
 export type ShelfGroupBy = (typeof shelfGroupings)[number];
 
 /** How each book is drawn: catalogue cards, a wall of covers, or spines on shelves. */
@@ -14,6 +14,7 @@ export const groupByLabels: Record<ShelfGroupBy, string> = {
   series: 'Series',
   author: 'Author',
   group: 'My groups',
+  rating: 'Rating',
 };
 
 export const viewModeLabels: Record<ShelfViewMode, string> = { list: 'List', covers: 'Covers', spines: 'Spines' };
@@ -24,6 +25,7 @@ export const ungroupedTitles: Record<Exclude<ShelfGroupBy, 'none'>, string> = {
   series: 'Not in a series',
   author: 'No author',
   group: 'Not in a group',
+  rating: 'Not rated',
 };
 
 export function parseShelfGroupBy(value: unknown): ShelfGroupBy | null {

@@ -29,6 +29,8 @@ export interface Book {
   source: BookSource | null;
   sourceId: string | null;
   notes: string | null;
+  /** The reader's own rating, 1-5 whole stars; null when not rated. Lookups never set it. */
+  rating: number | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -64,6 +66,8 @@ export interface BookListItem {
   loanBorrower?: string | null;
   /** When the open loan is due back, if it has a due date. */
   loanDueOn?: string | null;
+  /** The reader's rating, 1-5 (always set by the repository; optional so hand-made items can leave it out). */
+  rating?: number | null;
 }
 
 /** Everything the book detail page shows. */
@@ -74,7 +78,7 @@ export interface BookDetail extends Book {
   openLoan: (Loan & { borrowerName: string }) | null;
 }
 
-export const shelfSortKeys = ['title', 'author', 'year', 'added'] as const;
+export const shelfSortKeys = ['title', 'author', 'year', 'added', 'rating'] as const;
 export type ShelfSortKey = (typeof shelfSortKeys)[number];
 export type SortDirection = 'asc' | 'desc';
 

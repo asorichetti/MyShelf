@@ -1,17 +1,17 @@
-import { ungroupedTitles, type BookListItem, type ShelfFilters, type ShelfGroupBy, type ShelfSort } from '@/domain';
+import { ratingSectionTitle, ungroupedTitles, type BookListItem, type ShelfFilters, type ShelfGroupBy, type ShelfSort } from '@/domain';
 
 import { listBookItems } from './books';
 
 import type { Db } from '../types';
 
-/** One section of the Shelf: a genre, series, author or user group (or everything, ungrouped). */
+/** One section of the Shelf: a genre, series, author, user group or star rating (or everything, ungrouped). */
 export interface ShelfSection {
   /** Unique across the Shelf, e.g. `genre:3`, `genre:none`, `all`. */
   sectionKey: string;
   /** "Fantasy", "No genre"; empty when the Shelf is not grouped. */
   sectionTitle: string;
   groupBy: ShelfGroupBy;
-  /** The genre, series, author or group id; null for the ungrouped bucket (and `none`). */
+  /** The genre, series, author or group id (the number of stars for a rating); null for the ungrouped bucket (and `none`). */
   id: number | null;
   items: BookListItem[];
 }
@@ -49,6 +49,10 @@ const MEMBERSHIP_SQL: Record<Exclude<ShelfGroupBy, 'none'>, string> = {
   group: `SELECT gb.book_id, g.id AS key_id, g.name AS key_name
     FROM group_books gb JOIN groups g ON g.id = gb.group_id
     ORDER BY g.name COLLATE NOCASE, g.id`,
+  // Best first; the section is named in words below ("4 stars"), not in SQL.
+  rating: `SELECT b.id AS book_id, b.rating AS key_id, '' AS key_name
+    FROM books b WHERE b.rating IS NOT NULL
+    ORDER BY b.rating DESC`,
 };
 
 /**
@@ -56,7 +60,7 @@ const MEMBERSHIP_SQL: Record<Exclude<ShelfGroupBy, 'none'>, string> = {
  * filtered and sorted in SQL, plus one for their authors) and one for the
  * grouping's memberships. A book appears in every section it belongs to (two
  * genres, two authors); books in none of them come last under "No genre",
- * "Not in a series", "No author" or "Not in a group". Within a section books
+ * "Not in a series", "No author", "Not in a group" or "Not rated". Within a section books
  * keep the Shelf's sort, except series, which are in reading order. Empty
  * sections are left out.
  */
@@ -76,7 +80,7 @@ export async function listShelfSections(db: Db, options: ShelfSectionsOptions): 
     if (!entry) continue;
     let bucket = buckets.get(row.key_id);
     if (!bucket) {
-      bucket = { name: row.key_name, entries: [] };
+      bucket = { name: groupBy === 'rating' ? ratingSectionTitle(row.key_id) : row.key_name, entries: [] };
       buckets.set(row.key_id, bucket);
     }
     bucket.entries.push(entry);

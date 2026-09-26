@@ -186,6 +186,7 @@ describe('cleaning and helpers', () => {
       source: 'manual',
       sourceId: null,
       notes: null,
+      rating: 4,
       createdAt: '',
       updatedAt: '',
       authors: [{ id: 1, name: 'Terry Pratchett', sortName: 'Pratchett, Terry', role: 'author', position: 0 }],
@@ -194,7 +195,8 @@ describe('cleaning and helpers', () => {
       openLoan: null,
     } satisfies BookDetail;
     const d = draftFromDetail(detail);
-    expect(d).toMatchObject({ isbn: '9780552131063', year: '1987', pages: '272', seriesName: 'Discworld', seriesPosition: '4', genres: ['Fantasy'] });
+    expect(d).toMatchObject({ isbn: '9780552131063', year: '1987', pages: '272', seriesName: 'Discworld', seriesPosition: '4', genres: ['Fantasy'], rating: 4 });
+    expect(draftsDiffer(d, { ...d, rating: 5 })).toBe(true);
     expect(draftsDiffer(d, draftFromDetail(detail))).toBe(false);
     expect(draftsDiffer(d, { ...d, year: '1988' })).toBe(true);
     expect(validateBookDraft(d, { currentYear: 2026 }).ok).toBe(true);

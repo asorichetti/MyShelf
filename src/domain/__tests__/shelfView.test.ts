@@ -5,6 +5,8 @@ describe('shelf view preferences', () => {
   it('accept known values and reject the rest', () => {
     expect(parseShelfGroupBy('genre')).toBe('genre');
     expect(parseShelfGroupBy('colour')).toBeNull();
+    expect(parseShelfGroupBy('rating')).toBe('rating');
+    expect(parseShelfSort({ sort: 'rating', direction: 'desc' })).toEqual({ sort: 'rating', direction: 'desc' });
     expect(parseShelfViewMode('spines')).toBe('spines');
     expect(parseShelfViewMode(3)).toBeNull();
     expect(parseShelfSort({ sort: 'year', direction: 'desc' })).toEqual({ sort: 'year', direction: 'desc' });

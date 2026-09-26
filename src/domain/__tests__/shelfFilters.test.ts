@@ -26,6 +26,16 @@ describe('parseShelfFilters', () => {
     ).toEqual(f({ genreIds: [1], formats: ['paperback'], languages: ['de'] }));
   });
 
+  it('keeps a minimum rating of 1 to 5 stars and drops anything else (older settings have none)', () => {
+    expect(parseShelfFilters({ minRating: 4 })).toEqual(f({ minRating: 4 }));
+    for (const bad of [0, 6, 3.5, '4', null]) expect(parseShelfFilters({ minRating: bad }).minRating).toBeNull();
+    expect(parseShelfFilters({ genreIds: [], loan: 'any' }).minRating).toBeNull();
+    const chips = filterChips(f({ minRating: 3 }), () => undefined);
+    expect(chips.map((c) => [c.key, c.label])).toEqual([['rating', '3 stars and up']]);
+    expect(chips[0].without).toEqual(noFilters);
+    expect(activeFilterCount(f({ minRating: 5 }))).toBe(1);
+  });
+
   it('swaps a reversed year range', () => {
     expect(parseShelfFilters({ yearFrom: 2000, yearTo: 1990 })).toMatchObject({ yearFrom: 1990, yearTo: 2000 });
   });

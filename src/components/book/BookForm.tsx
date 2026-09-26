@@ -37,6 +37,7 @@ const fieldLabels: Record<BookDraftField, string> = {
   summary: 'Summary',
   notes: 'Notes',
   coverUri: 'Cover',
+  rating: 'Your rating',
 };
 
 const NO_SERIES: readonly SeriesOption[] = [];

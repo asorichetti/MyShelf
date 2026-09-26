@@ -18,6 +18,8 @@ export const sortOptions = [
   { value: 'year:desc', label: 'Year, newest first' },
   { value: 'added:desc', label: 'Newest additions first' },
   { value: 'added:asc', label: 'Oldest additions first' },
+  { value: 'rating:desc', label: 'Rating, highest first' },
+  { value: 'rating:asc', label: 'Rating, lowest first' },
 ] as const;
 
 export const sortValue = (s: ShelfSort) => `${s.sort}:${s.direction}`;

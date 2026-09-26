@@ -2,6 +2,7 @@ import { type AuthorRole } from './author';
 import { bookFormats, type BookDetail, type BookFormat } from './book';
 import { isbn10To13, isbn13To10, isValidIsbn10, isValidIsbn13, normalizeIsbn } from './isbn';
 import { isLanguageCode } from './languages';
+import { parseRating } from './rating';
 import { formatSeriesPosition, isValidSeriesPosition, parseSeriesPosition } from './seriesPosition';
 
 /** An author as typed in the form. `sortName` null means "derive it from the name". */
@@ -30,6 +31,8 @@ export interface BookDraft {
   summary: string;
   notes: string;
   coverUri: string | null;
+  /** The reader's rating, 1-5, or null for not rated. */
+  rating: number | null;
 }
 
 export type BookDraftField = keyof BookDraft;
@@ -55,6 +58,12 @@ export interface ValidBookDraft {
   authors: DraftAuthor[];
   genres: string[];
   series: { name: string; position: number | null } | null;
+  /**
+   * The reader's rating (1-5, null to clear). Left undefined, a save keeps
+   * the stored rating: "Refresh details" saves a draft that way, so a lookup
+   * can never change it.
+   */
+  rating?: number | null;
 }
 
 export type DraftValidation = { ok: true; value: ValidBookDraft; errors: Record<string, never> } | { ok: false; errors: BookDraftErrors };
@@ -99,6 +108,7 @@ export function emptyDraft(): BookDraft {
     summary: '',
     notes: '',
     coverUri: null,
+    rating: null,
   };
 }
 
@@ -121,6 +131,7 @@ export function draftFromDetail(book: BookDetail): BookDraft {
     summary: book.summary ?? '',
     notes: book.notes ?? '',
     coverUri: book.coverUri,
+    rating: book.rating,
   };
 }
 
@@ -232,6 +243,7 @@ export function validateBookDraft(draft: BookDraft, { currentYear = new Date().g
       authors,
       genres,
       series: seriesName ? { name: seriesName, position: seriesPosition } : null,
+      rating: parseRating(draft.rating),
     },
   };
 }

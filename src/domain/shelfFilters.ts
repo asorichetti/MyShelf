@@ -1,4 +1,5 @@
 import { bookFormats, type BookFormat } from './book';
+import { isRating, minRatingLabel, type Rating } from './rating';
 
 /** Whether a book is out on loan. */
 export type LoanFilter = 'any' | 'onLoan' | 'atHome';
@@ -18,6 +19,8 @@ export interface ShelfFilters {
   series: SeriesFilter;
   yearFrom: number | null;
   yearTo: number | null;
+  /** Only books the reader rated at least this many stars (unrated books are left out); null for any. */
+  minRating: Rating | null;
   /** Only books added in the last 30 days. */
   recentlyAdded: boolean;
 }
@@ -33,6 +36,7 @@ export const noFilters: Readonly<ShelfFilters> = Object.freeze({
   series: 'any',
   yearFrom: null,
   yearTo: null,
+  minRating: null,
   recentlyAdded: false,
 });
 
@@ -61,6 +65,7 @@ export function parseShelfFilters(value: unknown): ShelfFilters {
     series: seriesFilters.includes(v.series as SeriesFilter) ? (v.series as SeriesFilter) : 'any',
     yearFrom,
     yearTo,
+    minRating: isRating(v.minRating) ? v.minRating : null,
     recentlyAdded: v.recentlyAdded === true,
   };
 }
@@ -74,6 +79,7 @@ export function activeFilterCount(f: ShelfFilters): number {
     (f.loan !== 'any' ? 1 : 0) +
     (f.series !== 'any' ? 1 : 0) +
     (f.yearFrom != null || f.yearTo != null ? 1 : 0) +
+    (f.minRating != null ? 1 : 0) +
     (f.recentlyAdded ? 1 : 0)
   );
 }
@@ -131,6 +137,7 @@ export function filterChips(
   if (f.yearFrom != null || f.yearTo != null) {
     chips.push({ key: 'year', label: yearRangeLabel(f.yearFrom, f.yearTo), without: { ...f, yearFrom: null, yearTo: null } });
   }
+  if (f.minRating != null) chips.push({ key: 'rating', label: minRatingLabel(f.minRating), without: { ...f, minRating: null } });
   if (f.recentlyAdded) chips.push({ key: 'recent', label: `Added in the last ${RECENTLY_ADDED_DAYS} days`, without: { ...f, recentlyAdded: false } });
   return chips;
 }

@@ -11,6 +11,7 @@ import {
   type ShelfSortKey,
   type SortDirection,
   type ValidBookDraft,
+  isRating,
   RECENTLY_ADDED_DAYS,
   stripDiacritics,
 } from '@/domain';
@@ -45,6 +46,7 @@ const FIELDS = {
   source: 'source',
   sourceId: 'source_id',
   notes: 'notes',
+  rating: 'rating',
 } as const satisfies Record<keyof NewBook, string>;
 
 type Field = keyof typeof FIELDS;
@@ -123,6 +125,17 @@ export async function updateBook(db: Db, id: number, patch: BookPatch): Promise<
   return changes ? getBook(db, id) : null;
 }
 
+/**
+ * Sets (1-5) or clears (null) the reader's rating, and nothing else. Returns
+ * false if the book does not exist. Throws for anything that is not a whole
+ * number of stars (the column's CHECK would refuse it too).
+ */
+export async function setRating(db: Db, bookId: number, rating: number | null): Promise<boolean> {
+  if (rating !== null && !isRating(rating)) throw new RangeError(`A rating is 1 to 5 whole stars, not ${String(rating)}`);
+  const { changes } = await db.run(`UPDATE books SET rating = ?, updated_at = ${NOW_SQL} WHERE id = ?`, [rating, bookId]);
+  return changes > 0;
+}
+
 /** Deletes a book along with its author/genre/group links and loan history. */
 export async function deleteBook(db: Db, id: number): Promise<boolean> {
   const { changes } = await db.run('DELETE FROM books WHERE id = ?', [id]);
@@ -154,6 +167,9 @@ function orderBy(sort: ShelfSortKey, dir: SortDirection): string {
       return `b.publication_year IS NULL, b.publication_year ${d}, ${SORT_TITLE} ASC, b.id`;
     case 'added':
       return `b.created_at ${d}, b.id ${d}`;
+    case 'rating':
+      // Unrated books go last in either direction; equal ratings in title order.
+      return `b.rating IS NULL, b.rating ${d}, ${SORT_TITLE} ASC, b.id`;
   }
 }
 
@@ -220,6 +236,10 @@ export function filterClause(filters: ShelfFilters): SqlClause | null {
     parts.push('b.publication_year <= ?');
     params.push(filters.yearTo);
   }
+  if (filters.minRating != null) {
+    parts.push('b.rating >= ?');
+    params.push(filters.minRating);
+  }
   if (filters.recentlyAdded) {
     parts.push("b.created_at >= strftime('%Y-%m-%dT%H:%M:%fZ', 'now', ?)");
     params.push(`-${RECENTLY_ADDED_DAYS} days`);
@@ -239,6 +259,7 @@ interface ListRow {
   on_loan: number;
   loan_borrower: string | null;
   loan_due_on: string | null;
+  rating: number | null;
 }
 
 const likeEscape = (text: string) => text.replace(/[\\%_]/g, (c) => `\\${c}`);
@@ -407,7 +428,7 @@ export async function listBookItems(db: Db, options: ListBookItemsOptions = {}):
   const order = scope.groupId != null && options.groupOrder ? `gb.position, ${SORT_TITLE}, b.id` : orderBy(sort, direction);
   const rows = await db.all<ListRow & { author_sort: string | null }>(
     `SELECT b.id, b.title, b.subtitle, b.cover_uri, b.publication_year, b.series_id, s.name AS series_name, b.series_position,
-       ol.id IS NOT NULL AS on_loan, olp.name AS loan_borrower, ol.due_on AS loan_due_on,
+       ol.id IS NOT NULL AS on_loan, olp.name AS loan_borrower, ol.due_on AS loan_due_on, b.rating,
        ${sort === 'author' ? PRIMARY_AUTHOR_SORT : 'NULL'} AS author_sort
      FROM books b ${joins.join(' ')} LEFT JOIN series s ON s.id = b.series_id ${OPEN_LOAN_JOIN}
      ${where.length ? `WHERE ${where.join(' AND ')}` : ''}
@@ -430,6 +451,7 @@ export async function listBookItems(db: Db, options: ListBookItemsOptions = {}):
     onLoan: r.on_loan === 1,
     loanBorrower: r.loan_borrower,
     loanDueOn: r.loan_due_on,
+    rating: r.rating ?? null,
   }));
 }
 
@@ -551,6 +573,8 @@ export async function saveBookDraft(db: Db, draft: ValidBookDraft, id?: number):
       coverUri: draft.coverUri,
       seriesId: series?.id ?? null,
       seriesPosition: series ? (draft.series?.position ?? null) : null,
+      // Undefined (a refresh) leaves the stored rating as it is.
+      rating: draft.rating,
     };
     let bookId: number;
     if (id == null) {
