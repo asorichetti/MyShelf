@@ -1,7 +1,19 @@
 {
   "render": {
-    "requiredTokens": [],
-    "landmarks": ["main"],
+    "requiredTokens": [
+      "--ms-color-primary",
+      "--ms-color-paper",
+      "--ms-color-surface",
+      "--ms-color-ink",
+      "--ms-color-ink-muted",
+      "--ms-font-heading",
+      "--ms-font-body",
+      "--ms-space-md",
+      "--ms-radius-md"
+    ],
+    "landmarks": [
+      "main"
+    ],
     "disabled": {}
   },
   "a11y": {
