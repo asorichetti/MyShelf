@@ -85,6 +85,7 @@ From Phase 03 onward the app uses a native text-recognition module, so it needs 
 | `npm run -s autotest:smoke` | run the core journeys with UX gates enforced (needs the web server: `CI=1 npx expo start --web --port 8081`) |
 | `npm run -s autotest:journeys` | run every journey |
 | `npm run -s autotest -- <command>` | run any auto test suite command, e.g. `navigate --url /` |
+| `npm run icons:render` | render the app icon, splash and store graphics from `assets/source/*.svg` |
 
 ## Testing
 
@@ -102,6 +103,8 @@ Test ids come from a single [`src/testing/selectors.json`](src/testing/selectors
 - [`STATUS.md`](STATUS.md) — progress checklist
 - [`docs/plan/`](docs/plan/) — detailed task cards for each phase
 - [`docs/adr/`](docs/adr/) — architecture decision records
+- [`docs/privacy.md`](docs/privacy.md) — privacy policy: your library stays on your phone
+- [`docs/release.md`](docs/release.md) — building, signing and releasing the Android app
 - [`AGENTS.md`](AGENTS.md) — contributor guide: how to pick up work, commands and conventions
 
 ## Contributing
