@@ -67,7 +67,8 @@
       ],
       "@react-native-community/datetimepicker",
       "expo-notifications",
-      "expo-sharing"
+      "expo-sharing",
+      "./plugins/withReleaseSigning"
     ],
     "scheme": "myshelf",
     "experiments": {
