@@ -1,10 +1,11 @@
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import { useId, useState, type Ref } from 'react';
+import { useId, useRef, useState, type Ref } from 'react';
 import { Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { useTheme } from '@/theme';
 
 import { Button } from './Button';
+import { focusView } from './focusView';
 import { Heading } from './Heading';
 import { useBlockingLayer } from './layers';
 import { modalProps, useReturnFocus } from './modalA11y';
@@ -42,6 +43,8 @@ export function SelectField({ label, value, options, onChange, placeholder = 'No
   const [open, setOpen] = useState(false);
   useBlockingLayer(open);
   useReturnFocus(open);
+  // The list opens on the current choice, as a native picker does, rather than on its first line.
+  const chosen = useRef<View>(null);
   const labelId = `select-label-${useId().replace(/:/g, '')}`;
   const current = options.find((o) => o.value === value);
   const choose = (v: string) => {
@@ -90,7 +93,14 @@ export function SelectField({ label, value, options, onChange, placeholder = 'No
           {helperText}
         </Text>
       ) : null}
-      <Modal {...modalProps(label)} visible={open} transparent animationType="none" onRequestClose={() => setOpen(false)}>
+      <Modal
+        {...modalProps(label)}
+        visible={open}
+        transparent
+        animationType="none"
+        onRequestClose={() => setOpen(false)}
+        onShow={() => focusView(chosen.current)}
+      >
         <View style={[styles.backdrop, { backgroundColor: colors.scrim, padding: spacing.lg }]}>
           <View
             role="dialog"
@@ -105,6 +115,7 @@ export function SelectField({ label, value, options, onChange, placeholder = 'No
                 return (
                   <Pressable
                     key={o.value || 'none'}
+                    ref={selected ? chosen : undefined}
                     role="radio"
                     aria-checked={selected}
                     accessibilityState={{ checked: selected }}

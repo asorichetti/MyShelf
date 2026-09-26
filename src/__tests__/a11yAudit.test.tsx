@@ -1,11 +1,12 @@
-import { render, screen } from '@testing-library/react-native';
+import { fireEvent, render, screen } from '@testing-library/react-native';
+import { AccessibilityInfo, Modal } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { BookHeader } from '@/components/book/BookHeader';
 import type { CandidateCardData } from '@/components/book/CandidateCard';
 import { CandidateList } from '@/components/book/CandidateList';
 import { editionLabel } from '@/components/scan/EditionRow';
-import { Button, Sheet, Stamp } from '@/components/ui';
+import { Button, SelectField, Sheet, Stamp } from '@/components/ui';
 import type { BookDetail } from '@/domain';
 import { hostsWithRole, renderWithTheme } from '@/testing/render';
 import { Testids } from '@/testing/testids.gen';
@@ -67,6 +68,25 @@ describe('modals', () => {
     expect(scrim!.props.role).toBeUndefined();
     scrim!.props.onResponderRelease();
     expect(onClose).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('select lists', () => {
+  it('open on the current choice, as a native picker does', () => {
+    const send = jest.spyOn(AccessibilityInfo, 'sendAccessibilityEvent').mockImplementation(() => {});
+    const options = [
+      { value: 'en', label: 'English' },
+      { value: 'fr', label: 'French' },
+    ];
+    renderWithTheme(<SelectField label="Language" value="fr" options={options} onChange={jest.fn()} />);
+    fireEvent.press(screen.getByRole('button', { name: 'Language: French' }));
+    const modal = screen.UNSAFE_getByType(Modal);
+    modal.props.onShow();
+    const target = send.mock.calls[0]?.[0] as unknown as { props: Record<string, unknown> } | undefined;
+    expect(send).toHaveBeenCalledWith(expect.anything(), 'focus');
+    expect(target?.props.accessibilityLabel).toBe('French');
+    expect(screen.getByRole('radio', { name: 'French' })).toBeChecked();
+    send.mockRestore();
   });
 });
 
