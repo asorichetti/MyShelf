@@ -432,7 +432,7 @@ Booky is a small purple **bookmark** with a tassel, big friendly eyes and a gent
 
 ### Expressions
 
-Implemented in `src/components/booky` (P00-10) as one SVG component with an `expression` prop.
+Implemented in `src/components/booky` (P00-10) as one SVG component, `<Booky expression size animated />`. `BookyBubble` shows Booky with a titled message, optional actions and a dismiss button. `BookyProvider` (in the root layout) holds the current tip: `useBooky()` returns `{ tip, showTip(tip), dismissTip() }`, and `BookyTipHost` (placed once in the tab layout) floats the tip just above the tab bar.
 
 | Expression | Used for |
 |---|---|
@@ -459,6 +459,8 @@ Implemented in `src/components/booky` (P00-10) as one SVG component with an `exp
 
 ### Dismissal and control
 
+Today a tip closes with its ✕ button or after one of its actions runs. The rest of this section is built in Phase 07 (P07-02, P07-06).
+
 - Tap the bubble or the ✕ to dismiss; bubbles also auto-dismiss after 8 s unless they contain an action.
 - "Don't show tips like this" on tip bubbles marks the tip id as muted in `settings`.
 - **Booky mode** in Settings: *Helpful* (default: all triggers), *Quiet* (errors, empty states and help button only), *Off* (Booky hidden except for the help button).
@@ -466,68 +468,72 @@ Implemented in `src/components/booky` (P00-10) as one SVG component with an `exp
 
 ### Accessibility
 
-- Booky's SVG is decorative (`accessibilityElementsHidden` / `aria-hidden`); the bubble text is the accessible content.
-- New bubbles are announced politely (`AccessibilityInfo.announceForAccessibility` on Android, `aria-live="polite"` on web) and do not steal focus.
-- The dismiss button has an accessible label ("Dismiss Booky's tip") and a 48 dp touch target.
-- Animations (bob, blink, bubble pop) are disabled when the OS "reduce motion" setting is on.
+- Booky is an image with an accessible label that names the expression (`role="img"`, e.g. "Booky the bookmark, smiling happily"); the SVG artwork inside is hidden from assistive tech. Booky is labelled rather than decorative because it often stands alone as an empty state's illustration and its expression carries tone; the bubble text remains the content that matters.
+- Bubble text sits in a polite live region (`accessibilityLiveRegion="polite"` on Android, `aria-live="polite"` on web), so new tips are announced without stealing focus.
+- The dismiss button has an accessible label ("Dismiss Booky's tip") and a 48 dp touch area (a 32 dp button with an 8 dp hit slop on every side).
+- Animations are disabled when the OS "reduce motion" setting is on (`useReducedMotion`). Today that is Booky's idle bob; blink and bubble pop come in P07-08.
 - Information is never conveyed by Booky alone: every Booky message about an error also appears as inline text in the screen.
 
 ---
 
 ## 9. Theme and design tokens
 
-Tokens live in `src/theme` (P00-08) and are mirrored on web as CSS custom properties prefixed `--ms-` (e.g. `--ms-color-primary`) so the auto test suite's render gate can require them (`render.requiredTokens`, P00-24). Components never hard-code colours, sizes or fonts. **Once `src/theme` exists it is the source of truth** for exact values; this table is the design intent.
+Tokens live in `src/theme` (P00-08). **`src/theme/tokens.ts` is the source of truth** for exact values; the tables below mirror it. Components never hard-code colours, sizes or fonts: they read the theme through `useTheme()`, and a Jest test fails on colour literals outside `src/theme`. On web, `ThemeProvider` writes every token to `:root` as a CSS custom property prefixed `--ms-` (`--ms-color-<role>`, `--ms-space-*`, `--ms-size-*`, `--ms-radius-*`, `--ms-font-*`, `--ms-elevation-*`, `--ms-text-<variant>-size|weight`; e.g. `--ms-color-primary: #6B3FA8`) and paints the document's background, text colour and font from them, so the auto test suite's render gate can require them (`render.requiredTokens`).
 
 ### Colour (light theme)
 
-All text pairs below meet **WCAG 2.1 AA** (4.5:1 for body text, 3:1 for large text and UI component boundaries). Ratios were computed with the WCAG relative-luminance formula.
+A cosy-library palette: warm paper grounds, deep ink text, a plum primary and a berry accent. Components use **role** names (below), never the raw palette (`palette` in `tokens.ts`, e.g. `plum600`, `paper100`). Every foreground/background pair used for text is listed in `textPairs` and checked in Jest for **WCAG 2.1 AA** (4.5:1); outlines and icons in `uiPairs` are checked for 3:1. Ratios below use the WCAG relative-luminance formula (`src/theme/contrast.ts`).
 
-| Token | Hex | Role | Contrast |
+| Role | Hex | Use | Contrast |
 |---|---|---|---|
-| `color.bg` | `#F7F3FC` | app background (lavender paper) | — |
-| `color.surface` | `#FFFFFF` | sheets, inputs | — |
-| `color.card` | `#FFFDF8` | catalogue-card cream | — |
-| `color.tint` | `#EDE4F7` | selected rows, chips, tab bar | — |
-| `color.text` | `#2A2138` | primary text | 13.97:1 on bg, 15.04:1 on card |
-| `color.textMuted` | `#6E5A8E` | secondary text | 5.46:1 on bg, 4.85:1 on tint |
-| `color.primary` | `#6B3FA8` | buttons, links, focus ring, active tab | 6.61:1 on bg (as text) |
-| `color.onPrimary` | `#FFFFFF` | text on primary | 7.24:1 on primary |
-| `color.primaryStrong` | `#4B2A7B` | headings, pressed state | 10.01:1 on bg |
-| `color.primaryDeep` | `#2E1650` | spine text, dark accents | 9.85:1 against `#D6C7EE` |
-| `color.primarySoft` | `#9570CC` | illustrations, spines — **not for text** | 3.51:1 on bg (UI only) |
-| `color.border` | `#D6C7EE` | dividers — decorative only | — |
-| `color.borderStrong` | `#8F6FC0` | input outlines, focusable boundaries | 3.69:1 on bg, 4.04:1 on surface |
-| `color.danger` (stamp red) | `#B3261E` | errors, overdue stamp, card header rule | 5.97:1 on bg; white on it 6.54:1 |
-| `color.success` | `#2E7D4F` | returned, saved | 4.61:1 on bg; white on it 5.05:1 |
-| `color.warning` | `#8A5A00` | due soon | 5.41:1 on bg |
-| `color.brass` | `#C9A227` | decorative library brass (shelf edges, star) — **not for text** | — |
-| `color.ruleBlue` | `#8FB3D9` | catalogue-card ruled lines — decorative | — |
+| `paper` | `#FBF6EC` | app background (warm library paper) | — |
+| `surface` | `#FFFDF8` | cards, sheets, inputs, tab bar | — |
+| `surfaceTint` | `#F6F1FC` | grouped or selected content, active tab | — |
+| `ink` | `#271D38` | primary text | 14.78:1 on paper, 15.66:1 on surface |
+| `inkMuted` | `#4A3F5C` | secondary text (captions, helper text, inactive tabs) | 9.04:1 on paper, 8.77:1 on surfaceTint |
+| `primary` | `#6B3FA8` | buttons, links, active tab, headings | 6.72:1 on paper, 6.52:1 on surfaceTint |
+| `onPrimary` | `#FFFFFF` | text on primary | 7.24:1 |
+| `primaryContainer` / `onPrimaryContainer` | `#ECE2F8` / `#3D2363` | soft primary fills | 10.38:1 |
+| `accent` | `#A8336B` | berry accent: eyebrows, counters, stamps | 6.16:1 on surface, 5.82:1 on paper |
+| `onAccent` | `#FFFFFF` | text on accent | 6.27:1 |
+| `accentContainer` / `onAccentContainer` | `#FBE3EE` / `#6F1C45` | soft accent fills | 8.99:1 |
+| `success` / `onSuccess` | `#2D6B45` / `#FFFFFF` | returned, saved | 6.26:1 on surface; 6.36:1 |
+| `successContainer` / `onSuccessContainer` | `#E2F2E7` / `#1B4429` | | 9.49:1 |
+| `warn` / `onWarn` | `#8A5300` / `#FFFFFF` | due soon | 6.23:1 on surface; 6.33:1 |
+| `warnContainer` / `onWarnContainer` | `#FDF0D5` / `#5C3700` | | 9.29:1 |
+| `danger` / `onDanger` | `#B3261E` / `#FFFFFF` | errors, overdue stamp (stamp red) | 6.07:1 on paper; 6.54:1 |
+| `dangerContainer` / `onDangerContainer` | `#FCE4E1` / `#7A1A14` | | 8.73:1 |
+| `border` | `#E6D8C3` | hairlines, card borders — decorative only | — |
+| `outline` | `#6E6380` | input outlines, focus rings (UI, 3:1 rule) | 5.19:1 on paper |
+| `cardRule` | `#A8336B` | catalogue-card header rule — decorative | — |
+| `bookyBody`, `bookyShade`, `bookyStitch`, `bookyCheek`, `bookyEye`, `bookyPupil` | `#7B4FB8`, `#512F82`, `#D9C7F0`, `#F4A6C6`, `#FFFFFF`, `#2A1846` | Booky's artwork only | `bookyShade` 9.38:1 on paper |
 
-**Dark theme** (P09-02): `bg #1B1226`, `surface #241A33`, `text #EDE4F7` (14.68:1 on bg), `textMuted #A89BBF` (6.38:1 on surface), `primary #B79EDD` (7.71:1 on bg; text on it `#1B1226`), `danger #E8A8A2`, `success #8FD1A8`, `warning #F0C674` (all ≥ 8:1 on surface).
+**Dark theme** (P09-02): a second `ColorTokens` set registered in `src/theme/themes.ts` (today the dark scheme falls back to light). Intended values: `paper #1B1226`, `surface #241A33`, `ink #EDE4F7` (14.68:1 on paper), `inkMuted #A89BBF` (6.38:1 on surface), `primary #B79EDD` (7.71:1 on paper; text on it `#1B1226`), `danger #E8A8A2`, `success #8FD1A8`, `warn #F0C674` (all ≥ 8:1 on surface).
 
 ### Typography
 
-| Token | Family | Use |
-|---|---|---|
-| `font.heading` | **Lora** (serif; `@expo-google-fonts/lora`) | screen titles, book titles on cards |
-| `font.body` | **Nunito** (rounded sans; `@expo-google-fonts/nunito`) | body, buttons, forms |
-| `font.mono` | **Courier Prime** (`@expo-google-fonts/courier-prime`) | typewriter details: ISBNs, call numbers, due-date stamps |
+| Family | Package | Weights bundled | Font tokens (`theme.fonts`) | Use |
+|---|---|---|---|---|
+| **Lora** (serif) | `@expo-google-fonts/lora` | 500, 600, 700 | `headingRegular`, `heading`, `headingBold` | screen titles, headings, book titles |
+| **Nunito** (rounded sans) | `@expo-google-fonts/nunito` | 400, 400 italic, 600, 700 | `body`, `bodyItalic`, `bodySemiBold`, `bodyBold` | body, buttons, labels, forms |
+| **Courier Prime** (typewriter) | `@expo-google-fonts/courier-prime` | 400, 700 | `mono`, `monoBold` | ISBNs, call numbers, due-date stamps |
 
-Scale (sp/px): `xs 12`, `sm 14`, `md 16` (body), `lg 20`, `xl 24`, `2xl 30`, `3xl 36`. Line height 1.4 body / 1.2 headings. All text scales with the OS font size; layouts are tested at 200 %.
+Type styles (`typography`, size/line height in sp/px): `display` 34/42 and `h1` 28/36 (Lora 700), `h2` 22/30 and `h3` 18/24 (Lora 600), `body` 16/24 (Nunito 400), `bodyStrong` 16/24 (Nunito 700), `label` 14/20 and `tabLabel` 12/16 (Nunito 600), `caption` 13/18 (Nunito 400), `mono` 14/20 (Courier Prime 400), `stamp` 13/16 (Courier Prime 700, uppercase). Each style names the font file for its weight: on Android/iOS `fontWeight` is dropped (the family already is that weight), on web it is kept and `public/index.html` turns off font synthesis. All text scales with the OS font size; layouts are checked at 200 % in P09-01.
 
-### Spacing, shape, motion
+### Spacing, sizes, shape, motion
 
-- Spacing scale: 4, 8, 12, 16, 24, 32, 48. Minimum touch target 48 dp.
-- Radii: `sm 6`, `md 12`, `lg 20`, `pill 999`. Cards use `md`; Booky's bubble uses `lg` with a tail.
-- Elevation: soft, purple-tinted shadows (`rgba(46, 22, 80, 0.12)`).
-- Motion: 150–250 ms ease-out; everything respects reduce-motion.
+- Spacing (`spacing`): `none 0`, `xxs 2`, `xs 4`, `sm 8`, `md 12`, `lg 16`, `xl 24`, `xxl 32`, `xxxl 48`.
+- Sizes (`sizes`): `touchTarget 48` (minimum touch target, dp), `iconButton 32` (small buttons inside another control, padded to 48 with hit slop), `icon 20`, `tabBar 64`, `contentMaxWidth 720`, `bubbleMaxWidth 560`.
+- Radii (`radii`): `none 0`, `sm 6`, `md 10`, `lg 16`, `xl 24`, `pill 999`. Cards use `md`.
+- Elevation (`elevation`, React Native `boxShadow` strings): `none`, `low`, `card`, `raised`; soft plum-tinted shadows (`rgba(42, 24, 70, …)`).
+- Motion: no motion tokens yet. UI transitions aim for 150–250 ms ease-out; Booky's idle bob is a slow 2.8 s loop. Everything respects reduce-motion (`src/hooks/useReducedMotion.ts`).
 
 ### Library motifs
 
-- **Catalogue card** (book row and detail header): cream card, red header rule, faint blue ruled lines, title in Lora, author and ISBN in Courier Prime, a punched hole at the bottom centre.
-- **Spines** (shelf "spines" view, series gaps): books drawn as vertical spines in purple/brass shades derived from a hash of the title; missing series entries are dashed outline spines.
-- **Due-date stamp** (loans): rotated rubber-stamp label in Courier Prime — "DUE 12 OCT" in `color.warning`, "OVERDUE" in `color.danger`, "RETURNED" in `color.success`.
-- **Library card pocket** for borrower details; **brass shelf edge** under section headers.
+- **Catalogue card** (book row and detail header): `Card` (delivered) is warm card stock (`surface`) with a berry header rule (`cardRule`), an optional typewriter eyebrow and a punched hole at the bottom centre. `CatalogueCard` (P00-30) builds on it with faint ruled lines, a cover slot, the title in Lora and author and ISBN in Courier Prime.
+- **Spines** (shelf "spines" view, series gaps): books drawn as vertical spines in palette shades derived from a hash of the title; missing series entries are dashed outline spines.
+- **Due-date stamp** (loans, `Stamp` in P00-30): rotated rubber-stamp label in the `stamp` type style — "DUE 12 OCT" in `warn`, "OVERDUE" in `danger`, "RETURNED" in `success`.
+- **Library card pocket** for borrower details; **brass shelf edge** under section headers (a brass colour role is added to `src/theme` with the first brass motif, P06-01).
 
 ---
 
