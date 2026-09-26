@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { useReducedMotion } from '@/hooks/useReducedMotion';
+import { t } from '@/i18n';
 import { Testids } from '@/testing/testids.gen';
 import { useTheme, type CoverSize } from '@/theme';
 
@@ -68,7 +69,7 @@ export function CoverImage({ uri, title, author, size = 'thumb', width: fitWidth
     const timer = setTimeout(() => setSettledUri(uri!), reduceMotion ? 0 : COVER_FADE_MS);
     return () => clearTimeout(timer);
   }, [loaded, settled, uri, reduceMotion]);
-  const label = `Cover of ${title}`;
+  const label = t('bookList.coverOf', { title });
 
   return (
     <View

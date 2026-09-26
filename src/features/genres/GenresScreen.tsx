@@ -7,13 +7,13 @@ import { Button, ConfirmDialog, EmptyState, Heading, IconButton, Screen, Sheet, 
 import { GenreNameTakenError, type GenreWithCount } from '@/db';
 import { goBackOr } from '@/features/navigation/goBack';
 import { LoadingPage } from '@/features/navigation/LoadingPage';
+import { t } from '@/i18n';
 import { Testids } from '@/testing/testids.gen';
 import { useTheme } from '@/theme';
 
 import { useGenres } from './useGenres';
 
 const EDGES = ['top', 'bottom', 'left', 'right'] as const;
-const books = (n: number) => (n === 1 ? '1 book' : `${n} books`);
 
 type Pending =
   | { kind: 'rename'; genre: GenreWithCount }
@@ -48,13 +48,13 @@ export function GenresScreen() {
     if (pending?.kind !== 'rename') return;
     const clean = name.trim();
     if (!clean) {
-      setError('A genre needs a name.');
+      setError(t('genres.rename.required'));
       return;
     }
     setBusy(true);
     try {
       await rename(pending.genre.id, clean);
-      show({ message: `Renamed to “${clean}”` });
+      show({ message: t('genres.rename.done', { name: clean }) });
       close();
     } catch (e) {
       setBusy(false);
@@ -63,7 +63,7 @@ export function GenresScreen() {
         return;
       }
       console.error('Could not rename the genre', e);
-      setError('Sorry, I couldn’t rename it. Please try again.');
+      setError(t('genres.rename.failed'));
     }
   };
 
@@ -72,10 +72,10 @@ export function GenresScreen() {
     setBusy(true);
     try {
       const merged = await merge(pending.source.id, pending.target.id);
-      show({ message: merged ? `Merged into “${merged.name}”: ${books(merged.count)}` : 'Those genres have already changed.' });
+      show({ message: merged ? t('genres.merge.done', { name: merged.name, count: merged.count }) : t('genres.merge.stale') });
     } catch (e) {
       console.error('Could not merge the genres', e);
-      show({ message: 'Sorry, I couldn’t merge those genres. Please try again.' });
+      show({ message: t('genres.merge.failed') });
     }
     close();
   };
@@ -85,10 +85,10 @@ export function GenresScreen() {
     setBusy(true);
     try {
       await remove(pending.genre.id);
-      show({ message: `Deleted “${pending.genre.name}”` });
+      show({ message: t('genres.delete.done', { name: pending.genre.name }) });
     } catch (e) {
       console.error('Could not delete the genre', e);
-      show({ message: 'Sorry, I couldn’t delete that genre. Please try again.' });
+      show({ message: t('genres.delete.failed') });
     }
     close();
   };
@@ -98,20 +98,20 @@ export function GenresScreen() {
       <TopBar onBack={() => goBackOr('/')} />
       <View style={{ gap: spacing.xs }}>
         <Heading level={1} testID={Testids.genres.title}>
-          Genres
+          {t('genres.index.title')}
         </Heading>
-        <Text color="inkMuted">Tidy your genres: rename them, merge near-duplicates, or open one to see its books.</Text>
+        <Text color="inkMuted">{t('genres.index.intro')}</Text>
       </View>
       {genres.length === 0 ? (
         <EmptyState
           testID={Testids.emptyState.root}
           illustration={<Booky expression="sleepy" size={112} />}
-          title="No genres yet"
-          message="Genres appear here as you add books. Lookups fill them in for you."
-          action={{ label: 'Add a book', onPress: () => router.navigate('/book/new'), variant: 'secondary' }}
+          title={t('genres.index.emptyTitle')}
+          message={t('genres.index.emptyMessage')}
+          action={{ label: t('common.addABook'), onPress: () => router.navigate('/book/new'), variant: 'secondary' }}
         />
       ) : (
-        <View role="list" aria-label="Genres" style={{ gap: spacing.sm }}>
+        <View role="list" aria-label={t('genres.index.list')} style={{ gap: spacing.sm }}>
           {genres.map((g) => (
             <View
               key={g.id}
@@ -120,8 +120,8 @@ export function GenresScreen() {
             >
               <Pressable
                 role="link"
-                accessibilityLabel={`${g.name}, ${books(g.count)}`}
-                aria-label={`${g.name}, ${books(g.count)}`}
+                accessibilityLabel={t('bookList.nameAndCount', { name: g.name, count: g.count })}
+                aria-label={t('bookList.nameAndCount', { name: g.name, count: g.count })}
                 onPress={() => router.navigate({ pathname: '/genres/[id]', params: { id: String(g.id) } })}
                 testID={Testids.genres.row}
                 style={({ pressed }) => [
@@ -134,12 +134,12 @@ export function GenresScreen() {
                   {g.name}
                 </Text>
                 <Text variant="caption" color="inkMuted">
-                  {books(g.count)}
+                  {t('common.books', { count: g.count })}
                 </Text>
               </Pressable>
               <IconButton
                 icon="pencil-outline"
-                accessibilityLabel={`Rename ${g.name}`}
+                accessibilityLabel={t('genres.index.rename', { name: g.name })}
                 onPress={() => {
                   setName(g.name);
                   setError(null);
@@ -149,12 +149,12 @@ export function GenresScreen() {
               />
               <IconButton
                 icon="call-merge"
-                accessibilityLabel={`Merge ${g.name} into another genre`}
+                accessibilityLabel={t('genres.index.merge', { name: g.name })}
                 disabled={genres.length < 2}
                 onPress={() => setPending({ kind: 'pickMerge', genre: g })}
                 testID={Testids.genres.merge}
               />
-              <IconButton icon="trash-can-outline" variant="danger" accessibilityLabel={`Delete ${g.name}`} onPress={() => setPending({ kind: 'delete', genre: g })} testID={Testids.genres.delete} />
+              <IconButton icon="trash-can-outline" variant="danger" accessibilityLabel={t('genres.index.delete', { name: g.name })} onPress={() => setPending({ kind: 'delete', genre: g })} testID={Testids.genres.delete} />
             </View>
           ))}
         </View>
@@ -162,20 +162,20 @@ export function GenresScreen() {
 
       <Sheet
         visible={pending?.kind === 'rename'}
-        title={pending?.kind === 'rename' ? `Rename “${pending.genre.name}”` : 'Rename'}
+        title={pending?.kind === 'rename' ? t('genres.rename.title', { name: pending.genre.name }) : t('genres.rename.titleFallback')}
         onClose={close}
         footer={
           <>
-            <Button variant="secondary" label="Cancel" onPress={close} disabled={busy} />
-            <Button label="Save" onPress={saveRename} loading={busy} testID={Testids.genres.renameSave} />
+            <Button variant="secondary" label={t('common.cancel')} onPress={close} disabled={busy} />
+            <Button label={t('common.save')} onPress={saveRename} loading={busy} testID={Testids.genres.renameSave} />
           </>
         }
       >
         <TextField
-          label="Genre name"
+          label={t('genres.rename.field')}
           value={name}
-          onChangeText={(t) => {
-            setName(t);
+          onChangeText={(text) => {
+            setName(text);
             setError(null);
           }}
           autoFocus
@@ -188,12 +188,12 @@ export function GenresScreen() {
 
       <Sheet
         visible={pending?.kind === 'pickMerge'}
-        title={pending?.kind === 'pickMerge' ? `Merge “${pending.genre.name}” into…` : 'Merge into…'}
-        subtitle="Its books move to the genre you choose, and it goes away."
+        title={pending?.kind === 'pickMerge' ? t('genres.merge.title', { name: pending.genre.name }) : t('genres.merge.titleFallback')}
+        subtitle={t('genres.merge.subtitle')}
         onClose={close}
-        footer={<Button variant="secondary" label="Cancel" onPress={close} />}
+        footer={<Button variant="secondary" label={t('common.cancel')} onPress={close} />}
       >
-        <View role="list" aria-label="Genres to merge into" style={{ gap: spacing.xs }}>
+        <View role="list" aria-label={t('genres.merge.list')} style={{ gap: spacing.xs }}>
           {pending?.kind === 'pickMerge'
             ? genres
                 .filter((g) => g.id !== pending.genre.id)
@@ -201,7 +201,7 @@ export function GenresScreen() {
                   <View role="listitem" key={g.id}>
                     <Pressable
                       role="button"
-                      accessibilityLabel={`${g.name}, ${books(g.count)}`}
+                      accessibilityLabel={t('bookList.nameAndCount', { name: g.name, count: g.count })}
                       onPress={() => setPending({ kind: 'confirmMerge', source: pending.genre, target: g, fromRename: false })}
                       testID={Testids.genres.mergeOption}
                       style={({ pressed }) => [
@@ -214,7 +214,7 @@ export function GenresScreen() {
                         {g.name}
                       </Text>
                       <Text variant="caption" color="inkMuted">
-                        {books(g.count)}
+                        {t('common.books', { count: g.count })}
                       </Text>
                     </Pressable>
                   </View>
@@ -226,13 +226,17 @@ export function GenresScreen() {
       <ConfirmDialog
         visible={pending?.kind === 'confirmMerge'}
         illustration={<Booky expression="thinking" size={72} animated={false} />}
-        title={pending?.kind === 'confirmMerge' ? `Merge into “${pending.target.name}”?` : 'Merge?'}
+        title={pending?.kind === 'confirmMerge' ? t('genres.merge.confirmTitle', { name: pending.target.name }) : t('genres.merge.confirmTitleFallback')}
         message={
           pending?.kind === 'confirmMerge'
-            ? `${pending.fromRename ? `There’s already a genre called “${pending.target.name}”. ` : ''}Merge “${pending.source.name}” into it? Its ${books(pending.source.count)} will be tagged “${pending.target.name}”.`
+            ? t(pending.fromRename ? 'genres.merge.confirmMessageTaken' : 'genres.merge.confirmMessage', {
+                source: pending.source.name,
+                target: pending.target.name,
+                count: pending.source.count,
+              })
             : undefined
         }
-        confirmLabel="Merge"
+        confirmLabel={t('common.merge')}
         busy={busy}
         onConfirm={confirmMerge}
         onCancel={close}
@@ -240,9 +244,9 @@ export function GenresScreen() {
       <ConfirmDialog
         visible={pending?.kind === 'delete'}
         illustration={<Booky expression="concerned" size={72} animated={false} />}
-        title={pending?.kind === 'delete' ? `Delete “${pending.genre.name}”?` : 'Delete?'}
-        message={pending?.kind === 'delete' ? `The ${books(pending.genre.count)} stay on your shelf; they just lose this genre.` : undefined}
-        confirmLabel="Delete"
+        title={pending?.kind === 'delete' ? t('genres.delete.title', { name: pending.genre.name }) : t('genres.delete.titleFallback')}
+        message={pending?.kind === 'delete' ? t('genres.delete.message', { count: pending.genre.count }) : undefined}
+        confirmLabel={t('common.delete')}
         destructive
         busy={busy}
         onConfirm={confirmDelete}

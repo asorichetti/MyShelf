@@ -3,6 +3,7 @@ import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { Button, IconButton, Text } from '@/components/ui';
 import { useBottomObstacle } from '@/components/ui/layers';
+import { t } from '@/i18n';
 import { Testids } from '@/testing/testids.gen';
 import { useTheme } from '@/theme';
 
@@ -18,14 +19,14 @@ export interface SelectionBarProps {
   style?: StyleProp<ViewStyle>;
 }
 
-export const selectionCountLabel = (n: number) => (n === 0 ? 'Select books' : n === 1 ? '1 book selected' : `${n} books selected`);
+export const selectionCountLabel = (n: number) => (n === 0 ? t('shelfView.selectionBar.none') : t('shelfView.selectionBar.count', { count: n }));
 
 /**
  * The action bar shown while books are selected: how many (announced
  * politely), "Add to group…", "Remove from group" in a group's view, "Delete",
  * and a button to stop selecting (Android back does the same).
  */
-export function SelectionBar({ count, onCancel, onAddToGroup, addLabel = 'Add to group…', onRemoveFromGroup, onDelete, style }: SelectionBarProps) {
+export function SelectionBar({ count, onCancel, onAddToGroup, addLabel, onRemoveFromGroup, onDelete, style }: SelectionBarProps) {
   const theme = useTheme();
   const { colors, spacing, radii, sizes } = theme;
   const none = count === 0;
@@ -37,7 +38,7 @@ export function SelectionBar({ count, onCancel, onAddToGroup, addLabel = 'Add to
       onLayout={onLayout}
       testID={Testids.selection.bar}
       role="toolbar"
-      aria-label="Selected books"
+      aria-label={t('shelfView.selectionBar.label')}
       style={[
         styles.bar,
         { backgroundColor: colors.surface, borderColor: colors.border, borderRadius: radii.lg, padding: spacing.sm, gap: spacing.xs, boxShadow: theme.elevation.raised },
@@ -45,7 +46,7 @@ export function SelectionBar({ count, onCancel, onAddToGroup, addLabel = 'Add to
       ]}
     >
       <View style={[styles.row, { gap: spacing.xs }]}>
-        <IconButton icon="close" accessibilityLabel="Stop selecting" onPress={onCancel} testID={Testids.selection.cancel} />
+        <IconButton icon="close" accessibilityLabel={t('shelfView.selectionBar.stop')} onPress={onCancel} testID={Testids.selection.cancel} />
         <Text variant="bodyStrong" role="status" aria-live="polite" accessibilityLiveRegion="polite" testID={Testids.selection.count} style={styles.flex}>
           {selectionCountLabel(count)}
         </Text>
@@ -54,7 +55,7 @@ export function SelectionBar({ count, onCancel, onAddToGroup, addLabel = 'Add to
         {onAddToGroup ? (
           <Button
             variant="primary"
-            label={addLabel}
+            label={addLabel ?? t('shelfView.selectionBar.addToGroup')}
             disabled={none}
             onPress={onAddToGroup}
             testID={Testids.selection.addToGroup}
@@ -62,9 +63,9 @@ export function SelectionBar({ count, onCancel, onAddToGroup, addLabel = 'Add to
           />
         ) : null}
         {onRemoveFromGroup ? (
-          <Button variant="secondary" label="Remove from group" disabled={none} onPress={onRemoveFromGroup} testID={Testids.selection.remove} />
+          <Button variant="secondary" label={t('shelfView.selectionBar.removeFromGroup')} disabled={none} onPress={onRemoveFromGroup} testID={Testids.selection.remove} />
         ) : null}
-        {onDelete ? <Button variant="danger" label="Delete" disabled={none} onPress={onDelete} testID={Testids.selection.delete} /> : null}
+        {onDelete ? <Button variant="danger" label={t('common.delete')} disabled={none} onPress={onDelete} testID={Testids.selection.delete} /> : null}
       </View>
     </View>
   );

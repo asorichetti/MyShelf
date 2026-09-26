@@ -8,6 +8,7 @@ import { goBackOr } from '@/features/navigation/goBack';
 import { LoadingPage } from '@/features/navigation/LoadingPage';
 import { MissingScreen } from '@/features/navigation/MissingScreen';
 import { parseId } from '@/features/navigation/parseId';
+import { t } from '@/i18n';
 import { Testids } from '@/testing/testids.gen';
 import { useTheme } from '@/theme';
 
@@ -22,7 +23,7 @@ export function GenreDetailScreen() {
 
   if (state.status === 'loading') return <LoadingPage />;
   if (state.status === 'missing') {
-    return <MissingScreen title="Genre not found" message="That genre isn’t in your catalogue any more. It may have been merged or deleted." fallback="/genres" />;
+    return <MissingScreen title={t('genres.detail.notFoundTitle')} message={t('genres.detail.notFoundMessage')} fallback="/genres" />;
   }
   const { genre, items } = state;
   return (
@@ -30,21 +31,21 @@ export function GenreDetailScreen() {
       <TopBar onBack={() => goBackOr('/genres')} />
       <View style={{ gap: spacing.xs }}>
         <Text variant="stamp" color="accent">
-          Genre
+          {t('genres.detail.stamp')}
         </Text>
         <Heading level={1} testID={Testids.genres.detailTitle}>
           {genre.name}
         </Heading>
-        <Text color="inkMuted">{items.length === 1 ? '1 book' : `${items.length} books`}</Text>
+        <Text color="inkMuted">{t('common.books', { count: items.length })}</Text>
       </View>
-      <View role="list" aria-label={`Books in ${genre.name}`} style={{ gap: spacing.md }}>
+      <View role="list" aria-label={t('genres.detail.list', { name: genre.name })} style={{ gap: spacing.md }}>
         {items.map((item) => (
           <View key={item.id} role="listitem">
             <BookRow item={item} onPress={open} />
           </View>
         ))}
       </View>
-      {items.length === 0 ? <Text color="inkMuted">No books have this genre yet.</Text> : null}
+      {items.length === 0 ? <Text color="inkMuted">{t('genres.detail.none')}</Text> : null}
     </Screen>
   );
 }

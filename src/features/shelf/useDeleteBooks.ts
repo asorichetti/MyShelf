@@ -4,6 +4,7 @@ import { useSnackbar } from '@/components/ui';
 import { booksRepo, useDatabase } from '@/db';
 import { UNDO_WINDOW_MS } from '@/features/book/useDeleteBook';
 import { emit } from '@/features/events';
+import { t } from '@/i18n';
 import { deleteCover, isLocalCover } from '@/services/covers';
 
 function announceChanges() {
@@ -11,8 +12,6 @@ function announceChanges() {
   emit('loans-changed');
   emit('groups-changed');
 }
-
-const books = (n: number) => (n === 1 ? '1 book' : `${n} books`);
 
 /**
  * Deletes several books in one transaction and offers Undo for six seconds,
@@ -35,21 +34,21 @@ export function useDeleteBooks(): (ids: readonly number[]) => Promise<number> {
       if (!snapshots.length) return 0;
       announceChanges();
       show({
-        message: `Removed ${books(snapshots.length)} from your shelf`,
+        message: t('shelf.removed.message', { count: snapshots.length }),
         duration: UNDO_WINDOW_MS,
         action: {
-          label: 'Undo',
+          label: t('common.undo'),
           onPress: () => {
             db.transaction(async (tx) => {
               for (const snapshot of snapshots) await booksRepo.restoreBook(tx, snapshot);
             })
               .then(() => {
                 announceChanges();
-                show({ message: `${books(snapshots.length)} back on your shelf` });
+                show({ message: t('shelf.removed.restored', { count: snapshots.length }) });
               })
               .catch((e) => {
                 console.error('Could not restore the books', e);
-                show({ message: 'Sorry, I couldn’t bring those books back.' });
+                show({ message: t('shelf.removed.restoreFailed') });
               });
           },
         },

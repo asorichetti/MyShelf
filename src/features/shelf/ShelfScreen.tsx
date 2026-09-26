@@ -23,6 +23,7 @@ import { useGroups } from '@/features/groups/useGroups';
 import { ShelfPendingBanner } from '@/features/lookup/PendingLookupsProvider';
 import { goBackOr } from '@/features/navigation/goBack';
 import { parseId } from '@/features/navigation/parseId';
+import { t } from '@/i18n';
 import { Testids } from '@/testing/testids.gen';
 import { useTheme } from '@/theme';
 
@@ -30,14 +31,12 @@ import { useDeleteBooks } from './useDeleteBooks';
 import { useSelection } from './useSelection';
 import { useShelf } from './useShelf';
 
-const plural = (n: number) => (n === 1 ? '1 book' : `${n} books`);
-
 /** What the live region under the toolbar says (and a screen reader announces). */
 export function resultSummary(count: number, total: number, query: string, filtered = false): string {
-  if (!query && !filtered) return `Showing all ${plural(total)}`;
-  const what = query ? `“${query}”` : 'your filters';
-  if (count === 0) return `No books match ${what}`;
-  return `${count} of ${plural(total)} match ${what}${query && filtered ? ' and filters' : ''}`;
+  if (!query && !filtered) return t('shelf.summary.all', { count: total });
+  if (count === 0) return query ? t('shelf.summary.noneMatchQuery', { query }) : t('shelf.summary.noneMatchFilters');
+  if (!query) return t('shelf.summary.matchFilters', { matched: count, count: total });
+  return t(filtered ? 'shelf.summary.matchQueryAndFilters' : 'shelf.summary.matchQuery', { matched: count, count: total, query });
 }
 
 const languageName = (code: string) => languages.find((l) => l.code === code)?.name ?? code.toUpperCase();
@@ -155,15 +154,15 @@ export function ShelfScreen() {
     setPickerOpen(false);
     try {
       const added = await groups.addBooks(groupId, ids);
-      const groupName = name ?? groups.groups?.find((g) => g.id === groupId)?.name ?? 'the group';
+      const groupName = name ?? groups.groups?.find((g) => g.id === groupId)?.name ?? t('shelf.selection.theGroup');
       selection.exit();
       show({
-        message: added === ids.length ? `Added ${plural(added)} to ${groupName}` : `Added ${plural(added)} to ${groupName}; the rest were already there`,
-        action: { label: 'View', onPress: () => router.navigate({ pathname: '/group/[id]', params: { id: String(groupId) } }) },
+        message: t(added === ids.length ? 'shelf.selection.added' : 'shelf.selection.addedSomeAlready', { count: added, group: groupName }),
+        action: { label: t('shelf.selection.view'), onPress: () => router.navigate({ pathname: '/group/[id]', params: { id: String(groupId) } }) },
       });
     } catch (e) {
       console.error('Could not add the books to the group', e);
-      show({ message: 'Sorry, I couldn’t add those books. Please try again.' });
+      show({ message: t('shelf.selection.addFailed') });
     }
   };
 
@@ -180,7 +179,7 @@ export function ShelfScreen() {
       selection.exit();
     } catch (e) {
       console.error('Could not delete the books', e);
-      show({ message: 'Sorry, I couldn’t remove those books. Please try again.' });
+      show({ message: t('shelf.selection.removeFailed') });
     } finally {
       setDeleting(false);
       setConfirmingDelete(false);
@@ -194,14 +193,14 @@ export function ShelfScreen() {
       <View style={{ gap: spacing.xs }}>
         <View style={[styles.titleRow, { gap: spacing.sm }]}>
           <Heading level={1} testID={Testids.home.title} style={styles.fill}>
-            MyShelf
+            {t('shelf.screen.title')}
           </Heading>
           <HelpButton screen="shelf" />
         </View>
-        <Text color="inkMuted">Your personal library, one shelf at a time.</Text>
+        <Text color="inkMuted">{t('shelf.screen.tagline')}</Text>
         {total != null ? (
           <Text variant="stamp" color="accent" testID={Testids.home.bookCount}>
-            {total === 1 ? '1 book catalogued' : `${total} books catalogued`}
+            {t('shelf.screen.count', { count: total })}
           </Text>
         ) : null}
       </View>
@@ -223,18 +222,18 @@ export function ShelfScreen() {
             onSelect={selecting ? undefined : () => selection.start()}
           />
           {chips.length ? (
-            <View role="group" aria-label="Active filters" style={[styles.chips, { columnGap: spacing.sm }]}>
+            <View role="group" aria-label={t('shelf.screen.activeFilters')} style={[styles.chips, { columnGap: spacing.sm }]}>
               {chips.map((c) => (
                 <Chip
                   key={c.key}
                   label={c.label}
-                  removeLabel={`Remove filter ${c.label}`}
+                  removeLabel={t('shelf.screen.removeFilter', { label: c.label })}
                   onRemove={() => shelf.setFilters(c.without)}
                   testID={Testids.shelfView.filterChip}
                   removeTestID={Testids.shelfView.filterChipRemove}
                 />
               ))}
-              <Button variant="ghost" label="Clear all" accessibilityLabel="Clear all filters" onPress={() => shelf.setFilters(noFilters)} testID={Testids.shelfView.filterClear} />
+              <Button variant="ghost" label={t('filters.sheet.clearAll')} accessibilityLabel={t('shelf.screen.clearAllFilters')} onPress={() => shelf.setFilters(noFilters)} testID={Testids.shelfView.filterClear} />
             </View>
           ) : null}
           <Text
@@ -257,16 +256,16 @@ export function ShelfScreen() {
       <EmptyState
         testID={Testids.emptyState.root}
         illustration={<Booky expression="happy" size={120} testID={Testids.booky.avatar} />}
-        title="Your shelf is empty"
-        message="Scan a book's barcode or cover and I'll fill in the title, author, genre and series for you. Or type it in yourself."
-        action={{ label: 'Scan a book', onPress: () => router.navigate('/scan'), testID: Testids.home.scanAction }}
-        secondaryAction={{ label: 'Add manually', onPress: addBook, testID: Testids.home.addButton }}
+        title={t('shelf.empty.title')}
+        message={t('shelf.empty.message')}
+        action={{ label: t('shelf.empty.scan'), onPress: () => router.navigate('/scan'), testID: Testids.home.scanAction }}
+        secondaryAction={{ label: t('shelf.empty.addManually'), onPress: addBook, testID: Testids.home.addButton }}
       />
       {/* Booky Off: no character to introduce. */}
       {bookyMode === 'off' ? null : (
         <Button
           variant="ghost"
-          label="What can Booky do?"
+          label={t('shelf.empty.askBooky')}
           testID={Testids.home.askBooky}
           style={{ alignSelf: 'center' }}
           onPress={() => void emit({ type: 'help-requested', screen: 'booky' })}
@@ -279,17 +278,17 @@ export function ShelfScreen() {
     <EmptyState
       testID={Testids.home.noMatches}
       illustration={<Booky expression="thinking" size={96} />}
-      title="No matches"
-      message={`Nothing on your shelf matches “${activeQuery}”${filterCount ? ' with these filters' : ''}. Check the spelling, or try an author, series or ISBN.`}
-      action={{ label: 'Clear search', onPress: () => shelf.setQuery(''), variant: 'secondary' }}
+      title={t('shelf.noMatches.title')}
+      message={t(filterCount ? 'shelf.noMatches.queryWithFilters' : 'shelf.noMatches.query', { query: activeQuery })}
+      action={{ label: t('shelf.noMatches.clearSearch'), onPress: () => shelf.setQuery(''), variant: 'secondary' }}
     />
   ) : (
     <EmptyState
       testID={Testids.home.noMatches}
       illustration={<Booky expression="thinking" size={96} />}
-      title="Nothing matches these filters"
-      message="Try taking a filter or two away."
-      action={{ label: 'Clear filters', onPress: () => shelf.setFilters(noFilters), variant: 'secondary' }}
+      title={t('shelf.noMatches.filtersTitle')}
+      message={t('shelf.noMatches.filtersMessage')}
+      action={{ label: t('shelf.noMatches.clearFilters'), onPress: () => shelf.setFilters(noFilters), variant: 'secondary' }}
     />
   );
 
@@ -322,7 +321,7 @@ export function ShelfScreen() {
             selection.exit();
             goBackOr({ pathname: '/group/[id]', params: { id: String(addTo) } });
           }}
-          addLabel={addToName ? `Add to ${addToName}` : 'Add to group'}
+          addLabel={addToName ? t('shelf.selection.addTo', { name: addToName }) : t('shelf.selection.addToGroup')}
           onAddToGroup={async () => {
             await addSelectedTo(addTo, addToName ?? undefined);
             goBackOr({ pathname: '/group/[id]', params: { id: String(addTo) } });
@@ -351,7 +350,7 @@ export function ShelfScreen() {
           ]}
         >
           <Button
-            label="Add book"
+            label={t('shelf.screen.addBook')}
             testID={Testids.home.addButton}
             onPress={addBook}
             icon={<MaterialCommunityIcons name="plus" size={sizes.icon} color={colors.onPrimary} />}
@@ -369,7 +368,7 @@ export function ShelfScreen() {
       />
       <GroupPickerSheet
         visible={pickerOpen}
-        title={`Add ${plural(selection.count)} to a group`}
+        title={t('shelf.selection.pickerTitle', { count: selection.count })}
         groups={groups.groups ?? []}
         onPick={(id) => addSelectedTo(id)}
         onNew={() => {
@@ -382,10 +381,10 @@ export function ShelfScreen() {
       <ConfirmDialog
         visible={confirmingDelete}
         illustration={<Booky expression="concerned" size={72} animated={false} />}
-        title={selection.count === 1 ? 'Remove this book?' : `Remove ${selection.count} books?`}
-        message={`Remove ${plural(selection.count)} from your shelf? Their loan history goes too. You can undo this for a few seconds.`}
-        confirmLabel="Remove"
-        cancelLabel="Keep them"
+        title={t('shelf.removeDialog.title', { count: selection.count })}
+        message={t('shelf.removeDialog.message', { count: selection.count })}
+        confirmLabel={t('common.remove')}
+        cancelLabel={t('shelf.removeDialog.keep')}
         destructive
         busy={deleting}
         onConfirm={confirmDelete}

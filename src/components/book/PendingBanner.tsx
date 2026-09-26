@@ -2,6 +2,7 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { StyleSheet, View } from 'react-native';
 
 import { Button, Text } from '@/components/ui';
+import { t } from '@/i18n';
 import { Testids } from '@/testing/testids.gen';
 import { useTheme } from '@/theme';
 
@@ -16,7 +17,7 @@ export interface PendingBannerProps {
 export function PendingBanner({ count, retrying, onRetry }: PendingBannerProps) {
   const { colors, spacing, radii, sizes } = useTheme();
   if (count <= 0) return null;
-  const message = `${count === 1 ? '1 book' : `${count} books`} waiting for details. I’ll look ${count === 1 ? 'it' : 'them'} up when you’re back online.`;
+  const message = t('shelf.pending.message', { count });
   return (
     <View
       testID={Testids.pending.banner}
@@ -29,7 +30,7 @@ export function PendingBanner({ count, retrying, onRetry }: PendingBannerProps) 
       <Text color="onWarnContainer" style={styles.text}>
         {message}
       </Text>
-      <Button variant="ghost" label={retrying ? 'Trying…' : 'Try now'} onPress={onRetry} disabled={retrying} testID={Testids.pending.retry} />
+      <Button variant="ghost" label={retrying ? t('shelf.pending.trying') : t('shelf.pending.tryNow')} onPress={onRetry} disabled={retrying} testID={Testids.pending.retry} />
     </View>
   );
 }

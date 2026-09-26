@@ -1,3 +1,5 @@
+import { t, translate, type MessageKey } from '@/i18n';
+
 import { bookFormats, type BookFormat } from './book';
 import { isRating, minRatingLabel, type Rating } from './rating';
 
@@ -95,22 +97,38 @@ export interface FilterChip {
   without: ShelfFilters;
 }
 
-export const formatLabels: Record<BookFormat, string> = {
-  hardcover: 'Hardback',
-  paperback: 'Paperback',
-  ebook: 'E-book',
-  audiobook: 'Audiobook',
-  other: 'Other format',
+/** Catalogue keys naming each format, loan and series filter. */
+export const formatLabelKeys: Record<BookFormat, MessageKey> = {
+  hardcover: 'filters.format.hardcover',
+  paperback: 'filters.format.paperback',
+  ebook: 'filters.format.ebook',
+  audiobook: 'filters.format.audiobook',
+  other: 'filters.format.otherFormat',
+};
+export const loanFilterLabelKeys: Record<LoanFilter, MessageKey> = { any: 'filters.loan.any', onLoan: 'filters.loan.onLoan', atHome: 'filters.loan.atHome' };
+export const seriesFilterLabelKeys: Record<SeriesFilter, MessageKey> = {
+  any: 'filters.series.any',
+  inSeries: 'filters.series.inSeries',
+  standalone: 'filters.series.standalone',
 };
 
-export const loanFilterLabels: Record<LoanFilter, string> = { any: 'Any', onLoan: 'On loan', atHome: 'At home' };
-export const seriesFilterLabels: Record<SeriesFilter, string> = { any: 'Any', inSeries: 'In a series', standalone: 'Standalone' };
+/** A table whose values are translated each time they are read (never at import). */
+export function translatedLabels<K extends string>(keys: Record<K, MessageKey>): Record<K, string> {
+  const out = {} as Record<K, string>;
+  for (const k of Object.keys(keys) as K[]) Object.defineProperty(out, k, { enumerable: true, get: () => translate(keys[k]) });
+  return out;
+}
+
+/** The labels themselves ("Hardback", "On loan"), in the active language. */
+export const formatLabels = translatedLabels(formatLabelKeys);
+export const loanFilterLabels = translatedLabels(loanFilterLabelKeys);
+export const seriesFilterLabels = translatedLabels(seriesFilterLabelKeys);
 
 /** "1950–1999", "From 1950", "Up to 1999". */
 export function yearRangeLabel(from: number | null, to: number | null): string {
-  if (from != null && to != null) return from === to ? `Published ${from}` : `${from}–${to}`;
-  if (from != null) return `From ${from}`;
-  return `Up to ${to}`;
+  if (from != null && to != null) return from === to ? t('filters.chip.yearExact', { year: from }) : t('filters.chip.yearRange', { from, to });
+  if (from != null) return t('filters.chip.yearFrom', { year: from });
+  return t('filters.chip.yearTo', { year: to ?? '' });
 }
 
 /**
@@ -124,7 +142,7 @@ export function filterChips(
 ): FilterChip[] {
   const chips: FilterChip[] = [];
   for (const id of f.genreIds) {
-    chips.push({ key: `genre:${id}`, label: genreName(id) ?? 'Genre', without: { ...f, genreIds: f.genreIds.filter((g) => g !== id) } });
+    chips.push({ key: `genre:${id}`, label: genreName(id) ?? t('filters.chip.genre'), without: { ...f, genreIds: f.genreIds.filter((g) => g !== id) } });
   }
   for (const format of f.formats) {
     chips.push({ key: `format:${format}`, label: formatLabels[format], without: { ...f, formats: f.formats.filter((x) => x !== format) } });
@@ -138,7 +156,7 @@ export function filterChips(
     chips.push({ key: 'year', label: yearRangeLabel(f.yearFrom, f.yearTo), without: { ...f, yearFrom: null, yearTo: null } });
   }
   if (f.minRating != null) chips.push({ key: 'rating', label: minRatingLabel(f.minRating), without: { ...f, minRating: null } });
-  if (f.recentlyAdded) chips.push({ key: 'recent', label: `Added in the last ${RECENTLY_ADDED_DAYS} days`, without: { ...f, recentlyAdded: false } });
+  if (f.recentlyAdded) chips.push({ key: 'recent', label: t('filters.chip.recentlyAdded', { count: RECENTLY_ADDED_DAYS }), without: { ...f, recentlyAdded: false } });
   return chips;
 }
 

@@ -12,13 +12,12 @@ import { goBackOr } from '@/features/navigation/goBack';
 import { LoadingPage } from '@/features/navigation/LoadingPage';
 import { MissingScreen } from '@/features/navigation/MissingScreen';
 import { parseId } from '@/features/navigation/parseId';
+import { t } from '@/i18n';
 import { Testids } from '@/testing/testids.gen';
 import { useTheme } from '@/theme';
 
 import { useAuthor } from './useAuthor';
 import { useAuthors } from './useAuthors';
-
-const books = (n: number) => (n === 1 ? '1 book' : `${n} books`);
 
 function EditAuthorSheet({ author, onSave, onClose }: { author: Author; onSave: (name: string, sortName: string | null) => Promise<void>; onClose: () => void }) {
   const [name, setName] = useState(author.name);
@@ -27,7 +26,7 @@ function EditAuthorSheet({ author, onSave, onClose }: { author: Author; onSave: 
   const [busy, setBusy] = useState(false);
   const save = async () => {
     if (!name.trim()) {
-      setError('An author needs a name.');
+      setError(t('authors.edit.nameRequired'));
       return;
     }
     setBusy(true);
@@ -36,29 +35,29 @@ function EditAuthorSheet({ author, onSave, onClose }: { author: Author; onSave: 
       onClose();
     } catch (e) {
       console.error('Could not save the author', e);
-      setError('Sorry, I couldn’t save that. Please try again.');
+      setError(t('common.saveFailed'));
       setBusy(false);
     }
   };
   return (
     <Sheet
       visible
-      title="Edit author"
+      title={t('authors.edit.title')}
       onClose={onClose}
       footer={
         <>
-          <Button variant="secondary" label="Cancel" onPress={onClose} disabled={busy} />
-          <Button label="Save" onPress={save} loading={busy} testID={Testids.authors.editSave} />
+          <Button variant="secondary" label={t('common.cancel')} onPress={onClose} disabled={busy} />
+          <Button label={t('common.save')} onPress={save} loading={busy} testID={Testids.authors.editSave} />
         </>
       }
     >
-      <TextField label="Name" value={name} onChangeText={setName} errorText={error ?? undefined} testID={Testids.authors.editName} />
+      <TextField label={t('authors.edit.name')} value={name} onChangeText={setName} errorText={error ?? undefined} testID={Testids.authors.editName} />
       <TextField
-        label="Filed under"
+        label={t('authors.edit.sortName')}
         value={sortName}
         onChangeText={setSortName}
         placeholder={toSortName(name)}
-        helperText="How the author is sorted, surname first, e.g. “Pratchett, Terry”."
+        helperText={t('authors.edit.sortNameHelp')}
         testID={Testids.authors.editSortName}
       />
     </Sheet>
@@ -73,18 +72,18 @@ function MergeAuthorSheet({ author, authors, onPick, onClose }: { author: Author
   return (
     <Sheet
       visible
-      title={`Merge “${author.name}” into…`}
-      subtitle="For duplicates like “J.R.R. Tolkien” and “J. R. R. Tolkien”: the books move to the author you choose."
+      title={t('authors.mergeSheet.title', { name: author.name })}
+      subtitle={t('authors.mergeSheet.subtitle')}
       onClose={onClose}
-      footer={<Button variant="secondary" label="Cancel" onPress={onClose} />}
+      footer={<Button variant="secondary" label={t('common.cancel')} onPress={onClose} />}
     >
-      <TextField label="Find an author" value={query} onChangeText={setQuery} autoCapitalize="none" />
-      <View role="list" aria-label="Authors to merge into" style={{ gap: spacing.xxs }}>
+      <TextField label={t('authors.mergeSheet.find')} value={query} onChangeText={setQuery} autoCapitalize="none" />
+      <View role="list" aria-label={t('authors.mergeSheet.list')} style={{ gap: spacing.xxs }}>
         {others.slice(0, 50).map((a) => (
           <View role="listitem" key={a.id}>
             <Pressable
               role="button"
-              accessibilityLabel={`${a.name}, ${books(a.count)}`}
+              accessibilityLabel={t('bookList.nameAndCount', { name: a.name, count: a.count })}
               onPress={() => onPick(a)}
               testID={Testids.authors.mergeOption}
               style={({ pressed }) => [styles.option, { minHeight: sizes.touchTarget, paddingHorizontal: spacing.md, gap: spacing.md, borderRadius: radii.md }, pressed && { backgroundColor: colors.surfaceTint }]}
@@ -93,13 +92,13 @@ function MergeAuthorSheet({ author, authors, onPick, onClose }: { author: Author
                 {a.name}
               </Text>
               <Text variant="caption" color="inkMuted">
-                {books(a.count)}
+                {t('common.books', { count: a.count })}
               </Text>
             </Pressable>
           </View>
         ))}
       </View>
-      {others.length === 0 ? <Text color="inkMuted">No other author matches.</Text> : null}
+      {others.length === 0 ? <Text color="inkMuted">{t('authors.mergeSheet.none')}</Text> : null}
     </Sheet>
   );
 }
@@ -119,7 +118,7 @@ export function AuthorDetailScreen() {
 
   if (state.status === 'loading') return <LoadingPage />;
   if (state.status === 'missing') {
-    return <MissingScreen title="Author not found" message="That author isn’t in your catalogue any more. They may have been merged with another." fallback="/authors" />;
+    return <MissingScreen title={t('authors.detail.notFoundTitle')} message={t('authors.detail.notFoundMessage')} fallback="/authors" />;
   }
   const { author, shelves, count } = state;
 
@@ -131,36 +130,36 @@ export function AuthorDetailScreen() {
       setTarget(null);
       setBusy(false);
       if (kept) {
-        show({ message: `Merged into ${kept.name}` });
+        show({ message: t('authors.detail.merged', { name: kept.name }) });
         router.replace({ pathname: '/authors/[id]', params: { id: String(kept.id) } });
       }
     } catch (e) {
       console.error('Could not merge the authors', e);
       setBusy(false);
       setTarget(null);
-      show({ message: 'Sorry, I couldn’t merge those authors. Please try again.' });
+      show({ message: t('authors.detail.mergeFailed') });
     }
   };
 
   return (
     <Screen testID={Testids.authors.detail} edges={['top', 'bottom', 'left', 'right']}>
       <TopBar onBack={() => goBackOr('/authors')}>
-        <IconButton icon="pencil-outline" variant="tonal" accessibilityLabel={`Edit ${author.name}`} onPress={() => setEditing(true)} testID={Testids.authors.edit} />
-        <IconButton icon="call-merge" accessibilityLabel={`Merge ${author.name} with another author`} onPress={() => setMerging(true)} testID={Testids.authors.merge} />
+        <IconButton icon="pencil-outline" variant="tonal" accessibilityLabel={t('authors.detail.edit', { name: author.name })} onPress={() => setEditing(true)} testID={Testids.authors.edit} />
+        <IconButton icon="call-merge" accessibilityLabel={t('authors.detail.merge', { name: author.name })} onPress={() => setMerging(true)} testID={Testids.authors.merge} />
       </TopBar>
       <View style={{ gap: spacing.xs }}>
         <Text variant="stamp" color="accent">
-          Author
+          {t('authors.detail.stamp')}
         </Text>
         <Heading level={1} testID={Testids.authors.detailTitle}>
           {author.name}
         </Heading>
         {author.sortName && author.sortName !== author.name ? (
           <Text variant="mono" color="inkMuted">
-            Filed under {author.sortName}
+            {t('authors.detail.filedUnder', { name: author.sortName })}
           </Text>
         ) : null}
-        <Text color="inkMuted">{books(count)} on your shelf</Text>
+        <Text color="inkMuted">{t('authors.detail.onShelf', { count })}</Text>
       </View>
       {shelves.map((shelf) => (
         <View key={shelf.key} testID={Testids.authors.detailSection} style={{ gap: spacing.md }}>
@@ -174,7 +173,7 @@ export function AuthorDetailScreen() {
           ))}
         </View>
       ))}
-      {count === 0 ? <Text color="inkMuted">No books by this author yet.</Text> : null}
+      {count === 0 ? <Text color="inkMuted">{t('authors.detail.noBooks')}</Text> : null}
       {editing ? <EditAuthorSheet author={author} onSave={(name, sortName) => update({ name, sortName })} onClose={() => setEditing(false)} /> : null}
       {merging && authors ? (
         <MergeAuthorSheet
@@ -190,9 +189,9 @@ export function AuthorDetailScreen() {
       <ConfirmDialog
         visible={target != null}
         illustration={<Booky expression="thinking" size={72} animated={false} />}
-        title={target ? `Merge into ${target.name}?` : 'Merge?'}
-        message={target ? `${author.name}’s ${books(count)} will be credited to ${target.name}, and “${author.name}” goes away.` : undefined}
-        confirmLabel="Merge"
+        title={target ? t('authors.detail.confirmTitle', { name: target.name }) : t('authors.detail.confirmTitleFallback')}
+        message={target ? t('authors.detail.confirmMessage', { name: author.name, count, target: target.name }) : undefined}
+        confirmLabel={t('common.merge')}
         busy={busy}
         onConfirm={confirmMerge}
         onCancel={() => setTarget(null)}

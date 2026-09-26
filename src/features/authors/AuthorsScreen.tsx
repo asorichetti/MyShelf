@@ -8,12 +8,11 @@ import type { AuthorWithCount } from '@/db';
 import { authorLetter } from '@/domain';
 import { goBackOr } from '@/features/navigation/goBack';
 import { LoadingPage } from '@/features/navigation/LoadingPage';
+import { t } from '@/i18n';
 import { Testids } from '@/testing/testids.gen';
 import { useTheme } from '@/theme';
 
 import { useAuthors } from './useAuthors';
-
-const books = (n: number) => (n === 1 ? '1 book' : `${n} books`);
 
 /** Authors grouped under their index letter, in order. */
 export function byLetter(authors: AuthorWithCount[]): { letter: string; authors: AuthorWithCount[] }[] {
@@ -51,17 +50,17 @@ export function AuthorsScreen() {
       <TopBar onBack={() => goBackOr('/')} />
       <View style={{ gap: spacing.xs }}>
         <Heading level={1} testID={Testids.authors.title}>
-          Authors
+          {t('authors.index.title')}
         </Heading>
-        <Text color="inkMuted">{authors.length === 1 ? '1 author' : `${authors.length} authors`}, filed by surname.</Text>
+        <Text color="inkMuted">{t('authors.index.summary', { count: authors.length })}</Text>
       </View>
       {authors.length === 0 ? (
         <EmptyState
           testID={Testids.emptyState.root}
           illustration={<Booky expression="sleepy" size={112} />}
-          title="No authors yet"
-          message="Authors appear here as you add books."
-          action={{ label: 'Add a book', onPress: () => router.navigate('/book/new'), variant: 'secondary' }}
+          title={t('authors.index.emptyTitle')}
+          message={t('authors.index.emptyMessage')}
+          action={{ label: t('common.addABook'), onPress: () => router.navigate('/book/new'), variant: 'secondary' }}
         />
       ) : (
         <>
@@ -69,17 +68,17 @@ export function AuthorsScreen() {
           <ScrollView ref={scroller} style={styles.fill} contentContainerStyle={{ gap: spacing.md, paddingBottom: spacing.xxl }}>
             {sections.map((section) => (
               <View key={section.letter} onLayout={(e) => offsets.current.set(section.letter, e.nativeEvent.layout.y)} style={{ gap: spacing.xs }}>
-                <Heading level={2} accessibilityLabel={section.letter === '#' ? 'Numbers and symbols' : `Letter ${section.letter}`}>
+                <Heading level={2} accessibilityLabel={section.letter === '#' ? t('authors.index.symbols') : t('authors.index.letter', { letter: section.letter })}>
                   {section.letter}
                 </Heading>
                 <View style={[styles.rule, { backgroundColor: colors.brass, borderRadius: radii.sm }]} aria-hidden />
-                <View role="list" aria-label={section.letter === '#' ? 'Authors under numbers and symbols' : `Authors under ${section.letter}`} style={{ gap: spacing.xxs }}>
+                <View role="list" aria-label={section.letter === '#' ? t('authors.index.listSymbols') : t('authors.index.list', { letter: section.letter })} style={{ gap: spacing.xxs }}>
                   {section.authors.map((a) => (
                     <View role="listitem" key={a.id}>
                       <Pressable
                         role="link"
-                        accessibilityLabel={`${a.name}, ${books(a.count)}`}
-                        aria-label={`${a.name}, ${books(a.count)}`}
+                        accessibilityLabel={t('bookList.nameAndCount', { name: a.name, count: a.count })}
+                        aria-label={t('bookList.nameAndCount', { name: a.name, count: a.count })}
                         onPress={() => router.navigate({ pathname: '/authors/[id]', params: { id: String(a.id) } })}
                         testID={Testids.authors.row}
                         style={({ pressed }) => [
@@ -99,7 +98,7 @@ export function AuthorsScreen() {
                           ) : null}
                         </View>
                         <Text variant="caption" color="inkMuted">
-                          {books(a.count)}
+                          {t('common.books', { count: a.count })}
                         </Text>
                       </Pressable>
                     </View>

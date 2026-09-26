@@ -4,19 +4,20 @@ import { StyleSheet, View } from 'react-native';
 import { Button, Chip, Heading, Sheet, TextField } from '@/components/ui';
 import {
   activeFilterCount,
-  formatLabels,
-  loanFilterLabels,
+  formatLabelKeys,
+  loanFilterLabelKeys,
   minRatingLabel,
   noFilters,
   ratingValues,
   RECENTLY_ADDED_DAYS,
-  seriesFilterLabels,
+  seriesFilterLabelKeys,
   toggleIn,
   type BookFormat,
   type LoanFilter,
   type SeriesFilter,
   type ShelfFilters,
 } from '@/domain';
+import { t, translate } from '@/i18n';
 import { Testids } from '@/testing/testids.gen';
 import { useTheme } from '@/theme';
 
@@ -66,9 +67,9 @@ function Group({ title, children, role }: { title: string; children: ReactNode; 
 
 /** "1987" -> 1987; blank -> null; anything else -> undefined (ignored). */
 function parseYear(text: string): number | null | undefined {
-  const t = text.trim();
-  if (!t) return null;
-  return /^\d{1,4}$/.test(t) ? Number(t) : undefined;
+  const s = text.trim();
+  if (!s) return null;
+  return /^\d{1,4}$/.test(s) ? Number(s) : undefined;
 }
 
 /**
@@ -87,21 +88,21 @@ function OpenFilterSheet({ visible, filters, options, onChange, onClose, languag
   const [yearTo, setYearTo] = useState(filters.yearTo?.toString() ?? '');
 
   const set = (patch: Partial<ShelfFilters>) => onChange({ ...filters, ...patch });
-  const yearHint = options.minYear != null && options.maxYear != null ? `Your books span ${options.minYear}–${options.maxYear}.` : undefined;
+  const yearHint = options.minYear != null && options.maxYear != null ? t('filters.sheet.yearHint', { from: options.minYear, to: options.maxYear }) : undefined;
   const count = activeFilterCount(filters);
 
   return (
     <Sheet
       visible={visible}
-      title="Filter your shelf"
-      subtitle={count ? `${count === 1 ? '1 filter' : `${count} filters`} on` : 'Show only the books you want.'}
+      title={t('filters.sheet.title')}
+      subtitle={count ? t('filters.sheet.subtitleCount', { count }) : t('filters.sheet.subtitle')}
       onClose={onClose}
       testID={Testids.shelfView.filterSheet}
       footer={
         <>
           <Button
             variant="ghost"
-            label="Clear all"
+            label={t('filters.sheet.clearAll')}
             disabled={count === 0}
             onPress={() => {
               setYearFrom('');
@@ -109,18 +110,18 @@ function OpenFilterSheet({ visible, filters, options, onChange, onClose, languag
               onChange({ ...noFilters, genreIds: [], formats: [], languages: [] });
             }}
           />
-          <Button label="Done" onPress={onClose} testID={Testids.shelfView.filterDone} />
+          <Button label={t('common.done')} onPress={onClose} testID={Testids.shelfView.filterDone} />
         </>
       }
     >
       {options.genres.length ? (
-        <Group title="Genres">
+        <Group title={t('filters.sheet.genres')}>
           {options.genres.map((g) => (
             <Chip
               key={g.id}
               role="checkbox"
-              label={`${g.name} (${g.count})`}
-              accessibilityLabel={`${g.name}, ${g.count === 1 ? '1 book' : `${g.count} books`}`}
+              label={t('filters.sheet.genreChip', { name: g.name, count: g.count })}
+              accessibilityLabel={t('bookList.nameAndCount', { name: g.name, count: g.count })}
               selected={filters.genreIds.includes(g.id)}
               onPress={() => set({ genreIds: toggleIn(filters.genreIds, g.id) })}
               testID={Testids.shelfView.filterGenre}
@@ -128,25 +129,25 @@ function OpenFilterSheet({ visible, filters, options, onChange, onClose, languag
           ))}
         </Group>
       ) : null}
-      <Group title="On loan" role="radiogroup">
-        {(Object.keys(loanFilterLabels) as LoanFilter[]).map((key) => (
-          <Chip key={key} role="radio" label={loanFilterLabels[key]} selected={filters.loan === key} onPress={() => set({ loan: key })} testID={loanTestIds[key]} />
+      <Group title={t('filters.sheet.onLoan')} role="radiogroup">
+        {(Object.keys(loanFilterLabelKeys) as LoanFilter[]).map((key) => (
+          <Chip key={key} role="radio" label={translate(loanFilterLabelKeys[key])} selected={filters.loan === key} onPress={() => set({ loan: key })} testID={loanTestIds[key]} />
         ))}
       </Group>
-      <Group title="Series" role="radiogroup">
-        {(Object.keys(seriesFilterLabels) as SeriesFilter[]).map((key) => (
-          <Chip key={key} role="radio" label={seriesFilterLabels[key]} selected={filters.series === key} onPress={() => set({ series: key })} testID={seriesTestIds[key]} />
+      <Group title={t('filters.sheet.series')} role="radiogroup">
+        {(Object.keys(seriesFilterLabelKeys) as SeriesFilter[]).map((key) => (
+          <Chip key={key} role="radio" label={translate(seriesFilterLabelKeys[key])} selected={filters.series === key} onPress={() => set({ series: key })} testID={seriesTestIds[key]} />
         ))}
       </Group>
       {options.formats.length ? (
-        <Group title="Format">
+        <Group title={t('filters.sheet.format')}>
           {options.formats.map((f) => (
-            <Chip key={f} role="checkbox" label={formatLabels[f]} selected={filters.formats.includes(f)} onPress={() => set({ formats: toggleIn(filters.formats, f) })} testID={Testids.shelfView.filterFormat} />
+            <Chip key={f} role="checkbox" label={translate(formatLabelKeys[f])} selected={filters.formats.includes(f)} onPress={() => set({ formats: toggleIn(filters.formats, f) })} testID={Testids.shelfView.filterFormat} />
           ))}
         </Group>
       ) : null}
       {options.languages.length ? (
-        <Group title="Language">
+        <Group title={t('filters.sheet.language')}>
           {options.languages.map((code) => (
             <Chip
               key={code}
@@ -160,18 +161,18 @@ function OpenFilterSheet({ visible, filters, options, onChange, onClose, languag
         </Group>
       ) : null}
       <View style={{ gap: spacing.xs }}>
-        <Heading level={3}>Published</Heading>
+        <Heading level={3}>{t('filters.sheet.published')}</Heading>
         <View style={[styles.years, { gap: spacing.md }]}>
           <View style={styles.flex}>
             <TextField
-              label="From year"
+              label={t('filters.sheet.fromYear')}
               value={yearFrom}
               inputMode="numeric"
               keyboardType="number-pad"
               maxLength={4}
-              onChangeText={(t) => {
-                setYearFrom(t);
-                const y = parseYear(t);
+              onChangeText={(text) => {
+                setYearFrom(text);
+                const y = parseYear(text);
                 if (y !== undefined) set({ yearFrom: y });
               }}
               testID={Testids.shelfView.filterYearFrom}
@@ -179,14 +180,14 @@ function OpenFilterSheet({ visible, filters, options, onChange, onClose, languag
           </View>
           <View style={styles.flex}>
             <TextField
-              label="To year"
+              label={t('filters.sheet.toYear')}
               value={yearTo}
               inputMode="numeric"
               keyboardType="number-pad"
               maxLength={4}
-              onChangeText={(t) => {
-                setYearTo(t);
-                const y = parseYear(t);
+              onChangeText={(text) => {
+                setYearTo(text);
+                const y = parseYear(text);
                 if (y !== undefined) set({ yearTo: y });
               }}
               helperText={yearHint}
@@ -196,8 +197,8 @@ function OpenFilterSheet({ visible, filters, options, onChange, onClose, languag
         </View>
       </View>
       {options.hasRatings || filters.minRating != null ? (
-        <Group title="Your rating" role="radiogroup">
-          <Chip role="radio" label="Any" selected={filters.minRating == null} onPress={() => set({ minRating: null })} testID={Testids.shelfView.filterRatingAny} />
+        <Group title={t('filters.sheet.rating')} role="radiogroup">
+          <Chip role="radio" label={t('filters.rating.any')} selected={filters.minRating == null} onPress={() => set({ minRating: null })} testID={Testids.shelfView.filterRatingAny} />
           {[...ratingValues].reverse().map((n) => (
             <Chip
               key={n}
@@ -211,10 +212,10 @@ function OpenFilterSheet({ visible, filters, options, onChange, onClose, languag
           ))}
         </Group>
       ) : null}
-      <Group title="Added">
+      <Group title={t('filters.sheet.added')}>
         <Chip
           role="checkbox"
-          label={`In the last ${RECENTLY_ADDED_DAYS} days`}
+          label={t('filters.sheet.addedRecently', { count: RECENTLY_ADDED_DAYS })}
           selected={filters.recentlyAdded}
           onPress={() => set({ recentlyAdded: !filters.recentlyAdded })}
           testID={Testids.shelfView.filterRecent}

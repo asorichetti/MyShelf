@@ -3,31 +3,31 @@ import { useState } from 'react';
 import { StyleSheet, TextInput, View } from 'react-native';
 
 import { Button, Chip, IconButton, Text, type IconName } from '@/components/ui';
-import { groupByLabels, viewModeLabels, type ShelfGroupBy, type ShelfSort, type ShelfSortKey, type ShelfViewMode, type SortDirection } from '@/domain';
+import { groupByLabelKeys, viewModeLabelKeys, type ShelfGroupBy, type ShelfSort, type ShelfSortKey, type ShelfViewMode, type SortDirection } from '@/domain';
+import { t, translate, type MessageKey } from '@/i18n';
 import { Testids } from '@/testing/testids.gen';
 import { useTheme } from '@/theme';
 
-export const sortOptions: { key: ShelfSortKey; label: string; testID: string }[] = [
-  { key: 'title', label: 'Title', testID: Testids.home.sortTitle },
-  { key: 'author', label: 'Author', testID: Testids.home.sortAuthor },
-  { key: 'year', label: 'Year', testID: Testids.home.sortYear },
-  { key: 'added', label: 'Recently added', testID: Testids.home.sortAdded },
-  { key: 'rating', label: 'Rating', testID: Testids.home.sortRating },
+export const sortOptions: { key: ShelfSortKey; label: MessageKey; testID: string }[] = [
+  { key: 'title', label: 'shelfView.sort.title', testID: Testids.home.sortTitle },
+  { key: 'author', label: 'shelfView.sort.author', testID: Testids.home.sortAuthor },
+  { key: 'year', label: 'shelfView.sort.year', testID: Testids.home.sortYear },
+  { key: 'added', label: 'shelfView.sort.added', testID: Testids.home.sortAdded },
+  { key: 'rating', label: 'shelfView.sort.rating', testID: Testids.home.sortRating },
 ];
 
 /** The natural first direction for each sort: A-Z, oldest year first, newest addition first, best rated first. */
 export const defaultDirection: Record<ShelfSortKey, SortDirection> = { title: 'asc', author: 'asc', year: 'asc', added: 'desc', rating: 'desc' };
 
 export function directionLabel(sort: ShelfSort): string {
-  if (sort.sort === 'title' || sort.sort === 'author') return sort.direction === 'asc' ? 'A to Z' : 'Z to A';
-  if (sort.sort === 'year') return sort.direction === 'asc' ? 'Oldest first' : 'Newest first';
+  if (sort.sort === 'title' || sort.sort === 'author') return t(sort.direction === 'asc' ? 'shelfView.direction.aToZ' : 'shelfView.direction.zToA');
   // Unrated books come last either way.
-  if (sort.sort === 'rating') return sort.direction === 'desc' ? 'Highest first' : 'Lowest first';
-  return sort.direction === 'desc' ? 'Newest first' : 'Oldest first';
+  if (sort.sort === 'rating') return t(sort.direction === 'desc' ? 'shelfView.direction.highestFirst' : 'shelfView.direction.lowestFirst');
+  return t(sort.direction === 'asc' ? 'shelfView.direction.oldestFirst' : 'shelfView.direction.newestFirst');
 }
 
 export function sortSummary(sort: ShelfSort): string {
-  return `${sortOptions.find((o) => o.key === sort.sort)!.label}, ${directionLabel(sort)}`;
+  return t('shelfView.toolbar.sortSummary', { field: translate(sortOptions.find((o) => o.key === sort.sort)!.label), direction: directionLabel(sort) });
 }
 
 export const groupByOptions: { key: ShelfGroupBy; testID: string }[] = [
@@ -109,9 +109,9 @@ export function ShelfToolbar({
           <TextInput
             testID={Testids.home.search}
             role="searchbox"
-            accessibilityLabel="Search your shelf"
-            aria-label="Search your shelf"
-            placeholder="Search title, author or ISBN"
+            accessibilityLabel={t('shelfView.toolbar.search')}
+            aria-label={t('shelfView.toolbar.search')}
+            placeholder={t('shelfView.toolbar.searchPlaceholder')}
             placeholderTextColor={colors.inkMuted}
             value={query}
             onChangeText={onQueryChange}
@@ -124,17 +124,17 @@ export function ShelfToolbar({
             style={[theme.typography.body, styles.input, { color: colors.ink, paddingHorizontal: spacing.sm, minHeight: sizes.touchTarget - 4 }]}
           />
           {query ? (
-            <IconButton icon="close-circle" accessibilityLabel="Clear search" onPress={() => onQueryChange('')} testID={Testids.home.searchClear} />
+            <IconButton icon="close-circle" accessibilityLabel={t('shelfView.toolbar.clearSearch')} onPress={() => onQueryChange('')} testID={Testids.home.searchClear} />
           ) : null}
         </View>
       </View>
       {onViewModeChange ? (
-        <View role="radiogroup" aria-label="Show books as" style={[styles.row, styles.chips, { columnGap: spacing.sm }]}>
+        <View role="radiogroup" aria-label={t('shelfView.toolbar.showBooksAs')} style={[styles.row, styles.chips, { columnGap: spacing.sm }]}>
           {viewModeOptions.map((o) => (
             <Chip
               key={o.key}
               role="radio"
-              label={viewModeLabels[o.key]}
+              label={translate(viewModeLabelKeys[o.key])}
               icon={o.icon}
               selected={viewMode === o.key}
               onPress={() => onViewModeChange(o.key)}
@@ -146,8 +146,8 @@ export function ShelfToolbar({
       <View style={[styles.row, styles.sortRow, { columnGap: spacing.xs }]}>
         <Button
           variant="ghost"
-          label={`Sort: ${sortSummary(sort)}`}
-          accessibilityLabel={`Sort by ${sortSummary(sort)}`}
+          label={t('shelfView.toolbar.sortButton', { summary: sortSummary(sort) })}
+          accessibilityLabel={t('shelfView.toolbar.sortButtonLabel', { summary: sortSummary(sort) })}
           icon={<MaterialCommunityIcons name={menuOpen ? 'chevron-up' : 'sort'} size={sizes.icon} color={colors.primary} />}
           onPress={() => toggle('sort')}
           testID={Testids.home.sortButton}
@@ -157,8 +157,8 @@ export function ShelfToolbar({
         {onGroupByChange ? (
           <Button
             variant="ghost"
-            label={`Group: ${groupByLabels[groupBy]}`}
-            accessibilityLabel={`Group by ${groupByLabels[groupBy]}`}
+            label={t('shelfView.toolbar.groupButton', { grouping: translate(groupByLabelKeys[groupBy]) })}
+            accessibilityLabel={t('shelfView.toolbar.groupButtonLabel', { grouping: translate(groupByLabelKeys[groupBy]) })}
             icon={<MaterialCommunityIcons name={groupOpen ? 'chevron-up' : 'format-list-group'} size={sizes.icon} color={colors.primary} />}
             onPress={() => toggle('group')}
             testID={Testids.shelfView.groupByButton}
@@ -169,8 +169,8 @@ export function ShelfToolbar({
         {onOpenFilters ? (
           <Button
             variant="ghost"
-            label={filterCount ? `Filter (${filterCount})` : 'Filter'}
-            accessibilityLabel={filterCount ? `Filter, ${filterCount} on` : 'Filter'}
+            label={filterCount ? t('shelfView.toolbar.filterCount', { count: filterCount }) : t('shelfView.toolbar.filter')}
+            accessibilityLabel={filterCount ? t('shelfView.toolbar.filterCountLabel', { count: filterCount }) : t('shelfView.toolbar.filter')}
             icon={<MaterialCommunityIcons name={filterCount ? 'filter' : 'filter-outline'} size={sizes.icon} color={colors.primary} />}
             onPress={() => {
               setOpen(null);
@@ -183,8 +183,8 @@ export function ShelfToolbar({
         {onSelect ? (
           <Button
             variant="ghost"
-            label="Select"
-            accessibilityLabel="Select books"
+            label={t('shelfView.toolbar.select')}
+            accessibilityLabel={t('shelfView.toolbar.selectBooks')}
             icon={<MaterialCommunityIcons name="checkbox-multiple-outline" size={sizes.icon} color={colors.primary} />}
             onPress={() => {
               setOpen(null);
@@ -198,17 +198,17 @@ export function ShelfToolbar({
       {menuOpen ? (
         <View
           role="radiogroup"
-          aria-label="Sort by"
+          aria-label={t('shelfView.toolbar.sortBy')}
           style={[styles.menu, { gap: spacing.sm, padding: spacing.md, borderRadius: radii.md, backgroundColor: colors.surfaceTint }]}
         >
           <Text variant="label" color="inkMuted">
-            Sort by
+            {t('shelfView.toolbar.sortBy')}
           </Text>
           <View style={[styles.chips, { columnGap: spacing.sm }]}>
             {sortOptions.map((o) => (
               <Chip
                 key={o.key}
-                label={o.label}
+                label={translate(o.label)}
                 role="radio"
                 selected={sort.sort === o.key}
                 testID={o.testID}
@@ -219,7 +219,7 @@ export function ShelfToolbar({
           <Button
             variant="secondary"
             label={directionLabel(sort)}
-            accessibilityLabel={`Order: ${directionLabel(sort)}. Tap to reverse`}
+            accessibilityLabel={t('shelfView.toolbar.orderLabel', { direction: directionLabel(sort) })}
             icon={<MaterialCommunityIcons name="swap-vertical" size={sizes.icon} color={colors.onPrimaryContainer} />}
             onPress={() => onSortChange({ ...sort, direction: sort.direction === 'asc' ? 'desc' : 'asc' })}
             testID={Testids.home.sortDirection}
@@ -229,15 +229,15 @@ export function ShelfToolbar({
       {groupOpen && onGroupByChange ? (
         <View
           role="radiogroup"
-          aria-label="Group by"
+          aria-label={t('shelfView.toolbar.groupBy')}
           style={[styles.menu, { gap: spacing.sm, padding: spacing.md, borderRadius: radii.md, backgroundColor: colors.surfaceTint }]}
         >
           <Text variant="label" color="inkMuted">
-            Group by
+            {t('shelfView.toolbar.groupBy')}
           </Text>
           <View style={[styles.chips, { columnGap: spacing.sm }]}>
             {groupByOptions.map((o) => (
-              <Chip key={o.key} label={groupByLabels[o.key]} role="radio" selected={groupBy === o.key} testID={o.testID} onPress={() => onGroupByChange(o.key)} />
+              <Chip key={o.key} label={translate(groupByLabelKeys[o.key])} role="radio" selected={groupBy === o.key} testID={o.testID} onPress={() => onGroupByChange(o.key)} />
             ))}
           </View>
         </View>

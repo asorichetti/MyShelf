@@ -5,6 +5,7 @@ import { StyleSheet, View } from 'react-native';
 import { shelfLoanLabel } from '@/components/loans/ShelfLoanStamp';
 import { CatalogueCard, StarRatingDisplay, Text } from '@/components/ui';
 import { formatSeriesLabel, joinNames, ratedPhrase, today as todayOf, type BookListItem } from '@/domain';
+import { t } from '@/i18n';
 import { Testids } from '@/testing/testids.gen';
 import { useTheme } from '@/theme';
 
@@ -18,14 +19,13 @@ export function bookRowLabel(
   item: Pick<BookListItem, 'title' | 'authors' | 'publicationYear' | 'onLoan' | 'loanBorrower' | 'loanDueOn' | 'rating'>,
   today: string = todayOf(),
 ): string {
-  const parts = [item.title];
-  if (item.authors.length) parts.push(`by ${joinNames(item.authors)}`);
-  if (item.publicationYear != null) parts.push(String(item.publicationYear));
+  let label = item.authors.length ? t('bookList.row.withAuthors', { title: item.title, authors: joinNames(item.authors) }) : item.title;
+  if (item.publicationYear != null) label = t('bookList.row.withYear', { label, year: item.publicationYear });
   const rated = ratedPhrase(item.rating);
-  if (rated) parts.push(rated);
+  if (rated) label = t('bookList.row.withRating', { label, rated });
   const loan = shelfLoanLabel(item, today);
-  if (loan) parts.push(loan);
-  return parts.join(', ');
+  if (loan) label = t('bookList.row.withLoan', { label, loan });
+  return label;
 }
 
 export interface BookRowProps {

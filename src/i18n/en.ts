@@ -182,6 +182,363 @@ export const en = {
     },
   },
 
+  // The Shelf, authors and genres
+  /** The Shelf (home) screen: header, search summary, empty states, selecting and removing books. */
+  shelf: {
+    screen: {
+      title: 'MyShelf',
+      tagline: 'Your personal library, one shelf at a time.',
+      /** The rubber-stamp count under the title. */
+      count: { one: '{count} book catalogued', other: '{count} books catalogued' },
+      activeFilters: 'Active filters',
+      /** A filter chip's remove button; {label} is the chip's text, e.g. "Hardback". */
+      removeFilter: 'Remove filter {label}',
+      clearAllFilters: 'Clear all filters',
+      addBook: 'Add book',
+    },
+    /** The live line under the toolbar; {count} is the whole shelf, {matched} how many match. */
+    summary: {
+      all: { one: 'Showing all {count} book', other: 'Showing all {count} books' },
+      noneMatchQuery: 'No books match “{query}”',
+      noneMatchFilters: 'No books match your filters',
+      matchQuery: { one: '{matched} of {count} book match “{query}”', other: '{matched} of {count} books match “{query}”' },
+      matchQueryAndFilters: { one: '{matched} of {count} book match “{query}” and filters', other: '{matched} of {count} books match “{query}” and filters' },
+      matchFilters: { one: '{matched} of {count} book match your filters', other: '{matched} of {count} books match your filters' },
+    },
+    empty: {
+      title: 'Your shelf is empty',
+      message: "Scan a book's barcode or cover and I'll fill in the title, author, genre and series for you. Or type it in yourself.",
+      scan: 'Scan a book',
+      addManually: 'Add manually',
+      askBooky: 'What can Booky do?',
+    },
+    noMatches: {
+      title: 'No matches',
+      query: 'Nothing on your shelf matches “{query}”. Check the spelling, or try an author, series or ISBN.',
+      queryWithFilters: 'Nothing on your shelf matches “{query}” with these filters. Check the spelling, or try an author, series or ISBN.',
+      clearSearch: 'Clear search',
+      filtersTitle: 'Nothing matches these filters',
+      filtersMessage: 'Try taking a filter or two away.',
+      clearFilters: 'Clear filters',
+    },
+    selection: {
+      /** The selection bar's button when picking books for a known group. */
+      addTo: 'Add to {name}',
+      addToGroup: 'Add to group',
+      /** Stands in for a group's name in "Added 2 books to the group". */
+      theGroup: 'the group',
+      added: { one: 'Added {count} book to {group}', other: 'Added {count} books to {group}' },
+      addedSomeAlready: {
+        one: 'Added {count} book to {group}; the rest were already there',
+        other: 'Added {count} books to {group}; the rest were already there',
+      },
+      /** Snackbar action: open the group. */
+      view: 'View',
+      addFailed: 'Sorry, I couldn’t add those books. Please try again.',
+      removeFailed: 'Sorry, I couldn’t remove those books. Please try again.',
+      pickerTitle: { one: 'Add {count} book to a group', other: 'Add {count} books to a group' },
+    },
+    removeDialog: {
+      title: { one: 'Remove this book?', other: 'Remove {count} books?' },
+      message: {
+        one: 'Remove {count} book from your shelf? Their loan history goes too. You can undo this for a few seconds.',
+        other: 'Remove {count} books from your shelf? Their loan history goes too. You can undo this for a few seconds.',
+      },
+      keep: 'Keep them',
+    },
+    removed: {
+      message: { one: 'Removed {count} book from your shelf', other: 'Removed {count} books from your shelf' },
+      restored: { one: '{count} book back on your shelf', other: '{count} books back on your shelf' },
+      restoreFailed: 'Sorry, I couldn’t bring those books back.',
+    },
+    /** Books scanned offline, waiting for their details. */
+    pending: {
+      message: {
+        one: '{count} book waiting for details. I’ll look it up when you’re back online.',
+        other: '{count} books waiting for details. I’ll look them up when you’re back online.',
+      },
+      trying: 'Trying…',
+      tryNow: 'Try now',
+    },
+  },
+  /** The Shelf's filter sheet and the chips showing active filters. */
+  filters: {
+    sheet: {
+      title: 'Filter your shelf',
+      subtitle: 'Show only the books you want.',
+      subtitleCount: { one: '{count} filter on', other: '{count} filters on' },
+      clearAll: 'Clear all',
+      genres: 'Genres',
+      /** A genre chip: "Fantasy (12)". */
+      genreChip: '{name} ({count})',
+      onLoan: 'On loan',
+      series: 'Series',
+      format: 'Format',
+      language: 'Language',
+      published: 'Published',
+      fromYear: 'From year',
+      toYear: 'To year',
+      yearHint: 'Your books span {from}–{to}.',
+      /** The minimum-rating choice. */
+      rating: 'Your rating',
+      added: 'Added',
+      addedRecently: { one: 'In the last {count} day', other: 'In the last {count} days' },
+    },
+    /** Book formats as the filters name them (not `other`: an object with `other` reads as a plural). */
+    format: {
+      hardcover: 'Hardback',
+      paperback: 'Paperback',
+      ebook: 'E-book',
+      audiobook: 'Audiobook',
+      otherFormat: 'Other format',
+    },
+    loan: { any: 'Any', onLoan: 'On loan', atHome: 'At home' },
+    rating: { any: 'Any' },
+    series: { any: 'Any', inSeries: 'In a series', standalone: 'Standalone' },
+    /** Chips under the toolbar for the active filters. */
+    chip: {
+      /** A genre chip whose genre has gone. */
+      genre: 'Genre',
+      yearRange: '{from}–{to}',
+      yearExact: 'Published {year}',
+      yearFrom: 'From {year}',
+      yearTo: 'Up to {year}',
+      recentlyAdded: { one: 'Added in the last {count} day', other: 'Added in the last {count} days' },
+    },
+  },
+  /** The Shelf toolbar (search, sort, group, view mode), sections and selection bar. */
+  shelfView: {
+    toolbar: {
+      search: 'Search your shelf',
+      searchPlaceholder: 'Search title, author or ISBN',
+      clearSearch: 'Clear search',
+      showBooksAs: 'Show books as',
+      /** {summary} is e.g. "Title, A to Z". */
+      sortButton: 'Sort: {summary}',
+      sortButtonLabel: 'Sort by {summary}',
+      sortSummary: '{field}, {direction}',
+      /** {grouping} is e.g. "Genre". */
+      groupButton: 'Group: {grouping}',
+      groupButtonLabel: 'Group by {grouping}',
+      filter: 'Filter',
+      filterCount: 'Filter ({count})',
+      filterCountLabel: 'Filter, {count} on',
+      select: 'Select',
+      selectBooks: 'Select books',
+      sortBy: 'Sort by',
+      groupBy: 'Group by',
+      /** The sort direction button; {direction} is e.g. "A to Z". */
+      orderLabel: 'Order: {direction}. Tap to reverse',
+    },
+    sort: {
+      title: 'Title',
+      author: 'Author',
+      year: 'Year',
+      added: 'Recently added',
+      rating: 'Rating',
+    },
+    direction: {
+      aToZ: 'A to Z',
+      zToA: 'Z to A',
+      oldestFirst: 'Oldest first',
+      newestFirst: 'Newest first',
+      highestFirst: 'Highest first',
+      lowestFirst: 'Lowest first',
+    },
+    groupBy: {
+      none: 'None',
+      genre: 'Genre',
+      series: 'Series',
+      author: 'Author',
+      group: 'My groups',
+      rating: 'Rating',
+    },
+    viewMode: { list: 'List', covers: 'Covers', spines: 'Spines' },
+    /** The section for books outside every bucket of a grouping. */
+    ungrouped: {
+      genre: 'No genre',
+      series: 'Not in a series',
+      author: 'No author',
+      group: 'Not in a group',
+      rating: 'Not rated',
+    },
+    section: {
+      /** A section header: "Fantasy · 23". */
+      heading: '{title} · {count}',
+      open: 'Open {title}',
+    },
+    browse: {
+      heading: 'Browse',
+      genres: 'Genres',
+      genresLabel: 'Browse genres',
+      series: 'Series',
+      seriesLabel: 'Browse series',
+      authors: 'Authors',
+      authorsLabel: 'Browse authors',
+      groups: 'Groups',
+      groupsLabel: 'Browse groups',
+    },
+    selectionBar: {
+      label: 'Selected books',
+      stop: 'Stop selecting',
+      /** The count line before any book is picked. */
+      none: 'Select books',
+      count: { one: '{count} book selected', other: '{count} books selected' },
+      addToGroup: 'Add to group…',
+      removeFromGroup: 'Remove from group',
+    },
+  },
+  /** A book in a list: rows, cover cells and spines. */
+  bookList: {
+    /**
+     * What a screen reader says for a book, built up in steps:
+     * "Mort" → "Mort, by Terry Pratchett" → "…, 1987" → "…, on loan to Sam".
+     */
+    row: {
+      withAuthors: '{title}, by {authors}',
+      withYear: '{label}, {year}',
+      withLoan: '{label}, {loan}',
+      /** {rated} is "rated 4 out of 5". */
+      withRating: '{label}, {rated}',
+    },
+    /** A name and its book count: "Fantasy, 23 books", "Terry Pratchett, 1 book". */
+    nameAndCount: { one: '{name}, {count} book', other: '{name}, {count} books' },
+    coverOf: 'Cover of {title}',
+    /** The badge on a cover that is out on loan. */
+    onLoan: 'On loan',
+    /** Written up a gap in a series' spines (lower case, vertical). */
+    missing: 'missing',
+  },
+  /** The authors index and an author's page. */
+  authors: {
+    index: {
+      title: 'Authors',
+      summary: { one: '{count} author, filed by surname.', other: '{count} authors, filed by surname.' },
+      emptyTitle: 'No authors yet',
+      emptyMessage: 'Authors appear here as you add books.',
+      /** The "#" index letter. */
+      symbols: 'Numbers and symbols',
+      letter: 'Letter {letter}',
+      listSymbols: 'Authors under numbers and symbols',
+      list: 'Authors under {letter}',
+    },
+    detail: {
+      /** Stamp above the author's name. */
+      stamp: 'Author',
+      filedUnder: 'Filed under {name}',
+      onShelf: { one: '{count} book on your shelf', other: '{count} books on your shelf' },
+      noBooks: 'No books by this author yet.',
+      edit: 'Edit {name}',
+      merge: 'Merge {name} with another author',
+      notFoundTitle: 'Author not found',
+      notFoundMessage: 'That author isn’t in your catalogue any more. They may have been merged with another.',
+      merged: 'Merged into {name}',
+      mergeFailed: 'Sorry, I couldn’t merge those authors. Please try again.',
+      confirmTitle: 'Merge into {name}?',
+      confirmTitleFallback: 'Merge?',
+      confirmMessage: {
+        one: '{name}’s {count} book will be credited to {target}, and “{name}” goes away.',
+        other: '{name}’s {count} books will be credited to {target}, and “{name}” goes away.',
+      },
+    },
+    edit: {
+      title: 'Edit author',
+      name: 'Name',
+      sortName: 'Filed under',
+      sortNameHelp: 'How the author is sorted, surname first, e.g. “Pratchett, Terry”.',
+      nameRequired: 'An author needs a name.',
+    },
+    mergeSheet: {
+      title: 'Merge “{name}” into…',
+      subtitle: 'For duplicates like “J.R.R. Tolkien” and “J. R. R. Tolkien”: the books move to the author you choose.',
+      find: 'Find an author',
+      list: 'Authors to merge into',
+      none: 'No other author matches.',
+    },
+    /** Section titles on an author's page. */
+    shelves: {
+      series: 'Series',
+      /** Books outside any series, after the series. */
+      standalone: 'Standalone',
+      /** The only section, when none of the books is in a series. */
+      books: 'Books',
+    },
+  },
+  /** The genres index and a genre's page. */
+  genres: {
+    index: {
+      title: 'Genres',
+      intro: 'Tidy your genres: rename them, merge near-duplicates, or open one to see its books.',
+      emptyTitle: 'No genres yet',
+      emptyMessage: 'Genres appear here as you add books. Lookups fill them in for you.',
+      list: 'Genres',
+      rename: 'Rename {name}',
+      merge: 'Merge {name} into another genre',
+      delete: 'Delete {name}',
+    },
+    rename: {
+      title: 'Rename “{name}”',
+      titleFallback: 'Rename',
+      field: 'Genre name',
+      required: 'A genre needs a name.',
+      failed: 'Sorry, I couldn’t rename it. Please try again.',
+      done: 'Renamed to “{name}”',
+    },
+    merge: {
+      title: 'Merge “{name}” into…',
+      titleFallback: 'Merge into…',
+      subtitle: 'Its books move to the genre you choose, and it goes away.',
+      list: 'Genres to merge into',
+      confirmTitle: 'Merge into “{name}”?',
+      confirmTitleFallback: 'Merge?',
+      confirmMessage: {
+        one: 'Merge “{source}” into it? Its {count} book will be tagged “{target}”.',
+        other: 'Merge “{source}” into it? Its {count} books will be tagged “{target}”.',
+      },
+      /** After renaming a genre onto a name that is already taken. */
+      confirmMessageTaken: {
+        one: 'There’s already a genre called “{target}”. Merge “{source}” into it? Its {count} book will be tagged “{target}”.',
+        other: 'There’s already a genre called “{target}”. Merge “{source}” into it? Its {count} books will be tagged “{target}”.',
+      },
+      done: { one: 'Merged into “{name}”: {count} book', other: 'Merged into “{name}”: {count} books' },
+      stale: 'Those genres have already changed.',
+      failed: 'Sorry, I couldn’t merge those genres. Please try again.',
+    },
+    delete: {
+      title: 'Delete “{name}”?',
+      titleFallback: 'Delete?',
+      message: {
+        one: 'The {count} book stay on your shelf; they just lose this genre.',
+        other: 'The {count} books stay on your shelf; they just lose this genre.',
+      },
+      done: 'Deleted “{name}”',
+      failed: 'Sorry, I couldn’t delete that genre. Please try again.',
+    },
+    detail: {
+      /** Stamp above the genre's name. */
+      stamp: 'Genre',
+      list: 'Books in {name}',
+      none: 'No books have this genre yet.',
+      notFoundTitle: 'Genre not found',
+      notFoundMessage: 'That genre isn’t in your catalogue any more. It may have been merged or deleted.',
+    },
+  },
+
+  /** The reader's own star rating of a book (P10). */
+  rating: {
+    stars: { one: '{count} star', other: '{count} stars' },
+    /** The rating control's value: "4 out of 5 stars". */
+    valueText: '{rating} out of {max} stars',
+    notRated: 'Not rated',
+    /** Part of a book's spoken name: "Mort, by Terry Pratchett, 1987, rated 4 out of 5". */
+    rated: 'rated {rating} out of {max}',
+    /** Announced after rating a book. */
+    announce: { one: 'Rated {count} star', other: 'Rated {count} stars' },
+    cleared: 'Rating cleared',
+    /** A minimum-rating filter: "4 stars and up". */
+    andUp: { one: '{count} star and up', other: '{count} stars and up' },
+  },
+
   // Books: detail, form and lookups
   /** Words about a book shared by its card, form and detail page. */
   book: {

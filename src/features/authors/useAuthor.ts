@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { authorsRepo, booksRepo, useDatabase } from '@/db';
 import type { Author, BookListItem } from '@/domain';
 import { emit, useLibraryEvent } from '@/features/events';
+import { t } from '@/i18n';
 
 /** A run of an author's books: one series (in reading order) or their standalones (by year). */
 export interface AuthorShelf {
@@ -28,7 +29,7 @@ export function shelvesFor(items: BookListItem[]): AuthorShelf[] {
     }
     let shelf = series.get(item.seriesId);
     if (!shelf) {
-      shelf = { key: `series:${item.seriesId}`, seriesId: item.seriesId, title: item.seriesName ?? 'Series', items: [] };
+      shelf = { key: `series:${item.seriesId}`, seriesId: item.seriesId, title: item.seriesName ?? t('authors.shelves.series'), items: [] };
       series.set(item.seriesId, shelf);
     }
     shelf.items.push(item);
@@ -37,7 +38,7 @@ export function shelvesFor(items: BookListItem[]): AuthorShelf[] {
   const out = [...series.values()]
     .sort((a, b) => a.title.localeCompare(b.title, undefined, { sensitivity: 'base' }))
     .map((s) => ({ ...s, items: [...s.items].sort(byPosition) }));
-  if (standalone.length) out.push({ key: 'standalone', seriesId: null, title: out.length ? 'Standalone' : 'Books', items: standalone });
+  if (standalone.length) out.push({ key: 'standalone', seriesId: null, title: t(out.length ? 'authors.shelves.standalone' : 'authors.shelves.books'), items: standalone });
   return out;
 }
 

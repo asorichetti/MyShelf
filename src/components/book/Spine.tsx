@@ -1,6 +1,7 @@
 import { StyleSheet, Text as RNText, View } from 'react-native';
 
 import { formatSeriesPosition, hashColour, hashString } from '@/domain';
+import { t } from '@/i18n';
 import { artworkTypography, useTheme } from '@/theme';
 
 export type SpineSize = 'mini' | 'shelf';
@@ -42,7 +43,7 @@ export function Spine({ title = '', position = null, variant = 'owned', size = '
   const key = colourKey ?? title;
   const width = DIMENSIONS[size].width;
   const height = spineHeight(size, variant === 'missing' ? `missing-${position ?? ''}` : key);
-  const label = position != null ? `#${formatSeriesPosition(position)}` : null;
+  const label = position != null ? t('series.number', { position: formatSeriesPosition(position) }) : null;
   const hidden = { 'aria-hidden': true, accessibilityElementsHidden: true, importantForAccessibility: 'no-hide-descendants' as const };
 
   if (variant === 'missing') {
@@ -67,7 +68,7 @@ export function Spine({ title = '', position = null, variant = 'owned', size = '
         {size === 'shelf' && label ? (
           <View style={[styles.center, { gap: spacing.xxs }]}>
             <RNText allowFontScaling={false} style={[artworkTypography.label, { color: colors.inkMuted }]}>{label}</RNText>
-            <RNText allowFontScaling={false} style={[artworkTypography.tabLabel, styles.vertical, { color: colors.inkMuted }]}>missing</RNText>
+            <RNText allowFontScaling={false} style={[artworkTypography.tabLabel, styles.vertical, { color: colors.inkMuted }]}>{t('bookList.missing')}</RNText>
           </View>
         ) : null}
       </View>

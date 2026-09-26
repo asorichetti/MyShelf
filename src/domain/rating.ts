@@ -1,3 +1,5 @@
+import { t } from '@/i18n';
+
 /**
  * The reader's own rating of a book (P10): whole stars from 1 to 5, or null
  * for "not rated". A rating is the user's opinion: lookups, refreshes and
@@ -22,27 +24,27 @@ export function parseRating(value: unknown): Rating | null {
 
 /** "1 star", "4 stars". */
 export function starsText(n: number): string {
-  return n === 1 ? '1 star' : `${n} stars`;
+  return t('rating.stars', { count: n });
 }
 
 /** What the rating control says: "Rating: 4 out of 5 stars", "Rating: not rated". */
 export function ratingValueText(rating: number | null): string {
-  return rating == null ? 'Not rated' : `${rating} out of ${MAX_RATING} stars`;
+  return rating == null ? t('rating.notRated') : t('rating.valueText', { rating, max: MAX_RATING });
 }
 
 /** For a book's accessible name: "rated 4 out of 5"; null when not rated. */
 export function ratedPhrase(rating: number | null | undefined): string | null {
-  return rating == null ? null : `rated ${rating} out of ${MAX_RATING}`;
+  return rating == null ? null : t('rating.rated', { rating, max: MAX_RATING });
 }
 
 /** What is announced after a change: "Rated 4 stars", "Rating cleared". */
 export function ratingAnnouncement(rating: number | null): string {
-  return rating == null ? 'Rating cleared' : `Rated ${starsText(rating)}`;
+  return rating == null ? t('rating.cleared') : t('rating.announce', { count: rating });
 }
 
 /** A Shelf filter chip and choice: "5 stars", "4 stars and up". */
 export function minRatingLabel(min: number): string {
-  return min >= MAX_RATING ? starsText(MAX_RATING) : `${starsText(min)} and up`;
+  return min >= MAX_RATING ? starsText(MAX_RATING) : t('rating.andUp', { count: min });
 }
 
 /** A Shelf section when grouping by rating: "5 stars", "1 star". */

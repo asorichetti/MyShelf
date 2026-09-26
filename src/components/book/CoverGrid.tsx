@@ -4,6 +4,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { StarRatingDisplay, Text } from '@/components/ui';
 import { joinNames, type BookListItem } from '@/domain';
+import { t } from '@/i18n';
 import { Testids } from '@/testing/testids.gen';
 import { useTheme } from '@/theme';
 
@@ -85,7 +86,7 @@ export const CoverGridRow = memo(function CoverGridRow({ items, columns, width, 
               {item.onLoan ? (
                 <View style={[styles.badge, { backgroundColor: colors.accent, borderRadius: radii.sm, paddingHorizontal: spacing.xs, bottom: spacing.xs, left: spacing.xs }]}>
                   <Text variant="tabLabel" color="onAccent">
-                    On loan
+                    {t('bookList.onLoan')}
                   </Text>
                 </View>
               ) : null}

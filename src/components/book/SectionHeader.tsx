@@ -3,6 +3,7 @@ import { StyleSheet, View } from 'react-native';
 
 import { Heading, IconButton } from '@/components/ui';
 import { sectionHeading, sectionLabel } from '@/domain';
+import { t } from '@/i18n';
 import { Testids } from '@/testing/testids.gen';
 import { useTheme } from '@/theme';
 
@@ -28,7 +29,7 @@ export const SectionHeader = memo(function SectionHeader({ title, count, onOpen,
         <Heading level={2} style={[theme.typography.h3, styles.title]} numberOfLines={2} accessibilityLabel={sectionLabel(title, count)}>
           {sectionHeading(title, count)}
         </Heading>
-        {onOpen ? <IconButton icon="chevron-right" accessibilityLabel={`Open ${title}`} onPress={onOpen} /> : null}
+        {onOpen ? <IconButton icon="chevron-right" accessibilityLabel={t('shelfView.section.open', { title })} onPress={onOpen} /> : null}
       </View>
       <View
         aria-hidden
