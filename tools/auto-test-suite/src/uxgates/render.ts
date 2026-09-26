@@ -16,7 +16,16 @@ export interface RenderAuditConfig {
    * rule skips them like the console and network gates do.
    */
   expectedMissing?: string;
+  /** How long images still downloading get to load or fail before counting as broken. */
+  imageWaitMs?: number;
 }
+
+/**
+ * Default wait for images still downloading. A tall page (a 200 % text run
+ * renders every cover at once) on a busy machine can take well over 5 s;
+ * AUTOTEST_IMAGE_WAIT_MS overrides it.
+ */
+export const DEFAULT_IMAGE_WAIT_MS = 15_000;
 
 export interface RenderAuditFinding {
   rule: string;
@@ -114,7 +123,9 @@ export async function renderAudit(cfg: RenderAuditConfig): Promise<RenderAuditFi
     add('fonts-error', errored.length + ' font(s) failed to load: ' + errored.map((f) => f.family).join(', '), { errored: errored.map((f) => f.family) });
   }
 
-  // Images still downloading are not broken yet: give them up to 5 s to load or fail.
+  // Images still downloading are not broken yet: give them time to load or fail.
+  const imageWaitMs = cfg.imageWaitMs ?? 15000;
+  const waitStarted = Date.now();
   const inFlight = [...document.images].filter((img) => !img.complete);
   if (inFlight.length) {
     const settled = inFlight.map(
@@ -124,16 +135,21 @@ export async function renderAudit(cfg: RenderAuditConfig): Promise<RenderAuditFi
           img.addEventListener('error', () => resolve(), { once: true });
         }),
     );
-    await Promise.race([Promise.all(settled), new Promise<void>((resolve) => setTimeout(resolve, 5000))]);
+    await Promise.race([Promise.all(settled), new Promise<void>((resolve) => setTimeout(resolve, imageWaitMs))]);
   }
+  const waitedMs = Date.now() - waitStarted;
   // Images loaded: complete alone is true for a 404, so check naturalWidth too.
   const deliberate = (img: HTMLImageElement) => !!cfg.expectedMissing && (img.currentSrc || img.src).includes(cfg.expectedMissing);
   const broken = [...document.images].filter((img) => !(img.complete && img.naturalWidth > 0) && !deliberate(img));
   if (broken.length) {
     add(
       'images',
-      broken.length + ' image(s) failed to load: ' + broken.slice(0, 5).map((i) => i.currentSrc || i.src || describe(i)).join(', '),
-      { images: broken.map((i) => ({ src: i.currentSrc || i.src, element: describe(i), complete: i.complete, naturalWidth: i.naturalWidth })) },
+      broken.length +
+        ' image(s) failed to load' +
+        (broken.some((i) => !i.complete) ? ' (some still downloading after ' + waitedMs + ' ms)' : '') +
+        ': ' +
+        broken.slice(0, 5).map((i) => i.currentSrc || i.src || describe(i)).join(', '),
+      { waitedMs, images: broken.map((i) => ({ src: i.currentSrc || i.src, element: describe(i), complete: i.complete, naturalWidth: i.naturalWidth })) },
     );
   }
 
@@ -196,6 +212,7 @@ export async function renderGate(page: Page, target: string): Promise<Result> {
       landmarks: cfg.landmarks,
       disabled: Object.keys(cfg.disabled),
       expectedMissing: ExpectedMissingMarker,
+      imageWaitMs: Number(process.env.AUTOTEST_IMAGE_WAIT_MS) || DEFAULT_IMAGE_WAIT_MS,
     });
     for (const f of raw) findings.push({ rule: f.rule, message: f.message, evidence: f.evidence });
   } catch (err) {

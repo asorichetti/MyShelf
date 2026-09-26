@@ -287,7 +287,7 @@ All run in one `page.evaluate`, after `document.fonts.ready`.
 | `text-font` | The first real text inside `main` computes to the default serif |
 | `fonts-loaded` | No `document.fonts` entry has status `loaded` |
 | `fonts-error` | Any `document.fonts` entry has status `error` |
-| `images` | An `<img>` is not `complete` with `naturalWidth > 0` (images whose URL carries the expected-missing marker are skipped). Images still downloading get up to 5 s to load or fail first, so a slow cover is not reported as broken |
+| `images` | An `<img>` is not `complete` with `naturalWidth > 0` (images whose URL carries the expected-missing marker are skipped). Images still downloading get up to 15 s (`AUTOTEST_IMAGE_WAIT_MS`) to load or fail first, so a slow cover is not reported as broken; a failure says how long it waited |
 | `overflow` | `scrollWidth > clientWidth + 1`, or a visible element extends past the right edge outside a horizontal scroll container. The finding names the outermost offending elements |
 | `landmarks` | A selector in `render.landmarks` (default `main`) is missing, hidden or zero-size |
 
