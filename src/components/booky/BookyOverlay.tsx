@@ -15,8 +15,9 @@ import { BookyBubble, type BookyAction } from './BookyBubble';
 import { useBooky, type ShownTip } from './BookyProvider';
 import { Celebration } from './Celebration';
 import { HelpSheet } from './HelpSheet';
+import { useKeepFocusClear } from './keepClear';
 import { placement } from './placement';
-import { setTipBox } from './tipBox';
+import { setTipBox, type TipBox } from './tipBox';
 import { topicOnScreen, useTopicsVersion } from './topics';
 
 import type { TipTestGroup } from './tips';
@@ -76,7 +77,8 @@ export function tipWaits(segments: readonly string[], tip: Pick<ShownTip, 'tip' 
  *
  * Nothing stays stuck under the tip (PLAN §8): while it floats, the screen's
  * scroller makes room below its content (`useFloatClearance`, from the box
- * published with `setFloatingBox`).
+ * published with `setFloatingBox`), and a control focused under it is
+ * scrolled clear (web).
  */
 export function BookyOverlay() {
   const { tip, dismissTip, help, closeHelp } = useBooky();
@@ -113,6 +115,7 @@ function PlacedTip({ tip, onTabs }: { tip: ShownTip; onTabs: boolean }) {
   const layers = useLayers();
   const keyboardHeight = useKeyboardHeight();
   const [bubbleHeight, setBubbleHeight] = useState(0);
+  const [box, setBox] = useState<TipBox | null>(null);
   const host = useRef<View | null>(null);
 
   const blocked = layers.blocking > 0;
@@ -140,6 +143,7 @@ function PlacedTip({ tip, onTabs }: { tip: ShownTip; onTabs: boolean }) {
       setFloatingBox(null);
     };
   }, [shown]);
+  useKeepFocusClear(shown ? box : null, host, spacing.md);
   if (!shown) return null;
 
   const ids = testIds[tip.tip.testGroup ?? 'booky'];
@@ -163,6 +167,7 @@ function PlacedTip({ tip, onTabs }: { tip: ShownTip; onTabs: boolean }) {
       setTipBox(measured);
       // Scrolling screens make room for it below their content.
       setFloatingBox(measured);
+      setBox((prev) => (prev && prev.x === x && prev.y === y && prev.width === width && prev.height === height ? prev : measured));
     });
   };
 
