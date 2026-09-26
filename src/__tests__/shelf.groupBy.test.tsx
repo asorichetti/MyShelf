@@ -1,3 +1,4 @@
+import { router } from 'expo-router';
 import { act, fireEvent, screen, waitFor, within } from 'expo-router/testing-library';
 
 import { settingsRepo, type Db } from '@/db';
@@ -42,7 +43,8 @@ describe('Shelf group by', () => {
     await openShelf();
     expect(headers()).toEqual([]);
     await groupBy(Testids.shelfView.groupByGenre);
-    await waitFor(() => expect(headers()).toEqual(['Classics, 2 books', 'Fantasy, 6 books', 'Mystery, 3 books', 'Science Fiction, 2 books']));
+    // The list is virtualized: the first screenful of sections is rendered (all four are checked in shelfSections.test.ts).
+    await waitFor(() => expect(headers().slice(0, 3)).toEqual(['Classics, 2 books', 'Fantasy, 6 books', 'Mystery, 3 books']));
     expect(screen.getByText('Fantasy · 6')).toBeOnTheScreen();
     expect(screen.getByRole('radio', { name: 'Genre' })).toBeChecked();
     // One h1 still, section headers are h2.
@@ -53,7 +55,7 @@ describe('Shelf group by', () => {
   it('opens a section’s own page from its header', async () => {
     const r = await openShelf();
     await groupBy(Testids.shelfView.groupByGenre);
-    await waitFor(() => expect(headers()).toHaveLength(4));
+    await waitFor(() => expect(headers().length).toBeGreaterThanOrEqual(3));
     await act(async () => fireEvent.press(screen.getByRole('button', { name: 'Open Mystery' })));
     expect(r.getPathname()).toMatch(/^\/genres\/\d+$/);
   });
@@ -85,7 +87,7 @@ describe('Shelf group by', () => {
     const r = await openShelf();
     await act(async () => fireEvent.press(screen.getByRole('button', { name: 'Browse authors' })));
     expect(r.getPathname()).toBe('/authors');
-    act(() => r.router.back());
+    act(() => router.back());
     await waitFor(() => expect(screen.getByTestId(Testids.shelfView.browse)).toBeOnTheScreen());
     fireEvent.changeText(screen.getByTestId(Testids.home.search), 'dune');
     expect(screen.queryByTestId(Testids.shelfView.browse)).toBeNull();
