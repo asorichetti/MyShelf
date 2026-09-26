@@ -71,6 +71,9 @@ jobs:
         run: npx playwright install --with-deps chromium
       # Typecheck the tool and run its unit tests.
       - run: npm run autotest:check
+      # Every gate rule fires on a deliberately broken fixture page.
+      - name: Gate self-tests
+        run: npm run autotest:selftest
       # Expo Router's typed routes (.expo/types/router.d.ts) are only written by
       # the dev server; `expo export` does not generate them. Start it just long
       # enough to write them, then stop it: the journeys run against the export.

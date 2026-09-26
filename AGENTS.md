@@ -36,6 +36,7 @@ Use `npx`, not `bunx` (this project uses npm; there is no `bun.lock`).
 | `npm run -s autotest:smoke` | `smoke`: core journeys, gates set to fail; needs the web server on 8081 | available |
 | `npm run -s autotest:journeys` | every journey (`journey --all`); add flags after `--`, e.g. `-- --ux-gates fail` | available |
 | `npm run autotest:check` | typecheck and unit tests for the auto test suite | available |
+| `npm run autotest:selftest` | gate self-tests: every UX gate rule fires on a broken fixture page, in Chromium (no app server needed) | available |
 | `maestro test .maestro/` | on-device flows | to be added in P00-18 |
 | `npx expo run:android` | local development build (needed from Phase 03 for ML Kit) | works now; dev client added in P03-01 |
 | `npx expo-doctor` | diagnose dependency/config issues | available |

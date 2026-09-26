@@ -162,7 +162,7 @@ Decisions made while building the foundation, all described in `PLAN.md`:
 - **Acceptance:**
   - Config with an unknown rule id or a disabled rule without a reason, and an allowlist entry without a reason, are rejected.
   - A waived finding stays in `uxgates.json` as a warning with the reason and the waiver listed.
-  - Every gate fires against a temporary broken route (procedure in the tool README, "Proving the gates fire"; last run: all five gates and the rules `images`, `overflow`, `text-font`, `one-h1`, `heading-order`, `img-alt`, `accessible-name`, `nav-labels`, `content-marker`, `http-status`, `request-failed` reported, and `--ux-gates fail` exited 1). Automating that proof is P00-28.
+  - Every gate fires against a temporary broken route (procedure in the tool README, "Proving the gates fire"; last run: all five gates and the rules `images`, `overflow`, `text-font`, `one-h1`, `heading-order`, `img-alt`, `accessible-name`, `nav-labels`, `content-marker`, `http-status`, `request-failed` reported, and `--ux-gates fail` exited 1). P00-28 automated that proof (`npm run autotest:selftest`).
   - `smoke` passes with `--ux-gates fail` against the current app.
 - **Tests:** unit tests for mode parsing, fail-mode errors, warn severity, config and allowlist validation, the expected-missing marker and waivers, run by `npm run autotest:check`.
 
@@ -248,10 +248,11 @@ Decisions made while building the foundation, all described in `PLAN.md`:
 - **Description:** Add an a11y rule `target-size`: every visible, enabled interactive element (button, link, tab, menuitem, switch, checkbox, and elements with those roles) must have a hit area of at least 48 × 48 CSS px (the plan's 48 dp minimum), measured from its bounding box; inline links inside running text are exempt. Findings name the element and its size. Register the rule id with the other a11y rule ids so it can be disabled only with a reason.
 - **Files:** the a11y gate and config modules in `tools/auto-test-suite/src/uxgates/`, `tools/auto-test-suite/README.md`.
 - **Acceptance:** a temporary 30 × 30 px button is reported; all journeys still pass with `--ux-gates fail` (fix the app where they do not).
-- **Tests:** covered by the gate self-tests in P00-28; until then, proven with a temporary route as in the tool README.
+- **Tests:** the gate self-tests of P00-28 (`a11y-target-size`, `a11y-target-size-lone-link`, and the clean page's exempt inline link, disabled and hidden small buttons); config parsing in `gate.test.ts`.
 
-### P00-28 Automated gate self-tests
+### P00-28 Automated gate self-tests — done
 
+- **Delivered:** `tools/auto-test-suite/src/uxgates/selftest/`: `fixtures.ts` (a clean page, a clean page requesting an `__expected-404` URL, and one page per rule that breaks exactly that rule) and `gates.selftest.ts`, which serves them with the `--serve` static server, runs `checkPage`/`checkTraffic` on each in Chromium and asserts the exact set of `gate/rule` error findings, plus a coverage test that fails when any render or a11y rule id, or a pagestate, console or network rule, has no fixture. 31 tests, about 7 s; `npm run autotest:selftest`, run in CI right after the Chromium install; skipped with a message without Chromium, except under `CI`. Proven to fail when a check is removed (network gate short-circuited and `stylesheets` check removed: three fixtures fail) or a rule is disabled in the self-test config (`target-size`: two fixtures fail). The `render/stylesheets` rule fires on its fixture but cannot fire against the app (the template's reset `<style>` and react-native-web's stylesheet are always there once the page renders); it stays on as a guard, documented in the tool README.
 - **Description:** Automate the README procedure "Proving the gates fire": a test (Node's test runner) that serves small HTML fixtures from a local `node:http` server (one clean page, and one page per rule that breaks exactly that rule), loads each in Chromium and asserts which gate and rule report a finding. Skipped with a clear message when Chromium is not installed, and run in the CI auto-test-suite job after the browser install.
 - **Files:** a self-test module and HTML fixtures under `tools/auto-test-suite/src/uxgates/`; `.github/workflows/ci.yml`.
 - **Acceptance:** every render and a11y rule id, plus the pagestate, console and network checks, has a fixture that makes it fire; the clean fixture passes every gate; removing a rule's check makes the test fail.

@@ -54,6 +54,7 @@
     "autotest": "tsx tools/auto-test-suite/src/cli.ts",
     "autotest:check": "tsc -p tools/auto-test-suite && node --import tsx --test 'tools/auto-test-suite/src/**/*.test.ts'",
     "autotest:install-browser": "playwright install chromium",
+    "autotest:selftest": "node --import tsx --test 'tools/auto-test-suite/src/**/*.selftest.ts'",
     "autotest:smoke": "tsx tools/auto-test-suite/src/cli.ts smoke",
     "autotest:journeys": "tsx tools/auto-test-suite/src/cli.ts journey --all",
     "lint": "eslint ."

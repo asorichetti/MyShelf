@@ -2,8 +2,8 @@
 // serialized source exists. The TypeScript loader wraps named inner functions
 // in a __name(fn, "name") helper; Browser.newPage installs EVALUATE_SHIM in
 // every page so that helper resolves. These checks keep the two in step. The
-// audits' behaviour is proven against the real app and a deliberately broken
-// page (see README, "Proving the gates fire").
+// audits' behaviour is proven in a real browser by the gate self-tests
+// (selftest/gates.selftest.ts, npm run autotest:selftest).
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import vm from 'node:vm';

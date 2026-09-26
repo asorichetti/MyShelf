@@ -23,12 +23,15 @@ tools/auto-test-suite/
     ├── server/                  static file server for --serve (SPA fallback, COOP/COEP)
     ├── uxgates/                 pagestate, render, console, network, a11y, recorder
     │   ├── gates.config.json    render/a11y configuration
-    │   └── console_allowlist.json
+    │   ├── console_allowlist.json
+    │   └── selftest/            fixture pages + gates.selftest.ts (every rule fires)
     └── journeys/                registry.ts + one *.journey.ts file per area
 ```
 
 Unit tests (`*.test.ts`) sit beside the code and run on Node's built-in test
-runner.
+runner (`npm run autotest:check`). The gate self-tests (`*.selftest.ts`) need
+Chromium and run separately (`npm run autotest:selftest`, see
+[Proving the gates fire](#proving-the-gates-fire)).
 
 ## Setup
 
@@ -68,6 +71,7 @@ npm run -s autotest:journeys                       # every journey (gates=warn u
 npm run -s autotest:journeys -- --ux-gates fail    # extra flags go after --
 npm run -s autotest -- journey --list              # any command: npm run -s autotest -- <command> [flags]
 npm run autotest:check                             # typecheck the tool + unit tests
+npm run autotest:selftest                          # gate self-tests in Chromium (no app server needed)
 ```
 
 Use `npm run -s` when you want to parse stdout: without `-s`, npm prints its
@@ -455,7 +459,8 @@ Re-export after changing app code: `--serve` tests whatever is in `dist/`.
   request or pushed range (`scripts/check-commit-messages.sh`).
 - **auto-test-suite smoke**: `npm ci`, install Chromium with its system
   dependencies (the browser download is cached per Playwright version),
-  `npm run autotest:check`, start the Expo dev server just long enough to
+  `npm run autotest:check`, the gate self-tests (`npm run autotest:selftest`),
+  start the Expo dev server just long enough to
   write Expo Router's typed routes (`.expo/types/router.d.ts`; `expo export`
   does not generate them) and stop it, run `npm run typecheck` again (now
   strict about route links), `npm run export:web`, then against `--serve dist`
@@ -474,24 +479,47 @@ Re-export after changing app code: `--serve` tests whatever is in `dist/`.
 
 ## Proving the gates fire
 
-A gate that has never failed is decoration. When changing a gate, or before
-trusting a new one:
+A gate that has never failed is decoration. `npm run autotest:selftest`
+(`src/uxgates/selftest/gates.selftest.ts`, Node's test runner, about 7 s)
+proves every rule fires:
 
-1. Add a temporary route (never commit it) that renders the `page-content`
-   testid and a `main` with enough text, plus: two h1s, a heading skip, an
-   `<img>` without alt pointing at a missing file, an unnamed `role="button"`,
-   an unlabelled `nav`, a 3000px-wide element, a `console.error`, a `fetch` to
-   a URL that really 404s (`/assets/?unstable_path=.%2Fmissing.png`) and one
-   that never connects (e.g. `http://127.0.0.1:65533/`). To break the render
-   rules that the app satisfies, override the body with `!important` styles
-   (margin, transparent background, serif font), remove the `lang` attribute,
-   drop the `@font-face` styles and `document.fonts.clear()`, add a `FontFace`
-   with a missing URL, and pass a `--gates-config` that requires a missing
-   token and a `header` landmark.
-2. Restart the Expo server (watch mode is off), then
-   `auto-test-suite navigate --url /that-route --wait 2000 --ux-gates warn`.
-3. For pagestate, run the same route with `--marker '[data-testid="never-rendered"]'`,
-   and a second route whose `main` has under 10 characters of text.
-4. Confirm findings from all five gates, delete the routes and the run
-   directories, restart the server and re-run the real suite with
-   `--ux-gates fail`.
+- `selftest/fixtures.ts` builds one **clean** page that every gate accepts
+  (with every rule on, `skip-link` included) and one variant per rule that
+  breaks exactly that rule: two h1s, a heading skip, an image that does not
+  decode, a 3000 px wide element, a 30 × 30 button, a missing token, no
+  stylesheet, a `console.error`, an uncaught exception, a fetch that 404s, a
+  fetch to a port nothing listens on, a missing content marker, and so on.
+  A second clean page requests an `__expected-404` URL to prove that
+  exemption.
+- The test writes the pages to a temporary directory, serves them with the
+  `--serve` static server, opens each in a fresh Chromium context and runs
+  the same `checkPage` / `checkTraffic` calls a journey uses (render at mobile
+  and desktop) with its own gates config (`selfTestConfig`).
+- For each page it asserts the **exact** set of error findings (`gate/rule`):
+  a rule that stops firing fails its page, and so does a page that
+  accidentally breaks a second rule. It also checks every gate ran (only
+  console and network after a failed pagestate).
+- A coverage test fails when a rule id in `RenderRules` or `A11yRules`, or a
+  pagestate, console or network rule, has no page that fires it. **A new rule
+  needs a fixture.**
+- The network pages also fire `console/error`: Chromium logs every failed
+  resource load as a console error.
+- Without Chromium the browser tests are skipped with a message; under `CI`
+  a missing browser fails instead. CI runs the self-tests right after
+  installing Chromium.
+
+Proof that the proof works: with the network gate's check short-circuited
+and the `stylesheets` check removed, the run fails `render-stylesheets`,
+`network-http-status` and `network-request-failed`; with `target-size`
+disabled in the self-test config it fails both target-size pages.
+
+### The `stylesheets` rule
+
+It has never fired against the app, and it cannot: `public/index.html`
+carries an inline reset `<style>`, and react-native-web injects its own
+stylesheet, so a page that got as far as the render gate always has readable
+rules. (If the bundle never runs, pagestate fails first and render is
+skipped.) The `render-stylesheets` fixture proves the check itself works. It
+stays on as a cheap guard for a page served without that template, for
+example if the app moves to `web.output: "static"`, where
+`src/app/+html.tsx` replaces `public/index.html`.
