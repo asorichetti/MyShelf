@@ -10,13 +10,14 @@ Short records of the decisions that shape MyShelf. Each has **Context**, **Decis
 | [0004](0004-public-plans-in-repo.md) | Plans tracked publicly in the repo | Accepted |
 | [0005](0005-sqlite-with-migrations-and-db-interface.md) | SQLite, versioned migrations, `Db` interface | Accepted |
 | [0006](0006-data-model.md) | v1 data model | Accepted |
-| [0007](0007-purple-library-theme-and-booky.md) | Purple library theme and the Booky helper | Accepted |
+| [0007](0007-purple-library-theme-and-booky.md) | Purple library theme and the Booky helper | Accepted; palette and Booky accessibility superseded by 0014 |
 | [0008](0008-three-level-testing-strategy.md) | Three-level testing strategy and regression gate | Accepted; tool language superseded by 0013 |
 | [0009](0009-generated-selector-contract.md) | Generated selector contract | Accepted; Go output removed by 0013 |
 | [0010](0010-commit-conventions-no-ai-attribution.md) | Commit conventions, no AI/tool attribution | Accepted |
 | [0011](0011-free-android-release-pipeline.md) | Free Android release pipeline | Accepted |
 | [0012](0012-local-only-data.md) | Local-only data, no accounts | Accepted |
 | [0013](0013-typescript-auto-test-suite.md) | Auto test suite in TypeScript with the Playwright library | Accepted |
+| [0014](0014-warm-paper-palette-and-labelled-booky.md) | Warm paper palette with role-named tokens, and a labelled Booky | Accepted |
 
 Template for new records:
 

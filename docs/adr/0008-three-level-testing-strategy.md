@@ -10,7 +10,7 @@ The project is built incrementally by several contributors, including automated 
 ## Decision
 
 1. **Jest** (jest-expo + Testing Library) for every module: pure domain logic, repositories against real SQLite in Node, services with recorded fixtures, components and screens.
-2. **Auto test suite** (Go + Playwright, `tools/auto-test-suite`) against the web build: `navigate`, `screenshot`, `interact`, `journey`, `smoke`; JSON on stdout; an evidence bundle for every command; UX gates `pagestate`, `render`, `console`, `network`, `a11y` alongside assertions; self-registering journeys, one fresh browser per journey; API responses mocked from recorded fixtures (added in P02-13).
+2. **Auto test suite** (`tools/auto-test-suite`; first written in Go with playwright-go, *superseded by [0013](0013-typescript-auto-test-suite.md): now TypeScript with the Playwright library*) against the web build: `navigate`, `screenshot`, `interact`, `journey`, `smoke`; JSON on stdout; an evidence bundle for every command; UX gates `pagestate`, `render`, `console`, `network`, `a11y` alongside assertions; self-registering journeys, one fresh browser per journey; API responses mocked from recorded fixtures (added in P02-13).
 3. **Maestro** flows (`.maestro/`) on emulator/device for native-only features.
 
 Every phase document lists the Jest tests, journeys and flows it adds. The **regression gate** for every task and phase is:

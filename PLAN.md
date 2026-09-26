@@ -478,7 +478,7 @@ Today a tip closes with its ✕ button or after one of its actions runs. The res
 
 ## 9. Theme and design tokens
 
-Tokens live in `src/theme` (P00-08). **`src/theme/tokens.ts` is the source of truth** for exact values; the tables below mirror it. Components never hard-code colours, sizes or fonts: they read the theme through `useTheme()`, and a Jest test fails on colour literals outside `src/theme`. On web, `ThemeProvider` writes every token to `:root` as a CSS custom property prefixed `--ms-` (`--ms-color-<role>`, `--ms-space-*`, `--ms-size-*`, `--ms-radius-*`, `--ms-font-*`, `--ms-elevation-*`, `--ms-text-<variant>-size|weight`; e.g. `--ms-color-primary: #6B3FA8`) and paints the document's background, text colour and font from them, so the auto test suite's render gate can require them (`render.requiredTokens`).
+Decided in [ADR 0007](docs/adr/0007-purple-library-theme-and-booky.md), with the palette as built recorded in [ADR 0014](docs/adr/0014-warm-paper-palette-and-labelled-booky.md). Tokens live in `src/theme` (P00-08). **`src/theme/tokens.ts` is the source of truth** for exact values; the tables below mirror it. Components never hard-code colours, sizes or fonts: they read the theme through `useTheme()`, and a Jest test fails on colour literals outside `src/theme`. On web, `ThemeProvider` writes every token to `:root` as a CSS custom property prefixed `--ms-` (`--ms-color-<role>`, `--ms-space-*`, `--ms-size-*`, `--ms-radius-*`, `--ms-font-*`, `--ms-elevation-*`, `--ms-text-<variant>-size|weight`; e.g. `--ms-color-primary: #6B3FA8`) and paints the document's background, text colour and font from them, so the auto test suite's render gate can require them (`render.requiredTokens`).
 
 ### Colour (light theme)
 
@@ -664,10 +664,11 @@ Total: **126 task cards**. Progress is tracked in [`STATUS.md`](STATUS.md).
 | [0004](docs/adr/0004-public-plans-in-repo.md) | Plans and status tracked publicly in the repo |
 | [0005](docs/adr/0005-sqlite-with-migrations-and-db-interface.md) | SQLite via expo-sqlite, versioned migrations, `Db` interface |
 | [0006](docs/adr/0006-data-model.md) | v1 data model |
-| [0007](docs/adr/0007-purple-library-theme-and-booky.md) | Purple library theme, design tokens and the Booky helper |
+| [0007](docs/adr/0007-purple-library-theme-and-booky.md) | Purple library theme, design tokens and the Booky helper (palette and Booky accessibility updated by 0014) |
 | [0008](docs/adr/0008-three-level-testing-strategy.md) | Jest + auto test suite + Maestro, with a single regression gate |
 | [0009](docs/adr/0009-generated-selector-contract.md) | Test ids generated from one `selectors.json` |
 | [0010](docs/adr/0010-commit-conventions-no-ai-attribution.md) | Small commits; no AI/tool attribution, enforced by a hook |
 | [0011](docs/adr/0011-free-android-release-pipeline.md) | Free Android release pipeline: local/EAS free builds + GitHub Actions |
 | [0012](docs/adr/0012-local-only-data.md) | Local-only data, no accounts; backup via export/import |
 | [0013](docs/adr/0013-typescript-auto-test-suite.md) | Auto test suite in TypeScript with the Playwright library (replaces the Go version) |
+| [0014](docs/adr/0014-warm-paper-palette-and-labelled-booky.md) | Warm paper palette with role-named tokens, and a labelled Booky (updates 0007) |
