@@ -1,5 +1,6 @@
 import { StyleSheet, View } from 'react-native';
 
+import { t } from '@/i18n';
 import { useTheme } from '@/theme';
 
 import { IconButton } from './IconButton';
@@ -15,11 +16,11 @@ export interface TopBarProps {
 }
 
 /** A pushed screen's top row: a Back button on the left and actions on the right. */
-export function TopBar({ onBack, backLabel = 'Back', backTestID, children }: TopBarProps) {
+export function TopBar({ onBack, backLabel, backTestID, children }: TopBarProps) {
   const { spacing } = useTheme();
   return (
     <View style={[styles.bar, { gap: spacing.xs, marginTop: -spacing.sm, marginHorizontal: -spacing.sm }]}>
-      <IconButton icon="arrow-left" accessibilityLabel={backLabel} onPress={onBack} testID={backTestID} />
+      <IconButton icon="arrow-left" accessibilityLabel={backLabel ?? t('ui.topBar.back')} onPress={onBack} testID={backTestID} />
       <View style={styles.flex} />
       {children}
     </View>

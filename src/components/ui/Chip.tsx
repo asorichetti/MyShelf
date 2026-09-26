@@ -2,6 +2,7 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useState } from 'react';
 import { Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 
+import { t } from '@/i18n';
 import { useTheme, type ColorRole } from '@/theme';
 
 import { Text } from './Text';
@@ -132,8 +133,8 @@ export function Chip({
         {onRemove ? (
           <Pressable
             role="button"
-            accessibilityLabel={removeLabel ?? `Remove ${label}`}
-            aria-label={removeLabel ?? `Remove ${label}`}
+            accessibilityLabel={removeLabel ?? t('ui.chip.remove', { label })}
+            aria-label={removeLabel ?? t('ui.chip.remove', { label })}
             disabled={disabled}
             onPress={onRemove}
             testID={removeTestID}

@@ -2,6 +2,7 @@ import { useId } from 'react';
 import { Modal, StyleSheet, View } from 'react-native';
 
 import { useReducedMotion } from '@/hooks/useReducedMotion';
+import { t } from '@/i18n';
 import { Testids } from '@/testing/testids.gen';
 import { useTheme } from '@/theme';
 
@@ -46,8 +47,8 @@ export function ConfirmDialog({
   message,
   children,
   illustration,
-  confirmLabel = 'Confirm',
-  cancelLabel = 'Cancel',
+  confirmLabel,
+  cancelLabel,
   destructive = false,
   busy = false,
   onConfirm,
@@ -103,9 +104,9 @@ export function ConfirmDialog({
           ) : null}
           {children}
           <View style={[styles.actions, { gap: spacing.sm, marginTop: spacing.sm }]}>
-            <Button label={cancelLabel} variant="secondary" onPress={onCancel} disabled={busy} testID={Testids.dialog.cancel} />
+            <Button label={cancelLabel ?? t('common.cancel')} variant="secondary" onPress={onCancel} disabled={busy} testID={Testids.dialog.cancel} />
             <Button
-              label={confirmLabel}
+              label={confirmLabel ?? t('ui.dialog.confirm')}
               variant={destructive ? 'danger' : 'primary'}
               onPress={onConfirm}
               loading={busy}

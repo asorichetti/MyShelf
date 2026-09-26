@@ -19,6 +19,7 @@ import { AppErrorBoundary, screenErrorLayout } from '@/features/navigation/Scree
 import { OnboardingGate } from '@/features/onboarding/OnboardingGate';
 import { SettingsWatchers } from '@/features/settings/SettingsWatchers';
 import { useKeyboardActivation } from '@/hooks/useKeyboardActivation';
+import { t } from '@/i18n';
 import { ThemeProvider, useTheme } from '@/theme';
 import { appFonts } from '@/theme/fonts';
 
@@ -43,7 +44,7 @@ function RootStack() {
           {/* Every screen has its own error boundary: one crash never blanks the app (P09-04). */}
           <Stack screenLayout={screenErrorLayout} screenOptions={{ headerShown: false, contentStyle: { backgroundColor: theme.colors.paper } }}>
             <Stack.Screen name="(tabs)" />
-            <Stack.Screen name="+not-found" options={{ title: 'Not found' }} />
+            <Stack.Screen name="+not-found" options={{ title: t('navigation.notFound.documentTitle') }} />
           </Stack>
           {/* Above every screen, so an Undo survives leaving the screen that offered it. */}
           <AppSnackbarHost />

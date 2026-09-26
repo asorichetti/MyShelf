@@ -1,5 +1,6 @@
 import { Booky } from '@/components/booky';
 import { EmptyState, Screen } from '@/components/ui';
+import { t } from '@/i18n';
 
 import { goBackOr } from './goBack';
 
@@ -21,7 +22,7 @@ export function MissingScreen({ title, message, fallback = '/' }: MissingScreenP
         headingLevel={1}
         title={title}
         message={message}
-        action={{ label: 'Go back', onPress: () => goBackOr(fallback) }}
+        action={{ label: t('navigation.missing.goBack'), onPress: () => goBackOr(fallback) }}
       />
     </Screen>
   );

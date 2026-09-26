@@ -2,6 +2,7 @@ import { useId, useState } from 'react';
 import { StyleSheet, TextInput, View } from 'react-native';
 
 import { formatDate, formatTypedDate, isIsoDate, parseTypedDate, today, type IsoDate } from '@/domain';
+import { t } from '@/i18n';
 import { useTheme } from '@/theme';
 
 import { IconButton } from './IconButton';
@@ -57,7 +58,7 @@ export function DateField({ label, value, onChange, min, max, helperText, errorT
 
   const hasError = Boolean(errorText);
   const readBack = isIsoDate(value) ? formatDate(value) : null;
-  const hint = errorText ?? helperText ?? 'Day, month, year, for example 12/10/2026';
+  const hint = errorText ?? helperText ?? t('ui.dateField.hint');
 
   return (
     <View style={{ gap: spacing.xs }}>
@@ -75,7 +76,7 @@ export function DateField({ label, value, onChange, min, max, helperText, errorT
           aria-invalid={hasError}
           accessibilityHint={hint}
           accessibilityState={{ disabled }}
-          placeholder="DD/MM/YYYY"
+          placeholder={t('ui.dateField.placeholder')}
           placeholderTextColor={colors.inkMuted}
           inputMode="numeric"
           autoComplete="off"
@@ -97,7 +98,7 @@ export function DateField({ label, value, onChange, min, max, helperText, errorT
           ]}
         />
         {hasDatePicker ? (
-          <IconButton icon="calendar-month-outline" variant="tonal" accessibilityLabel={`Choose ${label.toLowerCase()} from a calendar`} onPress={pick} disabled={disabled} />
+          <IconButton icon="calendar-month-outline" variant="tonal" accessibilityLabel={t('ui.dateField.calendar', { field: label.toLowerCase() })} onPress={pick} disabled={disabled} />
         ) : null}
       </View>
       {hasError ? (
@@ -106,7 +107,7 @@ export function DateField({ label, value, onChange, min, max, helperText, errorT
         </Text>
       ) : (
         <Text variant="caption" color="inkMuted">
-          {readBack ?? helperText ?? 'Day, month, year, for example 12/10/2026'}
+          {readBack ?? helperText ?? t('ui.dateField.hint')}
         </Text>
       )}
     </View>

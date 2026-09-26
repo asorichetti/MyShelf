@@ -7,6 +7,7 @@ import { Text } from '@/components/ui';
 import { useOverdueCount } from '@/features/loans/useLoans';
 import { PendingLookupsProvider } from '@/features/lookup/PendingLookupsProvider';
 import { ScreenErrorBoundary } from '@/features/navigation/ScreenErrorBoundary';
+import { t, translate, type MessageKey } from '@/i18n';
 import { Testids } from '@/testing/testids.gen';
 import { typographyMaxScale, useFontScale, useTheme } from '@/theme';
 
@@ -14,12 +15,12 @@ import type { ComponentProps, ReactNode } from 'react';
 
 type IconName = ComponentProps<typeof MaterialCommunityIcons>['name'];
 
-export const tabs: { name: string; title: string; icon: IconName; testID: string }[] = [
-  { name: 'index', title: 'Shelf', icon: 'bookshelf', testID: Testids.tabs.shelf },
-  { name: 'scan', title: 'Scan', icon: 'barcode-scan', testID: Testids.tabs.scan },
-  { name: 'loans', title: 'Loans', icon: 'book-clock-outline', testID: Testids.tabs.loans },
-  { name: 'groups', title: 'Groups', icon: 'tag-multiple-outline', testID: Testids.tabs.groups },
-  { name: 'settings', title: 'Settings', icon: 'cog-outline', testID: Testids.tabs.settings },
+export const tabs: { name: string; title: MessageKey; icon: IconName; testID: string }[] = [
+  { name: 'index', title: 'navigation.tabs.shelf', icon: 'bookshelf', testID: Testids.tabs.shelf },
+  { name: 'scan', title: 'navigation.tabs.scan', icon: 'barcode-scan', testID: Testids.tabs.scan },
+  { name: 'loans', title: 'navigation.tabs.loans', icon: 'book-clock-outline', testID: Testids.tabs.loans },
+  { name: 'groups', title: 'navigation.tabs.groups', icon: 'tag-multiple-outline', testID: Testids.tabs.groups },
+  { name: 'settings', title: 'navigation.tabs.settings', icon: 'cog-outline', testID: Testids.tabs.settings },
 ];
 
 /**
@@ -86,8 +87,8 @@ function TabsShell() {
             key={tab.name}
             name={tab.name}
             options={{
-              title: tab.title,
-              tabBarAccessibilityLabel: tab.name === 'loans' && overdue ? `${tab.title}, ${overdue} overdue` : tab.title,
+              title: translate(tab.title),
+              tabBarAccessibilityLabel: tab.name === 'loans' && overdue ? t('navigation.tabs.loansOverdue', { tab: translate(tab.title), count: overdue }) : translate(tab.title),
               tabBarBadge: tab.name === 'loans' && overdue ? overdue : undefined,
               tabBarBadgeStyle: { backgroundColor: colors.danger, color: colors.onDanger },
               tabBarButtonTestID: tab.testID,

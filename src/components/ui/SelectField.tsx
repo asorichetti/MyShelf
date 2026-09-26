@@ -2,6 +2,7 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useId, useRef, useState, type Ref } from 'react';
 import { Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
+import { t } from '@/i18n';
 import { useTheme } from '@/theme';
 
 import { Button } from './Button';
@@ -37,9 +38,10 @@ export interface SelectFieldProps {
  * trigger is a 48 dp button naming the field and its value; the list is a
  * modal of radio options with a "none" choice at the top.
  */
-export function SelectField({ label, value, options, onChange, placeholder = 'Not set', errorText, testID, ref, allowNone = true, helperText }: SelectFieldProps) {
+export function SelectField({ label, value, options, onChange, placeholder: placeholderProp, errorText, testID, ref, allowNone = true, helperText }: SelectFieldProps) {
   const theme = useTheme();
   const { colors, spacing, radii, sizes } = theme;
+  const placeholder = placeholderProp ?? t('ui.select.notSet');
   const [open, setOpen] = useState(false);
   useBlockingLayer(open);
   useReturnFocus(open);
@@ -61,8 +63,8 @@ export function SelectField({ label, value, options, onChange, placeholder = 'No
       <Pressable
         ref={ref}
         role="button"
-        accessibilityLabel={`${label}: ${current?.label ?? placeholder}`}
-        accessibilityHint={errorText ?? 'Opens a list to choose from'}
+        accessibilityLabel={t('ui.select.value', { label, value: current?.label ?? placeholder })}
+        accessibilityHint={errorText ?? t('ui.select.hint')}
         aria-haspopup="dialog"
         aria-expanded={open}
         onPress={() => setOpen(true)}
@@ -139,7 +141,7 @@ export function SelectField({ label, value, options, onChange, placeholder = 'No
                 );
               })}
             </ScrollView>
-            <Button variant="secondary" label="Close" onPress={() => setOpen(false)} style={{ alignSelf: 'flex-end' }} />
+            <Button variant="secondary" label={t('common.close')} onPress={() => setOpen(false)} style={{ alignSelf: 'flex-end' }} />
           </View>
         </View>
       </Modal>

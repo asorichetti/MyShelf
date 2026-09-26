@@ -1,5 +1,6 @@
 import { Booky } from '@/components/booky';
 import { EmptyState, Screen, Text } from '@/components/ui';
+import { t } from '@/i18n';
 import { Testids } from '@/testing/testids.gen';
 
 export function DatabaseErrorScreen({ error, onRetry }: { error: Error; onRetry: () => void }) {
@@ -9,10 +10,10 @@ export function DatabaseErrorScreen({ error, onRetry }: { error: Error; onRetry:
         testID={Testids.emptyState.root}
         illustration={<Booky expression="concerned" size={120} />}
         headingLevel={1}
-        title="I couldn't open your library"
+        title={t('navigation.databaseError.title')}
         titleTestID={Testids.dbError.title}
-        message="Something went wrong opening the catalogue on this device. Your books are safe; let's try again."
-        action={{ label: 'Try again', onPress: onRetry, testID: Testids.dbError.retry }}
+        message={t('navigation.databaseError.message')}
+        action={{ label: t('common.tryAgain'), onPress: onRetry, testID: Testids.dbError.retry }}
       />
       <Text variant="caption" color="inkMuted" align="center" selectable>
         {error.message}

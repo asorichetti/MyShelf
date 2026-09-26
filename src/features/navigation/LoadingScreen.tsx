@@ -1,5 +1,6 @@
 import { Booky } from '@/components/booky';
 import { EmptyState, Screen } from '@/components/ui';
+import { t } from '@/i18n';
 import { Testids } from '@/testing/testids.gen';
 
 /** Shown while the database opens and migrates (web has no native splash to cover it). */
@@ -9,7 +10,7 @@ export function LoadingScreen() {
       <EmptyState
         illustration={<Booky expression="thinking" size={96} />}
         headingLevel={1}
-        title="Opening your library…"
+        title={t('navigation.loading.library')}
         titleTestID={Testids.loading.title}
       />
     </Screen>

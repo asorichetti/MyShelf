@@ -1,5 +1,6 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 
+import { t } from '@/i18n';
 import { useTheme } from '@/theme';
 
 import { Text } from './Text';
@@ -15,23 +16,23 @@ export interface LetterIndexProps {
   testID?: string;
 }
 
-const letterName = (l: string) => (l === '#' ? 'numbers and symbols' : l);
+const letterName = (l: string) => (l === '#' ? t('ui.letterIndex.numbersAndSymbols') : l);
 
 /**
  * A fast-scroll letter index: one 48 dp button per letter that has entries,
  * wrapping onto more rows on narrow screens. Each is labelled "Jump to P".
  */
-export function LetterIndex({ letters, current, onSelect, accessibilityLabel = 'Jump to letter', testID }: LetterIndexProps) {
+export function LetterIndex({ letters, current, onSelect, accessibilityLabel, testID }: LetterIndexProps) {
   const { colors, spacing, radii, sizes } = useTheme();
   return (
-    <View role="toolbar" aria-label={accessibilityLabel} style={[styles.row, { gap: spacing.xxs }]}>
+    <View role="toolbar" aria-label={accessibilityLabel ?? t('ui.letterIndex.label')} style={[styles.row, { gap: spacing.xxs }]}>
       {letters.map((letter) => {
         const active = letter === current;
         return (
           <Pressable
             key={letter}
             role="button"
-            accessibilityLabel={`Jump to ${letterName(letter)}`}
+            accessibilityLabel={t('ui.letterIndex.jumpTo', { letter: letterName(letter) })}
             aria-current={active ? 'true' : undefined}
             onPress={() => onSelect(letter)}
             testID={testID}

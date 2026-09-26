@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Text as RNText, Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { useLineClamp } from '@/hooks/useLineClamp';
+import { t } from '@/i18n';
 import { useFontScale, useTheme } from '@/theme';
 
 import { Heading, type HeadingLevel } from './Heading';
@@ -139,7 +140,7 @@ export function CatalogueCard({
           ) : null}
           {isbn ? (
             <Text variant="mono" color="inkMuted">
-              ISBN {isbn}
+              {t('ui.catalogueCard.isbn', { isbn })}
             </Text>
           ) : null}
           {meta}

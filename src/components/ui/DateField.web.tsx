@@ -2,6 +2,7 @@ import { useId, useState } from 'react';
 import { View } from 'react-native';
 
 import { formatDate, isIsoDate } from '@/domain';
+import { t } from '@/i18n';
 import { useTheme } from '@/theme';
 
 import { Text } from './Text';
@@ -66,7 +67,7 @@ export function DateField({ label, value, onChange, min, max, helperText, errorT
         </Text>
       ) : (
         <Text nativeID={noteId} variant="caption" color="inkMuted">
-          {readBack ?? helperText ?? 'Type the date or open the calendar'}
+          {readBack ?? helperText ?? t('ui.dateField.webHint')}
         </Text>
       )}
     </View>

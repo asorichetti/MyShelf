@@ -4,6 +4,7 @@ import { View } from 'react-native';
 import { Booky } from '@/components/booky';
 import { Button, EmptyState, Screen, Text, type ErrorFallbackProps } from '@/components/ui';
 import { goToShelf } from '@/features/settings/goToShelf';
+import { t, translate } from '@/i18n';
 import { Testids } from '@/testing/testids.gen';
 import { useTheme } from '@/theme';
 
@@ -44,17 +45,17 @@ export function ScreenErrorScreen({ error, componentStack, retry, where }: Scree
       <EmptyState
         illustration={<Booky expression="concerned" size={120} />}
         headingLevel={1}
-        title="Something went wrong here"
+        title={t('navigation.screenError.title')}
         titleTestID={T.title}
-        message="This page tripped over something. Your books are safe; let’s try that again."
-        action={{ label: 'Try again', onPress: retry, testID: T.retry }}
-        secondaryAction={where === 'index' || where === 'app' ? undefined : { label: 'Go to my shelf', onPress: goToShelf }}
+        message={t('navigation.screenError.message')}
+        action={{ label: t('common.tryAgain'), onPress: retry, testID: T.retry }}
+        secondaryAction={where === 'index' || where === 'app' ? undefined : { label: t('navigation.screenError.goToShelf'), onPress: goToShelf }}
       />
       <View style={{ alignItems: 'center', gap: spacing.sm }}>
-        <Button variant="ghost" label={COPY_ERROR_LABEL} onPress={() => void copy()} testID={T.copy} />
+        <Button variant="ghost" label={translate(COPY_ERROR_LABEL)} onPress={() => void copy()} testID={T.copy} />
         {copied != null ? (
           <Text variant="caption" color="inkMuted" align="center" role="status" aria-live="polite" accessibilityLiveRegion="polite" testID={T.copied}>
-            {copied ? 'Copied. It stays on this phone unless you paste it somewhere.' : 'Couldn’t copy them; the details are below.'}
+            {copied ? t('navigation.screenError.copied') : t('navigation.screenError.copyFailed')}
           </Text>
         ) : null}
         <Text variant="caption" color="inkMuted" align="center" selectable testID={T.details}>
