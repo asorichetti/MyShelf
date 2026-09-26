@@ -13,6 +13,7 @@ import { LoanWatchers } from '@/features/loans/LoanWatchers';
 import { AppSnackbarHost } from '@/features/navigation/AppSnackbarHost';
 import { DatabaseErrorScreen } from '@/features/navigation/DatabaseErrorScreen';
 import { LoadingScreen } from '@/features/navigation/LoadingScreen';
+import { StackBookyTipHost } from '@/features/navigation/StackBookyTipHost';
 import { SeriesEventHost } from '@/features/series/SeriesEventHost';
 import { ThemeProvider, useTheme } from '@/theme';
 import { appFonts } from '@/theme/fonts';
@@ -33,6 +34,7 @@ function RootStack() {
           </Stack>
           {/* Above every screen, so an Undo survives leaving the screen that offered it. */}
           <AppSnackbarHost />
+          <StackBookyTipHost />
           {/* Booky's series gap tip and completion celebration, wherever a save lands. */}
           <SeriesEventHost />
         </View>

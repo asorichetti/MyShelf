@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
+import { View } from 'react-native';
 
 import { sourceLabels } from '@/components/book/CandidateCard';
 import { LookupPanel } from '@/components/book/LookupPanel';
+import { BookyBubble } from '@/components/booky';
 import { useSnackbar } from '@/components/ui';
 import { booksRepo, useDatabase } from '@/db';
 import { bookMatchKey, candidateSeries, candidateToDraft, draftFieldOrder, type BookDraft, type BookDraftField } from '@/domain';
@@ -10,6 +12,7 @@ import { emit } from '@/features/events';
 import { combineCoverSources, coverSourceFromCandidate, resolveCover, type CoverSource } from '@/services/covers';
 import { isAbortError, OfflineError } from '@/services/http';
 import { toIsbn13, type BookCandidate } from '@/services/metadata';
+import { Testids } from '@/testing/testids.gen';
 
 import { getLookupServices, useMetadataService } from './metadataService';
 import { useLookup, type LookupState } from './useLookup';
@@ -39,6 +42,19 @@ const WARNINGS: Record<string, string> = {
   openlibrary: 'Open Library didn’t answer, so these come from Google Books only.',
 };
 
+const guessLabels: Partial<Record<BookDraftField, string>> = { title: 'title', authors: 'author', isbn: 'ISBN' };
+
+/** "Please check": the form was started from guesses (the words read off a cover). */
+function GuessNotice({ fields }: { fields: readonly BookDraftField[] }) {
+  const names = fields.map((f) => guessLabels[f] ?? f);
+  const list = names.length > 1 ? `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}` : names[0];
+  return (
+    <View testID={Testids.prefill.notice} role="status">
+      <BookyBubble expression="thinking" title="Please check" message={`I guessed the ${list} from the cover. Check ${names.length > 1 ? 'them' : 'it'} against your book before saving.`} />
+    </View>
+  );
+}
+
 function warningText(state: LookupState): string | null {
   if (state.status !== 'results') return null;
   const failed = state.warnings.find((w) => w.reason !== 'rate-limited' || state.warnings.length === 1);
@@ -52,13 +68,22 @@ function warningText(state: LookupState): string | null {
  * (`attachBestCover`, P02-15). `focusField` lets "Add it by hand" move to
  * the title.
  */
-export function useAddBookLookup(mode: 'add' | 'edit', form: LookupForm, focusField: (field: BookDraftField) => void): AddBookLookup {
+export function useAddBookLookup(
+  mode: 'add' | 'edit',
+  form: LookupForm,
+  focusField: (field: BookDraftField) => void,
+  /** What a scan already found (P03-11): a candidate to keep the origin and cover of, or guessed fields to check. */
+  start?: { candidate: BookCandidate | null; guessed: readonly BookDraftField[] } | null,
+): AddBookLookup {
   const db = useDatabase();
   const service = useMetadataService();
   const lookup = useLookup({ service });
   const { show } = useSnackbar();
-  const [chosen, setChosen] = useState<BookCandidate | null>(null);
-  const [seriesSuggestion, setSeriesSuggestion] = useState<AddBookLookup['seriesSuggestion']>(null);
+  const [chosen, setChosen] = useState<BookCandidate | null>(start?.candidate ?? null);
+  const [seriesSuggestion, setSeriesSuggestion] = useState<AddBookLookup['seriesSuggestion']>(() => {
+    const series = start?.candidate ? candidateSeries(start.candidate) : null;
+    return series ? { name: series.name, position: series.position } : null;
+  });
   // The latest form and lookup, for the callbacks below (updated after each render).
   const formRef = useRef(form);
   const lookupRef = useRef(lookup);
@@ -67,8 +92,10 @@ export function useAddBookLookup(mode: 'add' | 'edit', form: LookupForm, focusFi
     lookupRef.current = lookup;
   });
   /** The real cover shown on the card and where it came from, so saving can store the best version of it. */
-  const onlineCover = useRef<{ url: string; source: CoverSource } | null>(null);
-  const origin = useRef<BookCandidate | null>(null);
+  const onlineCover = useRef<{ url: string; source: CoverSource } | null>(
+    start?.candidate?.coverUrl ? { url: start.candidate.coverUrl, source: coverSourceFromCandidate(start.candidate) } : null,
+  );
+  const origin = useRef<BookCandidate | null>(start?.candidate ?? null);
 
   const applyCandidate = useCallback((candidate: BookCandidate) => {
     const { setField, existingGenres, draft } = formRef.current;
@@ -162,8 +189,11 @@ export function useAddBookLookup(mode: 'add' | 'edit', form: LookupForm, focusFi
   );
 
   const { state } = lookup;
+  const guessed = start?.guessed.length ? start.guessed : null;
   const panel =
     mode === 'add' ? (
+      <>
+      {guessed ? <GuessNotice fields={guessed} /> : null}
       <LookupPanel
         status={state.status}
         mode={state.status === 'idle' ? undefined : state.mode}
@@ -182,6 +212,7 @@ export function useAddBookLookup(mode: 'add' | 'edit', form: LookupForm, focusFi
           lookup.reset();
         }}
       />
+      </>
     ) : null;
 
   return { panel, findCoverOnline, afterSave, applyCandidate, seriesSuggestion };

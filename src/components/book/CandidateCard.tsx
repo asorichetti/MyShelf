@@ -75,6 +75,8 @@ export interface CandidateCardProps {
   testID?: string;
   /** Extra line under the facts, e.g. "Tap to see its editions". */
   hint?: string;
+  /** Replaces the spoken description (the edition picker leads with the edition's facts). */
+  accessibilityLabel?: string;
 }
 
 /**
@@ -82,7 +84,7 @@ export interface CandidateCardProps {
  * year, publisher, format and ISBN, with a stamp naming the catalogue it
  * came from. The whole card is the touch target.
  */
-export function CandidateCard({ candidate: c, onPress, role = 'button', selected, testID = Testids.lookup.candidate, hint }: CandidateCardProps) {
+export function CandidateCard({ candidate: c, onPress, role = 'button', selected, testID = Testids.lookup.candidate, hint, accessibilityLabel }: CandidateCardProps) {
   const theme = useTheme();
   const { colors, spacing, radii, sizes } = theme;
   const author = joinNames(c.authors);
@@ -92,8 +94,8 @@ export function CandidateCard({ candidate: c, onPress, role = 'button', selected
   return (
     <Pressable
       role={role}
-      accessibilityLabel={candidateLabel(c)}
-      aria-label={candidateLabel(c)}
+      accessibilityLabel={accessibilityLabel ?? candidateLabel(c)}
+      aria-label={accessibilityLabel ?? candidateLabel(c)}
       {...(radio ? { 'aria-checked': Boolean(selected), accessibilityState: { checked: Boolean(selected) } } : {})}
       onPress={onPress}
       testID={testID}

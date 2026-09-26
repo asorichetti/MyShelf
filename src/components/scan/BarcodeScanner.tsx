@@ -1,0 +1,86 @@
+import { CameraView, type BarcodeScanningResult } from 'expo-camera';
+import { useEffect, useState } from 'react';
+import { StyleSheet, View } from 'react-native';
+
+import { BookyBubble } from '@/components/booky';
+import { IconButton } from '@/components/ui';
+import { bookBarcodeTypes } from '@/domain';
+import { Testids } from '@/testing/testids.gen';
+import { useTheme } from '@/theme';
+
+import { Viewfinder } from './Viewfinder';
+
+/** After this long with no barcode, Booky suggests reading the cover (PLAN §8). */
+export const NO_READ_TIP_MS = 8000;
+
+export interface BarcodeScannerProps {
+  /** Every read, as the camera reports it; the scan session filters repeats and non-books. */
+  onBarcode: (read: { type: string; data: string }) => void;
+  /** Stops reading while a lookup runs or a result is on screen. */
+  paused: boolean;
+  onReadCover: () => void;
+}
+
+/**
+ * The live barcode scanner (P03-03): a camera listening for EAN-13, EAN-8
+ * and UPC-A, under a library-card viewfinder, with a torch toggle. After
+ * eight seconds with no read Booky suggests the cover instead.
+ */
+export function BarcodeScanner({ onBarcode, paused, onReadCover }: BarcodeScannerProps) {
+  const { spacing, radii } = useTheme();
+  const [torch, setTorch] = useState(false);
+  // Booky's tip belongs to one stretch of scanning: a read or a pause starts a new one.
+  const [reads, setReads] = useState(0);
+  const stretch = `${paused}:${reads}`;
+  const [slowStretch, setSlowStretch] = useState<string | null>(null);
+  const slow = slowStretch === stretch;
+
+  useEffect(() => {
+    if (paused) return;
+    const timer = setTimeout(() => setSlowStretch(stretch), NO_READ_TIP_MS);
+    return () => clearTimeout(timer);
+  }, [paused, stretch]);
+
+  const onBarcodeScanned = (result: BarcodeScanningResult) => {
+    setReads((n) => n + 1);
+    onBarcode({ type: result.type, data: result.data });
+  };
+
+  return (
+    <View style={{ gap: spacing.md }}>
+      <View style={[styles.frame, { borderRadius: radii.lg }]}>
+        <CameraView
+          testID={Testids.scan.camera}
+          accessibilityLabel="Camera: line up the barcode on the back cover"
+          style={StyleSheet.absoluteFill}
+          facing="back"
+          enableTorch={torch}
+          barcodeScannerSettings={{ barcodeTypes: [...bookBarcodeTypes] }}
+          onBarcodeScanned={paused ? undefined : onBarcodeScanned}
+        />
+        <Viewfinder hint="Line up the barcode on the back cover" active={!paused} />
+        <View style={[styles.torch, { top: spacing.sm, right: spacing.sm }]}>
+          <IconButton
+            icon={torch ? 'flashlight-off' : 'flashlight'}
+            variant="filled"
+            accessibilityLabel={torch ? 'Turn the torch off' : 'Turn the torch on'}
+            onPress={() => setTorch((t) => !t)}
+            testID={Testids.scan.torch}
+          />
+        </View>
+      </View>
+      {slow && !paused ? (
+        <BookyBubble
+          expression="thinking"
+          message="No barcode? Try reading the cover instead."
+          actions={[{ label: 'Read the cover', onPress: onReadCover, testID: Testids.scan.readCoverInstead }]}
+        />
+      ) : null}
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  frame: { width: '100%', aspectRatio: 3 / 4, overflow: 'hidden', backgroundColor: 'black' },
+  torch: { position: 'absolute' },
+});

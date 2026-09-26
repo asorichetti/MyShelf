@@ -67,6 +67,10 @@ describe.each(cases)('%s screen', (_name, Component, rootId, titleId, titleText)
     expect(screen.getByTestId(Testids.pageState.content)).toContainElement(screen.getByTestId(rootId));
   });
 
+});
+
+// The Scan tab is no longer a placeholder: it opens on the scanner (see src/__tests__/scan.*.test.tsx).
+describe.each(cases.filter(([name]) => name !== 'Scan'))('%s screen', (_name, Component) => {
   it('shows Booky in an empty state', async () => {
     renderScreen(Component);
     // The Shelf decides it is empty only once the database has answered.

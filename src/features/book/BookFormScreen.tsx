@@ -6,6 +6,7 @@ import { Booky } from '@/components/booky';
 import { ConfirmDialog, Screen, Text, useSnackbar } from '@/components/ui';
 import type { BookDraft } from '@/domain';
 import { useAddBookLookup } from '@/features/lookup/useAddBookLookup';
+import { getPrefill, type Prefill } from '@/features/scan/prefill';
 import { useSeriesOptions } from '@/features/series/useSeriesOptions';
 
 import { BookMissing, goBackOrShelf } from './BookDetailScreen';
@@ -16,14 +17,14 @@ import { useUnsavedChangesGuard } from './useUnsavedChangesGuard';
 
 const EDGES = ['top', 'bottom', 'left', 'right'] as const;
 
-function BookFormScreen({ bookId, prefill }: { bookId: number | null; prefill?: Partial<BookDraft> }) {
+function BookFormScreen({ bookId, prefill, scanned }: { bookId: number | null; prefill?: Partial<BookDraft>; scanned?: Prefill | null }) {
   const mode = bookId == null ? 'add' : 'edit';
   const form = useBookForm(bookId, prefill);
   const existingSeries = useSeriesOptions();
   const formRef = useRef<BookFormHandle>(null);
   const { show } = useSnackbar();
   const guard = useUnsavedChangesGuard(form.dirty && !form.saving);
-  const lookup = useAddBookLookup(mode, form, (field) => formRef.current?.focusField(field));
+  const lookup = useAddBookLookup(mode, form, (field) => formRef.current?.focusField(field), scanned);
 
   if (form.status === 'missing') return <BookMissing />;
   if (form.status === 'loading') {
@@ -107,11 +108,16 @@ function BookFormScreen({ bookId, prefill }: { bookId: number | null; prefill?: 
   );
 }
 
-/** `/book/new`: type up a new book. `?series=Discworld&position=2` starts it in a series ("Add #2", P04-05). */
+/**
+ * `/book/new`: type up a new book. `?series=Discworld&position=2` starts it in a series ("Add #2", P04-05);
+ * `?prefill=<id>` starts it with what a scan found (P03-11).
+ */
 export function AddBookScreen() {
-  const { series, position } = useLocalSearchParams<{ series?: string; position?: string }>();
-  const prefill = series ? { seriesName: String(series), seriesPosition: position ? String(position) : '' } : undefined;
-  return <BookFormScreen bookId={null} prefill={prefill} />;
+  const { series, position, prefill: prefillId } = useLocalSearchParams<{ series?: string; position?: string; prefill?: string }>();
+  const scanned = getPrefill(typeof prefillId === 'string' ? prefillId : null);
+  const inSeries = series ? { seriesName: String(series), seriesPosition: position ? String(position) : '' } : undefined;
+  const prefill = scanned || inSeries ? { ...scanned?.draft, ...inSeries } : undefined;
+  return <BookFormScreen bookId={null} prefill={prefill} scanned={scanned} />;
 }
 
 /** `/book/[id]/edit`: edit every field of a book. */

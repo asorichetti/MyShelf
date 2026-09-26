@@ -40,6 +40,15 @@
       "expo-asset",
       "expo-image",
       [
+        "expo-camera",
+        {
+          "cameraPermission": "MyShelf uses the camera to read book barcodes and covers. Nothing leaves your phone.",
+          "microphonePermission": false,
+          "recordAudioAndroid": false,
+          "barcodeScannerEnabled": true
+        }
+      ],
+      [
         "expo-image-picker",
         {
           "photosPermission": "MyShelf opens your photos so you can choose a picture of a book's cover.",
