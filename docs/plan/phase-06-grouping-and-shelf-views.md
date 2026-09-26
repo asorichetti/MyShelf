@@ -78,7 +78,7 @@ Let the user browse the collection the way they think about it: by genre, series
 
 - **Description:** Toggle between **List** (catalogue cards), **Covers** (grid, 3 columns on phones), **Spines** (horizontal shelves of vertical spines with titles in Lora rotated 90°, colour from `hashColour`, brass shelf edges). All modes support group-by sections and selection.
 - **Files:** `src/components/book/CoverGrid.tsx`, `src/components/book/SpineShelf.tsx`, `src/app/(tabs)/index.tsx`.
-- **Acceptance:** each mode renders `demo` without overflow at 412 px width and at 200 % font scale (spines truncate with ellipsis and full title in accessible label).
+- **Acceptance:** each mode renders `demo` without overflow at the `mobile` viewport (390 px wide) and at 200 % font scale (spines truncate with ellipsis and full title in accessible label).
 - **Tests:** `src/components/book/__tests__/CoverGrid.test.tsx`, `src/components/book/__tests__/SpineShelf.test.tsx`.
 
 ### P06-09 Persist shelf preferences
