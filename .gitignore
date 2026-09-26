@@ -47,3 +47,7 @@ yarn-error.*
 # test output
 /coverage/
 
+
+# Developer photos of real book covers used to record OCR fixtures: large, and
+# the cover art is not ours to publish. Only the recognised text is committed.
+/assets/test-images/
