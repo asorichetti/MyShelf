@@ -4,10 +4,13 @@ import { useCallback, useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { Booky } from '@/components/booky';
+import { BookLoanHistory } from '@/components/loans/BookLoanHistory';
 import { LendSheet, type LendSubmitResult, type LendValues } from '@/components/loans/LendSheet';
 import { LoanStamp } from '@/components/loans/LoanStamp';
 import { Button, Stamp, Text, useSnackbar } from '@/components/ui';
-import { dayCount, daysOverdue, formatDate, loanStatus, today as todayOf, type BookDetail } from '@/domain';
+import { loansRepo, useDatabase } from '@/db';
+import { dayCount, daysOverdue, formatDate, loanStatus, today as todayOf, type BookDetail, type LoanWithDetails } from '@/domain';
+import { useLibraryEvent } from '@/features/events';
 import { Testids } from '@/testing/testids.gen';
 import { useTheme } from '@/theme';
 
@@ -30,16 +33,31 @@ export function loanSummary(loan: OpenLoan, today: string): string {
 /**
  * The Loan section of book detail: the ON LOAN stamp and "Mark returned"
  * while the book is out, "Lend" while it is home, a brief RETURNED stamp
- * with Booky after a return.
+ * with Booky after a return, and the lending history.
  */
 export function BookLoanSection({ book }: { book: BookDetail }) {
+  const db = useDatabase();
   const { colors, spacing, sizes } = useTheme();
   const { show } = useSnackbar();
   const lending = useLend();
   const [lendOpen, setLendOpen] = useState(false);
+  const [history, setHistory] = useState<LoanWithDetails[]>([]);
+  const [version, setVersion] = useState(0);
   const [welcome, setWelcome] = useState(false);
   const today = todayOf();
   const loan = book.openLoan;
+
+  useEffect(() => {
+    let active = true;
+    loansRepo
+      .listLoansForBook(db, book.id)
+      .then((list) => active && setHistory(list))
+      .catch((e) => console.error('Could not load the lending history', e));
+    return () => {
+      active = false;
+    };
+  }, [db, book.id, version]);
+  useLibraryEvent('loans-changed', () => setVersion((v) => v + 1));
 
   useEffect(() => {
     if (!welcome) return;
@@ -113,6 +131,7 @@ export function BookLoanSection({ book }: { book: BookDetail }) {
           />
         </>
       )}
+      <BookLoanHistory loans={history} />
       {lendOpen ? (
         <LendSheet
           visible

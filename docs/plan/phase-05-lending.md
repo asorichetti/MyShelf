@@ -73,12 +73,13 @@ Never lose a book to a friend again. The user records who borrowed a book and wh
 - **Tests:** `src/__tests__/borrowerDetail.test.tsx`.
 - **Delivered:** the route re-exports `BorrowerScreen` (`src/features/loans/BorrowerScreen.tsx`). A borrower's card (the h1 name, contact or a hint to add one, "Has 1 book now · borrowed 2 times since 17 Mar 2026") heads "Currently has" (with Mark returned) and "Has borrowed before". Edit opens a sheet for name and contact and refuses a name another borrower already has. Delete is refused with an inline alert while books are out ("Sam still has 1 book of yours. Mark it returned first…"); otherwise it confirms, then clears the returned history and deletes in one transaction (`removeBorrower`) and goes back to Loans. An unknown id shows "Borrower not found" (`page-error`). Loan rows' borrower names and book detail's "About Sam" open it; Settings → Borrowers comes with P08-01.
 
-### P05-07 Loan history on book detail
+### P05-07 Loan history on book detail — done
 
 - **Description:** Book detail "Lending history" disclosure listing past loans (borrower, dates, note), newest first.
 - **Files:** `src/components/loans/BookLoanHistory.tsx`, `src/db/repositories/loans.ts` (`listLoansForBook`, which exists).
 - **Acceptance:** hidden when no history; correct order.
 - **Tests:** `src/components/loans/__tests__/BookLoanHistory.test.tsx`.
+- **Delivered:** a collapsed disclosure (a button named "Lending history, 2 past loans", with `aria-expanded`) under the loan section; it lists returned loans only (borrower, "5 Jun 2026 – 26 Jun 2026", note), newest lent first, and renders nothing when there are none. `BookLoanSection` loads `listLoansForBook` and reloads on `loans-changed`, so a return appears at once.
 
 ### P05-08 Due-date reminders (local notifications)
 

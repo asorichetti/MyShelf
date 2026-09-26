@@ -24,6 +24,7 @@ const routes = { 'book/[id]': BookDetailScreen, 'book/[id]/edit': stubScreen('ed
 const idOf = async (isbn: string) => (await booksRepo.findBooksByIsbn(db, isbn))[0].id;
 const LEFT_HAND = '9780441478125';
 const DUNE = '9780441172719';
+const MORT = '9780552131063';
 
 async function openBook(isbn: string) {
   const r = renderApp(db, `/book/${await idOf(isbn)}`, routes);
@@ -120,5 +121,28 @@ describe('Return flow on book detail (P05-04)', () => {
     expect(await loansRepo.getOpenLoanForBook(db, await idOf(DUNE))).not.toBeNull();
     await press(Testids.returnLoan.cancel);
     expect(screen.queryByTestId(Testids.returnLoan.sheet)).toBeNull();
+  });
+});
+
+describe('Lending history on book detail (P05-07)', () => {
+  it('is a collapsed disclosure of past loans', async () => {
+    await openBook(MORT);
+    const toggle = screen.getByTestId(Testids.bookLoan.historyToggle);
+    expect(toggle.props.accessibilityLabel).toBe('Lending history, 1 past loan');
+    expect(screen.queryByTestId(Testids.bookLoan.historyRow)).toBeNull();
+    await press(Testids.bookLoan.historyToggle);
+    expect(screen.getByTestId(Testids.bookLoan.historyRow)).toHaveTextContent(/Sam.*17 Mar 2026 – 14 Apr 2026/);
+  });
+
+  it('is hidden for a book that has never come back from a loan', async () => {
+    await openBook(DUNE);
+    expect(screen.queryByTestId(Testids.bookLoan.history)).toBeNull();
+  });
+
+  it('gains the loan once it is returned', async () => {
+    await openBook(DUNE);
+    await press(Testids.returnLoan.open);
+    await press(Testids.returnLoan.confirm);
+    expect(screen.getByTestId(Testids.bookLoan.historyToggle).props.accessibilityLabel).toBe('Lending history, 1 past loan');
   });
 });
