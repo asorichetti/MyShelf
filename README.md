@@ -51,7 +51,7 @@ Design decisions are recorded as ADRs in [`docs/adr/`](docs/adr/).
 
 ## Getting started
 
-Prerequisites: Node.js 22 or newer and npm. For the Android app: Android Studio with an emulator, or an Android phone with USB debugging.
+Prerequisites: Node.js 22.13 or newer (Jest uses its built-in `node:sqlite`) and npm. For the Android app: Android Studio with an emulator, or an Android phone with USB debugging.
 
 ```bash
 git clone https://github.com/asorichetti/MyShelf.git
