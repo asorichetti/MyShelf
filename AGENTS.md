@@ -85,6 +85,7 @@ Use `npx`, not `bunx` (this project uses npm; there is no `bun.lock`).
 ### Accessibility and UX
 
 - Every interactive element has a role and an accessible name; touch targets ≥ 48 dp; text contrast meets WCAG AA using theme tokens; nothing is conveyed by colour alone; animations respect reduce-motion.
+- Text must survive 200 % font size (Android's largest): no fixed heights around text, let rows wrap, use `useFontScale()` where a layout must make room, and keep truncated text in the row's accessible name. Check with the `a11y-large-text` journey or `?e2e-font-scale=2` on the web build. The audit and its TalkBack checklist are in [`docs/accessibility.md`](docs/accessibility.md).
 - Booky's copy is short, warm and never blames the user (see `PLAN.md` §8).
 
 ## 4. Testing and the regression gate
