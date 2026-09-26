@@ -2,13 +2,13 @@
 
 Checklist of every task card in [`docs/plan/`](docs/plan/). Tick a card (`[x]`) in the same pull request that completes it, and only when it meets the [definition of done](PLAN.md#12-definition-of-done). Cards are ticked only once the work is on `main`.
 
-The auto test suite (P00-15, P00-16, P00-17) and CI (P00-19) are on `main`. Phase 00 cards P00-08 to P00-14, P00-18 and P00-20 are in progress on parallel branches and stay unticked until merged; P00-21 to P00-29 are follow-ups, and P00-30 holds the UI primitives not built in P00-09.
+On `main`: the scaffold (P00-01 to P00-07), the design system, Booky, tabs, database layer and domain (P00-08 to P00-14), the auto test suite (P00-15 to P00-17), CI (P00-19), and the follow-ups P00-24 to P00-26. Still open in Phase 00: Maestro (P00-18), linting (P00-20), the follow-ups P00-21 to P00-23 and P00-27 to P00-29, and the UI primitives not built in P00-09 (P00-30).
 
 ## Summary
 
 | Phase | Name | Done |
 |---|---|---|
-| [Phase 00](docs/plan/phase-00-foundation.md) | Foundation | 11 / 30 |
+| [Phase 00](docs/plan/phase-00-foundation.md) | Foundation | 21 / 30 |
 | [Phase 01](docs/plan/phase-01-library-core.md) | Library core: CRUD and book detail | 0 / 12 |
 | [Phase 02](docs/plan/phase-02-metadata-providers.md) | Metadata providers | 0 / 13 |
 | [Phase 03](docs/plan/phase-03-scanning.md) | Scanning: barcode, OCR and edition picker | 0 / 13 |
@@ -18,7 +18,7 @@ The auto test suite (P00-15, P00-16, P00-17) and CI (P00-19) are on `main`. Phas
 | [Phase 07](docs/plan/phase-07-booky-assistant.md) | Booky assistant | 0 / 9 |
 | [Phase 08](docs/plan/phase-08-settings-backup.md) | Settings, backup, export and import | 0 / 10 |
 | [Phase 09](docs/plan/phase-09-polish-a11y-release.md) | Polish, accessibility and release | 0 / 12 |
-| **Total** | | **11 / 128** |
+| **Total** | | **21 / 128** |
 
 ## Phase 00 — Foundation
 
@@ -31,13 +31,13 @@ The auto test suite (P00-15, P00-16, P00-17) and CI (P00-19) are on `main`. Phas
 - [x] P00-05 Selector contract and generator
 - [x] P00-06 Public GitHub repository
 - [x] P00-07 Commit-msg hook
-- [ ] P00-08 Design tokens and fonts
-- [ ] P00-09 UI primitives
-- [ ] P00-10 Booky component, bubble and hook
-- [ ] P00-11 Bottom tabs and placeholder screens
-- [ ] P00-12 `Db` interface and adapters
-- [ ] P00-13 Migration runner and initial schema
-- [ ] P00-14 Domain models and base repositories
+- [x] P00-08 Design tokens and fonts
+- [x] P00-09 UI primitives
+- [x] P00-10 Booky component, bubble and hook
+- [x] P00-11 Bottom tabs and placeholder screens
+- [x] P00-12 `Db` interface and adapters
+- [x] P00-13 Migration runner and initial schema
+- [x] P00-14 Domain models and base repositories
 - [x] P00-15 Auto test suite core
 - [x] P00-16 Auto test suite UX gates
 - [x] P00-17 Auto test suite commands, journeys and package scripts
@@ -47,9 +47,9 @@ The auto test suite (P00-15, P00-16, P00-17) and CI (P00-19) are on `main`. Phas
 - [ ] P00-21 `--serve <dir>` for the exported web build
 - [ ] P00-22 CI check of commit messages
 - [ ] P00-23 CI runs every journey
-- [ ] P00-24 Re-enable the temporary render rules and require the design tokens
-- [ ] P00-25 Tab journeys
-- [ ] P00-26 App-owned not-found screen
+- [x] P00-24 Re-enable the temporary render rules and require the design tokens
+- [x] P00-25 Tab journeys
+- [x] P00-26 App-owned not-found screen
 - [ ] P00-27 Touch-target rule in the a11y gate
 - [ ] P00-28 Automated gate self-tests
 - [ ] P00-29 Booky and theme journeys
