@@ -106,21 +106,21 @@ Let people sort the Shelf however they actually want to: by genre, then author, 
 - **Delivered:**
   - Every key reads either a column of `books`, the already-joined series and open loan, or one correlated lookup through a primary-key or indexed join (`book_authors`, `book_genres`, `group_books`). Only the correlated lookups and the fold add cost.
   - Candidate extra indexes (`book_authors(book_id, position)`, `genres(name NOCASE)`) were measured and gained under 3 ms, so no migration was added.
-  - Most of the Shelf query is the fixed cost of reading and building 10,000 rows: about 50 ms for "A–Z by title", which adds only the title fold.
+  - Most of the Shelf query is the fixed cost of reading and building 10,000 rows: under 50 ms for "A–Z by title", which adds only the title fold.
   - The shuffle is one hash round (two cost 20 ms more). Spine colours are remembered per title and call numbers per genre, author and year.
   - Web build, `huge` fixture, three runs each (`shelf-huge-multisort`, September 2026, a laptop):
 
   | Preset | Query (ms), median | Runs |
   |---|---|---|
-  | Library order | 80.8 | 80.8, 81.6, 79.3 |
-  | Series reading order | 53.2 | 54.8, 49.3, 53.2 |
-  | Call number | 82.7 | 81.9, 83.6, 82.7 |
-  | Newest additions | 49.5 | 49.5, 46.6, 52.1 |
-  | A–Z by title | 51.6 | 45.5, 51.6, 55.1 |
-  | By author | 64.7 | 64.7, 64.6, 67.8 |
-  | Rainbow | 60.0 | 65.9, 59.7, 60.0 |
-  | Surprise me | 51.1 | 50.9, 51.1, 52.2 |
-  | Library order, grouped by genre | 78.1 | one run |
+  | Library order | 76.4 | 76.4, 76.4, 72.1 |
+  | Series reading order | 52.1 | 52.1, 48.3, 52.5 |
+  | Call number | 81.5 | 81.5, 85.6, 79.2 |
+  | Newest additions | 48.4 | 48.4, 48.2, 48.5 |
+  | A–Z by title | 46.5 | 44.5, 48.7, 46.5 |
+  | By author | 61.8 | 60.9, 61.8, 63.3 |
+  | Rainbow | 56.9 | 56.7, 56.9, 59.9 |
+  | Surprise me | 50.0 | 50.0, 50.1, 50.0 |
+  | Library order, grouped by genre | 80.2 | one run |
 
   Every preset is under the 100 ms budget. The two heaviest, Library order and Call number, spend about 30 ms on top of the fixed cost. Library order does two correlated lookups per book (primary genre, first author); Call number works out every book's call number in TypeScript.
 
