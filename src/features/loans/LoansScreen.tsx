@@ -31,7 +31,8 @@ function SegmentTab({ label, selected, onPress, testID }: { label: string; selec
         styles.segment,
         {
           minHeight: sizes.touchTarget,
-          borderRadius: radii.pill,
+          // Half the height: a pill on one line, a rounded box if a large font wraps the two tabs.
+          borderRadius: radii.xl,
           paddingHorizontal: spacing.lg,
           backgroundColor: selected ? colors.primary : pressed ? colors.surfaceTint : colors.surface,
         },
@@ -127,7 +128,7 @@ export function LoansScreen() {
       <View
         role="tablist"
         aria-label="Loans"
-        style={[styles.segments, { gap: spacing.xs, padding: spacing.xxs, borderRadius: radii.pill, borderColor: colors.outline, backgroundColor: colors.surface }]}
+        style={[styles.segments, { gap: spacing.xs, padding: spacing.xxs, borderRadius: radii.xl + spacing.xxs, borderColor: colors.outline, backgroundColor: colors.surface }]}
       >
         <SegmentTab label={`Out now · ${out.length}`} selected={section === 'out'} onPress={() => setSection('out')} testID={Testids.loans.tabOut} />
         <SegmentTab label={`History · ${history.length}`} selected={section === 'history'} onPress={() => setSection('history')} testID={Testids.loans.tabHistory} />
@@ -149,7 +150,7 @@ export function LoansScreen() {
 
 const styles = StyleSheet.create({
   segments: { flexDirection: 'row', alignSelf: 'flex-start', borderWidth: 1.5, flexWrap: 'wrap' },
-  segment: { alignItems: 'center', justifyContent: 'center' },
+  segment: { alignItems: 'center', justifyContent: 'center', flexGrow: 1 },
   titleRow: { flexDirection: 'row', alignItems: 'center' },
   fill: { flex: 1 },
 });

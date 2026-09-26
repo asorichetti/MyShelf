@@ -3,11 +3,12 @@ import { Tabs, useIsFocused } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { Text } from '@/components/ui';
 import { useOverdueCount } from '@/features/loans/useLoans';
 import { PendingLookupsProvider } from '@/features/lookup/PendingLookupsProvider';
 import { ScreenErrorBoundary } from '@/features/navigation/ScreenErrorBoundary';
 import { Testids } from '@/testing/testids.gen';
-import { useTheme } from '@/theme';
+import { typographyMaxScale, useFontScale, useTheme } from '@/theme';
 
 import type { ComponentProps, ReactNode } from 'react';
 
@@ -45,6 +46,9 @@ function TabsShell() {
   const { colors, spacing, sizes, typography } = theme;
   const insets = useSafeAreaInsets();
   const overdue = useOverdueCount();
+  // Labels grow with the font size up to their cap, so the bar grows with them instead of clipping them.
+  const labelScale = Math.min(useFontScale(), typographyMaxScale.tabLabel ?? 1);
+  const labelGrowth = Math.max(0, Math.ceil(typography.tabLabel.lineHeight * (labelScale - 1)));
   return (
     <View style={styles.fill}>
       <Tabs
@@ -63,12 +67,17 @@ function TabsShell() {
             backgroundColor: colors.surface,
             borderTopColor: colors.border,
             borderTopWidth: 1,
-            height: sizes.tabBar + insets.bottom,
+            height: sizes.tabBar + labelGrowth + insets.bottom,
             paddingTop: spacing.xs,
             paddingBottom: spacing.sm + insets.bottom,
           },
           tabBarItemStyle: { minHeight: sizes.touchTarget },
-          tabBarLabelStyle: typography.tabLabel,
+          // Our own Text, so the label keeps its font size cap on Android too.
+          tabBarLabel: ({ color, children }) => (
+            <Text variant="tabLabel" numberOfLines={1} align="center" style={{ color }}>
+              {children}
+            </Text>
+          ),
           sceneStyle: { backgroundColor: colors.paper },
         }}
       >

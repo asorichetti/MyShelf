@@ -5,7 +5,7 @@ import { CoverImage } from '@/components/book/CoverImage';
 import { Button, Text } from '@/components/ui';
 import { formatSeriesPosition, type Book } from '@/domain';
 import { Testids } from '@/testing/testids.gen';
-import { useTheme } from '@/theme';
+import { useFontScale, useTheme } from '@/theme';
 
 import type { SeriesSlot } from './SeriesShelf';
 
@@ -33,6 +33,7 @@ export function seriesBookLabel(book: Book): string {
 export function SeriesBookList({ seriesName, slots, onOpenBook, onAddGap }: SeriesBookListProps) {
   const theme = useTheme();
   const { colors, spacing, radii, sizes } = theme;
+  const fontScale = useFontScale();
   return (
     <View role="list" aria-label={`${seriesName} in reading order`} style={{ gap: spacing.sm }}>
       {slots.map((slot) =>
@@ -85,7 +86,7 @@ export function SeriesBookList({ seriesName, slots, onOpenBook, onAddGap }: Seri
             <Text variant="mono" color="inkMuted" style={[styles.number, { minWidth: spacing.xxxl }]}>
               {`#${formatSeriesPosition(slot.position)}`}
             </Text>
-            <Text color="inkMuted" style={styles.flex}>{`#${formatSeriesPosition(slot.position)} missing`}</Text>
+            <Text color="inkMuted" style={[styles.missing, { flexBasis: 100 * fontScale }]}>{`#${formatSeriesPosition(slot.position)} missing`}</Text>
             <Button
               variant="secondary"
               label={`Add #${formatSeriesPosition(slot.position)}`}
@@ -104,7 +105,9 @@ export function SeriesBookList({ seriesName, slots, onOpenBook, onAddGap }: Seri
 
 const styles = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', borderWidth: 1 },
-  gap: { borderStyle: 'dashed', borderWidth: 1.5 },
+  // At a large font size the Add button moves under the words rather than squeezing them.
+  gap: { borderStyle: 'dashed', borderWidth: 1.5, flexWrap: 'wrap' },
+  missing: { flexGrow: 1, flexShrink: 1, minWidth: 0 },
   number: { textAlign: 'center' },
   flex: { flex: 1, minWidth: 0 },
 });

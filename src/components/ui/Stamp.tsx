@@ -52,6 +52,7 @@ export function Stamp({ label, tone = 'accent', rotate = -4, accessibilityLabel,
 }
 
 const styles = StyleSheet.create({
-  outer: { borderWidth: 2, alignSelf: 'flex-start' },
+  // Narrower than its column, tilt included: a long stamp at a large font size wraps instead.
+  outer: { borderWidth: 2, alignSelf: 'flex-start', maxWidth: '94%' },
   inner: { borderWidth: 1 },
 });

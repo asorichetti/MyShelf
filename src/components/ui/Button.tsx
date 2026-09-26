@@ -74,8 +74,10 @@ export function Button({
         styles.base,
         {
           minHeight: theme.sizes.touchTarget,
-          borderRadius: theme.radii.pill,
+          // xl is half the 48 dp height: a pill on one line, a rounded box when a large font wraps the label.
+          borderRadius: theme.radii.xl,
           paddingHorizontal: theme.spacing.xl,
+          paddingVertical: theme.spacing.xs,
           gap: theme.spacing.sm,
           backgroundColor: (pressed && v.bgPressed ? theme.colors[v.bgPressed] : v.bg ? theme.colors[v.bg] : 'transparent'),
           borderColor: v.border ? theme.colors[v.border] : 'transparent',
@@ -87,7 +89,7 @@ export function Button({
       ]}
     >
       {loading ? <ActivityIndicator color={theme.colors[v.fg]} size="small" /> : icon ? <View>{icon}</View> : null}
-      <Text variant="bodyStrong" color={v.fg}>
+      <Text variant="bodyStrong" color={v.fg} align="center" style={styles.label}>
         {label}
       </Text>
     </Pressable>
@@ -101,7 +103,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     alignSelf: 'flex-start',
+    maxWidth: '100%',
   },
+  label: { flexShrink: 1 },
   block: { alignSelf: 'stretch' },
   inactive: { opacity: 0.5 },
 });

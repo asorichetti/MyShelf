@@ -2,7 +2,7 @@ import { Text as RNText, StyleSheet, View } from 'react-native';
 import Svg, { Line, Rect } from 'react-native-svg';
 
 import { hashColour, sortableTitle } from '@/domain';
-import { useTheme, type CoverSize } from '@/theme';
+import { artworkTypography, useTheme, type CoverSize } from '@/theme';
 
 export interface GeneratedCoverProps {
   title: string;
@@ -29,7 +29,7 @@ export function GeneratedCover({ title, author, size = 'thumb', width: w, height
   const inset = thumb ? 5 : size === 'medium' ? 10 : 16;
   // Narrower than its size's usual width (a grid cell): a smaller title so words are not broken.
   const narrow = width < theme.coverSizes[size].width;
-  const titleType = size === 'large' ? theme.typography.h2 : narrow ? theme.typography.label : theme.typography.h3;
+  const titleType = size === 'large' ? artworkTypography.h2 : narrow ? artworkTypography.label : artworkTypography.h3;
   const initial = sortableTitle(title).charAt(0).toUpperCase();
 
   return (
@@ -51,14 +51,14 @@ export function GeneratedCover({ title, author, size = 'thumb', width: w, height
         <Line x1={inset * 1.6} y1={height - inset * 1.4 - 3} x2={width - inset} y2={height - inset * 1.4 - 3} stroke={colors.trim} strokeWidth={1} />
       </Svg>
       {thumb ? (
-        <RNText style={[theme.typography.h2, styles.center, { color: colors.ink }]}>{initial}</RNText>
+        <RNText allowFontScaling={false} style={[artworkTypography.h2, styles.center, { color: colors.ink }]}>{initial}</RNText>
       ) : (
         <View style={[styles.text, { paddingLeft: inset * 1.8, paddingRight: inset, gap: theme.spacing.sm }]}>
-          <RNText numberOfLines={size === 'large' ? 6 : 5} style={[titleType, narrow && { fontFamily: theme.fonts.heading }, styles.center, { color: colors.ink }]}>
+          <RNText allowFontScaling={false} numberOfLines={size === 'large' ? 6 : 5} style={[titleType, narrow && { fontFamily: theme.fonts.heading }, styles.center, { color: colors.ink }]}>
             {title}
           </RNText>
           {author ? (
-            <RNText numberOfLines={2} style={[theme.typography.caption, styles.center, { color: colors.ink, fontFamily: theme.fonts.headingRegular }]}>
+            <RNText allowFontScaling={false} numberOfLines={2} style={[artworkTypography.caption, styles.center, { color: colors.ink, fontFamily: theme.fonts.headingRegular }]}>
               {author}
             </RNText>
           ) : null}

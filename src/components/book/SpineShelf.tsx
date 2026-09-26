@@ -4,7 +4,7 @@ import { Text as RNText, Pressable, StyleSheet, View } from 'react-native';
 
 import { hashColour, hashString, type BookListItem } from '@/domain';
 import { Testids } from '@/testing/testids.gen';
-import { useTheme } from '@/theme';
+import { artworkTypography, useTheme } from '@/theme';
 
 import { bookRowLabel } from './BookRow';
 
@@ -83,7 +83,7 @@ export const SpineShelf = memo(function SpineShelf({ items, onPress, onLongPress
                   { width: length, height: width, left: (width - length) / 2, top: (SPINE_HEIGHT - width) / 2, paddingHorizontal: spacing.xs },
                 ]}
               >
-                <RNText numberOfLines={1} ellipsizeMode="tail" style={[theme.typography.label, { fontFamily: theme.fonts.heading, color: cover.ink }]}>
+                <RNText allowFontScaling={false} numberOfLines={1} ellipsizeMode="tail" style={[artworkTypography.label, { fontFamily: theme.fonts.heading, color: cover.ink }]}>
                   {item.title}
                 </RNText>
               </View>

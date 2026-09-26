@@ -363,5 +363,5 @@ const styles = StyleSheet.create({
   wrap: { flexDirection: 'row', flexWrap: 'wrap' },
   cover: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'flex-start' },
   coverActions: { flex: 1, minWidth: 180 },
-  bar: { flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center', borderTopWidth: 1 },
+  bar: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'flex-end', alignItems: 'center', borderTopWidth: 1 },
 });

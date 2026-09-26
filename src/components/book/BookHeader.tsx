@@ -3,10 +3,12 @@ import { StyleSheet, View } from 'react-native';
 import { CatalogueCard, Text } from '@/components/ui';
 import { callNumber, joinNames, languageName, type BookDetail } from '@/domain';
 import { Testids } from '@/testing/testids.gen';
-import { useTheme } from '@/theme';
+import { useFontScale, useTheme } from '@/theme';
 
 import { CallNumber } from './CallNumber';
 import { CoverImage } from './CoverImage';
+
+const FACT_WIDTH = 120;
 
 const FORMAT_NAMES: Record<string, string> = {
   hardcover: 'Hardback',
@@ -39,6 +41,8 @@ export function bookFacts(book: BookDetail): { label: string; value: string; mon
 /** The detail page's header: a large catalogue card with cover, title, credits, call number and facts. */
 export function BookHeader({ book }: { book: BookDetail }) {
   const { spacing } = useTheme();
+  // Two facts side by side at 100 % text; one per line once a larger font would split their words.
+  const factWidth = FACT_WIDTH * useFontScale();
   const credits = creditLine(book.authors);
   const first = book.authors[0];
   const call = callNumber({
@@ -67,7 +71,7 @@ export function BookHeader({ book }: { book: BookDetail }) {
       {facts.length ? (
         <View testID={Testids.bookDetail.facts} style={[styles.facts, { rowGap: spacing.sm, columnGap: spacing.lg }]}>
           {facts.map((f) => (
-            <View key={f.label} style={styles.fact}>
+            <View key={f.label} style={[styles.fact, { minWidth: factWidth, flexBasis: factWidth }]}>
               <Text variant="label" color="inkMuted">
                 {f.label}
               </Text>
@@ -84,5 +88,5 @@ export function BookHeader({ book }: { book: BookDetail }) {
 
 const styles = StyleSheet.create({
   facts: { flexDirection: 'row', flexWrap: 'wrap' },
-  fact: { minWidth: 120, flexGrow: 1, flexBasis: 120 },
+  fact: { flexGrow: 1 },
 });

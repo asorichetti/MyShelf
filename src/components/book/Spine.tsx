@@ -1,7 +1,7 @@
 import { StyleSheet, Text as RNText, View } from 'react-native';
 
 import { formatSeriesPosition, hashColour, hashString } from '@/domain';
-import { useTheme } from '@/theme';
+import { artworkTypography, useTheme } from '@/theme';
 
 export type SpineSize = 'mini' | 'shelf';
 
@@ -66,8 +66,8 @@ export function Spine({ title = '', position = null, variant = 'owned', size = '
       >
         {size === 'shelf' && label ? (
           <View style={[styles.center, { gap: spacing.xxs }]}>
-            <RNText style={[theme.typography.label, { color: colors.inkMuted }]}>{label}</RNText>
-            <RNText style={[theme.typography.tabLabel, styles.vertical, { color: colors.inkMuted }]}>missing</RNText>
+            <RNText allowFontScaling={false} style={[artworkTypography.label, { color: colors.inkMuted }]}>{label}</RNText>
+            <RNText allowFontScaling={false} style={[artworkTypography.tabLabel, styles.vertical, { color: colors.inkMuted }]}>missing</RNText>
           </View>
         ) : null}
       </View>
@@ -83,13 +83,13 @@ export function Spine({ title = '', position = null, variant = 'owned', size = '
           <View style={[styles.band, { top: spacing.sm + 5, backgroundColor: cloth.trim, opacity: 0.6 }]} />
           {/* The title runs up the spine: a horizontal line of text, turned a quarter. */}
           <View style={[styles.titleBox, { width: height - 64, left: (width - (height - 64)) / 2, top: height / 2 - 12 - spacing.sm }]}>
-            <RNText numberOfLines={1} style={[theme.typography.caption, styles.title, { color: cloth.ink, fontFamily: theme.fonts.heading }]}>
+            <RNText allowFontScaling={false} numberOfLines={1} style={[artworkTypography.caption, styles.title, { color: cloth.ink, fontFamily: theme.fonts.heading }]}>
               {title}
             </RNText>
           </View>
           {label ? (
             <View style={[styles.label, { bottom: spacing.sm, backgroundColor: colors.surface, borderRadius: radii.sm - 3, paddingHorizontal: spacing.xxs }]}>
-              <RNText numberOfLines={1} style={[theme.typography.tabLabel, { color: colors.ink, fontFamily: theme.fonts.monoBold }]}>
+              <RNText allowFontScaling={false} numberOfLines={1} style={[artworkTypography.tabLabel, { color: colors.ink, fontFamily: theme.fonts.monoBold }]}>
                 {label}
               </RNText>
             </View>

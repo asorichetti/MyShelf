@@ -87,8 +87,9 @@ export function Chip({
         style={[
           styles.pill,
           {
-            height: PILL_HEIGHT,
-            borderRadius: radii.pill,
+            minHeight: PILL_HEIGHT,
+            // Half the pill's height: round ends on one line, a rounded box if a large font wraps the label.
+            borderRadius: PILL_HEIGHT / 2,
             backgroundColor: pressed ? colors.surfaceTint : colors[tone.bg],
             borderColor: colors[tone.border],
             paddingLeft: interactive ? 0 : spacing.md,

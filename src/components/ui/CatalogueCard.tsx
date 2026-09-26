@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Text as RNText, Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 
-import { useTheme } from '@/theme';
+import { useLineClamp } from '@/hooks/useLineClamp';
+import { useFontScale, useTheme } from '@/theme';
 
 import { Heading, type HeadingLevel } from './Heading';
 import { Text } from './Text';
@@ -49,6 +50,12 @@ export interface CatalogueCardProps {
 }
 
 const LINE_GAP = 24;
+/**
+ * The header's text column needs this much room at 100 % text (more at a
+ * larger font size); narrower than that, it moves under the cover rather
+ * than breaking the title mid-word.
+ */
+const HEADER_TEXT_MIN_WIDTH = 180;
 
 /** Faint horizontal rules printed on the card stock. Decorative. */
 function RuledLines({ height, top }: { height: number; top: number }) {
@@ -95,6 +102,8 @@ export function CatalogueCard({
   const { colors, spacing, radii, typography } = theme;
   const [height, setHeight] = useState(0);
   const header = size === 'header';
+  const fontScale = useFontScale();
+  const titleLines = useLineClamp(2);
   const titleStyle = header ? typography.h1 : typography.h3;
 
   const body = (
@@ -103,7 +112,7 @@ export function CatalogueCard({
       <View style={[styles.rule, { backgroundColor: colors.cardRule, marginBottom: header ? spacing.md : spacing.sm }]} />
       <View style={[styles.row, { gap: header ? spacing.lg : spacing.md }, header && styles.wrap]}>
         {cover ? <View>{cover}</View> : null}
-        <View style={[styles.text, { gap: spacing.xxs }, header && styles.headerText]}>
+        <View style={[styles.text, { gap: spacing.xxs }, header && { minWidth: HEADER_TEXT_MIN_WIDTH * fontScale }]}>
           {callNumber ? (
             <Text variant="stamp" color="accent" testID={callNumberTestID}>
               {callNumber}
@@ -114,7 +123,7 @@ export function CatalogueCard({
               {title}
             </Heading>
           ) : (
-            <RNText testID={titleTestID} numberOfLines={header ? undefined : 2} style={[titleStyle, { color: colors.ink }]}>
+            <RNText testID={titleTestID} numberOfLines={header ? undefined : titleLines} style={[titleStyle, { color: colors.ink }]}>
               {title}
             </RNText>
           )}
@@ -200,7 +209,6 @@ const styles = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'flex-start' },
   wrap: { flexWrap: 'wrap' },
   text: { flex: 1, minWidth: 0 },
-  headerText: { minWidth: 180 },
   aside: { alignSelf: 'flex-start' },
   hole: { width: 14, height: 14, borderRadius: 7, borderWidth: 1, alignSelf: 'center' },
 });

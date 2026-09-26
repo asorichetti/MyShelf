@@ -6,7 +6,7 @@ import { progressSentence } from '@/components/series/seriesText';
 import { Heading, Text } from '@/components/ui';
 import { formatSeriesPosition, type Book, type SeriesNeighbour, type SeriesNeighbours, type SeriesProgress, type Series } from '@/domain';
 import { Testids } from '@/testing/testids.gen';
-import { useTheme } from '@/theme';
+import { useFontScale, useTheme } from '@/theme';
 
 import type { ReactNode } from 'react';
 
@@ -85,6 +85,7 @@ function Neighbour({ which, neighbour, onOpenBook, testID }: { which: 'Previous'
 export function SeriesSection({ series, position, progress, neighbours, bookCount, onOpenSeries, onOpenBook, children, testID }: SeriesSectionProps) {
   const theme = useTheme();
   const { colors, spacing, radii, sizes } = theme;
+  const fontScale = useFontScale();
   const counts = { name: series.name, owned: progress.owned, total: progress.total, missing: progress.gaps.length, bookCount, totalCount: series.totalCount };
   return (
     <View style={{ gap: spacing.sm }} testID={testID}>
@@ -107,8 +108,8 @@ export function SeriesSection({ series, position, progress, neighbours, bookCoun
           },
         ]}
       >
-        <View style={[styles.flex, { gap: spacing.xs }]}>
-          <Text style={[theme.typography.h3, { color: colors.primary }]} numberOfLines={2}>
+        <View style={[styles.summary, { gap: spacing.xs, flexBasis: 160 * fontScale }]}>
+          <Text style={[theme.typography.h3, { color: colors.primary }]}>
             {series.name}
           </Text>
           <Text variant="bodyStrong" testID={Testids.bookSeries.place}>
@@ -133,7 +134,9 @@ export function SeriesSection({ series, position, progress, neighbours, bookCoun
 }
 
 const styles = StyleSheet.create({
-  link: { flexDirection: 'row', alignItems: 'center', borderWidth: 1 },
+  // "See series" moves under the summary when a large font leaves no room beside it.
+  link: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', borderWidth: 1 },
+  summary: { flexGrow: 1, flexShrink: 1, minWidth: 0 },
   row: { flexDirection: 'row', alignItems: 'center' },
   neighbour: { flexDirection: 'row', alignItems: 'center' },
   flex: { flex: 1, minWidth: 0 },
