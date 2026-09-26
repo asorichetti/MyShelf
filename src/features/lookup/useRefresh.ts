@@ -4,6 +4,7 @@ import { booksRepo, genresRepo, useDatabase } from '@/db';
 import {
   applyChanges,
   bookMatchKey,
+  candidateSeries,
   candidateToDraft,
   diffDrafts,
   draftFromDetail,
@@ -16,6 +17,9 @@ import {
 } from '@/domain';
 import { attachCoverFromCandidate } from '@/features/covers';
 import { emit } from '@/features/events';
+import { applyDetectedSeries } from '@/features/series/detectedSeries';
+import { beginSeriesSave } from '@/features/series/seriesEvents';
+import { idListHas } from '@/features/series/seriesSettings';
 import { isAbortError, OfflineError } from '@/services/http';
 import type { BookCandidate, MetadataService } from '@/services/metadata';
 
@@ -78,7 +82,11 @@ export function useRefresh(bookId: number | null, { service: injected }: { servi
         const existingGenres = (await genresRepo.listGenres(db)).map((g) => g.name);
         const proposed = candidateToDraft(candidate, { existingGenres });
         const proposedCover = Boolean(candidate.coverUrl || candidate.coverRefs?.olEditionCoverIds.length || candidate.coverRefs?.olWorkCoverIds.length);
-        const changes = diffDrafts(currentOf(book), proposed, { hasCover: Boolean(book.coverUri), proposedCover });
+        // A book the user said is "Not a series" is never offered one again (P04-03).
+        const noSeries = await idListHas(db, 'series.dismissedBookIds', book.id);
+        const changes = diffDrafts(currentOf(book), proposed, { hasCover: Boolean(book.coverUri), proposedCover }).filter(
+          (c) => !(noSeries && c.field === 'series'),
+        );
         setTicked(new Set(changes.filter((c) => c.suggested).map((c) => c.field)));
         setState({ status: 'ready', book, candidate, proposed, changes });
       } catch (error) {
@@ -114,11 +122,17 @@ export function useRefresh(bookId: number | null, { service: injected }: { servi
     setApplying(true);
     try {
       const current = currentOf(book);
-      const next = applyChanges(current, proposed, ticked);
+      // The series goes through the series feature, so a guess is confirmed and milestones announced.
+      const withoutSeries = new Set([...ticked].filter((f) => f !== 'series'));
+      const next = applyChanges(current, proposed, withoutSeries);
       const valid = validateBookDraft(next);
       if (!valid.ok) throw new Error(`Refreshed details did not validate: ${Object.keys(valid.errors).join(', ')}`);
+      const series = ticked.has('series') ? candidateSeries(candidate) : null;
+      const probe = await beginSeriesSave(db, { bookId: book.id, seriesNames: series ? [series.name] : [] });
       await booksRepo.refreshBook(db, book.id, valid.value, { userGenres: current.userGenres });
+      if (series) await applyDetectedSeries(db, book.id, series);
       emit('library-changed');
+      void probe.finish(book.id);
       if (ticked.has('cover')) {
         // Stores the best real cover in the background; the book is already saved.
         void attachCoverFromCandidate(db, book.id, candidate)

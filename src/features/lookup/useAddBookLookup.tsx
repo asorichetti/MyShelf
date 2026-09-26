@@ -4,7 +4,7 @@ import { sourceLabels } from '@/components/book/CandidateCard';
 import { LookupPanel } from '@/components/book/LookupPanel';
 import { useSnackbar } from '@/components/ui';
 import { booksRepo, useDatabase } from '@/db';
-import { bookMatchKey, candidateToDraft, draftFieldOrder, type BookDraft, type BookDraftField } from '@/domain';
+import { bookMatchKey, candidateSeries, candidateToDraft, draftFieldOrder, type BookDraft, type BookDraftField } from '@/domain';
 import { attachBestCover, includeGoogleCovers } from '@/features/covers';
 import { emit } from '@/features/events';
 import { combineCoverSources, coverSourceFromCandidate, resolveCover, type CoverSource } from '@/services/covers';
@@ -30,6 +30,8 @@ export interface AddBookLookup {
   afterSave: (bookId: number) => void;
   /** Fills the form from a candidate (also used by the scan prefill). */
   applyCandidate: (candidate: BookCandidate) => void;
+  /** The chosen candidate's series guess, for the series picker's "Suggested: Discworld #5" chip. */
+  seriesSuggestion: { name: string; position: number | null } | null;
 }
 
 const WARNINGS: Record<string, string> = {
@@ -56,6 +58,7 @@ export function useAddBookLookup(mode: 'add' | 'edit', form: LookupForm, focusFi
   const lookup = useLookup({ service });
   const { show } = useSnackbar();
   const [chosen, setChosen] = useState<BookCandidate | null>(null);
+  const [seriesSuggestion, setSeriesSuggestion] = useState<AddBookLookup['seriesSuggestion']>(null);
   // The latest form and lookup, for the callbacks below (updated after each render).
   const formRef = useRef(form);
   const lookupRef = useRef(lookup);
@@ -70,10 +73,15 @@ export function useAddBookLookup(mode: 'add' | 'edit', form: LookupForm, focusFi
   const applyCandidate = useCallback((candidate: BookCandidate) => {
     const { setField, existingGenres, draft } = formRef.current;
     const next = candidateToDraft(candidate, { existingGenres });
+    // A provider's series with a number goes straight in; a weaker guess is only suggested.
+    const series = candidateSeries(candidate);
+    const fillSeries = series?.confidence === 'high';
     for (const field of draftFieldOrder) {
       if (field === 'notes') continue; // the user's own notes stay
+      if (!fillSeries && (field === 'seriesName' || field === 'seriesPosition')) continue;
       setField(field, next[field] as never);
     }
+    setSeriesSuggestion(series ? { name: series.name, position: series.position } : null);
     // Keep a cover the user chose themselves; otherwise show the real one.
     const ownCover = draft.coverUri && draft.coverUri !== onlineCover.current?.url;
     if (!ownCover) {
@@ -176,5 +184,5 @@ export function useAddBookLookup(mode: 'add' | 'edit', form: LookupForm, focusFi
       />
     ) : null;
 
-  return { panel, findCoverOnline, afterSave, applyCandidate };
+  return { panel, findCoverOnline, afterSave, applyCandidate, seriesSuggestion };
 }

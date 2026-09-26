@@ -6,6 +6,7 @@ import { AddBookScreen, EditBookScreen } from '@/features/book/BookFormScreen';
 import { attachBestCover } from '@/features/covers';
 import { resolveCover } from '@/services/covers';
 import { OL_BOOKS } from '@/services/metadata/__fixtures__/openLibraryRoutes';
+import { makeCandidate } from '@/services/metadata/candidate';
 import { createTestDb } from '@/testing/createTestDb';
 import { createFixtureMetadata, type FixtureMetadata } from '@/testing/fixtureMetadata';
 import { loadFixture } from '@/testing/loadFixture';
@@ -76,8 +77,8 @@ describe('Look up by ISBN on the add form', () => {
     expect(value(f.isbn)).toBe('9780552166591');
     expect(value(f.publisher)).toBe('Corgi Books');
     expect(value(f.year)).toBe('1985');
-    expect(value(f.seriesName)).toBe('Discworld');
-    expect(value(f.seriesPosition)).toBe('1');
+    expect(value(Testids.seriesInput.search)).toBe('Discworld');
+    expect(value(Testids.seriesInput.position)).toBe('1');
     expect(value(f.summary).length).toBeGreaterThan(40);
     expect(screen.getAllByTestId(f.authorChip).map((c) => c.props.accessibilityLabel ?? '')).toHaveLength(1);
     expect(screen.getByText('Terry Pratchett')).toBeOnTheScreen();
@@ -154,6 +155,24 @@ describe('Look up by ISBN on the add form', () => {
     const [book] = await booksRepo.listBooks(db);
     expect(book.source).toBe('manual');
     expect(attachBestCover).not.toHaveBeenCalled();
+  });
+});
+
+describe('A weaker series guess', () => {
+  it('is suggested, not filled in, and the chip fills both fields', async () => {
+    jest.spyOn(mockMetadata.service, 'lookupIsbn').mockResolvedValue({
+      candidates: [makeCandidate({ title: 'Mort (Discworld, #4)', authors: ['Terry Pratchett'], isbn13: '9780552131063', source: 'openlibrary', sourceId: 'OL1M' })],
+      warnings: [],
+    });
+    await openAddForm();
+    await lookUp('9780552131063');
+    await press(l.candidate);
+    expect(value(Testids.seriesInput.search)).toBe('');
+    const chip = screen.getByTestId(Testids.seriesInput.suggestion);
+    expect(chip.props.accessibilityLabel).toBe('Use the suggested series, Discworld #4');
+    await press(Testids.seriesInput.suggestion);
+    expect(value(Testids.seriesInput.search)).toBe('Discworld');
+    expect(value(Testids.seriesInput.position)).toBe('4');
   });
 });
 

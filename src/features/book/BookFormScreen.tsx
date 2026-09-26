@@ -5,8 +5,8 @@ import { BookForm, type BookFormHandle } from '@/components/book/BookForm';
 import { Booky } from '@/components/booky';
 import { ConfirmDialog, Screen, Text, useSnackbar } from '@/components/ui';
 import type { BookDraft } from '@/domain';
-import { useSeriesOptions } from '@/features/series/useSeriesOptions';
 import { useAddBookLookup } from '@/features/lookup/useAddBookLookup';
+import { useSeriesOptions } from '@/features/series/useSeriesOptions';
 
 import { BookMissing, goBackOrShelf } from './BookDetailScreen';
 import { pickCover, type CoverSource } from './pickCover';
@@ -90,6 +90,7 @@ function BookFormScreen({ bookId, prefill }: { bookId: number | null; prefill?: 
         existingSeries={existingSeries}
         onFindCoverOnline={lookup.findCoverOnline}
         header={lookup.panel}
+        seriesSuggestion={lookup.seriesSuggestion}
       />
       <ConfirmDialog
         visible={guard.asking}
