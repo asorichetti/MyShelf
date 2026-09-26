@@ -4,6 +4,7 @@
 // weekly live workflow and on demand:
 //   npm run -s autotest -- journey --suite live --ux-gates fail
 import { COVERS_URL_PATTERN } from '../browser/covers.ts';
+import { sendToRealNetwork } from '../mockapi/route.ts';
 import { Testids, tid } from '../selectors.ts';
 import { coverState, openFixture, waitForCount, waitForPath, waitVisible } from './helpers.ts';
 import { expect, q, register, type Context } from './registry.ts';
@@ -131,5 +132,43 @@ register({
     );
     await c.snap('shelf-covers-grid');
     await c.checkGates('/ (covers grid)');
+  },
+});
+
+register({
+  name: 'live-lookup-isbn-cover',
+  suite: 'live',
+  desc: 'Real Open Library and real covers: look up ISBN 9780552166591 on the add form -> the candidate shows a real cover -> save -> the book page shows a real portrait cover, not the generated one',
+  async run(c) {
+    await loadRealCovers(c);
+    // Open Library for real; keyless Google Books is quota-blocked, so it keeps its recorded answer.
+    sendToRealNetwork(c.page.context(), ['openlibrary.org']);
+    await openFixture(c, 'empty', '/book/new');
+    const l = Testids.lookup;
+    await waitVisible(c, tid(l.isbnInput), '/book/new');
+    await c.page.locator(tid(l.isbnInput)).fill('9780552166591');
+    await c.page.locator(tid(l.isbnSubmit)).click();
+    await waitVisible(c, tid(l.candidate), '/book/new (live lookup)');
+    const label = (await c.page.locator(tid(l.candidate)).first().getAttribute('aria-label')) ?? '';
+    expect(label.startsWith('The Colour of Magic, by Terry Pratchett'), `/book/new: expected The Colour of Magic, found ${q(label)}`);
+    await c.page.locator(tid(l.candidate)).first().click();
+    await c.page.locator(tid(Testids.bookForm.save)).click();
+    const path = await waitForPath(c, /^\/book\/\d+$/, '/book/new -> save');
+    await waitVisible(c, tid(d.title), path);
+    // The cover chain stores the best real cover after the save; wait for a real scan to render.
+    await c.page
+      .waitForFunction(
+        ([scope, img, min]) => [...(document.querySelector(scope as string)?.querySelectorAll<HTMLImageElement>(img as string) ?? [])].some((i) => i.complete && i.naturalHeight >= (min as number)),
+        [tid(d.root), `${tid(Testids.cover.image)} img`, REAL_MIN_HEIGHT] as const,
+        { timeout: 30_000 },
+      )
+      .catch(() => {});
+    const state = await coverState(c, tid(d.root));
+    expect(
+      state.loaded >= 1 && state.fallbacks === 0 && (state.natural?.height ?? 0) >= REAL_MIN_HEIGHT,
+      `${path}: expected a real portrait cover (>= ${REAL_MIN_HEIGHT}px tall) and no generated cover, found ${q(state)}`,
+    );
+    await c.snap('live-lookup-saved');
+    await c.checkGates(`${path} (live cover)`);
   },
 });

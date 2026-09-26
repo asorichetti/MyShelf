@@ -39,7 +39,7 @@ export interface NetworkEntry {
 export class Listeners {
   private console: ConsoleEntry[] = [];
   private network: NetworkEntry[] = [];
-  private mock: MockState = { expected: new Set(), unmocked: new Set() };
+  private mock: MockState = { expected: new Set(), unmocked: new Set(), realHosts: new Set() };
 
   // attach wires the listeners onto a page. Call it before navigating; anything
   // that fires before attach returns is lost.

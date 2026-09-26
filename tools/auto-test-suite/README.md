@@ -379,7 +379,10 @@ is covered:
 - Covers are routed on their own pattern (`COVERS_URL_PATTERN`, plus
   `books.google.com/**`), separately from the API handler, so a journey that
   wants the real covers can still `unroute(COVERS_URL_PATTERN)` (the `live`
-  suite does) and those requests then go to the network.
+  suite does) and those requests then go to the network. A live journey can
+  also send chosen API hosts to the real network with
+  `sendToRealNetwork(context, ['openlibrary.org'])` (`src/mockapi/route.ts`);
+  the other hosts stay mocked.
 
 `index.json` is `{ "routes": [ ... ] }`; each entry is:
 
@@ -430,6 +433,7 @@ it weekly and uploads the screenshots. Run it by hand with
 |---|---|---|
 | `live-covers-detail` | live | Good Omens, Dune, The Colour of Magic and Pride and Prejudice each show a real portrait cover on book detail; a screenshot per book |
 | `live-covers-shelf` | live | Every demo book with a cover shows a real one in the list and the covers grid; only The Farthest Shore (no cover) and The Murder of Roger Ackroyd (Open Library's 1x1 "no cover" GIF) show the generated cover; screenshots of the list, the grid while loading, and the settled grid |
+| `live-lookup-isbn-cover` | live | Real Open Library and real covers (Google Books stays mocked): look up ISBN 9780552166591 on the add form → choose → save → the book page shows a real portrait cover (≥ 400 px tall), not the generated one |
 
 ### Waivers
 

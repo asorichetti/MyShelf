@@ -15,6 +15,8 @@ export interface MockState {
   expected: Set<string>;
   /** URLs aborted because nothing in the index answers them. */
   unmocked: Set<string>;
+  /** Mocked hosts a `live` journey sends to the real network instead (see `sendToRealNetwork`). */
+  realHosts: Set<string>;
 }
 
 const states = new WeakMap<BrowserContext, MockState>();
@@ -23,10 +25,20 @@ const states = new WeakMap<BrowserContext, MockState>();
 export function mockStateFor(ctx: BrowserContext): MockState {
   let s = states.get(ctx);
   if (!s) {
-    s = { expected: new Set(), unmocked: new Set() };
+    s = { expected: new Set(), unmocked: new Set(), realHosts: new Set() };
     states.set(ctx, s);
   }
   return s;
+}
+
+/**
+ * For `live` journeys: requests to these mocked hosts (e.g. `openlibrary.org`)
+ * go to the real network in this context from now on; other hosts stay
+ * mocked, so a live journey is not at the mercy of keyless Google Books.
+ * Combine with `unroute(COVERS_URL_PATTERN)` for real covers.
+ */
+export function sendToRealNetwork(ctx: BrowserContext, hosts: readonly string[]): void {
+  for (const h of hosts) mockStateFor(ctx).realHosts.add(h);
 }
 
 /** The mock configuration the CLI resolved from --mock-api (null: off). */
@@ -63,6 +75,7 @@ export async function installMockApi(ctx: BrowserContext, index: MockIndex, base
   const api = async (route: Route) => {
     const req = route.request();
     const url = req.url();
+    if (state.realHosts.has(new URL(url).host)) return route.fallback();
     if (req.method() === 'OPTIONS') return corsPreflight(route);
     const hit = classify(url, baseOrigin) === 'mocked-host' ? matchRoute(index, url) : undefined;
     if (hit) {
