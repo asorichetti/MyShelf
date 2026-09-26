@@ -83,6 +83,7 @@ export interface SelectedTip {
   text: string;
   title?: string;
   action?: { label: string; href?: string; id?: string };
+  secondary?: { label: string; href?: string; id?: string };
   event: BookyEvent;
 }
 
@@ -121,8 +122,8 @@ export function blockedReason(state: EngineState, tip: TipDef, event: BookyEvent
 
 function fill(tip: TipDef, event: BookyEvent): SelectedTip {
   const vars = event.vars ?? {};
-  const action = tip.action && ('href' in tip.action ? { label: tip.action.label, href: formatTip(tip.action.href, vars) } : { label: tip.action.label, id: tip.action.id });
-  return { tip, key: instanceKey(tip, event), text: formatTip(tip.text, vars), title: tip.title, action, event };
+  const fillAction = (a: TipDef['action']) => a && ('href' in a ? { label: a.label, href: formatTip(a.href, vars) } : { label: a.label, id: a.id });
+  return { tip, key: instanceKey(tip, event), text: formatTip(tip.text, vars), title: tip.title, action: fillAction(tip.action), secondary: fillAction(tip.secondary), event };
 }
 
 /** The tip to show for `event` now, or null. Deterministic for a given state, event and time. */

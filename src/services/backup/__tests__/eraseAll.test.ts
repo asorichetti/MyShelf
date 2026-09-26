@@ -13,7 +13,7 @@ beforeEach(async () => {
   await pendingLookupsRepo.enqueue(db, '9780441172719');
   await apiCacheRepo.putEntry(db, 'https://openlibrary.org/isbn/1.json', '{}');
   await settingsRepo.setSetting(db, 'loanDays', 14);
-  await settingsRepo.setSetting(db, 'series.gapTipSeriesIds', [1]);
+  await settingsRepo.setSetting(db, 'booky.seen', ['series-gap:1']);
   // A restore leaves a safety copy behind; erasing must not keep one.
   await restoreBackup(db, await exportBackup(db, { appVersion: '1' }), { mode: 'replace' });
 });
@@ -34,7 +34,7 @@ describe('eraseAll', () => {
     expect(await backupRepo.latestSnapshotInfo(db)).toBeNull();
     expect(await settingsRepo.getSetting(db, 'loanDays')).toBe(14);
     // Settings that named deleted rows start afresh.
-    expect(await settingsRepo.getSetting(db, 'series.gapTipSeriesIds')).toEqual([]);
+    expect(await settingsRepo.getSetting(db, 'booky.seen')).toEqual([]);
   });
 
   it('also resets settings when asked', async () => {

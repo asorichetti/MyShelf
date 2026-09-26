@@ -116,11 +116,11 @@ function tablesOf(json: string): Record<string, unknown[]> {
 register({
   name: 'settings-overview',
   suite: 'p08',
-  desc: 'Settings tab: one h1, the Library, Lookups, Lending, Backup & data and About sections, every row a named link or switch of 48 px or more; switches report aria-checked; screenshot',
+  desc: 'Settings tab: one h1, the Library, Booky, Lookups, Lending, Backup & data and About sections, every row a named link or switch of 48 px or more; switches report aria-checked; screenshot',
   async run(c) {
     await openFixture(c, 'demo', '/settings', TODAY);
     const sections = await c.page.locator(`${tid(Testids.settings.root)} [role="heading"][aria-level="2"]`).allInnerTexts();
-    const want = ['Library', 'Lookups', 'Lending', 'Backup & data', 'About'];
+    const want = ['Library', 'Booky', 'Lookups', 'Lending', 'Backup & data', 'About'];
     expect(JSON.stringify(sections) === JSON.stringify(want), `/settings: expected sections ${q(want)}, found ${q(sections)}`);
 
     const links = [S.preferences, S.pending, S.borrowers, S.exportBackup, S.importBackup, S.exportCsv, S.importCsv, S.erase, S.about];

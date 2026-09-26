@@ -42,7 +42,7 @@ describe('Settings tab', () => {
     await openSettings();
     const headings = screen.getAllByRole('heading');
     expect(headings.filter((h) => h.props['aria-level'] === 1).map((h) => h.props.children)).toEqual(['Settings']);
-    expect(headings.filter((h) => h.props['aria-level'] === 2).map((h) => h.props.children)).toEqual(['Library', 'Lookups', 'Lending', 'Backup & data', 'About']);
+    expect(headings.filter((h) => h.props['aria-level'] === 2).map((h) => h.props.children)).toEqual(['Library', 'Booky', 'Lookups', 'Lending', 'Backup & data', 'About']);
   });
 
   it('gives every row a label, a value or explanation and a role', async () => {

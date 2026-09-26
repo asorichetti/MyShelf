@@ -61,7 +61,7 @@ export type TipKind = 'nudge' | 'feedback' | 'help';
 /** A tip's button: `href` navigates (placeholders allowed), `id` is handled by whoever emitted the event. */
 export type TipAction = { label: string; href: string } | { label: string; id: TipActionId };
 
-export type TipActionId = 'help-more' | 'read-cover';
+export type TipActionId = 'help-more' | 'read-cover' | 'backup-later';
 
 /**
  * Where the tip appears: `overlay` floats above the tab bar (the default),
@@ -82,6 +82,8 @@ export interface TipDef {
   title?: string;
   text: string;
   action?: TipAction;
+  /** A quieter second button ("Later"). */
+  secondary?: TipAction;
   /** Higher wins when several tips are eligible, and may replace a lower one on screen. */
   priority: number;
   frequency: TipFrequency;
@@ -301,12 +303,16 @@ export const tips: readonly TipDef[] = [
   {
     id: 'backup-due',
     trigger: 'backup-due',
-    expression: 'sleepy',
-    text: 'It’s been a while since your last backup. Shall we save a copy of your library?',
-    action: { label: 'Back up', href: '/settings' },
+    expression: 'concerned',
+    title: 'A little safety net',
+    text: 'It’s been a while since your last backup — save one now?',
+    action: { label: 'Back up', href: '/settings/backup' },
+    secondary: { label: 'Later', id: 'backup-later' },
     priority: 20,
-    frequency: 'daily',
-    modes: helpfulOnly,
+    // The backup rule (P08-06) caps it at once a week and honours "Later"; Quiet still shows it,
+    // since losing a library is the one thing worth interrupting for.
+    frequency: 'always',
+    modes: both,
     kind: 'nudge',
     screenBound: true,
   },

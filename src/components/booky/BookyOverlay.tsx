@@ -125,20 +125,15 @@ function PlacedTip({ tip, onTabs }: { tip: ShownTip; onTabs: boolean }) {
   if (!shown) return null;
 
   const ids = testIds[tip.tip.testGroup ?? 'booky'];
-  const action = tip.action;
   const actions: BookyAction[] = [];
-  if (action) {
-    actions.push({
-      label: action.label,
-      testID: action.id === 'help-more' ? Testids.booky.helpMore : ids.action,
-      onPress: () => {
-        if (action.href) {
-          dismissTip();
-          router.navigate(action.href as Href);
-        } else runAction(tip);
-      },
-    });
-  }
+  const press = (a: NonNullable<ShownTip['action']>) => () => {
+    if (a.href) {
+      dismissTip();
+      router.navigate(a.href as Href);
+    } else runAction(tip, a.id);
+  };
+  if (tip.action) actions.push({ label: tip.action.label, testID: tip.action.id === 'help-more' ? Testids.booky.helpMore : ids.action, onPress: press(tip.action) });
+  if (tip.secondary) actions.push({ label: tip.secondary.label, variant: 'ghost', onPress: press(tip.secondary) });
   // Help is asked for, and a celebration is a moment: neither is a tip to mute.
   if (tip.tip.kind !== 'help' && !tip.tip.celebration) {
     actions.push({ label: 'Don’t show tips like this', variant: 'ghost', onPress: () => muteTip(tip.tip.id), testID: Testids.booky.mute });

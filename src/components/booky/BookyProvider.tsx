@@ -57,7 +57,7 @@ export interface BookyContextValue {
   /** Clears what Booky has shown and muted. */
   resetTips: () => void;
   /** Puts the tip away and runs its action if that has an id (`help-more`). */
-  runAction: (tip: ShownTip) => void;
+  runAction: (tip: ShownTip, id?: string) => void;
   help: HelpRequest | null;
   openHelp: (screen: string) => void;
   closeHelp: () => void;
@@ -180,8 +180,8 @@ export function BookyProvider({ children, store, reloadKey = 0, now = Date.now, 
   }, [persist]);
 
   const runAction = useCallback(
-    (shown: ShownTip) => {
-      const id = shown.action?.id;
+    (shown: ShownTip, actionId?: string) => {
+      const id = actionId ?? shown.action?.id;
       dismissTip();
       if (!id) return;
       const handler = shown.event.handlers?.[id];

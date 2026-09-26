@@ -25,7 +25,7 @@ export async function countRows(db: Db): Promise<Record<string, number>> {
 }
 
 /** Settings that name books, series or loans by id: meaningless once the library is gone. */
-const ID_SETTINGS = ['series.dismissedBookIds', 'series.pendingConfirmBookIds', 'series.gapTipSeriesIds', 'overdueNudgesShown'];
+const ID_SETTINGS = ['series.dismissedBookIds', 'series.pendingConfirmBookIds', 'booky.seen'];
 
 export interface EraseOptions {
   /** Also forget every preference (sort, loan length, Booky mode, …). */
