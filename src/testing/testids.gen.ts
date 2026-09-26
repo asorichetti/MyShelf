@@ -40,6 +40,16 @@ export const Testids = {
   loans: {
     root: 'loans-root',
     title: 'loans-title',
+    tabOut: 'loans-tab-out',
+    tabHistory: 'loans-tab-history',
+    list: 'loans-list',
+    row: 'loans-row',
+    rowBook: 'loans-row-book',
+    rowBorrower: 'loans-row-borrower',
+    stamp: 'loans-stamp',
+    rowReturn: 'loans-row-return',
+    filterBorrower: 'loans-filter-borrower',
+    empty: 'loans-empty',
   },
   lend: {
     open: 'lend-open',

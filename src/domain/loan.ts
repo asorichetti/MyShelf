@@ -19,6 +19,8 @@ export interface Loan {
 export interface LoanWithDetails extends Loan {
   bookTitle: string;
   borrowerName: string;
+  /** The book's cover, where the query includes it. */
+  bookCoverUri?: string | null;
 }
 
 export interface NewLoan {

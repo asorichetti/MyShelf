@@ -4,6 +4,7 @@ import { StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { BookyTipHost } from '@/components/booky';
+import { useOverdueCount } from '@/features/loans/useLoans';
 import { Testids } from '@/testing/testids.gen';
 import { useTheme } from '@/theme';
 
@@ -33,6 +34,7 @@ export function TabsLayout() {
   const theme = useTheme();
   const { colors, spacing, sizes, typography } = theme;
   const insets = useSafeAreaInsets();
+  const overdue = useOverdueCount();
   return (
     <View style={styles.fill}>
       <Tabs
@@ -61,7 +63,9 @@ export function TabsLayout() {
             name={tab.name}
             options={{
               title: tab.title,
-              tabBarAccessibilityLabel: tab.title,
+              tabBarAccessibilityLabel: tab.name === 'loans' && overdue ? `${tab.title}, ${overdue} overdue` : tab.title,
+              tabBarBadge: tab.name === 'loans' && overdue ? overdue : undefined,
+              tabBarBadgeStyle: { backgroundColor: colors.danger, color: colors.onDanger },
               tabBarButtonTestID: tab.testID,
               tabBarIcon: ({ color, size }) => <MaterialCommunityIcons name={tab.icon} size={size} color={color} />,
             }}

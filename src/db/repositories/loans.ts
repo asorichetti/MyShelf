@@ -45,8 +45,10 @@ interface LoanRow {
 }
 
 const LOAN_COLUMNS = 'l.id, l.book_id, l.borrower_id, l.lent_on, l.due_on, l.returned_on, l.note';
-const DETAIL_SELECT = `SELECT ${LOAN_COLUMNS}, b.title AS book_title, p.name AS borrower_name
+const DETAIL_SELECT = `SELECT ${LOAN_COLUMNS}, b.title AS book_title, b.cover_uri AS book_cover_uri, p.name AS borrower_name
   FROM loans l JOIN books b ON b.id = l.book_id JOIN borrowers p ON p.id = l.borrower_id`;
+
+type DetailRow = LoanRow & { book_title: string; book_cover_uri?: string | null; borrower_name: string };
 
 const toLoan = (r: LoanRow): Loan => ({
   id: r.id,
@@ -58,10 +60,11 @@ const toLoan = (r: LoanRow): Loan => ({
   note: r.note,
 });
 
-const toDetails = (r: LoanRow & { book_title: string; borrower_name: string }): LoanWithDetails => ({
+const toDetails = (r: DetailRow): LoanWithDetails => ({
   ...toLoan(r),
   bookTitle: r.book_title,
   borrowerName: r.borrower_name,
+  ...(r.book_cover_uri !== undefined ? { bookCoverUri: r.book_cover_uri } : {}),
 });
 
 // ---- Borrowers ----
@@ -259,7 +262,7 @@ export async function getOpenLoanForBook(db: Db, bookId: number): Promise<Loan |
 
 /** Books currently out, soonest due first (no due date last). */
 export async function listOpenLoans(db: Db): Promise<LoanWithDetails[]> {
-  const rows = await db.all<LoanRow & { book_title: string; borrower_name: string }>(
+  const rows = await db.all<DetailRow>(
     `${DETAIL_SELECT} WHERE l.returned_on IS NULL ORDER BY l.due_on IS NULL, l.due_on, l.lent_on, l.id`,
   );
   return rows.map(toDetails);
@@ -267,16 +270,30 @@ export async function listOpenLoans(db: Db): Promise<LoanWithDetails[]> {
 
 /** Open loans whose due date is before `today`. */
 export async function listOverdueLoans(db: Db, today: IsoDate): Promise<LoanWithDetails[]> {
-  const rows = await db.all<LoanRow & { book_title: string; borrower_name: string }>(
+  const rows = await db.all<DetailRow>(
     `${DETAIL_SELECT} WHERE l.returned_on IS NULL AND l.due_on < ? ORDER BY l.due_on, l.id`,
     [today],
   );
   return rows.map(toDetails);
 }
 
+/** Returned loans, most recently returned first (the Loans tab's History). */
+export async function listReturnedLoans(db: Db): Promise<LoanWithDetails[]> {
+  const rows = await db.all<DetailRow>(
+    `${DETAIL_SELECT} WHERE l.returned_on IS NOT NULL ORDER BY l.returned_on DESC, l.lent_on DESC, l.id DESC`,
+  );
+  return rows.map(toDetails);
+}
+
+/** How many open loans are past their due date on `today` (the Loans tab badge). */
+export async function countOverdueLoans(db: Db, today: IsoDate): Promise<number> {
+  const row = await db.get<{ n: number }>('SELECT COUNT(*) AS n FROM loans WHERE returned_on IS NULL AND due_on < ?', [today]);
+  return row?.n ?? 0;
+}
+
 /** A book's loan history, newest first. */
 export async function listLoansForBook(db: Db, bookId: number): Promise<LoanWithDetails[]> {
-  const rows = await db.all<LoanRow & { book_title: string; borrower_name: string }>(
+  const rows = await db.all<DetailRow>(
     `${DETAIL_SELECT} WHERE l.book_id = ? ORDER BY l.lent_on DESC, l.id DESC`,
     [bookId],
   );
@@ -285,7 +302,7 @@ export async function listLoansForBook(db: Db, bookId: number): Promise<LoanWith
 
 /** A borrower's loans, open ones first, then newest first. */
 export async function listLoansForBorrower(db: Db, borrowerId: number): Promise<LoanWithDetails[]> {
-  const rows = await db.all<LoanRow & { book_title: string; borrower_name: string }>(
+  const rows = await db.all<DetailRow>(
     `${DETAIL_SELECT} WHERE l.borrower_id = ? ORDER BY l.returned_on IS NOT NULL, l.lent_on DESC, l.id DESC`,
     [borrowerId],
   );
