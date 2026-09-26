@@ -27,13 +27,67 @@ export async function listGenres(db: Db): Promise<Genre[]> {
   return db.all<Genre>('SELECT id, name FROM genres ORDER BY name');
 }
 
+/** Thrown when renaming a genre to a name another genre already has; the caller can offer to merge. */
+export class GenreNameTakenError extends Error {
+  constructor(readonly existing: Genre) {
+    super(`There is already a genre called "${existing.name}"`);
+    this.name = 'GenreNameTakenError';
+  }
+}
+
+/**
+ * Renames a genre. Changing only the case ("sci-fi" to "Sci-Fi") is fine;
+ * a name another genre has (ignoring case) throws GenreNameTakenError, so
+ * the user can be asked whether to merge them instead. Null if not found.
+ */
 export async function renameGenre(db: Db, id: number, name: string): Promise<Genre | null> {
-  const { changes } = await db.run('UPDATE genres SET name = ? WHERE id = ?', [name.trim(), id]);
+  const clean = name.trim();
+  if (!clean) throw new RangeError('A genre needs a name');
+  const existing = await findGenreByName(db, clean);
+  if (existing && existing.id !== id) throw new GenreNameTakenError(existing);
+  const { changes } = await db.run('UPDATE genres SET name = ? WHERE id = ?', [clean, id]);
   return changes ? getGenre(db, id) : null;
 }
 
+/** Deletes a genre: books lose the tag, and nothing else changes. */
 export async function deleteGenre(db: Db, id: number): Promise<boolean> {
   return (await db.run('DELETE FROM genres WHERE id = ?', [id])).changes > 0;
+}
+
+export interface GenreWithCount extends Genre {
+  /** Books tagged with the genre. */
+  count: number;
+}
+
+/** Every genre A-Z with how many books it tags (unused genres included, with 0). */
+export async function listGenresWithCounts(db: Db): Promise<GenreWithCount[]> {
+  return db.all<GenreWithCount>(
+    `SELECT g.id, g.name, COUNT(bg.book_id) AS count FROM genres g LEFT JOIN book_genres bg ON bg.genre_id = g.id
+     GROUP BY g.id ORDER BY g.name COLLATE NOCASE, g.id`,
+  );
+}
+
+/**
+ * Merges `sourceId` into `targetId` in one transaction: every book tagged
+ * with the source is tagged with the target (never twice; a link stays
+ * user-edited if either was), then the source is deleted. Returns the target
+ * with its new count, or null when either is missing or they are the same.
+ */
+export async function mergeGenres(db: Db, sourceId: number, targetId: number): Promise<GenreWithCount | null> {
+  if (sourceId === targetId) return null;
+  return db.transaction(async (tx) => {
+    const [source, target] = [await getGenre(tx, sourceId), await getGenre(tx, targetId)];
+    if (!source || !target) return null;
+    await tx.run(
+      `INSERT INTO book_genres (book_id, genre_id, user_edited)
+       SELECT book_id, ?, user_edited FROM book_genres WHERE genre_id = ?
+       ON CONFLICT (book_id, genre_id) DO UPDATE SET user_edited = MAX(user_edited, excluded.user_edited)`,
+      [targetId, sourceId],
+    );
+    await tx.run('DELETE FROM genres WHERE id = ?', [sourceId]);
+    const row = await tx.get<{ count: number }>('SELECT COUNT(*) AS count FROM book_genres WHERE genre_id = ?', [targetId]);
+    return { ...target, count: row?.count ?? 0 };
+  });
 }
 
 /**
