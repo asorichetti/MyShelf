@@ -6,7 +6,7 @@
  * {
  *   "format": "myshelf-backup",
  *   "formatVersion": 1,
- *   "schemaVersion": 5,
+ *   "schemaVersion": 7,
  *   "appVersion": "1.0.0",
  *   "exportedAt": "2026-10-12T09:30:00.000Z",
  *   "covers": "…",
@@ -39,6 +39,8 @@ export interface BackupColumn {
   nullable: boolean;
   /** The database fills it in when missing (timestamps, flags). */
   hasDefault?: boolean;
+  /** The schema version that added the column to an existing table; older backups do not have it. */
+  since?: number;
 }
 
 export interface BackupReference {
@@ -78,10 +80,12 @@ const text = (name: string, nullable = true, hasDefault = false): BackupColumn =
 
 /**
  * Every backed-up table, parents before children (the order a restore
- * inserts them). Columns match the current schema; when a migration changes
- * a table's columns, older backups are brought forward by that migration
- * (the restore runs them in a scratch database), and this list describes
- * the columns as of `since`.
+ * inserts them). Columns match the current schema. When a migration adds a
+ * column, the column gets `since` (the migration's version) and the file's
+ * `schemaVersion` moves up with the database's: a backup from before it has
+ * no such field, is checked against the columns of its own version
+ * (`backupColumnsAt`), and is brought forward by the real migrations in a
+ * scratch database before it is restored.
  */
 export const backupTables: readonly BackupTableSpec[] = [
   { name: 'series', since: 1, key: ['id'], references: [], columns: [int('id'), text('name', false), int('total_count', true)] },
@@ -111,6 +115,7 @@ export const backupTables: readonly BackupTableSpec[] = [
       text('notes'),
       text('created_at', false, true),
       text('updated_at', false, true),
+      { ...int('rating', true), since: 7 },
     ],
   },
   { name: 'authors', since: 1, key: ['id'], references: [], columns: [int('id'), text('name', false), text('sort_name')] },
@@ -182,6 +187,11 @@ export function backupTableSpec(name: BackupTableName): BackupTableSpec {
 /** The tables a backup taken at `schemaVersion` holds. */
 export function backupTablesAt(schemaVersion: number): readonly BackupTableSpec[] {
   return backupTables.filter((t) => t.since <= schemaVersion);
+}
+
+/** A table's columns as a backup taken at `schemaVersion` has them. */
+export function backupColumnsAt(spec: BackupTableSpec, schemaVersion: number): readonly BackupColumn[] {
+  return spec.columns.filter((c) => (c.since ?? spec.since) <= schemaVersion);
 }
 
 export type BackupRow = Record<string, string | number | null>;

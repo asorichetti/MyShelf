@@ -86,13 +86,27 @@ describe('restore: an older backup', () => {
     expect(result.upgradedFrom).toBe(1);
     const after = await backupRepo.dumpTables(db, { stripDeviceCovers: false });
     for (const table of Object.keys(schema1.tables) as (keyof typeof schema1.tables)[]) {
-      expect({ table, rows: after[table] }).toEqual({ table, rows: schema1.tables[table] });
+      // Migration 0007 added the rating: an old backup's books come back not rated.
+      const want = table === 'books' ? schema1.tables.books.map((b) => ({ ...b, rating: null })) : schema1.tables[table];
+      expect({ table, rows: after[table] }).toEqual({ table, rows: want });
     }
     expect(after.pending_lookups).toEqual([]);
     const tales = (await booksRepo.getBook(db, 12))!;
     expect(tales).toMatchObject({ title: 'Tales from Earthsea', seriesId: 3, seriesPosition: 5.5 });
     expect((await loansRepo.listOpenLoans(db)).map((l) => [l.bookTitle, l.borrowerName])).toEqual([['A Wizard of Earthsea', 'Priya']]);
     expect(await settingsRepo.getSetting(db, 'loanDays')).toBe(14);
+  });
+
+  it('restores a schema 6 backup (from before ratings) with every book not rated', async () => {
+    const backup = await demoBackup();
+    const old = parseBackup(
+      JSON.stringify({ ...backup, schemaVersion: 6, tables: { ...backup.tables, books: backup.tables.books!.map(({ rating: _r, ...b }) => b) } }),
+      options,
+    );
+    const result = await restoreBackup(db, old, { mode: 'replace', now: NOW, openScratch });
+    expect(result.upgradedFrom).toBe(6);
+    expect(await booksRepo.countBooks(db)).toBe(12);
+    expect((await booksRepo.listBooks(db)).every((b) => b.rating === null)).toBe(true);
   });
 
   it('needs a scratch database to do it', async () => {
@@ -103,6 +117,28 @@ describe('restore: an older backup', () => {
 function validateOld(): BackupFile {
   return parseBackup(JSON.stringify(schema1), options);
 }
+
+describe('ratings', () => {
+  const ratings = async (d: Db) => Object.fromEntries((await booksRepo.listBooks(d)).map((b) => [b.title, b.rating]));
+
+  it('travel in the backup file and come back from a replace', async () => {
+    const backup = await demoBackup();
+    expect(backup.schemaVersion).toBe(LATEST_VERSION);
+    expect(backup.tables.books!.find((b) => b.title === 'Mort')!.rating).toBe(5);
+    expect(backup.tables.books!.find((b) => b.title === 'The Light Fantastic')!.rating).toBeNull();
+    await restoreBackup(db, backup, { mode: 'replace', now: NOW });
+    const source = await createTestDb();
+    await loadFixture(source, 'demo');
+    expect(await ratings(db)).toEqual(await ratings(source));
+    expect((await ratings(db)).Mort).toBe(5);
+    await source.close();
+  });
+
+  it('come along with merged books', async () => {
+    await restoreBackup(db, await demoBackup(), { mode: 'merge', now: NOW });
+    expect(await ratings(db)).toMatchObject({ Mort: 5, Dune: 4, 'A Wizard of Earthsea': 3, 'The Light Fantastic': null });
+  });
+});
 
 describe('restore: merge', () => {
   it('adds new books, skips ones already there and remaps every link', async () => {

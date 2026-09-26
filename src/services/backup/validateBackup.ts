@@ -1,6 +1,8 @@
 import {
   BACKUP_FORMAT,
   BACKUP_FORMAT_VERSION,
+  backupColumnsAt,
+  isRating,
   backupTableNames,
   backupTablesAt,
   type BackupColumn,
@@ -61,14 +63,14 @@ function typeOk(col: BackupColumn, v: unknown): boolean {
   return typeof v === 'number' && Number.isFinite(v);
 }
 
-function checkRow(spec: BackupTableSpec, raw: unknown, index: number): BackupRow {
+function checkRow(spec: BackupTableSpec, columns: readonly BackupColumn[], raw: unknown, index: number): BackupRow {
   const where = `${ROW_NOUN[spec.name]} ${index + 1}`;
   if (!isObject(raw)) throw new BackupError('bad-row', `${DAMAGED}: ${where} isn’t a record. Nothing was changed.`);
-  const known = new Set(spec.columns.map((c) => c.name));
+  const known = new Set(columns.map((c) => c.name));
   for (const key of Object.keys(raw)) {
     if (!known.has(key)) throw new BackupError('bad-row', `${DAMAGED}: ${where} has an unknown field “${key}”. Nothing was changed.`);
   }
-  for (const col of spec.columns) {
+  for (const col of columns) {
     const v = raw[col.name];
     if (v === undefined) {
       if (col.hasDefault) continue;
@@ -77,6 +79,9 @@ function checkRow(spec: BackupTableSpec, raw: unknown, index: number): BackupRow
     if (!typeOk(col, v)) throw new BackupError('bad-row', `${DAMAGED}: ${where} has an unexpected “${col.name}”. Nothing was changed.`);
     if (col.type === 'text' && !col.nullable && (col.name === 'title' || col.name === 'name') && !(v as string).trim()) {
       throw new BackupError('bad-row', `${DAMAGED}: ${where} has an empty ${col.name}. Nothing was changed.`);
+    }
+    if (spec.name === 'books' && col.name === 'rating' && v !== null && !isRating(v)) {
+      throw new BackupError('bad-row', `${DAMAGED}: ${where} has a rating of ${String(v)}; ratings are 1 to 5 stars. Nothing was changed.`);
     }
   }
   return raw as BackupRow;
@@ -128,8 +133,9 @@ export function validateBackup(doc: unknown, { currentSchemaVersion }: ValidateO
     const raw = tables[spec.name];
     if (!Array.isArray(raw)) throw new BackupError('missing-table', `${DAMAGED}: its ${spec.name.replace(/_/g, ' ')} are missing. Nothing was changed.`);
     const seen = new Set<string>();
+    const columns = backupColumnsAt(spec, schemaVersion);
     const rows = raw.map((r, i) => {
-      const row = checkRow(spec, r, i);
+      const row = checkRow(spec, columns, r, i);
       const key = spec.key.map((k) => String(row[k])).join('|');
       if (seen.has(key)) {
         throw new BackupError('duplicate-key', `${DAMAGED}: two ${spec.name.replace(/_/g, ' ')} share the same ${spec.key.join(' and ')} (${key.replace('|', ', ')}). Nothing was changed.`);

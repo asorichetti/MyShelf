@@ -41,6 +41,17 @@ describe('parseBackup', () => {
     expect(parseBackup(`﻿${text}`, options).tables.books).toHaveLength(12);
   });
 
+  it('accepts ratings, and a schema 6 backup (from before ratings) without them', () => {
+    const doc = clone();
+    doc.tables.books![0].rating = 5;
+    doc.tables.books![1].rating = null;
+    expect(validateBackup(doc, options).tables.books![0].rating).toBe(5);
+    const old = clone();
+    old.schemaVersion = 6;
+    for (const b of old.tables.books!) delete b.rating;
+    expect(validateBackup(old, options).schemaVersion).toBe(6);
+  });
+
   it('accepts the older schema 1 fixture', () => {
     expect(validateBackup(schema1, options).schemaVersion).toBe(1);
   });
@@ -100,7 +111,14 @@ describe('validateBackup', () => {
       ['blank title', (b) => (b.tables.books![0].title = '  ')],
       ['id a string', (b) => (b.tables.books![0].id = '1')],
       ['fractional id', (b) => (b.tables.books![0].id = 1.5)],
-      ['unknown field', (b) => (b.tables.books![0].rating = 5)],
+      ['unknown field', (b) => (b.tables.books![0].stars = 5)],
+      ['rating out of range', (b) => (b.tables.books![0].rating = 6)],
+      ['rating zero', (b) => (b.tables.books![0].rating = 0)],
+      ['fractional rating', (b) => (b.tables.books![0].rating = 4.5)],
+      ['rating as text', (b) => (b.tables.books![0].rating = '4')],
+      ['missing rating', (b) => delete b.tables.books![0].rating],
+      // A schema 6 backup predates the column.
+      ['rating in a schema 6 backup', (b) => (b.schemaVersion = 6)],
       ['missing lent_on', (b) => delete b.tables.loans![0].lent_on],
       ['row not an object', (b) => ((b.tables.genres as unknown[])[0] = 'Fantasy')],
       ['null name', (b) => (b.tables.authors![0].name = null)],
