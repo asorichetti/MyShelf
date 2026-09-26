@@ -2,6 +2,7 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { StyleSheet, View } from 'react-native';
 
 import { Button, Text } from '@/components/ui';
+import { t } from '@/i18n';
 import { Testids } from '@/testing/testids.gen';
 import { useTheme } from '@/theme';
 
@@ -15,26 +16,26 @@ export interface ScanTrayProps {
 /** The "Scan several" tray (P03-12): a counter badge and "Review N books". */
 export function ScanTray({ count, needsChoice, onReview }: ScanTrayProps) {
   const { colors, spacing, radii, sizes } = useTheme();
-  const books = count === 1 ? '1 book' : `${count} books`;
+  const inTray = t('scan.tray.inTray', { count });
   return (
     <View style={[styles.row, { gap: spacing.md, padding: spacing.md, borderRadius: radii.md, backgroundColor: colors.primaryContainer }]}>
       <View style={[styles.badge, { minWidth: sizes.iconButton, height: sizes.iconButton, borderRadius: radii.pill, backgroundColor: colors.primary, paddingHorizontal: spacing.sm }]}>
-        <Text variant="bodyStrong" color="onPrimary" testID={Testids.scan.trayCount} aria-label={`${books} in the tray`}>
+        <Text variant="bodyStrong" color="onPrimary" testID={Testids.scan.trayCount} aria-label={inTray}>
           {String(count)}
         </Text>
       </View>
       <View style={styles.fill}>
         <Text color="onPrimaryContainer" aria-live="polite" accessibilityLiveRegion="polite">
-          {count ? `${books} in the tray` : 'Scanned books wait here until you review them.'}
+          {count ? inTray : t('scan.tray.empty')}
         </Text>
         {needsChoice ? (
           <Text variant="caption" color="onPrimaryContainer">
-            {needsChoice === 1 ? '1 needs a choice of edition' : `${needsChoice} need a choice of edition`}
+            {t('scan.tray.needsChoice', { count: needsChoice })}
           </Text>
         ) : null}
       </View>
       <Button
-        label={`Review ${books}`}
+        label={t('scan.tray.review', { count })}
         onPress={onReview}
         disabled={!count}
         testID={Testids.scan.reviewOpen}

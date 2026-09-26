@@ -13,6 +13,7 @@ import { useBottomObstacle } from '@/components/ui/layers';
 import { genresRepo, useDatabase } from '@/db';
 import { languageName, type BookDetail } from '@/domain';
 import { goBackOr } from '@/features/navigation/goBack';
+import { t } from '@/i18n';
 import type { BookCandidate } from '@/services/metadata';
 import { Testids } from '@/testing/testids.gen';
 import { useTheme } from '@/theme';
@@ -55,9 +56,9 @@ export function EditionPickerScreen() {
           <EmptyState
             illustration={<Booky expression="sleepy" size={96} />}
             headingLevel={1}
-            title="This scan has expired"
-            message="I only keep a scan while you’re choosing its edition. Scan the book again and I’ll look it up."
-            action={{ label: 'Back to scanning', onPress: backToScan }}
+            title={t('editions.picker.expiredTitle')}
+            message={t('editions.picker.expiredMessage')}
+            action={{ label: t('scan.backToScanning'), onPress: backToScan }}
           />
         </View>
       </Screen>
@@ -73,7 +74,7 @@ export function EditionPickerScreen() {
       router.replace({ pathname: '/book/[id]', params: { id: String(saved.id) } });
     } catch (e) {
       console.error('Could not save the book', e);
-      show({ message: 'Sorry, I couldn’t save that. Please try again.' });
+      show({ message: t('common.saveFailed') });
     } finally {
       setSaving(false);
     }
@@ -111,39 +112,39 @@ export function EditionPickerScreen() {
 
   const { single, groups, available, filters } = picker;
   const intro = single
-    ? 'Here’s the book that barcode belongs to. Check it matches the one in your hands.'
-    : `I found ${groups.length === 1 ? 'one book' : `${groups.length} books`} that could be yours. Open one to see its editions.`;
+    ? t('editions.picker.introSingle')
+    : t('editions.picker.introMany', { count: groups.length });
 
   return (
     <Screen testID={Testids.picker.root} scroll={false} edges={[...EDGES]} contentStyle={{ padding: 0, gap: 0, flex: 1 }}>
       <ScrollView style={styles.fill} contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xxl }}>
         <View style={{ gap: spacing.xs }}>
-          <TopBar onBack={backToScan} backLabel="Back to scanning">
+          <TopBar onBack={backToScan} backLabel={t('scan.backToScanning')}>
             <HelpButton screen="editions" />
           </TopBar>
-          <Heading level={1}>{single ? 'Is this your book?' : 'Which edition is yours?'}</Heading>
+          <Heading level={1}>{single ? t('editions.picker.titleSingle') : t('editions.picker.titleMany')}</Heading>
           <Text color="inkMuted">{intro}</Text>
         </View>
         <View style={[styles.hint, { gap: spacing.sm, padding: spacing.md, borderRadius: radii.md, backgroundColor: colors.accentContainer }]}>
           <MaterialCommunityIcons name="book-open-page-variant-outline" size={sizes.icon} color={colors.onAccentContainer} aria-hidden />
           <Text color="onAccentContainer" style={styles.fill}>
-            Match the publisher and year on the copyright page, just inside the cover.
+            {t('editions.picker.copyrightHint')}
           </Text>
         </View>
 
         {!single && (available.formats.length > 1 || available.languages.length > 1) ? (
           <View style={{ gap: spacing.xs }}>
             {available.formats.length > 1 ? (
-              <View role="radiogroup" aria-label="Format" testID={Testids.picker.filterFormat} style={[styles.wrap, { columnGap: spacing.sm }]}>
-                <Chip label="Any format" role="radio" selected={!filters.format} onPress={() => picker.setFilters({ format: null })} />
+              <View role="radiogroup" aria-label={t('bookFields.format')} testID={Testids.picker.filterFormat} style={[styles.wrap, { columnGap: spacing.sm }]}>
+                <Chip label={t('editions.picker.anyFormat')} role="radio" selected={!filters.format} onPress={() => picker.setFilters({ format: null })} />
                 {available.formats.map((f) => (
                   <Chip key={f} label={formatLabels[f]} role="radio" selected={filters.format === f} onPress={() => picker.setFilters({ format: f })} />
                 ))}
               </View>
             ) : null}
             {available.languages.length > 1 ? (
-              <View role="radiogroup" aria-label="Language" testID={Testids.picker.filterLanguage} style={[styles.wrap, { columnGap: spacing.sm }]}>
-                <Chip label="Any language" role="radio" selected={!filters.language} onPress={() => picker.setFilters({ language: null })} />
+              <View role="radiogroup" aria-label={t('bookFields.language')} testID={Testids.picker.filterLanguage} style={[styles.wrap, { columnGap: spacing.sm }]}>
+                <Chip label={t('editions.picker.anyLanguage')} role="radio" selected={!filters.language} onPress={() => picker.setFilters({ language: null })} />
                 {available.languages.map((l) => (
                   <Chip key={l} label={languageName(l)} role="radio" selected={filters.language === l} onPress={() => picker.setFilters({ language: l })} />
                 ))}
@@ -153,7 +154,7 @@ export function EditionPickerScreen() {
         ) : null}
 
         {single ? (
-          <View role="radiogroup" aria-label="Your book">
+          <View role="radiogroup" aria-label={t('editions.picker.yourBook')}>
             <EditionRow edition={single} selected={picker.selected === single} onSelect={() => picker.select(single)} />
           </View>
         ) : (
@@ -163,9 +164,9 @@ export function EditionPickerScreen() {
             const limit = shown[g.key] ?? SHOWN;
             const message =
               load?.status === 'error'
-                ? 'I couldn’t load its editions just now. You can still choose the book itself.'
+                ? t('editions.picker.loadFailed')
                 : load?.status === 'ready' && !editions.length
-                  ? 'No editions match those filters.'
+                  ? t('editions.picker.noMatch')
                   : null;
             return (
               <WorkGroup key={g.key} work={g.work} expanded={picker.expanded.has(g.key)} onToggle={() => picker.toggle(g.key)} loading={load?.status === 'loading'} message={message}>
@@ -173,7 +174,7 @@ export function EditionPickerScreen() {
                   <EditionRow key={`${e.source}:${e.sourceId}`} edition={e} selected={picker.selected === e} onSelect={() => picker.select(e)} />
                 ))}
                 {editions.length > limit ? (
-                  <Button variant="ghost" label={`Show ${Math.min(SHOWN, editions.length - limit)} more editions`} onPress={() => setShown((s) => ({ ...s, [g.key]: limit + SHOWN }))} />
+                  <Button variant="ghost" label={t('editions.picker.showMore', { count: Math.min(SHOWN, editions.length - limit) })} onPress={() => setShown((s) => ({ ...s, [g.key]: limit + SHOWN }))} />
                 ) : null}
               </WorkGroup>
             );
@@ -182,20 +183,20 @@ export function EditionPickerScreen() {
 
         {!session.trayItemId ? (
           <Chip
-            label="Review before saving"
+            label={t('editions.picker.reviewBeforeSaving')}
             role="checkbox"
             selected={review}
             onPress={() => setReview((r) => !r)}
             testID={Testids.picker.review}
-            accessibilityLabel="Review the details in the form before saving"
+            accessibilityLabel={t('editions.picker.reviewBeforeSavingLabel')}
           />
         ) : null}
       </ScrollView>
 
       <View ref={attachBar} onLayout={layoutBar} style={[styles.actions, { borderTopColor: colors.border, backgroundColor: colors.surface, padding: spacing.md, gap: spacing.sm }]}>
-        <Button variant="ghost" label="None of these — add manually" onPress={addManually} testID={Testids.picker.none} disabled={saving} />
+        <Button variant="ghost" label={t('editions.picker.none')} onPress={addManually} testID={Testids.picker.none} disabled={saving} />
         <Button
-          label={session.trayItemId ? 'Use this edition' : 'This is my edition'}
+          label={session.trayItemId ? t('editions.picker.useThisEdition') : t('editions.picker.thisIsMyEdition')}
           onPress={() => void confirm()}
           disabled={!picker.selected}
           loading={saving}

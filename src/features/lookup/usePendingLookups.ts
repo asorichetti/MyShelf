@@ -5,6 +5,7 @@ import { bookCount, useBooky } from '@/components/booky';
 import { pendingLookupsRepo, useDatabase, type PendingLookup } from '@/db';
 import { backfillCoversNow } from '@/features/covers';
 import { useLibraryEvent } from '@/features/events';
+import { t } from '@/i18n';
 import { isAbortError, OfflineError } from '@/services/http';
 import { InvalidIsbnError, type BookCandidate, type MetadataResult } from '@/services/metadata';
 
@@ -142,7 +143,7 @@ export function usePendingLookups({ lookup, backfillCovers }: UsePendingLookupsO
       setResults((current) => [...current.filter((r) => !arrived.some((a) => a.isbn13 === r.isbn13)), ...arrived]);
       void emit({ type: 'lookup-arrived', vars: { books: bookCount(arrived.length) } });
     } else if (gaveUp.length) {
-      void emit({ type: 'lookup-none', variant: 'offline', vars: { books: bookCount(gaveUp.length), them: gaveUp.length === 1 ? 'it' : 'them' } });
+      void emit({ type: 'lookup-none', variant: 'offline', vars: { books: bookCount(gaveUp.length), them: t('lookup.pending.them', { count: gaveUp.length }) } });
     }
   }, [db, doLookup, reload, emit, startBackfill]);
 

@@ -10,6 +10,7 @@ import { Button, CatalogueCard, EmptyState, Heading, Screen, Stamp, Text, TopBar
 import { useDatabase } from '@/db';
 import { joinNames } from '@/domain';
 import { goBackOr } from '@/features/navigation/goBack';
+import { t } from '@/i18n';
 import { Testids } from '@/testing/testids.gen';
 import { useTheme } from '@/theme';
 
@@ -18,7 +19,6 @@ import { dropTrayItem, removeTrayItems, useTray, type TrayItem } from './useBatc
 import { saveCandidate } from './useSaveCandidate';
 
 const EDGES = ['top', 'bottom', 'left', 'right'] as const;
-const books = (n: number) => (n === 1 ? '1 book' : `${n} books`);
 
 const backToScan = () => goBackOr('/scan');
 
@@ -45,18 +45,18 @@ function TrayRow({ item }: { item: TrayItem }) {
         />
       ) : (
         <View style={[styles.row, { gap: spacing.sm }]}>
-          <Stamp label="Needs a choice" tone="warn" rotate={-3} />
+          <Stamp label={t('scanReview.needsChoice')} tone="warn" rotate={-3} />
           <Text style={styles.fill}>{item.label}</Text>
         </View>
       )}
       <View style={[styles.row, styles.end, { gap: spacing.sm }]}>
         {item.status === 'needs-choice' ? (
-          <Button variant="secondary" label="Choose the edition" onPress={choose} testID={Testids.scanReview.choose} />
+          <Button variant="secondary" label={t('scanReview.choose')} onPress={choose} testID={Testids.scanReview.choose} />
         ) : null}
         <Button
           variant="ghost"
-          label="Drop"
-          accessibilityLabel={`Drop ${item.label} from the tray`}
+          label={t('scanReview.drop')}
+          accessibilityLabel={t('scanReview.dropLabel', { title: item.label })}
           onPress={() => dropTrayItem(item.id)}
           testID={Testids.scanReview.drop}
           icon={<MaterialCommunityIcons name="close" size={sizes.icon} color={colors.primary} />}
@@ -89,7 +89,7 @@ export function ScanReviewScreen() {
       }
     } catch (e) {
       console.error('Could not save the tray', e);
-      show({ message: 'Sorry, I couldn’t save every book. The ones left are still in the tray.' });
+      show({ message: t('scanReview.saveFailed') });
     } finally {
       removeTrayItems(saved);
       setSaving(false);
@@ -106,14 +106,14 @@ export function ScanReviewScreen() {
     <Screen testID={Testids.scanReview.root} scroll={false} edges={[...EDGES]} contentStyle={{ padding: 0, gap: 0, flex: 1 }}>
       <ScrollView style={styles.fill} contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xxl }}>
         <View style={{ gap: spacing.xs }}>
-          <TopBar onBack={backToScan} backLabel="Back to scanning" />
-          <Heading level={1}>Review your scans</Heading>
+          <TopBar onBack={backToScan} backLabel={t('scan.backToScanning')} />
+          <Heading level={1}>{t('scanReview.title')}</Heading>
           <Text color="inkMuted">
-            {tray.length ? 'Check each book, choose an edition where I wasn’t sure, and drop any you don’t want.' : ' '}
+            {tray.length ? t('scanReview.intro') : ' '}
           </Text>
         </View>
         {tray.length ? (
-          <View role="list" aria-label="Scanned books" style={{ gap: spacing.lg }}>
+          <View role="list" aria-label={t('scanReview.listLabel')} style={{ gap: spacing.lg }}>
             {tray.map((item) => (
               <TrayRow key={item.id} item={item} />
             ))}
@@ -123,9 +123,9 @@ export function ScanReviewScreen() {
             <EmptyState
               testID={Testids.emptyState.root}
               illustration={<Booky expression="sleepy" size={96} />}
-              title="The tray is empty"
-              message="Turn on “Scan several” on the Scan tab and every book you scan waits here."
-              action={{ label: 'Back to scanning', onPress: backToScan }}
+              title={t('scanReview.emptyTitle')}
+              message={t('scanReview.emptyMessage')}
+              action={{ label: t('scan.backToScanning'), onPress: backToScan }}
             />
           </View>
         )}
@@ -134,11 +134,11 @@ export function ScanReviewScreen() {
         <View style={[styles.bar, { borderTopColor: colors.border, backgroundColor: colors.surface, padding: spacing.md, gap: spacing.sm }]}>
           {waiting ? (
             <Text variant="caption" color="inkMuted" style={styles.fill}>
-              {`${books(waiting)} still ${waiting === 1 ? 'needs' : 'need'} an edition and will stay in the tray.`}
+              {t('scanReview.waiting', { count: waiting })}
             </Text>
           ) : null}
           <Button
-            label={ready.length ? `Save ${books(ready.length)}` : 'Nothing ready to save'}
+            label={ready.length ? t('scanReview.save', { count: ready.length }) : t('scanReview.nothingReady')}
             onPress={() => void saveAll()}
             disabled={!ready.length}
             loading={saving}

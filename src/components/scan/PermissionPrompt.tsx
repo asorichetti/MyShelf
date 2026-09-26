@@ -2,6 +2,7 @@ import { View } from 'react-native';
 
 import { Booky } from '@/components/booky';
 import { Button, Heading, Text } from '@/components/ui';
+import { t } from '@/i18n';
 import { Testids } from '@/testing/testids.gen';
 import { useTheme } from '@/theme';
 
@@ -19,27 +20,25 @@ export interface PermissionPromptProps {
  * system prompt; after a "don't allow" it points at the phone's settings.
  * Typing the ISBN always works instead.
  */
-export function PermissionPrompt({ state, onAllow, onOpenSettings, onTypeIsbn, typeLabel = 'Type ISBN instead' }: PermissionPromptProps) {
+export function PermissionPrompt({ state, onAllow, onOpenSettings, onTypeIsbn, typeLabel }: PermissionPromptProps) {
   const { spacing } = useTheme();
   const denied = state === 'denied';
   return (
     <View testID={Testids.scan.permissionPrompt} style={{ gap: spacing.md, alignItems: 'center' }}>
       <Booky expression={denied ? 'concerned' : 'happy'} size={96} />
       <Heading level={2} align="center">
-        {denied ? 'The camera is switched off for MyShelf' : 'May I use the camera?'}
+        {denied ? t('scan.permission.deniedTitle') : t('scan.permission.askTitle')}
       </Heading>
       <Text align="center" color="inkMuted" testID={denied ? Testids.scan.permissionDenied : undefined}>
-        {denied
-          ? 'You can switch it back on in your phone’s settings, under MyShelf → Permissions. Or type it in instead.'
-          : 'I use the camera only to read barcodes and covers — nothing leaves your phone.'}
+        {denied ? t('scan.permission.deniedBody') : t('scan.permission.askBody')}
       </Text>
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: spacing.sm }}>
         {denied ? (
-          <Button label="Open settings" onPress={onOpenSettings} testID={Testids.scan.openSettings} />
+          <Button label={t('scan.permission.openSettings')} onPress={onOpenSettings} testID={Testids.scan.openSettings} />
         ) : (
-          <Button label="Allow camera" onPress={onAllow} testID={Testids.scan.permissionAllow} />
+          <Button label={t('scan.permission.allow')} onPress={onAllow} testID={Testids.scan.permissionAllow} />
         )}
-        <Button variant="secondary" label={typeLabel} onPress={onTypeIsbn} testID={Testids.scan.typeIsbnInstead} />
+        <Button variant="secondary" label={typeLabel ?? t('scan.permission.typeIsbn')} onPress={onTypeIsbn} testID={Testids.scan.typeIsbnInstead} />
       </View>
     </View>
   );

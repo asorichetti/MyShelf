@@ -6,6 +6,7 @@ import { StyleSheet, View } from 'react-native';
 import { BookyBubble } from '@/components/booky';
 import { Button, Text } from '@/components/ui';
 import type { OcrResult } from '@/domain';
+import { t } from '@/i18n';
 import { Testids } from '@/testing/testids.gen';
 import { useTheme } from '@/theme';
 
@@ -38,7 +39,7 @@ export function CoverCapture({ recognize, available, onRecognised, onTypeText, p
   if (!available) {
     return (
       <View style={{ gap: spacing.md }}>
-        <Text color="inkMuted">This version of the app can’t read covers by itself yet. Type what the cover says and I’ll search for it.</Text>
+        <Text color="inkMuted">{t('scan.cover.unavailable')}</Text>
         <TypedCoverTextField onSubmit={onTypeText} disabled={paused} />
       </View>
     );
@@ -56,7 +57,7 @@ export function CoverCapture({ recognize, available, onRecognised, onTypeText, p
       setState({ step: 'aim' });
       onRecognised(result, uri);
     } catch {
-      setState({ step: 'failed', uri, message: 'I couldn’t read that photo. Try again with the cover flat and well lit.' });
+      setState({ step: 'failed', uri, message: t('scan.cover.readFailed') });
     }
   };
 
@@ -64,22 +65,22 @@ export function CoverCapture({ recognize, available, onRecognised, onTypeText, p
     return (
       <View style={{ gap: spacing.md }}>
         <View style={[styles.frame, { borderRadius: radii.lg }]}>
-          <CameraView ref={camera} testID={Testids.scan.camera} accessibilityLabel="Camera: fill the frame with the front cover" style={StyleSheet.absoluteFill} facing="back" />
-          <Viewfinder hint="Fill the frame with the front cover" active={false} />
+          <CameraView ref={camera} testID={Testids.scan.camera} accessibilityLabel={t('scan.cover.cameraLabel')} style={StyleSheet.absoluteFill} facing="back" />
+          <Viewfinder hint={t('scan.cover.hint')} active={false} />
         </View>
-        <Button label="Take the photo" onPress={() => void capture()} disabled={paused} testID={Testids.scan.capture} block />
+        <Button label={t('scan.cover.takePhoto')} onPress={() => void capture()} disabled={paused} testID={Testids.scan.capture} block />
       </View>
     );
   }
 
   return (
     <View style={{ gap: spacing.md }}>
-      <Image source={{ uri: state.uri }} alt="Your photo of the cover" contentFit="contain" style={[styles.frame, { borderRadius: radii.lg }]} />
+      <Image source={{ uri: state.uri }} alt={t('scan.cover.photoAlt')} contentFit="contain" style={[styles.frame, { borderRadius: radii.lg }]} />
       {state.step === 'failed' ? <BookyBubble expression="concerned" message={state.message} /> : null}
       <View style={[styles.row, { gap: spacing.sm }]}>
-        <Button variant="secondary" label="Retake" onPress={() => setState({ step: 'aim' })} disabled={state.step === 'reading'} testID={Testids.scan.retake} />
+        <Button variant="secondary" label={t('scan.cover.retake')} onPress={() => setState({ step: 'aim' })} disabled={state.step === 'reading'} testID={Testids.scan.retake} />
         <Button
-          label={state.step === 'failed' ? 'Try again' : 'Use this photo'}
+          label={state.step === 'failed' ? t('common.tryAgain') : t('scan.cover.usePhoto')}
           onPress={() => void read(state.uri)}
           loading={state.step === 'reading'}
           testID={Testids.scan.usePhoto}

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { normalizeIsbn } from '@/domain';
+import { t } from '@/i18n';
 import { isAbortError, OfflineError, RateLimitedError } from '@/services/http';
 import { InvalidIsbnError, toIsbn13, type BookCandidate, type MetadataService, type ProviderWarning } from '@/services/metadata';
 
@@ -32,15 +33,27 @@ export interface UseLookupOptions {
   service?: MetadataService;
 }
 
-/** Plain-language messages; they never blame the user (PLAN §8). */
+/** Plain-language messages; they never blame the user (PLAN §8). Translated when read, never at import. */
 export const lookupMessages = {
-  invalid: 'That doesn’t look like an ISBN. It’s the 10 or 13 digits above the barcode, usually starting 978.',
-  empty: 'Type an ISBN first — it’s on the back cover, above the barcode.',
-  emptySearch: 'Type a title, an author, or both.',
-  offline: 'I can’t reach the library catalogues right now. You can still type the book in by hand.',
-  busy: 'The catalogues asked me to slow down. Please try again in a minute.',
-  failed: 'Something went wrong while I was looking. Please try again.',
-} as const;
+  get invalid() {
+    return t('lookup.messages.invalid');
+  },
+  get empty() {
+    return t('lookup.messages.empty');
+  },
+  get emptySearch() {
+    return t('lookup.messages.emptySearch');
+  },
+  get offline() {
+    return t('lookup.messages.offline');
+  },
+  get busy() {
+    return t('lookup.messages.busy');
+  },
+  get failed() {
+    return t('common.lookupFailed');
+  },
+};
 
 function errorState(mode: LookupMode, query: string, error: unknown): LookupState {
   if (error instanceof InvalidIsbnError) return { status: 'error', mode, query, reason: 'invalid', message: lookupMessages.invalid };

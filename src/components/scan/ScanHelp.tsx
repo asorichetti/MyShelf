@@ -3,6 +3,7 @@ import Svg, { Rect } from 'react-native-svg';
 
 import { Booky } from '@/components/booky';
 import { Button, Sheet, Text } from '@/components/ui';
+import { t } from '@/i18n';
 import { Testids } from '@/testing/testids.gen';
 import { useTheme } from '@/theme';
 
@@ -34,23 +35,23 @@ export function ScanHelp({ visible, onClose }: { visible: boolean; onClose: () =
   return (
     <Sheet
       visible={visible}
-      title="Where’s the barcode?"
+      title={t('scan.help.title')}
       onClose={onClose}
       testID={Testids.scan.helpSheet}
-      footer={<Button label="Got it" onPress={onClose} testID={Testids.scan.helpClose} />}
+      footer={<Button label={t('scan.help.gotIt')} onPress={onClose} testID={Testids.scan.helpClose} />}
     >
       <View style={[styles.row, { gap: spacing.lg }]}>
         <BackCoverDiagram />
         <View style={[styles.fill, { gap: spacing.sm }]}>
-          <Text>Turn the book over: the ISBN barcode is usually at the bottom of the back cover, starting 978 or 979.</Text>
-          <Text color="inkMuted">On a dust jacket, look on the back flap too.</Text>
+          <Text>{t('scan.help.where')}</Text>
+          <Text color="inkMuted">{t('scan.help.jacket')}</Text>
         </View>
       </View>
       <View style={[styles.row, { gap: spacing.md }]}>
         <Booky expression="thinking" size={48} animated={false} />
-        <Text style={styles.fill}>No barcode (older books often have none)? Switch to Cover and photograph the front: I’ll read the title and author and show you the editions.</Text>
+        <Text style={styles.fill}>{t('scan.help.noBarcode')}</Text>
       </View>
-      <Text color="inkMuted">The ISBN (International Standard Book Number) identifies one edition of a book, so a barcode finds exactly your copy.</Text>
+      <Text color="inkMuted">{t('scan.help.isbn')}</Text>
     </Sheet>
   );
 }

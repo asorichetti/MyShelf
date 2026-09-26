@@ -10,6 +10,7 @@ import { ScannerHost } from '@/components/scan/ScannerHost';
 import { ScanTray } from '@/components/scan/ScanTray';
 import { CatalogueCard, Chip, Heading, Screen, Text } from '@/components/ui';
 import { joinNames, type OcrQuery } from '@/domain';
+import { t } from '@/i18n';
 import { ocrAvailable, recognizeText } from '@/services/recognition';
 import { Testids } from '@/testing/testids.gen';
 import { useTheme } from '@/theme';
@@ -63,7 +64,7 @@ export function ScanScreen() {
     const item = addToTray(session);
     setTrayNotice({
       expression: 'excited',
-      message: item.status === 'ready' ? `Added “${item.label}” to the tray.` : `“${item.label}” needs a choice of edition — pick it when you review.`,
+      message: item.status === 'ready' ? t('scan.screen.addedToTray', { title: item.label }) : t('scan.screen.needsChoice', { title: item.label }),
     });
   }, []);
   const scan = useScanSession({ onFound: batch ? onFound : undefined });
@@ -94,7 +95,7 @@ export function ScanScreen() {
     <Screen testID={Testids.scan.root}>
       <View style={[styles.titleRow, { gap: spacing.sm }]}>
         <Heading level={1} testID={Testids.scan.title} style={styles.fill}>
-          Scan a book
+          {t('scan.screen.title')}
         </Heading>
         <HelpButton screen="scan" onMore={() => setHelp(true)} />
       </View>
@@ -118,39 +119,39 @@ export function ScanScreen() {
           testID={Testids.scan.lookupSheet}
           expression="thinking"
           message={state.label}
-          actions={[{ label: 'Cancel', onPress: scan.cancel, testID: Testids.scan.lookupCancel }]}
+          actions={[{ label: t('common.cancel'), onPress: scan.cancel, testID: Testids.scan.lookupCancel }]}
         />
       ) : null}
       {state.phase === 'not-found' ? (
         <View testID={Testids.scan.notFound}>
           <BookyBubble
             expression="concerned"
-            title={state.kind === 'isbn' ? 'No match for that ISBN' : 'No match for that cover'}
+            title={state.kind === 'isbn' ? t('scan.screen.noMatchIsbn') : t('scan.screen.noMatchCover')}
             message={tipById('lookup-none-scan').text}
             actions={[
-              { label: 'Add it by hand', onPress: () => addManually(state.isbn13, state.guess), testID: Testids.scan.addManually },
+              { label: t('scan.screen.addByHand'), onPress: () => addManually(state.isbn13, state.guess), testID: Testids.scan.addManually },
               state.kind === 'isbn'
                 ? {
-                    label: 'Read the cover instead',
+                    label: t('scan.screen.readCoverInstead'),
                     onPress: () => {
                       setMode('cover');
                       resume();
                     },
                     testID: Testids.scan.readCoverInstead,
                   }
-                : { label: 'Try again', onPress: resume, testID: Testids.scan.resume },
+                : { label: t('common.tryAgain'), onPress: resume, testID: Testids.scan.resume },
             ]}
           />
         </View>
       ) : null}
       {state.phase === 'not-book' ? (
         <View testID={Testids.scan.notBookBarcode}>
-          <BookyBubble expression="thinking" message={scanMessages.notBook} actions={[{ label: 'Keep scanning', onPress: resume, testID: Testids.scan.resume }]} />
+          <BookyBubble expression="thinking" message={scanMessages.notBook} actions={[{ label: t('scan.screen.keepScanning'), onPress: resume, testID: Testids.scan.resume }]} />
         </View>
       ) : null}
       {state.phase === 'error' ? (
         <View role="alert" testID={Testids.scan.error}>
-          <BookyBubble expression="concerned" message={state.message} actions={[{ label: 'Try again', onPress: resume, testID: Testids.scan.resume }]} />
+          <BookyBubble expression="concerned" message={state.message} actions={[{ label: t('common.tryAgain'), onPress: resume, testID: Testids.scan.resume }]} />
         </View>
       ) : null}
       {notice && state.phase === 'ready' ? (
@@ -168,12 +169,12 @@ export function ScanScreen() {
 
       <View style={{ gap: spacing.sm }}>
         <Chip
-          label="Scan several"
+          label={t('scan.screen.scanSeveral')}
           role="checkbox"
           selected={batch}
           onPress={() => setBatch(!batch)}
           testID={Testids.scan.batchToggle}
-          accessibilityLabel="Scan several books, then review them together"
+          accessibilityLabel={t('scan.screen.scanSeveralLabel')}
         />
         {batch || tray.length ? <ScanTray count={tray.length} needsChoice={needsChoice} onReview={() => router.navigate('/scan/review')} /> : null}
       </View>
@@ -181,7 +182,7 @@ export function ScanScreen() {
       {scan.lastFound && !batch ? (
         <View style={{ gap: spacing.xs }} testID={Testids.scan.lastScanned}>
           <Text variant="label" color="inkMuted">
-            Last found
+            {t('scan.screen.lastFound')}
           </Text>
           <CatalogueCard
             title={scan.lastFound.title}

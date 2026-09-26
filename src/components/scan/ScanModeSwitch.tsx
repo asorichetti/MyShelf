@@ -2,21 +2,22 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Text } from '@/components/ui';
+import { t, translate, type MessageKey } from '@/i18n';
 import { Testids } from '@/testing/testids.gen';
 import { useTheme } from '@/theme';
 
 export type ScanMode = 'barcode' | 'cover';
 
-const OPTIONS: { mode: ScanMode; label: string; icon: 'barcode-scan' | 'book-open-variant'; testID: string }[] = [
-  { mode: 'barcode', label: 'Barcode', icon: 'barcode-scan', testID: Testids.scan.modeBarcode },
-  { mode: 'cover', label: 'Cover', icon: 'book-open-variant', testID: Testids.scan.modeCover },
+const OPTIONS: { mode: ScanMode; label: MessageKey; name: MessageKey; icon: 'barcode-scan' | 'book-open-variant'; testID: string }[] = [
+  { mode: 'barcode', label: 'scan.modeSwitch.barcode', name: 'scan.modeSwitch.barcodeLabel', icon: 'barcode-scan', testID: Testids.scan.modeBarcode },
+  { mode: 'cover', label: 'scan.modeSwitch.cover', name: 'scan.modeSwitch.coverLabel', icon: 'book-open-variant', testID: Testids.scan.modeCover },
 ];
 
 /** Barcode or cover (P03-13): a two-way segmented control, announced as tabs of one list. */
 export function ScanModeSwitch({ mode, onChange }: { mode: ScanMode; onChange: (mode: ScanMode) => void }) {
   const { colors, spacing, radii, sizes } = useTheme();
   return (
-    <View role="radiogroup" aria-label="What to scan" style={[styles.row, { borderColor: colors.primary, borderRadius: radii.pill, padding: spacing.xxs, backgroundColor: colors.surface }]}>
+    <View role="radiogroup" aria-label={t('scan.modeSwitch.groupLabel')} style={[styles.row, { borderColor: colors.primary, borderRadius: radii.pill, padding: spacing.xxs, backgroundColor: colors.surface }]}>
       {OPTIONS.map((o) => {
         const selected = o.mode === mode;
         return (
@@ -25,8 +26,8 @@ export function ScanModeSwitch({ mode, onChange }: { mode: ScanMode; onChange: (
             role="radio"
             aria-checked={selected}
             accessibilityState={{ checked: selected }}
-            accessibilityLabel={o.mode === 'barcode' ? 'Scan the barcode' : 'Read the cover'}
-            aria-label={o.mode === 'barcode' ? 'Scan the barcode' : 'Read the cover'}
+            accessibilityLabel={translate(o.name)}
+            aria-label={translate(o.name)}
             onPress={() => onChange(o.mode)}
             testID={o.testID}
             style={({ pressed }) => [
@@ -41,7 +42,7 @@ export function ScanModeSwitch({ mode, onChange }: { mode: ScanMode; onChange: (
           >
             <MaterialCommunityIcons name={o.icon} size={sizes.icon} color={selected ? colors.onPrimary : colors.primary} aria-hidden />
             <Text variant="bodyStrong" color={selected ? 'onPrimary' : 'primary'}>
-              {o.label}
+              {translate(o.label)}
             </Text>
           </Pressable>
         );

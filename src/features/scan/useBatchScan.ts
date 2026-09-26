@@ -1,5 +1,6 @@
 import { useSyncExternalStore } from 'react';
 
+import { t } from '@/i18n';
 import type { BookCandidate } from '@/services/metadata';
 
 import type { ScanSession } from './sessionStore';
@@ -44,7 +45,7 @@ export function addToTray(session: ScanSession): TrayItem {
     status: confident ? 'ready' : 'needs-choice',
     candidate: confident ? first : null,
     sessionId: confident ? null : session.id,
-    label: first?.title ?? session.isbn13 ?? 'A book',
+    label: first?.title ?? session.isbn13 ?? t('scan.tray.unknownBook'),
   };
   set([...items, item]);
   return item;

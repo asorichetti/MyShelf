@@ -7,6 +7,7 @@ import { Button, Text } from '@/components/ui';
 import { useDatabase } from '@/db';
 import { backfillCoversNow } from '@/features/covers';
 import { emit } from '@/features/events';
+import { t } from '@/i18n';
 
 import { usePendingLookups, type PendingLookups } from './usePendingLookups';
 
@@ -49,9 +50,9 @@ export function ShelfPendingBanner() {
         // Booky says this in a tip too; it stays here, in the screen, until the user has read it (P07-09).
         <View style={styles.row}>
           <Text role="status" color="inkMuted" style={styles.fill}>
-            {formatTip(tipById('lookup-gave-up').text, { books: bookCount(failed.length), them: failed.length === 1 ? 'it' : 'them' })}
+            {formatTip(tipById('lookup-gave-up').text, { books: bookCount(failed.length), them: t('lookup.pending.them', { count: failed.length }) })}
           </Text>
-          <Button variant="ghost" label="OK" accessibilityLabel="OK, forget those lookups" onPress={() => failed.forEach((f) => void pending.remove(f.isbn13))} />
+          <Button variant="ghost" label={t('lookup.pending.ok')} accessibilityLabel={t('lookup.pending.okLabel')} onPress={() => failed.forEach((f) => void pending.remove(f.isbn13))} />
         </View>
       ) : null}
     </>

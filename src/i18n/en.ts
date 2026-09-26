@@ -2178,4 +2178,266 @@ export const en = {
       text: 'Everything stays on your phone. No account, no cloud, just your books.',
     },
   },
+
+  // Scanning and lookups
+  /** The Scan tab: barcode and cover scanning, the camera, the tray and scanning help. */
+  scan: {
+    /** The back button and empty-state action on the screens opened from the Scan tab. */
+    backToScanning: 'Back to scanning',
+    screen: {
+      title: 'Scan a book',
+      /** Heading over the small card of the book the last scan found. */
+      lastFound: 'Last found',
+      /** A toggle chip: scan several books into a tray, then review them together. */
+      scanSeveral: 'Scan several',
+      scanSeveralLabel: 'Scan several books, then review them together',
+      noMatchIsbn: 'No match for that ISBN',
+      noMatchCover: 'No match for that cover',
+      addByHand: 'Add it by hand',
+      readCoverInstead: 'Read the cover instead',
+      keepScanning: 'Keep scanning',
+      /** After a scan in "Scan several" mode; {title} is the book's title. */
+      addedToTray: 'Added “{title}” to the tray.',
+      needsChoice: '“{title}” needs a choice of edition — pick it when you review.',
+    },
+    /** Booky's messages while scanning. */
+    messages: {
+      notBook: 'That’s a product barcode, not a book’s — look for the one starting 978 or 979.',
+      invalidIsbn: 'That doesn’t look like an ISBN. It’s the 10 or 13 digits above the barcode, usually starting 978.',
+      noCoverText: 'Type the words on the cover first — the title and the author.',
+      noCoverRead: 'I couldn’t make out a title on that cover. Try again with the cover filling the frame, or add it by hand.',
+      offlineCover: 'I can’t reach the library catalogues right now, so I can’t search for that cover. Try again when you’re online.',
+      queued: 'Saved — I’ll look this up when you’re back online.',
+      /** While a lookup runs; {isbn} is the hyphenated ISBN. */
+      lookingUp: 'Looking up {isbn}…',
+      /** While a cover search runs; {text} is the title (or text) read off the cover. */
+      searching: 'Searching for “{text}”…',
+    },
+    /** Barcode or cover: a two-way switch at the top of the Scan tab. */
+    modeSwitch: {
+      groupLabel: 'What to scan',
+      barcode: 'Barcode',
+      cover: 'Cover',
+      barcodeLabel: 'Scan the barcode',
+      coverLabel: 'Read the cover',
+    },
+    barcode: {
+      cameraLabel: 'Camera: line up the barcode on the back cover',
+      hint: 'Line up the barcode on the back cover',
+      /** The torch is the phone's flashlight. */
+      torchOff: 'Turn the torch off',
+      torchOn: 'Turn the torch on',
+      readCover: 'Read the cover',
+    },
+    cover: {
+      unavailable: 'This version of the app can’t read covers by itself yet. Type what the cover says and I’ll search for it.',
+      readFailed: 'I couldn’t read that photo. Try again with the cover flat and well lit.',
+      cameraLabel: 'Camera: fill the frame with the front cover',
+      hint: 'Fill the frame with the front cover',
+      takePhoto: 'Take the photo',
+      photoAlt: 'Your photo of the cover',
+      retake: 'Retake',
+      usePhoto: 'Use this photo',
+    },
+    permission: {
+      askTitle: 'May I use the camera?',
+      askBody: 'I use the camera only to read barcodes and covers — nothing leaves your phone.',
+      deniedTitle: 'The camera is switched off for MyShelf',
+      deniedBody: 'You can switch it back on in your phone’s settings, under MyShelf → Permissions. Or type it in instead.',
+      openSettings: 'Open settings',
+      allow: 'Allow camera',
+      typeIsbn: 'Type ISBN instead',
+      typeCoverText: 'Type the cover text instead',
+    },
+    host: {
+      cameraLoading: 'Getting the camera ready…',
+      useCamera: 'Use the camera instead',
+      typeIsbn: 'Type the ISBN instead',
+      /** The web build is a test harness, not shipped to users. */
+      webIsbnNote: 'Web test harness: type the ISBN a barcode would give. On a phone this is the camera.',
+      webCoverNote: 'Web test harness: type what the cover says. On a phone the camera reads it.',
+    },
+    typed: {
+      isbnLabel: 'Type an ISBN',
+      isbnPlaceholder: 'e.g. 978-0-552-16659-1',
+      isbnHelper: 'The 10 or 13 digits above the barcode.',
+      lookUp: 'Look up',
+      coverLabel: 'Type the cover text',
+      /** An example of cover text, one line per line on the cover. */
+      coverPlaceholder: 'e.g. THE COLOUR OF MAGIC\nTERRY PRATCHETT',
+      coverHelper: 'The title and author as they appear on the cover, one per line.',
+      search: 'Search',
+    },
+    help: {
+      title: 'Where’s the barcode?',
+      gotIt: 'Got it',
+      where: 'Turn the book over: the ISBN barcode is usually at the bottom of the back cover, starting 978 or 979.',
+      jacket: 'On a dust jacket, look on the back flap too.',
+      noBarcode: 'No barcode (older books often have none)? Switch to Cover and photograph the front: I’ll read the title and author and show you the editions.',
+      isbn: 'The ISBN (International Standard Book Number) identifies one edition of a book, so a barcode finds exactly your copy.',
+    },
+    /** The "Scan several" tray under the scanner. */
+    tray: {
+      inTray: { one: '{count} book in the tray', other: '{count} books in the tray' },
+      empty: 'Scanned books wait here until you review them.',
+      needsChoice: { one: '{count} needs a choice of edition', other: '{count} need a choice of edition' },
+      review: { one: 'Review {count} book', other: 'Review {count} books' },
+      /** A tray row's name when the scan found neither a title nor an ISBN. */
+      unknownBook: 'A book',
+    },
+  },
+  /** `/scan/review`: the books in the "Scan several" tray, saved together. */
+  scanReview: {
+    title: 'Review your scans',
+    intro: 'Check each book, choose an edition where I wasn’t sure, and drop any you don’t want.',
+    listLabel: 'Scanned books',
+    /** A rubber stamp on a tray row whose edition is not chosen yet. */
+    needsChoice: 'Needs a choice',
+    choose: 'Choose the edition',
+    drop: 'Drop',
+    dropLabel: 'Drop {title} from the tray',
+    saveFailed: 'Sorry, I couldn’t save every book. The ones left are still in the tray.',
+    emptyTitle: 'The tray is empty',
+    emptyMessage: 'Turn on “Scan several” on the Scan tab and every book you scan waits here.',
+    waiting: {
+      one: '{count} book still needs an edition and will stay in the tray.',
+      other: '{count} books still need an edition and will stay in the tray.',
+    },
+    save: { one: 'Save {count} book', other: 'Save {count} books' },
+    nothingReady: 'Nothing ready to save',
+  },
+  /** `/scan/pick`: the edition picker. */
+  editions: {
+    picker: {
+      expiredTitle: 'This scan has expired',
+      expiredMessage: 'I only keep a scan while you’re choosing its edition. Scan the book again and I’ll look it up.',
+      titleSingle: 'Is this your book?',
+      titleMany: 'Which edition is yours?',
+      introSingle: 'Here’s the book that barcode belongs to. Check it matches the one in your hands.',
+      introMany: {
+        one: 'I found one book that could be yours. Open one to see its editions.',
+        other: 'I found {count} books that could be yours. Open one to see its editions.',
+      },
+      copyrightHint: 'Match the publisher and year on the copyright page, just inside the cover.',
+      anyFormat: 'Any format',
+      anyLanguage: 'Any language',
+      /** The group around the one edition an ISBN found. */
+      yourBook: 'Your book',
+      loadFailed: 'I couldn’t load its editions just now. You can still choose the book itself.',
+      noMatch: 'No editions match those filters.',
+      showMore: { one: 'Show {count} more edition', other: 'Show {count} more editions' },
+      reviewBeforeSaving: 'Review before saving',
+      reviewBeforeSavingLabel: 'Review the details in the form before saving',
+      none: 'None of these — add manually',
+      /** Confirms the edition of a book waiting in the "Scan several" tray. */
+      useThisEdition: 'Use this edition',
+      thisIsMyEdition: 'This is my edition',
+    },
+    /** A work (all editions of one book) in the picker. */
+    work: {
+      firstPublished: 'First published {year}',
+      editionCount: { one: '{count} edition', other: '{count} editions' },
+      by: 'by {author}',
+      /** Joins the facts shown under the title, e.g. "First published 1983 · 12 editions". */
+      factSeparator: ' · ',
+      /** Joins the parts of the screen reader label. */
+      labelSeparator: ', ',
+      /** {label} is the work's title, author and facts. */
+      show: '{label}. Show its editions',
+      hide: '{label}. Hide its editions',
+      editionsOf: 'Editions of {title}',
+    },
+    /** What a screen reader says for one edition: "Hardback, Doubleday, 1987, 285 pages, ISBN …, The Colour of Magic, from Open Library, with a cover picture". */
+    row: {
+      separator: ', ',
+      pages: { one: '{count} page', other: '{count} pages' },
+      isbn: 'ISBN {isbn}',
+      noIsbn: 'no ISBN',
+      /** {source} is a catalogue name, e.g. "Open Library". */
+      from: 'from {source}',
+      withCover: 'with a cover picture',
+      noCover: 'no cover picture',
+    },
+  },
+  /** "Already on your shelf": a scan matched a book that is already catalogued. */
+  duplicate: {
+    title: 'Already on your shelf',
+    copies: { one: 'You’ve catalogued this book before.', other: 'You’ve catalogued {count} copies of this book.' },
+    question: 'Is this another copy, or the same book scanned twice?',
+    addCopy: 'Add another copy',
+    open: 'Open it',
+  },
+  /** "Find it online" on the add form, and the offline lookup queue. */
+  lookup: {
+    messages: {
+      invalid: 'That doesn’t look like an ISBN. It’s the 10 or 13 digits above the barcode, usually starting 978.',
+      empty: 'Type an ISBN first — it’s on the back cover, above the barcode.',
+      emptySearch: 'Type a title, an author, or both.',
+      offline: 'I can’t reach the library catalogues right now. You can still type the book in by hand.',
+      busy: 'The catalogues asked me to slow down. Please try again in a minute.',
+    },
+    /** When one of the two catalogues did not answer. */
+    warnings: {
+      googlebooks: 'Google Books didn’t answer, so these come from Open Library only.',
+      openlibrary: 'Open Library didn’t answer, so these come from Google Books only.',
+    },
+    /** The add form was started from words read off a cover. */
+    guess: {
+      title: 'Please check',
+      /** {fields} is a list such as "title and author"; {count} is how many fields. */
+      message: {
+        one: 'I guessed the {fields} from the cover. Check it against your book before saving.',
+        other: 'I guessed the {fields} from the cover. Check them against your book before saving.',
+      },
+      fields: {
+        title: 'title',
+        authors: 'author',
+        isbn: 'ISBN',
+      },
+    },
+    /** "Find a cover online" on the book form. */
+    cover: {
+      needDetails: 'Add the ISBN, or the title and author, and I’ll look for the cover.',
+      notFound: 'I couldn’t find a cover online for this one. You can photograph yours instead.',
+      found: 'Found the cover and put it on the card.',
+      offline: 'I can’t reach the catalogues right now. Try again when you’re online.',
+      failed: 'Sorry, I couldn’t look for a cover just now.',
+    },
+    pending: {
+      /** Fills {them} in Booky's "You can add {them} by hand": the books that were given up on. */
+      them: { one: 'it', other: 'them' },
+      ok: 'OK',
+      okLabel: 'OK, forget those lookups',
+    },
+  },
+  /** `/book/[id]/refresh`: look a book up again and choose which details to update. */
+  refresh: {
+    title: 'Refresh details',
+    backToBook: 'Back to the book',
+    checking: 'Checking the library catalogues for anything new…',
+    offline: 'I can’t reach the library catalogues right now. Try again when you’re online.',
+    updated: { one: 'Updated {count} detail', other: 'Updated {count} details' },
+    saveFailed: 'Sorry, I couldn’t save those changes. Please try again.',
+    notFoundTitle: 'No catalogue knows this one',
+    notFoundMessage: 'I couldn’t find this book online, so there’s nothing to refresh. Its card stays just as it is.',
+    upToDateTitle: 'Everything’s up to date',
+    /** {source} is a catalogue name, e.g. "Open Library". */
+    upToDateMessage: '{source} has nothing to add to this card.',
+    changes: {
+      one: '{source} has one change. Tick the ones you want; your own genres always stay.',
+      other: '{source} has {count} changes. Tick the ones you want; your own genres always stay.',
+    },
+    changesLabel: 'Changes to apply',
+    update: { one: 'Update {count} detail', other: 'Update {count} details' },
+    nothingTicked: 'Nothing ticked',
+  },
+  /** The end-to-end test harness screens (only in test builds). */
+  e2e: {
+    loading: 'Setting out the books…',
+    handingOver: 'Handing the scan over…',
+    loadFailed: 'Couldn\'t load the fixture',
+    unknownFixture: 'Unknown fixture "{name}". Try one of: {names}.',
+    /** "today" is a URL parameter name; keep it as it is. */
+    badToday: '"today" must be a YYYY-MM-DD date, got "{value}".',
+  },
 } as const;

@@ -12,6 +12,7 @@ import {
 } from '@/domain';
 import { useMetadataService } from '@/features/lookup/metadataService';
 import { usePendingLookupsContext } from '@/features/lookup/PendingLookupsProvider';
+import { t } from '@/i18n';
 import { isAbortError, OfflineError } from '@/services/http';
 import { toIsbn13, type MetadataService } from '@/services/metadata';
 
@@ -67,15 +68,30 @@ export interface ScanSessionApi {
   dismissNotice: () => void;
 }
 
+/** Booky's messages while scanning, in the catalogue's language (read when shown, never at import). */
 export const scanMessages = {
-  notBook: 'That’s a product barcode, not a book’s — look for the one starting 978 or 979.',
-  invalidIsbn: 'That doesn’t look like an ISBN. It’s the 10 or 13 digits above the barcode, usually starting 978.',
-  noCoverText: 'Type the words on the cover first — the title and the author.',
-  noCoverRead: 'I couldn’t make out a title on that cover. Try again with the cover filling the frame, or add it by hand.',
-  offlineCover: 'I can’t reach the library catalogues right now, so I can’t search for that cover. Try again when you’re online.',
-  queued: 'Saved — I’ll look this up when you’re back online.',
-  failed: 'Something went wrong while I was looking. Please try again.',
-} as const;
+  get notBook() {
+    return t('scan.messages.notBook');
+  },
+  get invalidIsbn() {
+    return t('scan.messages.invalidIsbn');
+  },
+  get noCoverText() {
+    return t('scan.messages.noCoverText');
+  },
+  get noCoverRead() {
+    return t('scan.messages.noCoverRead');
+  },
+  get offlineCover() {
+    return t('scan.messages.offlineCover');
+  },
+  get queued() {
+    return t('scan.messages.queued');
+  },
+  get failed() {
+    return t('common.lookupFailed');
+  },
+};
 
 const REPEAT_WINDOW_MS = 3000;
 
@@ -139,7 +155,7 @@ export function useScanSession({ service: injected, onFound }: UseScanSessionOpt
 
   const lookUp = useCallback(
     async (isbn13: string, source: ScanSession['source']) => {
-      const abort = begin('isbn', `Looking up ${formatIsbn13(isbn13)}…`);
+      const abort = begin('isbn', t('scan.messages.lookingUp', { isbn: formatIsbn13(isbn13) }));
       try {
         const { candidates } = await service.lookupIsbn(isbn13, { signal: abort.signal });
         if (abort.signal.aborted) return;
@@ -166,7 +182,7 @@ export function useScanSession({ service: injected, onFound }: UseScanSessionOpt
   const searchCover = useCallback(
     async (queries: OcrQuery[], photoUri: string | null) => {
       if (!queries.length) return setState({ phase: 'error', reason: 'invalid', message: photoUri ? scanMessages.noCoverRead : scanMessages.noCoverText });
-      const abort = begin('cover', `Searching for “${queries[0].title ?? queries[0].text}”…`);
+      const abort = begin('cover', t('scan.messages.searching', { text: queries[0].title ?? queries[0].text ?? '' }));
       try {
         const { candidates, used } = await runCoverSearch((q, signal) => service.search(q, { signal }), queries, { signal: abort.signal });
         if (abort.signal.aborted) return;

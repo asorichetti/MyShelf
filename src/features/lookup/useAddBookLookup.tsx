@@ -6,9 +6,10 @@ import { LookupPanel } from '@/components/book/LookupPanel';
 import { BookyBubble } from '@/components/booky';
 import { useSnackbar } from '@/components/ui';
 import { booksRepo, useDatabase } from '@/db';
-import { bookMatchKey, candidateSeries, candidateToDraft, draftFieldOrder, type BookDraft, type BookDraftField } from '@/domain';
+import { bookMatchKey, candidateSeries, candidateToDraft, draftFieldOrder, joinNames, type BookDraft, type BookDraftField } from '@/domain';
 import { attachBestCover, includeGoogleCovers } from '@/features/covers';
 import { emit } from '@/features/events';
+import { t, translate, type MessageKey } from '@/i18n';
 import { combineCoverSources, coverSourceFromCandidate, resolveCover, type CoverSource } from '@/services/covers';
 import { isAbortError, OfflineError } from '@/services/http';
 import { toIsbn13, type BookCandidate } from '@/services/metadata';
@@ -37,20 +38,22 @@ export interface AddBookLookup {
   seriesSuggestion: { name: string; position: number | null } | null;
 }
 
-const WARNINGS: Record<string, string> = {
-  googlebooks: 'Google Books didn’t answer, so these come from Open Library only.',
-  openlibrary: 'Open Library didn’t answer, so these come from Google Books only.',
+const WARNINGS: Record<string, MessageKey> = {
+  googlebooks: 'lookup.warnings.googlebooks',
+  openlibrary: 'lookup.warnings.openlibrary',
 };
 
-const guessLabels: Partial<Record<BookDraftField, string>> = { title: 'title', authors: 'author', isbn: 'ISBN' };
+const guessLabels: Partial<Record<BookDraftField, MessageKey>> = { title: 'lookup.guess.fields.title', authors: 'lookup.guess.fields.authors', isbn: 'lookup.guess.fields.isbn' };
 
 /** "Please check": the form was started from guesses (the words read off a cover). */
 function GuessNotice({ fields }: { fields: readonly BookDraftField[] }) {
-  const names = fields.map((f) => guessLabels[f] ?? f);
-  const list = names.length > 1 ? `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}` : names[0];
+  const names = fields.map((f) => {
+    const key = guessLabels[f];
+    return key ? translate(key) : f;
+  });
   return (
     <View testID={Testids.prefill.notice} role="status">
-      <BookyBubble expression="thinking" title="Please check" message={`I guessed the ${list} from the cover. Check ${names.length > 1 ? 'them' : 'it'} against your book before saving.`} />
+      <BookyBubble expression="thinking" title={t('lookup.guess.title')} message={t('lookup.guess.message', { count: names.length, fields: joinNames(names) })} />
     </View>
   );
 }
@@ -58,7 +61,8 @@ function GuessNotice({ fields }: { fields: readonly BookDraftField[] }) {
 function warningText(state: LookupState): string | null {
   if (state.status !== 'results') return null;
   const failed = state.warnings.find((w) => w.reason !== 'rate-limited' || state.warnings.length === 1);
-  return failed ? (WARNINGS[failed.provider] ?? null) : null;
+  const key = failed ? WARNINGS[failed.provider] : undefined;
+  return key ? translate(key) : null;
 }
 
 /**
@@ -134,7 +138,7 @@ export function useAddBookLookup(
     const author = draft.authors[0]?.name;
     const isbn = toIsbn13(draft.isbn);
     if (!isbn && !(draft.title.trim() && author)) {
-      show({ message: 'Add the ISBN, or the title and author, and I’ll look for the cover.' });
+      show({ message: t('lookup.cover.needDetails') });
       return;
     }
     try {
@@ -150,17 +154,16 @@ export function useAddBookLookup(
       const { http } = getLookupServices(db);
       const { cover } = await resolveCover(source, { http, includeGoogle: await includeGoogleCovers(db) });
       if (!cover) {
-        show({ message: 'I couldn’t find a cover online for this one. You can photograph yours instead.' });
+        show({ message: t('lookup.cover.notFound') });
         return;
       }
       setField('coverUri', cover.url);
       onlineCover.current = { url: cover.url, source };
-      show({ message: 'Found the cover and put it on the card.' });
+      show({ message: t('lookup.cover.found') });
     } catch (error) {
       if (isAbortError(error)) return;
       show({
-        message:
-          error instanceof OfflineError ? 'I can’t reach the catalogues right now. Try again when you’re online.' : 'Sorry, I couldn’t look for a cover just now.',
+        message: error instanceof OfflineError ? t('lookup.cover.offline') : t('lookup.cover.failed'),
       });
     }
   }, [db, service, show]);

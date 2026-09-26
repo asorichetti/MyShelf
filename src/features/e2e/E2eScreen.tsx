@@ -7,6 +7,7 @@ import { useDatabase } from '@/db';
 import { isIsoDate, setToday } from '@/domain';
 import { emit } from '@/features/events';
 import { NotFoundScreen } from '@/features/navigation/NotFoundScreen';
+import { t } from '@/i18n';
 import { fixtureNames, isFixtureName } from '@/testing/fixtures';
 import { loadFixture } from '@/testing/loadFixture';
 
@@ -28,9 +29,9 @@ function FixtureLoader() {
   const frozen = first(params.today);
   const crash = first(params.crash);
   const problem = !isFixtureName(fixture)
-    ? `Unknown fixture "${fixture}". Try one of: ${fixtureNames.join(', ')}.`
+    ? t('e2e.unknownFixture', { name: fixture, names: fixtureNames.join(t('common.list.separator')) })
     : frozen != null && !isIsoDate(frozen)
-      ? `"today" must be a YYYY-MM-DD date, got "${frozen}".`
+      ? t('e2e.badToday', { value: frozen })
       : null;
   const [error, setError] = useState<string | null>(null);
 
@@ -57,7 +58,7 @@ function FixtureLoader() {
   if (message) {
     return (
       <Screen pageState="error" centered edges={['top', 'bottom', 'left', 'right']}>
-        <EmptyState illustration={<Booky expression="concerned" size={96} />} headingLevel={1} title="Couldn't load the fixture" />
+        <EmptyState illustration={<Booky expression="concerned" size={96} />} headingLevel={1} title={t('e2e.loadFailed')} />
         <Text align="center" color="inkMuted" selectable>
           {message}
         </Text>
@@ -66,7 +67,7 @@ function FixtureLoader() {
   }
   return (
     <Screen pageState="loading" centered scroll={false} edges={['top', 'bottom', 'left', 'right']}>
-      <EmptyState illustration={<Booky expression="thinking" size={96} animated={false} />} headingLevel={1} title="Setting out the books…" />
+      <EmptyState illustration={<Booky expression="thinking" size={96} animated={false} />} headingLevel={1} title={t('e2e.loading')} />
     </Screen>
   );
 }

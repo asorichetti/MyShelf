@@ -5,6 +5,7 @@ import { StyleSheet, View } from 'react-native';
 import { BookyBubble, useInlineTip } from '@/components/booky';
 import { IconButton } from '@/components/ui';
 import { bookBarcodeTypes } from '@/domain';
+import { t } from '@/i18n';
 import { Testids } from '@/testing/testids.gen';
 import { useTheme } from '@/theme';
 
@@ -53,19 +54,19 @@ export function BarcodeScanner({ onBarcode, paused, onReadCover }: BarcodeScanne
       <View style={[styles.frame, { borderRadius: radii.lg }]}>
         <CameraView
           testID={Testids.scan.camera}
-          accessibilityLabel="Camera: line up the barcode on the back cover"
+          accessibilityLabel={t('scan.barcode.cameraLabel')}
           style={StyleSheet.absoluteFill}
           facing="back"
           enableTorch={torch}
           barcodeScannerSettings={{ barcodeTypes: [...bookBarcodeTypes] }}
           onBarcodeScanned={paused ? undefined : onBarcodeScanned}
         />
-        <Viewfinder hint="Line up the barcode on the back cover" active={!paused} />
+        <Viewfinder hint={t('scan.barcode.hint')} active={!paused} />
         <View style={[styles.torch, { top: spacing.sm, right: spacing.sm }]}>
           <IconButton
             icon={torch ? 'flashlight-off' : 'flashlight'}
             variant="filled"
-            accessibilityLabel={torch ? 'Turn the torch off' : 'Turn the torch on'}
+            accessibilityLabel={torch ? t('scan.barcode.torchOff') : t('scan.barcode.torchOn')}
             onPress={() => setTorch((t) => !t)}
             testID={Testids.scan.torch}
           />
@@ -75,7 +76,7 @@ export function BarcodeScanner({ onBarcode, paused, onReadCover }: BarcodeScanne
         <BookyBubble
           expression={tip.tip.expression}
           message={tip.text}
-          actions={[{ label: tip.action?.label ?? 'Read the cover', onPress: onReadCover, testID: Testids.scan.readCoverInstead }]}
+          actions={[{ label: tip.action?.label ?? t('scan.barcode.readCover'), onPress: onReadCover, testID: Testids.scan.readCoverInstead }]}
         />
       ) : null}
     </View>

@@ -1,6 +1,7 @@
 import { formatLabels } from '@/components/book/BookForm';
 import { CandidateCard, sourceLabels, type CandidateCardData } from '@/components/book/CandidateCard';
 import { languageName } from '@/domain';
+import { t } from '@/i18n';
 import { Testids } from '@/testing/testids.gen';
 
 /**
@@ -9,19 +10,20 @@ import { Testids } from '@/testing/testids.gen';
  * same work are told apart quickly.
  */
 export function editionLabel(c: CandidateCardData): string {
+  const isbn = c.isbn13 ?? c.isbn10;
   const parts = [
     c.format ? formatLabels[c.format] : null,
     c.publisher,
     c.publicationYear != null ? String(c.publicationYear) : null,
-    c.pageCount ? `${c.pageCount} pages` : null,
+    c.pageCount ? t('editions.row.pages', { count: c.pageCount }) : null,
     c.language && c.language !== 'en' ? languageName(c.language) : null,
-    c.isbn13 ?? c.isbn10 ? `ISBN ${c.isbn13 ?? c.isbn10}` : 'no ISBN',
+    isbn ? t('editions.row.isbn', { isbn }) : t('editions.row.noIsbn'),
     c.title,
-    `from ${sourceLabels[c.source]}`,
+    t('editions.row.from', { source: sourceLabels[c.source] }),
     // The cover is how a sighted reader spots their edition; say whether there is one to compare.
-    c.coverUrl ? 'with a cover picture' : 'no cover picture',
+    c.coverUrl ? t('editions.row.withCover') : t('editions.row.noCover'),
   ];
-  return parts.filter(Boolean).join(', ');
+  return parts.filter(Boolean).join(t('editions.row.separator'));
 }
 
 export interface EditionRowProps {

@@ -3,6 +3,7 @@ import { View } from 'react-native';
 
 import { Button, Text } from '@/components/ui';
 import type { OcrResult } from '@/domain';
+import { t } from '@/i18n';
 import { useTheme } from '@/theme';
 
 import { BarcodeScanner } from './BarcodeScanner';
@@ -36,9 +37,9 @@ export function ScannerHost(props: ScannerHostProps) {
   if (typing || permission.state === 'loading') {
     return (
       <View style={{ gap: spacing.md }}>
-        {permission.state === 'loading' ? <Text color="inkMuted">Getting the camera ready…</Text> : null}
+        {permission.state === 'loading' ? <Text color="inkMuted">{t('scan.host.cameraLoading')}</Text> : null}
         {mode === 'barcode' ? <TypedIsbnField onSubmit={props.onIsbnText} disabled={paused} /> : <TypedCoverTextField onSubmit={props.onCoverText} disabled={paused} />}
-        {typing && permission.state !== 'denied' ? <Button variant="ghost" label="Use the camera instead" onPress={() => setTyping(false)} /> : null}
+        {typing && permission.state !== 'denied' ? <Button variant="ghost" label={t('scan.host.useCamera')} onPress={() => setTyping(false)} /> : null}
       </View>
     );
   }
@@ -46,7 +47,7 @@ export function ScannerHost(props: ScannerHostProps) {
     return (
       <PermissionPrompt
         state={permission.state}
-        typeLabel={mode === 'barcode' ? 'Type ISBN instead' : 'Type the cover text instead'}
+        typeLabel={mode === 'barcode' ? t('scan.permission.typeIsbn') : t('scan.permission.typeCoverText')}
         onAllow={permission.request}
         onOpenSettings={permission.openSettings}
         onTypeIsbn={() => setTyping(true)}
@@ -60,7 +61,7 @@ export function ScannerHost(props: ScannerHostProps) {
       ) : (
         <CoverCapture recognize={props.recognize} available={props.ocrAvailable} onRecognised={props.onOcr} onTypeText={props.onCoverText} paused={paused} />
       )}
-      {mode === 'barcode' ? <Button variant="ghost" label="Type the ISBN instead" onPress={() => setTyping(true)} /> : null}
+      {mode === 'barcode' ? <Button variant="ghost" label={t('scan.host.typeIsbn')} onPress={() => setTyping(true)} /> : null}
     </View>
   );
 }

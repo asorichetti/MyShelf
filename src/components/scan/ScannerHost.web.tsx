@@ -2,6 +2,7 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { StyleSheet, View } from 'react-native';
 
 import { Text } from '@/components/ui';
+import { t } from '@/i18n';
 import { useTheme } from '@/theme';
 
 import { TypedCoverTextField, TypedIsbnField } from './WebScanInput';
@@ -22,9 +23,7 @@ export function ScannerHost({ mode, paused, onIsbnText, onCoverText }: ScannerHo
       <View style={[styles.note, { gap: spacing.sm, padding: spacing.md, borderRadius: radii.md, borderColor: colors.border, backgroundColor: colors.surface }]}>
         <MaterialCommunityIcons name="flask-outline" size={sizes.icon} color={colors.inkMuted} aria-hidden />
         <Text variant="caption" color="inkMuted" style={styles.fill}>
-          {mode === 'barcode'
-            ? 'Web test harness: type the ISBN a barcode would give. On a phone this is the camera.'
-            : 'Web test harness: type what the cover says. On a phone the camera reads it.'}
+          {mode === 'barcode' ? t('scan.host.webIsbnNote') : t('scan.host.webCoverNote')}
         </Text>
       </View>
       {mode === 'barcode' ? <TypedIsbnField onSubmit={onIsbnText} disabled={paused} /> : <TypedCoverTextField onSubmit={onCoverText} disabled={paused} />}

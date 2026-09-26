@@ -5,6 +5,7 @@ import type { CandidateCardData } from '@/components/book/CandidateCard';
 import { CoverImage } from '@/components/book/CoverImage';
 import { Text } from '@/components/ui';
 import { joinNames } from '@/domain';
+import { t } from '@/i18n';
 import { Testids } from '@/testing/testids.gen';
 import { useTheme } from '@/theme';
 
@@ -49,18 +50,19 @@ export function WorkGroup({ work, expanded, onToggle, loading, children, message
   const { colors, spacing, radii, sizes } = useTheme();
   const author = joinNames(work.authors);
   const facts = [
-    work.publicationYear != null ? `${work.kind === 'work' ? 'First published ' : ''}${work.publicationYear}` : null,
-    work.editionCount ? `${work.editionCount} ${work.editionCount === 1 ? 'edition' : 'editions'}` : null,
+    work.publicationYear != null ? (work.kind === 'work' ? t('editions.work.firstPublished', { year: work.publicationYear }) : String(work.publicationYear)) : null,
+    work.editionCount ? t('editions.work.editionCount', { count: work.editionCount }) : null,
   ].filter(Boolean);
-  const label = [work.title, author ? `by ${author}` : null, ...facts].filter(Boolean).join(', ');
+  const label = [work.title, author ? t('editions.work.by', { author }) : null, ...facts].filter(Boolean).join(t('editions.work.labelSeparator'));
+  const toggleLabel = expanded ? t('editions.work.hide', { label }) : t('editions.work.show', { label });
   return (
     <View style={{ gap: spacing.sm }}>
       <Pressable
         role="button"
         aria-expanded={expanded}
         accessibilityState={{ expanded }}
-        accessibilityLabel={`${label}. ${expanded ? 'Hide' : 'Show'} its editions`}
-        aria-label={`${label}. ${expanded ? 'Hide' : 'Show'} its editions`}
+        accessibilityLabel={toggleLabel}
+        aria-label={toggleLabel}
         onPress={onToggle}
         testID={Testids.picker.work}
         style={({ pressed }) => [
@@ -87,14 +89,14 @@ export function WorkGroup({ work, expanded, onToggle, loading, children, message
           ) : null}
           {facts.length ? (
             <Text variant="caption" color="onPrimaryContainer">
-              {facts.join(' · ')}
+              {facts.join(t('editions.work.factSeparator'))}
             </Text>
           ) : null}
         </View>
         <MaterialCommunityIcons name={expanded ? 'chevron-up' : 'chevron-down'} size={sizes.icon + 4} color={colors.onPrimaryContainer} aria-hidden />
       </Pressable>
       {expanded ? (
-        <View role="radiogroup" aria-label={`Editions of ${work.title}`} style={{ gap: spacing.sm, paddingLeft: spacing.md }}>
+        <View role="radiogroup" aria-label={t('editions.work.editionsOf', { title: work.title })} style={{ gap: spacing.sm, paddingLeft: spacing.md }}>
           {loading ? (
             <>
               <EditionSkeleton />

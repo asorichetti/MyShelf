@@ -20,6 +20,7 @@ import { emit } from '@/features/events';
 import { applyDetectedSeries } from '@/features/series/detectedSeries';
 import { beginSeriesSave } from '@/features/series/seriesEvents';
 import { idListHas } from '@/features/series/seriesSettings';
+import { t } from '@/i18n';
 import { isAbortError, OfflineError } from '@/services/http';
 import type { BookCandidate, MetadataService } from '@/services/metadata';
 
@@ -94,10 +95,7 @@ export function useRefresh(bookId: number | null, { service: injected }: { servi
         setState({
           status: 'error',
           book,
-          message:
-            error instanceof OfflineError
-              ? 'I can’t reach the library catalogues right now. Try again when you’re online.'
-              : 'Something went wrong while I was looking. Please try again.',
+          message: error instanceof OfflineError ? t('refresh.offline') : t('common.lookupFailed'),
         });
       }
     })().catch((error) => {

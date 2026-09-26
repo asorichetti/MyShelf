@@ -5,6 +5,7 @@ import { Booky } from '@/components/booky';
 import { EmptyState, Screen } from '@/components/ui';
 import { NotFoundScreen } from '@/features/navigation/NotFoundScreen';
 import { injectScan } from '@/features/scan/scanInjector';
+import { t } from '@/i18n';
 
 import { isE2eEnabled } from './e2eFlag';
 
@@ -25,7 +26,7 @@ function Injector() {
   }, [isbn, text]);
   return (
     <Screen pageState="loading" centered edges={['top', 'bottom', 'left', 'right']}>
-      <EmptyState illustration={<Booky expression="thinking" size={96} animated={false} />} headingLevel={1} title="Handing the scan over…" />
+      <EmptyState illustration={<Booky expression="thinking" size={96} animated={false} />} headingLevel={1} title={t('e2e.handingOver')} />
     </Screen>
   );
 }

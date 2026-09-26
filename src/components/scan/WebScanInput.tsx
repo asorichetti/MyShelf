@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { Button, TextField } from '@/components/ui';
+import { t } from '@/i18n';
 import { Testids } from '@/testing/testids.gen';
 import { useTheme } from '@/theme';
 
@@ -12,7 +13,7 @@ export interface TypedIsbnFieldProps {
 }
 
 /** "Type an ISBN": the typed stand-in for a barcode (the web harness, and "Type ISBN instead" on a phone). */
-export function TypedIsbnField({ onSubmit, disabled, label = 'Type an ISBN' }: TypedIsbnFieldProps) {
+export function TypedIsbnField({ onSubmit, disabled, label }: TypedIsbnFieldProps) {
   const { spacing } = useTheme();
   const [text, setText] = useState('');
   const submit = () => text.trim() && onSubmit(text);
@@ -20,10 +21,10 @@ export function TypedIsbnField({ onSubmit, disabled, label = 'Type an ISBN' }: T
     <View style={[styles.row, { gap: spacing.sm }]}>
       <View style={styles.field}>
         <TextField
-          label={label}
+          label={label ?? t('scan.typed.isbnLabel')}
           value={text}
           onChangeText={setText}
-          placeholder="e.g. 978-0-552-16659-1"
+          placeholder={t('scan.typed.isbnPlaceholder')}
           keyboardType="number-pad"
           inputMode="numeric"
           autoCorrect={false}
@@ -31,10 +32,10 @@ export function TypedIsbnField({ onSubmit, disabled, label = 'Type an ISBN' }: T
           onSubmitEditing={submit}
           editable={!disabled}
           testID={Testids.scan.webIsbn}
-          helperText="The 10 or 13 digits above the barcode."
+          helperText={t('scan.typed.isbnHelper')}
         />
       </View>
-      <Button label="Look up" onPress={submit} disabled={disabled} testID={Testids.scan.webIsbnSubmit} />
+      <Button label={t('scan.typed.lookUp')} onPress={submit} disabled={disabled} testID={Testids.scan.webIsbnSubmit} />
     </View>
   );
 }
@@ -52,17 +53,17 @@ export function TypedCoverTextField({ onSubmit, disabled }: TypedCoverTextFieldP
   return (
     <View style={{ gap: spacing.sm }}>
       <TextField
-        label="Type the cover text"
+        label={t('scan.typed.coverLabel')}
         value={text}
         onChangeText={setText}
-        placeholder={'e.g. THE COLOUR OF MAGIC\nTERRY PRATCHETT'}
+        placeholder={t('scan.typed.coverPlaceholder')}
         multiline
         autoCorrect={false}
         editable={!disabled}
         testID={Testids.scan.webText}
-        helperText="The title and author as they appear on the cover, one per line."
+        helperText={t('scan.typed.coverHelper')}
       />
-      <Button label="Search" onPress={submit} disabled={disabled} testID={Testids.scan.webTextSubmit} />
+      <Button label={t('scan.typed.search')} onPress={submit} disabled={disabled} testID={Testids.scan.webTextSubmit} />
     </View>
   );
 }
