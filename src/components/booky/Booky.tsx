@@ -1,19 +1,17 @@
-import { useEffect, useState } from 'react';
-import { Animated, Easing, type StyleProp, type ViewStyle } from 'react-native';
+import { Animated, type StyleProp, type ViewStyle } from 'react-native';
 import Svg, { Circle, Ellipse, G, Path } from 'react-native-svg';
 
-import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { useTheme, type ColorTokens } from '@/theme';
 
 import { useBookyMode } from './BookyProvider';
 import { expressionDescriptions, type BookyExpression } from './expressions';
-import { USE_NATIVE_DRIVER as useNativeDriver } from './nativeDriver';
+import { useBookyMotion } from './useBookyMotion';
 
 export interface BookyProps {
   expression?: BookyExpression;
   /** Rendered width in points; height follows the 120x170 artwork ratio. */
   size?: number;
-  /** Gentle idle bob. Always off when the OS asks for reduced motion. */
+  /** Gentle idle bob and blink. Always off when the OS asks for reduced motion. */
   animated?: boolean;
   /** Overrides the default accessible description. */
   accessibilityLabel?: string;
@@ -30,26 +28,7 @@ const EYE_R = { x: 74, y: 60 };
 export function Booky({ expression = 'happy', size = 120, animated = true, accessibilityLabel, testID, style }: BookyProps) {
   const { colors } = useTheme();
   const mode = useBookyMode();
-  const reduceMotion = useReducedMotion();
-  const [bob] = useState(() => new Animated.Value(0));
-  const shouldAnimate = animated && !reduceMotion;
-
-  useEffect(() => {
-    if (!shouldAnimate) {
-      bob.setValue(0);
-      return;
-    }
-    const loop = Animated.loop(
-      Animated.sequence([
-        Animated.timing(bob, { toValue: 1, duration: 1400, easing: Easing.inOut(Easing.sin), useNativeDriver }),
-        Animated.timing(bob, { toValue: 0, duration: 1400, easing: Easing.inOut(Easing.sin), useNativeDriver }),
-      ]),
-    );
-    loop.start();
-    return () => loop.stop();
-  }, [bob, shouldAnimate]);
-
-  const translateY = bob.interpolate({ inputRange: [0, 1], outputRange: [0, -size * 0.04] });
+  const { translateY, blinking } = useBookyMotion(animated && mode !== 'off');
   const label = accessibilityLabel ?? `Booky the bookmark, ${expressionDescriptions[expression]}`;
   // Booky Off (P07-06): the character stays out of sight everywhere.
   if (mode === 'off') return null;
@@ -65,7 +44,7 @@ export function Booky({ expression = 'happy', size = 120, animated = true, acces
     >
       <Svg width="100%" height="100%" viewBox={`0 0 ${VIEW_W} ${VIEW_H}`} aria-hidden>
         <Body colors={colors} />
-        <Face colors={colors} expression={expression} />
+        <Face colors={colors} expression={expression} blinking={blinking} />
       </Svg>
     </Animated.View>
   );
@@ -106,7 +85,30 @@ function Eye({ cx, cy, colors, dx = 0, dy = 0, big = false }: { cx: number; cy: 
   );
 }
 
-function Face({ colors, expression }: { colors: ColorTokens; expression: BookyExpression }) {
+/** Closed eyes for a blink: two soft lids where the eyes are. */
+function Blink({ colors }: { colors: ColorTokens }) {
+  const lid = { stroke: colors.bookyPupil, strokeWidth: 3, strokeLinecap: 'round' as const, fill: 'none' };
+  return (
+    <G>
+      <Ellipse cx={EYE_L.x} cy={EYE_L.y} rx={11} ry={12.5} fill={colors.bookyBody} />
+      <Ellipse cx={EYE_R.x} cy={EYE_R.y} rx={11} ry={12.5} fill={colors.bookyBody} />
+      <Path d={`M${EYE_L.x - 9} ${EYE_L.y + 1} Q${EYE_L.x} ${EYE_L.y + 6} ${EYE_L.x + 9} ${EYE_L.y + 1}`} {...lid} />
+      <Path d={`M${EYE_R.x - 9} ${EYE_R.y + 1} Q${EYE_R.x} ${EYE_R.y + 6} ${EYE_R.x + 9} ${EYE_R.y + 1}`} {...lid} />
+    </G>
+  );
+}
+
+function Face({ colors, expression, blinking = false }: { colors: ColorTokens; expression: BookyExpression; blinking?: boolean }) {
+  return (
+    <G>
+      <Features colors={colors} expression={expression} />
+      {/* Sleepy Booky's eyes are closed already. */}
+      {blinking && expression !== 'sleepy' ? <Blink colors={colors} /> : null}
+    </G>
+  );
+}
+
+function Features({ colors, expression }: { colors: ColorTokens; expression: BookyExpression }) {
   const ink = colors.bookyPupil;
   const line = { stroke: ink, strokeWidth: 3, strokeLinecap: 'round' as const, fill: 'none' };
   const cheeks = (

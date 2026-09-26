@@ -177,6 +177,7 @@ function PlacedTip({ tip, onTabs }: { tip: ShownTip; onTabs: boolean }) {
         messageTestID={ids.text}
         dismissTestID={ids.dismiss}
         avatarTestID={Testids.booky.avatar}
+        pop
       />
     </View>
   );

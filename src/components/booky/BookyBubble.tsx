@@ -1,11 +1,14 @@
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import { Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
+import { useEffect, useState } from 'react';
+import { Animated, Easing, Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { Button, Text, type ButtonVariant } from '@/components/ui';
+import { useReducedMotionState } from '@/hooks/useReducedMotion';
 import { useTheme } from '@/theme';
 
 import { Booky } from './Booky';
 import { useBookyMode } from './BookyProvider';
+import { USE_NATIVE_DRIVER as useNativeDriver } from './nativeDriver';
 
 import type { BookyExpression } from './expressions';
 
@@ -29,7 +32,25 @@ export interface BookyBubbleProps {
   messageTestID?: string;
   dismissTestID?: string;
   avatarTestID?: string;
+  /** Pop in (150 ms scale and fade) when it appears; skipped with reduced motion. */
+  pop?: boolean;
   style?: StyleProp<ViewStyle>;
+}
+
+/** The bubble's pop-in (P07-08). */
+export const POP_MS = 150;
+
+/** 0 -> 1 over POP_MS once mounted, only when reduced motion is definitely off; otherwise 1 from the start. */
+function usePop(enabled: boolean): Animated.Value | null {
+  const reduced = useReducedMotionState();
+  const [progress] = useState(() => (enabled && reduced === false ? new Animated.Value(0) : null));
+  useEffect(() => {
+    if (!progress) return;
+    const run = Animated.timing(progress, { toValue: 1, duration: POP_MS, easing: Easing.out(Easing.quad), useNativeDriver });
+    run.start();
+    return () => run.stop();
+  }, [progress]);
+  return progress;
 }
 
 /** Booky with a speech bubble. The text is announced politely by screen readers. */
@@ -44,6 +65,7 @@ export function BookyBubble({
   messageTestID,
   dismissTestID,
   avatarTestID,
+  pop = false,
   style,
 }: BookyBubbleProps) {
   const theme = useTheme();
@@ -51,8 +73,12 @@ export function BookyBubble({
   // Off: Booky's words still show where they matter (a lookup found nothing), without the character.
   const mode = useBookyMode();
   const withAvatar = showAvatar && mode !== 'off';
+  const popping = usePop(pop);
+  const motion = popping
+    ? { opacity: popping, transform: [{ scale: popping.interpolate({ inputRange: [0, 1], outputRange: [0.92, 1] }) }] }
+    : null;
   return (
-    <View testID={testID} style={[styles.row, { gap: spacing.sm }, style]}>
+    <Animated.View testID={testID} style={[styles.row, { gap: spacing.sm }, motion, style]}>
       {withAvatar ? <Booky expression={expression} size={56} testID={avatarTestID} /> : null}
       <View style={styles.bubbleWrap}>
         {withAvatar ? (
@@ -126,7 +152,7 @@ export function BookyBubble({
           ) : null}
         </View>
       </View>
-    </View>
+    </Animated.View>
   );
 }
 

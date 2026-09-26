@@ -252,3 +252,37 @@ register({
     expect(face === 0, `${book} (quiet): expected no Booky bubble, found ${face} Booky images`);
   },
 });
+
+/** Booky's transform in the tip, sampled a few times over ~1.2 s. */
+async function avatarTransforms(c: Context): Promise<string[]> {
+  const out: string[] = [];
+  for (let i = 0; i < 4; i++) {
+    out.push(await c.page.locator(`${bubble} ${avatar}`).first().evaluate((el) => getComputedStyle(el).transform));
+    await c.page.waitForTimeout(400);
+  }
+  return out;
+}
+
+register({
+  name: 'booky-motion',
+  suite: 'p07',
+  desc: 'Booky bobs gently in a tip; with prefers-reduced-motion he stays perfectly still (no transform changes), and the bubble does not move the page',
+  async run(c) {
+    await openFixture(c, 'demo', '/');
+    await waitForCount(c, tid(Testids.home.row), 12, '/');
+    await openHelp(c, '/');
+    const moving = await avatarTransforms(c);
+    expect(new Set(moving).size > 1, `/: expected Booky to bob, found one transform ${q(moving[0])}`);
+    const before = await c.page.locator(tid(Testids.home.title)).boundingBox();
+
+    await c.page.emulateMedia({ reducedMotion: 'reduce' });
+    await c.page.reload();
+    await waitForCount(c, tid(Testids.home.row), 12, '/ (reduced motion)');
+    await openHelp(c, '/ (reduced motion)');
+    const still = await avatarTransforms(c);
+    expect(new Set(still).size === 1, `/ (reduced motion): expected Booky still, found ${q(still)}`);
+    const after = await c.page.locator(tid(Testids.home.title)).boundingBox();
+    expect(JSON.stringify(before) === JSON.stringify(after), `/: the bubble moved the page: ${q(before)} -> ${q(after)}`);
+    await c.checkGates('/ (reduced motion, help open)');
+  },
+});
