@@ -20,7 +20,7 @@ describe('0004_cover_attempts migration', () => {
     const old = await openNodeDatabase();
     await migrate(old, migrations.slice(0, 3));
     expect(await getSchemaVersion(old)).toBe(3);
-    expect((await migrate(old)).applied).toEqual([4]);
+    expect((await migrate(old)).applied).toEqual(migrations.slice(3).map((m) => m.version));
     expect((await migrate(old)).applied).toEqual([]);
     await old.close();
   });

@@ -1,0 +1,68 @@
+{
+  "format": "myshelf-backup",
+  "formatVersion": 1,
+  "schemaVersion": 1,
+  "appVersion": "0.9.0",
+  "exportedAt": "2026-09-01T08:15:00.000Z",
+  "tables": {
+    "series": [
+      { "id": 3, "name": "Earthsea", "total_count": 6 }
+    ],
+    "books": [
+      {
+        "id": 10, "title": "A Wizard of Earthsea", "subtitle": null, "isbn13": "9780547773742", "isbn10": "0547773749",
+        "edition": null, "publisher": "Houghton Mifflin Harcourt", "publication_year": 1968, "page_count": 183, "summary": null,
+        "cover_uri": "https://covers.openlibrary.org/b/id/8739161-L.jpg", "language": "en", "format": "paperback",
+        "series_id": 3, "series_position": 1, "source": "openlibrary", "source_id": "OL27513W", "notes": "Gift from Gran",
+        "created_at": "2026-08-01T10:00:00.000Z", "updated_at": "2026-08-01T10:00:00.000Z"
+      },
+      {
+        "id": 11, "title": "The Farthest Shore", "subtitle": null, "isbn13": "9780140306941", "isbn10": "0140306943",
+        "edition": null, "publisher": null, "publication_year": 1972, "page_count": null, "summary": null,
+        "cover_uri": null, "language": "en", "format": "hardcover",
+        "series_id": 3, "series_position": 3, "source": "manual", "source_id": null, "notes": null,
+        "created_at": "2026-08-02T10:00:00.000Z", "updated_at": "2026-08-03T11:30:00.000Z"
+      },
+      {
+        "id": 12, "title": "Tales from Earthsea", "subtitle": null, "isbn13": null, "isbn10": null,
+        "edition": null, "publisher": null, "publication_year": 2001, "page_count": null, "summary": null,
+        "cover_uri": "https://covers.openlibrary.org/b/id/6979861-L.jpg", "language": "en", "format": null,
+        "series_id": 3, "series_position": 5.5, "source": "manual", "source_id": null, "notes": null,
+        "created_at": "2026-08-04T10:00:00.000Z", "updated_at": "2026-08-04T10:00:00.000Z"
+      }
+    ],
+    "authors": [
+      { "id": 20, "name": "Ursula K. Le Guin", "sort_name": "Le Guin, Ursula K." }
+    ],
+    "book_authors": [
+      { "book_id": 10, "author_id": 20, "role": "author", "position": 0 },
+      { "book_id": 11, "author_id": 20, "role": "author", "position": 0 },
+      { "book_id": 12, "author_id": 20, "role": "author", "position": 0 }
+    ],
+    "genres": [
+      { "id": 30, "name": "Fantasy" }
+    ],
+    "book_genres": [
+      { "book_id": 10, "genre_id": 30, "user_edited": 1 },
+      { "book_id": 11, "genre_id": 30, "user_edited": 0 }
+    ],
+    "groups": [
+      { "id": 40, "name": "Bedside", "colour": "lilac", "icon": "bed", "created_at": "2026-08-05T09:00:00.000Z" }
+    ],
+    "group_books": [
+      { "group_id": 40, "book_id": 10, "position": 1 },
+      { "group_id": 40, "book_id": 12, "position": 0 }
+    ],
+    "borrowers": [
+      { "id": 50, "name": "Priya", "contact": "priya@example.com" }
+    ],
+    "loans": [
+      { "id": 60, "book_id": 10, "borrower_id": 50, "lent_on": "2026-08-10", "due_on": "2026-09-07", "returned_on": null, "note": "Loves dragons" },
+      { "id": 61, "book_id": 11, "borrower_id": 50, "lent_on": "2026-07-01", "due_on": "2026-07-29", "returned_on": "2026-07-20", "note": null }
+    ],
+    "settings": [
+      { "key": "loanDays", "value": "14" },
+      { "key": "shelfSort", "value": "{\"sort\":\"year\",\"direction\":\"desc\"}" }
+    ]
+  }
+}

@@ -12,6 +12,7 @@ import { openNodeDatabase } from '@/db/node';
 const EXPECTED_TABLES = [
   'api_cache',
   'authors',
+  'backup_snapshots',
   'book_authors',
   'book_genres',
   'books',

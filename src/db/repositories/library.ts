@@ -24,6 +24,30 @@ export async function countRows(db: Db): Promise<Record<string, number>> {
   return out;
 }
 
+/** Settings that name books, series or loans by id: meaningless once the library is gone. */
+const ID_SETTINGS = ['series.dismissedBookIds', 'series.pendingConfirmBookIds', 'series.gapTipSeriesIds', 'overdueNudgesShown'];
+
+export interface EraseOptions {
+  /** Also forget every preference (sort, loan length, Booky mode, …). */
+  resetSettings?: boolean;
+}
+
+/**
+ * "Erase library" (P08-09): every book, author, genre, series, group,
+ * borrower and loan, the pending lookups, the cover-search bookkeeping, the
+ * lookup cache and the restore safety copy, in one transaction. Settings are
+ * kept (except the ones that point at deleted rows) unless `resetSettings`.
+ * Cover files on the device are deleted by the caller.
+ */
+export async function eraseLibrary(db: Db, { resetSettings = false }: EraseOptions = {}): Promise<void> {
+  await db.transaction(async (tx) => {
+    for (const table of LIBRARY_TABLES) await tx.run(`DELETE FROM ${table}`);
+    for (const table of ['pending_lookups', 'cover_attempts', 'api_cache', 'backup_snapshots']) await tx.run(`DELETE FROM ${table}`);
+    if (resetSettings) await tx.run('DELETE FROM settings');
+    else await tx.run(`DELETE FROM settings WHERE key IN (${ID_SETTINGS.map(() => '?').join(', ')})`, ID_SETTINGS);
+  });
+}
+
 /** How many books there are and when the first was added (for the backup reminder, P08-06). */
 export async function libraryStats(db: Db): Promise<{ books: number; firstAddedAt: string | null }> {
   const row = await db.get<{ n: number; first: string | null }>('SELECT COUNT(*) AS n, MIN(created_at) AS first FROM books');
