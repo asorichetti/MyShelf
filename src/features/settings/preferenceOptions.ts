@@ -41,3 +41,10 @@ export const loanLengthOptions = [
   ...LOAN_LENGTHS.map((d) => ({ value: String(d), label: loanLengthLabel(d) })),
   { value: 'custom', label: 'Custom…' },
 ];
+
+/** The Appearance choice (P09-02), in the order offered. */
+export const appearanceOptions = [
+  { value: 'system', label: 'Same as my phone', description: 'Light by day, dark by night, whenever your phone switches.' },
+  { value: 'light', label: 'Light', description: 'Warm paper and ink, always.' },
+  { value: 'dark', label: 'Dark', description: 'The night library: lamp-lit colours on a dark shelf, always.' },
+] as const;

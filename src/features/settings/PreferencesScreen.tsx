@@ -1,24 +1,37 @@
 import { useState } from 'react';
 import { View } from 'react-native';
 
-import { Button, SelectField, Text, TextField } from '@/components/ui';
-import { formatDateAs, MAX_LOAN_DAYS, today, type DateFormat, type ShelfGroupBy, type ShelfViewMode } from '@/domain';
+import { ChoiceGroup } from '@/components/settings/SettingsControls';
+import { Button, Heading, SelectField, Text, TextField } from '@/components/ui';
+import { formatDateAs, MAX_LOAN_DAYS, today, type Appearance, type DateFormat, type ShelfGroupBy, type ShelfViewMode } from '@/domain';
 import { LoadingPage } from '@/features/navigation/LoadingPage';
 import { Testids } from '@/testing/testids.gen';
 import { useTheme } from '@/theme';
 
-import { dateFormatOptions, groupByOptions, LOAN_LENGTHS, loanLengthOptions, parseSortValue, sortOptions, sortValue, viewModeOptions } from './preferenceOptions';
+import {
+  appearanceOptions,
+  dateFormatOptions,
+  groupByOptions,
+  LOAN_LENGTHS,
+  loanLengthOptions,
+  parseSortValue,
+  sortOptions,
+  sortValue,
+  viewModeOptions,
+} from './preferenceOptions';
 import { SettingsPage } from './SettingsPage';
 import { useSettings } from './useSettings';
 
 const T = Testids.settings;
 const MAX_CUSTOM_DAYS = 365;
+const appearanceTestIDs: Record<Appearance, string> = { system: Testids.themeSetting.system, light: Testids.themeSetting.light, dark: Testids.themeSetting.dark };
 
 /**
  * Settings → Shelf and lending (P08-07): how the Shelf opens (sort, sections,
- * view), the default loan length and how dates are written. Each choice is
- * saved the moment it is made and used by its screen: the Shelf, the lend
- * sheet's due date, every full date in the app.
+ * view), the default loan length, how dates are written and, since P09-02,
+ * the appearance (the phone's light or dark setting, or always one). Each
+ * choice is saved the moment it is made and used by its screen: the Shelf,
+ * the lend sheet's due date, every full date in the app, every colour.
  */
 export function PreferencesScreen() {
   const { spacing } = useTheme();
@@ -124,6 +137,16 @@ export function PreferencesScreen() {
           <Text variant="caption" color="inkMuted" testID={T.dateExample}>
             {`Today is written ${example}.`}
           </Text>
+        </View>
+        <View style={{ gap: spacing.sm }}>
+          <Heading level={2}>Appearance</Heading>
+          <ChoiceGroup
+            label="Colours"
+            value={settings.appearance}
+            options={appearanceOptions.map((o) => ({ ...o, testID: appearanceTestIDs[o.value] }))}
+            onChange={(v) => void set('appearance', v)}
+            testID={Testids.themeSetting.root}
+          />
         </View>
       </View>
     </SettingsPage>

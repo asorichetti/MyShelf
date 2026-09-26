@@ -504,5 +504,6 @@
     "licenceRow": "about-licence-row"
   },
   "borrowers": { "root": "borrowers-root", "back": "borrowers-back", "row": "borrowers-row", "edit": "borrowers-edit", "delete": "borrowers-delete", "empty": "borrowers-empty" },
-  "pendingList": { "root": "pending-list-root", "back": "pending-list-back", "row": "pending-list-row", "retry": "pending-list-retry", "remove": "pending-list-remove", "empty": "pending-list-empty" }
+  "pendingList": { "root": "pending-list-root", "back": "pending-list-back", "row": "pending-list-row", "retry": "pending-list-retry", "remove": "pending-list-remove", "empty": "pending-list-empty" },
+  "themeSetting": { "root": "theme-setting", "system": "theme-system", "light": "theme-light", "dark": "theme-dark" }
 }

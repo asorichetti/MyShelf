@@ -9,6 +9,10 @@ export type BookyMode = 'helpful' | 'quiet' | 'off';
 export const dateFormats = ['locale', 'medium', 'iso'] as const;
 export type DateFormat = (typeof dateFormats)[number];
 
+/** The app's colours (P09-02): follow the phone's light or dark setting, or always one of them. */
+export const appearances = ['system', 'light', 'dark'] as const;
+export type Appearance = (typeof appearances)[number];
+
 /**
  * Settings that describe this phone rather than the library (when it was
  * last backed up, Booky's backup reminder). Backups leave them out and a
@@ -45,6 +49,8 @@ export interface AppSettings {
   shelfFilters: ShelfFilters;
   /** How full dates are shown (P08-07). */
   dateFormat: DateFormat;
+  /** Light, dark or the phone's own setting (P09-02). */
+  appearance: Appearance;
   /** Let the cover backfill download covers over mobile data (P08-07). Off means Wi-Fi only. */
   coversOnMobileData: boolean;
   /** When a backup was last exported (ISO-8601 UTC), or null for never (P08-02). */
@@ -73,6 +79,7 @@ export const settingDefaults: Readonly<AppSettings> = Object.freeze<AppSettings>
   shelfViewMode: 'list',
   shelfFilters: { genreIds: [], formats: [], languages: [], loan: 'any', series: 'any', yearFrom: null, yearTo: null, recentlyAdded: false },
   dateFormat: 'medium',
+  appearance: 'system',
   coversOnMobileData: true,
   'backup.lastAt': null,
   'backup.reminderShownAt': null,

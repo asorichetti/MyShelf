@@ -67,13 +67,14 @@ export interface ChoiceGroupProps<V extends string> {
   value: V | null;
   options: readonly ChoiceOption<V>[];
   onChange: (value: V) => void;
+  testID?: string;
 }
 
 /** Big radio cards (a label and a sentence each), for choices that deserve explaining. */
-export function ChoiceGroup<V extends string>({ label, value, options, onChange }: ChoiceGroupProps<V>) {
+export function ChoiceGroup<V extends string>({ label, value, options, onChange, testID }: ChoiceGroupProps<V>) {
   const { colors, spacing, radii, sizes } = useTheme();
   return (
-    <View role="radiogroup" aria-label={label} style={{ gap: spacing.sm }}>
+    <View role="radiogroup" aria-label={label} testID={testID} style={{ gap: spacing.sm }}>
       <Text variant="label">{label}</Text>
       {options.map((o) => {
         const selected = o.value === value;

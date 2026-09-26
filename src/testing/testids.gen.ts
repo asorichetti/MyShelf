@@ -601,4 +601,10 @@ export const Testids = {
     remove: 'pending-list-remove',
     empty: 'pending-list-empty',
   },
+  themeSetting: {
+    root: 'theme-setting',
+    system: 'theme-system',
+    light: 'theme-light',
+    dark: 'theme-dark',
+  },
 } as const;

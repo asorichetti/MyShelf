@@ -10,6 +10,7 @@ import { loadShelfPrefs } from '@/features/shelf/useShelfPrefs';
 import { createTestDb } from '@/testing/createTestDb';
 import { renderApp } from '@/testing/renderApp';
 import { Testids } from '@/testing/testids.gen';
+import { darkTheme, lightTheme, useTheme, type Theme } from '@/theme';
 
 import type { ReactNode } from 'react';
 
@@ -103,6 +104,64 @@ describe('preferences reach their consumers', () => {
     expect(formatDate('2026-06-20')).toBe('2026-06-20');
     await choose(S.dateFormat, 'Day month year (12 Oct 2026)');
     await waitFor(() => expect(getDateFormat()).toBe('medium'));
+  });
+
+  it('Appearance: Dark, Light and back to the phone’s own, applied at once and at start-up (P09-02)', async () => {
+    await settingsRepo.setSetting(db, 'appearance', 'dark');
+    let theme: Theme | undefined;
+    function ThemeProbe() {
+      theme = useTheme();
+      return null;
+    }
+    renderApp(db, '/settings/preferences', {
+      'settings/preferences': function WithWatchers() {
+        return (
+          <>
+            <PreferencesScreen />
+            <SettingsWatchers />
+            <ThemeProbe />
+          </>
+        );
+      },
+    });
+    await waitFor(() => expect(theme).toBe(darkTheme));
+    const group = await screen.findByTestId(Testids.themeSetting.root);
+    expect(group.props.role).toBe('radiogroup');
+    expect(screen.getByTestId(Testids.themeSetting.dark)).toBeChecked();
+    expect(screen.getAllByRole('heading').filter((h) => h.props['aria-level'] === 1)).toHaveLength(1);
+
+    await act(async () => fireEvent.press(screen.getByTestId(Testids.themeSetting.light)));
+    await waitFor(() => expect(theme).toBe(lightTheme));
+    expect(await settingsRepo.getSetting(db, 'appearance')).toBe('light');
+    expect(screen.getByTestId(Testids.themeSetting.light)).toBeChecked();
+
+    // The test renderer's system scheme is light.
+    await act(async () => fireEvent.press(screen.getByTestId(Testids.themeSetting.system)));
+    await waitFor(async () => expect(await settingsRepo.getSetting(db, 'appearance')).toBe('system'));
+    expect(theme).toBe(lightTheme);
+  });
+
+  it('Appearance: an unknown stored value falls back to the phone’s own', async () => {
+    await settingsRepo.setSetting(db, 'appearance', 'sepia' as never);
+    let theme: Theme | undefined;
+    function ThemeProbe() {
+      theme = useTheme();
+      return null;
+    }
+    renderApp(db, '/settings/preferences', {
+      'settings/preferences': function WithWatchers() {
+        return (
+          <>
+            <PreferencesScreen />
+            <SettingsWatchers />
+            <ThemeProbe />
+          </>
+        );
+      },
+    });
+    await screen.findByTestId(Testids.themeSetting.root);
+    await act(async () => {});
+    expect(theme).toBe(lightTheme);
   });
 
   it('holds the cover backfill on mobile data only when asked to', async () => {
