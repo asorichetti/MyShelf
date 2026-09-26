@@ -176,6 +176,8 @@ register({
     await c.snap('empty-shelf-tip');
     await c.page.locator(tid(Testids.booky.mute)).click();
     await closed(c, bubble, '/ (muted)');
+    // Settings save in the background: confirm the mute is stored before reloading (Settings → Reset tips would clear it).
+    await c.page.waitForTimeout(500);
 
     await c.page.reload();
     await waitVisible(c, emptyState, '/ (reload)');
