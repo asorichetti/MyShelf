@@ -29,7 +29,9 @@ Use `npx`, not `bunx` (this project uses npm; there is no `bun.lock`).
 | `npm test` | Jest | available |
 | `npm run selectors:gen` | regenerate test ids from `src/testing/selectors.json` | available |
 | `npm run selectors:check` | fail if the generated test id file is stale | available |
-| `npm run check` | `selectors:check` + `lint` + `typecheck` + `test --ci` | available |
+| `npm run licences:gen` | regenerate `src/generated/licences.json` (every production package and its licence, for the About screen) from `package-lock.json`; run after adding a dependency | available |
+| `npm run licences:check` | fail if `licences.json` is stale | available |
+| `npm run check` | `selectors:check` + `licences:check` + `lint` + `typecheck` + `test --ci` | available |
 | `npm run lint` | ESLint (Expo config + import order + hooks rules) | available |
 | `npm run autotest:install-browser` | one time: Chromium for the auto test suite | available |
 | `npm run -s autotest -- <command> [flags]` | run any auto test suite command (`navigate`, `journey`, `smoke`, `screenshot`, `interact`); see [its README](tools/auto-test-suite/README.md) | available |
