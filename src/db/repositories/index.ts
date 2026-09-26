@@ -1,5 +1,6 @@
 export * as apiCacheRepo from './apiCache';
 export * as authorsRepo from './authors';
+export * as backupRepo from './backup';
 export * as booksRepo from './books';
 export * as coverAttemptsRepo from './coverAttempts';
 export * as genresRepo from './genres';
@@ -13,6 +14,7 @@ export * as shelfSectionsRepo from './shelfSections';
 export { BookAlreadyOnLoanError, BookNotFoundError, BorrowerHasLoansError, BorrowerNotFoundError } from './loans';
 export type { BorrowerWithStats } from './loans';
 export type { ApiCacheEntry } from './apiCache';
+export type { MergeSummary, Snapshot, SnapshotInfo } from './backup';
 export type { BookNeedingCover, CoverAttempt } from './coverAttempts';
 export type { PendingLookup } from './pendingLookups';
 export type { BookSeriesPlace, SeriesSort, SeriesSummary } from './series';

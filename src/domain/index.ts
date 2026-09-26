@@ -1,4 +1,5 @@
 export * from './author';
+export * from './backup';
 export * from './book';
 export * from './bookDraft';
 export * from './callNumber';
