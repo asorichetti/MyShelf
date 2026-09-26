@@ -23,3 +23,9 @@ export async function countRows(db: Db): Promise<Record<string, number>> {
   }
   return out;
 }
+
+/** How many books there are and when the first was added (for the backup reminder, P08-06). */
+export async function libraryStats(db: Db): Promise<{ books: number; firstAddedAt: string | null }> {
+  const row = await db.get<{ n: number; first: string | null }>('SELECT COUNT(*) AS n, MIN(created_at) AS first FROM books');
+  return { books: row?.n ?? 0, firstAddedAt: row?.first ?? null };
+}
