@@ -5,6 +5,7 @@ import { ChoiceGroup } from '@/components/settings/SettingsControls';
 import { Button, Heading, SelectField, Text, TextField } from '@/components/ui';
 import { formatDateAs, MAX_LOAN_DAYS, today, type Appearance, type DateFormat, type ShelfGroupBy, type ShelfViewMode } from '@/domain';
 import { LoadingPage } from '@/features/navigation/LoadingPage';
+import { t } from '@/i18n';
 import { Testids } from '@/testing/testids.gen';
 import { useTheme } from '@/theme';
 
@@ -48,7 +49,7 @@ export function PreferencesScreen() {
   const saveCustom = () => {
     const days = Number((custom ?? '').trim());
     if (!Number.isInteger(days) || days < 1 || days > Math.min(MAX_CUSTOM_DAYS, MAX_LOAN_DAYS)) {
-      setCustomError(`Enter a number of days from 1 to ${MAX_CUSTOM_DAYS}.`);
+      setCustomError(t('preferences.loanLength.customError', { max: MAX_CUSTOM_DAYS }));
       return;
     }
     setCustomError(null);
@@ -58,16 +59,16 @@ export function PreferencesScreen() {
 
   return (
     <SettingsPage
-      title="Shelf and lending"
-      intro="Changes are saved straight away."
+      title={t('preferences.title')}
+      intro={t('preferences.intro')}
       testID={Testids.preferences.root}
       backTestID={Testids.preferences.back}
     >
       <View style={{ gap: spacing.lg }}>
         <SelectField
-          label="Sort the shelf by"
+          label={t('preferences.sort.label')}
           value={sortValue(settings.shelfSort)}
-          options={sortOptions}
+          options={sortOptions()}
           allowNone={false}
           onChange={(v) => {
             const sort = parseSortValue(v);
@@ -76,28 +77,32 @@ export function PreferencesScreen() {
           testID={T.sort}
         />
         <SelectField
-          label="Split the shelf into sections by"
+          label={t('preferences.groupBy.label')}
           value={settings.shelfGroupBy}
-          options={groupByOptions}
+          options={groupByOptions()}
           allowNone={false}
           onChange={(v) => void set('shelfGroupBy', v as ShelfGroupBy)}
           testID={T.groupBy}
         />
         <SelectField
-          label="Show books as"
+          label={t('preferences.viewMode.label')}
           value={settings.shelfViewMode}
-          options={viewModeOptions}
+          options={viewModeOptions()}
           allowNone={false}
           onChange={(v) => void set('shelfViewMode', v as ShelfViewMode)}
           testID={T.viewMode}
         />
         <View style={{ gap: spacing.sm }}>
           <SelectField
-            label="Lend books for"
+            label={t('preferences.loanLength.label')}
             value={loanChoice}
-            options={loanChoice === 'custom' && !isPreset && custom == null ? [...loanLengthOptions.slice(0, -1), { value: 'custom', label: `${settings.loanDays} days (custom)` }] : loanLengthOptions}
+            options={
+              loanChoice === 'custom' && !isPreset && custom == null
+                ? [...loanLengthOptions().slice(0, -1), { value: 'custom', label: t('preferences.loanLength.customValue', { count: settings.loanDays }) }]
+                : loanLengthOptions()
+            }
             allowNone={false}
-            helperText="The due date a new loan starts with. You can still change it when lending."
+            helperText={t('preferences.loanLength.helper')}
             onChange={(v) => {
               if (v === 'custom') {
                 setCustom(String(settings.loanDays));
@@ -112,7 +117,7 @@ export function PreferencesScreen() {
           {custom != null ? (
             <View style={{ gap: spacing.sm }}>
               <TextField
-                label="Days until a loan is due"
+                label={t('preferences.loanLength.customLabel')}
                 value={custom}
                 onChangeText={setCustom}
                 keyboardType="number-pad"
@@ -121,29 +126,29 @@ export function PreferencesScreen() {
                 onSubmitEditing={saveCustom}
                 testID={T.loanLengthCustom}
               />
-              <Button label="Use this length" variant="secondary" onPress={saveCustom} />
+              <Button label={t('preferences.loanLength.customSave')} variant="secondary" onPress={saveCustom} />
             </View>
           ) : null}
         </View>
         <View style={{ gap: spacing.xs }}>
           <SelectField
-            label="Write dates as"
+            label={t('preferences.dateFormat.label')}
             value={settings.dateFormat}
-            options={dateFormatOptions}
+            options={dateFormatOptions()}
             allowNone={false}
             onChange={(v) => void set('dateFormat', v as DateFormat)}
             testID={T.dateFormat}
           />
           <Text variant="caption" color="inkMuted" testID={T.dateExample}>
-            {`Today is written ${example}.`}
+            {t('preferences.dateFormat.example', { date: example })}
           </Text>
         </View>
         <View style={{ gap: spacing.sm }}>
-          <Heading level={2}>Appearance</Heading>
+          <Heading level={2}>{t('preferences.appearance.heading')}</Heading>
           <ChoiceGroup
-            label="Colours"
+            label={t('preferences.appearance.label')}
             value={settings.appearance}
-            options={appearanceOptions.map((o) => ({ ...o, testID: appearanceTestIDs[o.value] }))}
+            options={appearanceOptions().map((o) => ({ ...o, testID: appearanceTestIDs[o.value] }))}
             onChange={(v) => void set('appearance', v)}
             testID={Testids.themeSetting.root}
           />

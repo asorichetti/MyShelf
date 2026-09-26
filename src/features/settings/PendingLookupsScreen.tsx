@@ -7,6 +7,7 @@ import { pendingLookupsRepo, useDatabase, type PendingLookup } from '@/db';
 import { formatDate, formatIsbn13, toIsoDate } from '@/domain';
 import { emit, useLibraryEvent } from '@/features/events';
 import { LoadingPage } from '@/features/navigation/LoadingPage';
+import { t, translate, type MessageKey } from '@/i18n';
 import { Testids } from '@/testing/testids.gen';
 import { useTheme } from '@/theme';
 
@@ -14,21 +15,25 @@ import { SettingsPage } from './SettingsPage';
 
 const T = Testids.pendingList;
 
-const reasons: Record<string, string> = {
-  'not-found': 'No book site knows this ISBN.',
-  'invalid-isbn': 'This ISBN has a typo in it.',
+const reasons: Record<string, MessageKey> = {
+  'not-found': 'pendingLookups.status.notFound',
+  'invalid-isbn': 'pendingLookups.status.invalidIsbn',
 };
 
 /** What a queued lookup is doing, in words. */
 export function pendingStatus(p: PendingLookup): string {
-  if (p.attempts >= pendingLookupsRepo.MAX_LOOKUP_ATTEMPTS) return `Gave up. ${reasons[p.lastError ?? ''] ?? 'It didn’t work after several tries.'}`;
-  if (p.attempts > 0) return `Waiting to try again (${p.attempts} ${p.attempts === 1 ? 'try' : 'tries'} so far).`;
-  return 'Waiting for the internet.';
+  if (p.attempts >= pendingLookupsRepo.MAX_LOOKUP_ATTEMPTS) {
+    return t('pendingLookups.status.gaveUp', { reason: translate(reasons[p.lastError ?? ''] ?? 'pendingLookups.status.unknownError') });
+  }
+  if (p.attempts > 0) return t('pendingLookups.status.retrying', { count: p.attempts });
+  return t('pendingLookups.status.waiting');
 }
 
-const added = (iso: string) => {
-  const d = new Date(iso);
-  return Number.isNaN(d.getTime()) ? '' : `Added ${formatDate(toIsoDate(d))}. `;
+/** A queued lookup's line: when it was added (if known), then its status. */
+const details = (p: PendingLookup) => {
+  const d = new Date(p.requestedAt);
+  const status = pendingStatus(p);
+  return Number.isNaN(d.getTime()) ? status : t('pendingLookups.addedOn', { date: formatDate(toIsoDate(d)), status });
 };
 
 /**
@@ -58,18 +63,18 @@ export function PendingLookupsScreen() {
     await pendingLookupsRepo.resetAttempts(db, p.isbn13);
     emit('pending-changed');
     emit('pending-retry');
-    show({ message: `Trying ${formatIsbn13(p.isbn13)} again` });
+    show({ message: t('pendingLookups.retrying', { isbn: formatIsbn13(p.isbn13) }) });
   };
   const remove = async (p: PendingLookup) => {
     await pendingLookupsRepo.remove(db, p.isbn13);
     emit('pending-changed');
-    show({ message: `Removed ${formatIsbn13(p.isbn13)}` });
+    show({ message: t('pendingLookups.removed', { isbn: formatIsbn13(p.isbn13) }) });
   };
 
   return (
     <SettingsPage
-      title="Pending lookups"
-      intro="Books you scanned or typed in while offline. MyShelf looks them up when you’re back online."
+      title={t('pendingLookups.title')}
+      intro={t('pendingLookups.intro')}
       testID={T.root}
       backTestID={T.back}
     >
@@ -77,11 +82,11 @@ export function PendingLookupsScreen() {
         <EmptyState
           testID={T.empty}
           illustration={<Booky expression="happy" size={96} />}
-          title="Nothing waiting"
-          message="Every book you’ve added has its details. Lovely."
+          title={t('pendingLookups.emptyTitle')}
+          message={t('pendingLookups.emptyMessage')}
         />
       ) : (
-        <View role="list" aria-label="Pending lookups" style={{ gap: spacing.sm }}>
+        <View role="list" aria-label={t('pendingLookups.listLabel')} style={{ gap: spacing.sm }}>
           {list.map((p) => (
             <View
               key={p.isbn13}
@@ -89,13 +94,13 @@ export function PendingLookupsScreen() {
               testID={T.row}
               style={[styles.row, { gap: spacing.sm, padding: spacing.md, backgroundColor: colors.surface, borderColor: colors.border, borderRadius: radii.md, boxShadow: theme.elevation.low }]}
             >
-              <Text variant="mono">{`ISBN ${formatIsbn13(p.isbn13)}`}</Text>
+              <Text variant="mono">{t('pendingLookups.isbn', { isbn: formatIsbn13(p.isbn13) })}</Text>
               <Text variant="caption" color="inkMuted">
-                {`${added(p.requestedAt)}${pendingStatus(p)}`}
+                {details(p)}
               </Text>
               <View style={[styles.actions, { gap: spacing.sm }]}>
-                <Button label="Retry" variant="secondary" accessibilityLabel={`Retry ${formatIsbn13(p.isbn13)}`} onPress={() => void retry(p)} testID={T.retry} />
-                <Button label="Remove" variant="ghost" accessibilityLabel={`Remove ${formatIsbn13(p.isbn13)}`} onPress={() => void remove(p)} testID={T.remove} />
+                <Button label={t('common.retry')} variant="secondary" accessibilityLabel={t('pendingLookups.retryLabel', { isbn: formatIsbn13(p.isbn13) })} onPress={() => void retry(p)} testID={T.retry} />
+                <Button label={t('common.remove')} variant="ghost" accessibilityLabel={t('pendingLookups.removeLabel', { isbn: formatIsbn13(p.isbn13) })} onPress={() => void remove(p)} testID={T.remove} />
               </View>
             </View>
           ))}

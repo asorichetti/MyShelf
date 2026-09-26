@@ -2,6 +2,7 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Heading, Text } from '@/components/ui';
+import { t } from '@/i18n';
 import { useTheme } from '@/theme';
 
 import type { ComponentProps, ReactNode } from 'react';
@@ -48,7 +49,7 @@ function Icon({ name, tone }: { name: SettingsIcon; tone: 'default' | 'danger' }
  */
 export function SettingsLinkRow({ label, description, value, icon, onPress, testID, disabled = false, tone = 'default' }: SettingsLinkRowProps) {
   const { colors, spacing, radii, sizes } = useTheme();
-  const spoken = [label, value, description].filter(Boolean).join(', ');
+  const spoken = [label, value, description].filter(Boolean).join(t('settings.controls.spokenSeparator'));
   return (
     <Pressable
       role="link"

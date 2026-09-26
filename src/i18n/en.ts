@@ -1377,6 +1377,217 @@ export const en = {
     },
   },
 
+  // Settings
+  /** The Settings tab, its rows and the shared settings controls (P08-01). */
+  settings: {
+    screen: {
+      title: 'Settings',
+      intro: 'Everything here stays on this phone. There are no accounts and nothing to sign in to.',
+    },
+    library: {
+      title: 'Library',
+      intro: 'How your shelf looks when you open it, and how long loans last.',
+      preferencesLabel: 'Shelf and lending',
+      /** Under "Shelf and lending": the shelf's sort order, then the default loan length ("Title, A to Z · lend for 28 days (4 weeks)"). */
+      preferencesDescription: '{sort} · lend for {loanLength}',
+    },
+    lookups: {
+      title: 'Lookups',
+      intro: 'Where MyShelf finds book details and covers. Only ISBNs and search words are sent.',
+      googleBooksLabel: 'Ask Google Books too',
+      googleBooksOff: 'Only Open Library is asked for book details.',
+      /** This build was made with its own Google Books API key. */
+      googleBooksKeyed: 'Asked alongside Open Library, with this build’s own Google Books access.',
+      googleBooksUnkeyed: 'Asked alongside Open Library. Without its own access key, Google Books can be slow at busy times.',
+      coversLabel: 'Fetch covers on mobile data',
+      coversAnyConnection: 'Missing covers are fetched on any connection.',
+      coversWifiOnly: 'Missing covers wait for Wi-Fi.',
+      pendingLabel: 'Pending lookups',
+      pendingDescription: 'ISBNs waiting for the internet',
+      /** How many ISBNs are queued, shown on the right of the row. */
+      pendingWaiting: { one: '{count} waiting', other: '{count} waiting' },
+      pendingNone: 'None',
+    },
+    lending: {
+      title: 'Lending',
+      remindersUnsupported: 'Reminders work in the Android app.',
+      remindersDenied: 'Notifications are turned off for MyShelf. You can allow them in your phone’s settings, then try again.',
+      borrowersLabel: 'Borrowers',
+      borrowersDescription: 'Rename or remove the people you lend to',
+      borrowersCount: { one: '{count} person', other: '{count} people' },
+    },
+    data: {
+      title: 'Backup & data',
+      intro: 'Your library lives only on this phone. A backup file keeps it safe.',
+      backUpLabel: 'Back up your library',
+      backUpDescription: 'Save a file you can restore on any phone',
+      /** When the last backup was made ("Last: 3 days ago", "Last: Never"). */
+      lastBackup: 'Last: {when}',
+      restoreLabel: 'Restore from a backup',
+      restoreDescription: 'Bring back a library from a backup file',
+      exportCsvLabel: 'Export as a spreadsheet',
+      exportCsvDescription: 'A CSV file of your books for Excel or Sheets',
+      importCsvLabel: 'Import books from a spreadsheet',
+      importCsvDescription: 'A CSV file, including a Goodreads export',
+      eraseLabel: 'Erase library',
+      eraseDescription: 'Remove every book from this phone',
+    },
+    about: {
+      title: 'About',
+      label: 'About MyShelf',
+      description: 'Credits, licences and privacy',
+      version: 'Version {version}',
+    },
+    page: {
+      /** The back button on every screen under Settings. */
+      back: 'Back to Settings',
+    },
+    controls: {
+      /** A radio card's spoken name: its label, then its sentence ("Light. Warm paper and ink, always."). */
+      choice: '{label}. {description}',
+      /** A link that leaves the app, as a screen reader says it. */
+      externalLink: '{label} (opens in your browser)',
+      /** Between the parts a settings row speaks: its label, value and explanation. */
+      spokenSeparator: ', ',
+    },
+  },
+  /** Settings → Shelf and lending (P08-07). */
+  preferences: {
+    title: 'Shelf and lending',
+    intro: 'Changes are saved straight away.',
+    sort: {
+      label: 'Sort the shelf by',
+      titleAsc: 'Title, A to Z',
+      titleDesc: 'Title, Z to A',
+      authorAsc: 'Author, A to Z',
+      authorDesc: 'Author, Z to A',
+      yearAsc: 'Year, oldest first',
+      yearDesc: 'Year, newest first',
+      addedDesc: 'Newest additions first',
+      addedAsc: 'Oldest additions first',
+      ratingDesc: 'Rating, highest first',
+      ratingAsc: 'Rating, lowest first',
+    },
+    groupBy: {
+      label: 'Split the shelf into sections by',
+      none: 'No sections',
+      genre: 'Genre',
+      series: 'Series',
+      author: 'Author',
+      /** The user's own named groups of books. */
+      group: 'My groups',
+      rating: 'Rating',
+    },
+    viewMode: {
+      label: 'Show books as',
+      list: 'List',
+      covers: 'Covers',
+      spines: 'Spines',
+    },
+    loanLength: {
+      label: 'Lend books for',
+      helper: 'The due date a new loan starts with. You can still change it when lending.',
+      /** A loan length in whole weeks: {days} is the number of days, {count} the number of weeks ("14 days (2 weeks)"). */
+      weeks: { one: '{days} days ({count} week)', other: '{days} days ({count} weeks)' },
+      /** A loan length that is not whole weeks ("10 days"). */
+      days: { one: '{count} day', other: '{count} days' },
+      custom: 'Custom…',
+      /** The "Custom" option while a length that is not offered is in use ("10 days (custom)"). */
+      customValue: { one: '{count} day (custom)', other: '{count} days (custom)' },
+      customLabel: 'Days until a loan is due',
+      customError: 'Enter a number of days from 1 to {max}.',
+      customSave: 'Use this length',
+    },
+    dateFormat: {
+      label: 'Write dates as',
+      /** {date} is today, written in the chosen format. */
+      example: 'Today is written {date}.',
+    },
+    appearance: {
+      heading: 'Appearance',
+      label: 'Colours',
+      systemLabel: 'Same as my phone',
+      systemDescription: 'Light by day, dark by night, whenever your phone switches.',
+      lightLabel: 'Light',
+      lightDescription: 'Warm paper and ink, always.',
+      darkLabel: 'Dark',
+      darkDescription: 'The night library: lamp-lit colours on a dark shelf, always.',
+    },
+  },
+  /** Settings → About MyShelf (P08-08). */
+  about: {
+    title: 'About MyShelf',
+    /** "Version 1.0.0 · Android build 3". */
+    version: 'Version {version} · {build}',
+    tagline: 'A cosy catalogue for the books you own, and a note of who borrowed which.',
+    build: {
+      android: 'Android build {code}',
+      androidUnnumbered: 'Android build',
+      web: 'Web build',
+      /** {platform} is the operating system's id, e.g. "ios". */
+      otherPlatform: '{platform} build',
+    },
+    attribution: {
+      eyebrow: 'With thanks',
+      title: 'Book details and covers',
+      data: 'Book data from Open Library (Internet Archive) and Google Books.',
+      covers:
+        'Cover images come from the same two places: Open Library’s covers and Google Books thumbnails. Each cover belongs to its publisher or artist; MyShelf only shows it next to your copy.',
+      openLibrary: 'Open Library',
+      googleBooks: 'Google Books',
+    },
+    licence: {
+      eyebrow: 'Licence',
+      title: 'Free and open source',
+      body: 'MyShelf is free software under the MIT licence. Anyone can read, use and improve the code.',
+      repoLink: 'MyShelf on GitHub',
+    },
+    privacy: {
+      eyebrow: 'Privacy',
+      title: 'Your privacy',
+      body: 'Your library stays on this phone. There are no accounts, analytics or ads. To find details and covers, MyShelf sends only ISBNs and the words you search for to Open Library and Google Books — never your notes or who borrowed what.',
+      link: 'Read the privacy notes',
+    },
+    licences: {
+      heading: 'Open-source licences',
+      /** {summary} lists licences by how many packages use them ("518 MIT, 30 ISC"). */
+      intro: { one: 'MyShelf is built with {count} open-source package: {summary}.', other: 'MyShelf is built with {count} open-source packages: {summary}.' },
+      /** One entry of the summary: how many packages use a licence id ("518 MIT"). */
+      summaryItem: '{count} {licence}',
+      summarySeparator: ', ',
+      showAll: { one: 'Show the {count} package', other: 'Show all {count} packages' },
+      hide: 'Hide the package list',
+      listLabel: 'Open-source packages',
+      /** A package, its version and its licence id ("react 19.1.0 — MIT"). */
+      packageRow: '{name} {version} — {licence}',
+    },
+  },
+  /** Settings → Pending lookups (P08-10): ISBNs waiting for the internet. */
+  pendingLookups: {
+    title: 'Pending lookups',
+    intro: 'Books you scanned or typed in while offline. MyShelf looks them up when you’re back online.',
+    emptyTitle: 'Nothing waiting',
+    emptyMessage: 'Every book you’ve added has its details. Lovely.',
+    listLabel: 'Pending lookups',
+    isbn: 'ISBN {isbn}',
+    /** A queued lookup's line: the day it was added, then its status ("Added 12 Oct 2026. Waiting for the internet."). */
+    addedOn: 'Added {date}. {status}',
+    status: {
+      /** {reason} is one of the reasons below. */
+      gaveUp: 'Gave up. {reason}',
+      notFound: 'No book site knows this ISBN.',
+      invalidIsbn: 'This ISBN has a typo in it.',
+      unknownError: 'It didn’t work after several tries.',
+      retrying: { one: 'Waiting to try again ({count} try so far).', other: 'Waiting to try again ({count} tries so far).' },
+      waiting: 'Waiting for the internet.',
+    },
+    retryLabel: 'Retry {isbn}',
+    removeLabel: 'Remove {isbn}',
+    /** Snackbars after Retry and Remove. */
+    retrying: 'Trying {isbn} again',
+    removed: 'Removed {isbn}',
+  },
+
   // Booky and onboarding
   /**
    * Booky, the bookmark who helps (P07): the character, its tips, the help

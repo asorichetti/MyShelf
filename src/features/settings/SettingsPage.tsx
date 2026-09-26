@@ -2,6 +2,7 @@ import { View } from 'react-native';
 
 import { Heading, Screen, Text, TopBar } from '@/components/ui';
 import { goBackOr } from '@/features/navigation/goBack';
+import { t } from '@/i18n';
 import { useTheme } from '@/theme';
 
 import type { ReactNode } from 'react';
@@ -22,7 +23,7 @@ export function SettingsPage({ title, intro, testID, backTestID, pageState = 'co
   const { spacing } = useTheme();
   return (
     <Screen testID={testID} edges={[...EDGES]} pageState={pageState}>
-      <TopBar onBack={() => goBackOr('/settings')} backLabel="Back to Settings" backTestID={backTestID} />
+      <TopBar onBack={() => goBackOr('/settings')} backLabel={t('settings.page.back')} backTestID={backTestID} />
       <View style={{ gap: spacing.xs }}>
         <Heading level={1}>{title}</Heading>
         {typeof intro === 'string' ? <Text color="inkMuted">{intro}</Text> : intro}

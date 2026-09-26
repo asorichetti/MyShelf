@@ -4,6 +4,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Text } from '@/components/ui';
 import { focusView } from '@/components/ui/focusView';
+import { t } from '@/i18n';
 import { useTheme, type ColorRole } from '@/theme';
 
 import type { ReactNode } from 'react';
@@ -98,7 +99,7 @@ export function ChoiceGroup<V extends string>({ label, value, options, onChange,
             role="radio"
             aria-checked={selected}
             accessibilityState={{ checked: selected }}
-            accessibilityLabel={`${o.label}. ${o.description}`}
+            accessibilityLabel={t('settings.controls.choice', { label: o.label, description: o.description })}
             onPress={() => onChange(o.value)}
             testID={o.testID}
             style={({ pressed }) => [
@@ -187,7 +188,7 @@ export function ExternalLink({ label, url, onOpen, testID }: ExternalLinkProps) 
   return (
     <Pressable
       role="link"
-      accessibilityLabel={`${label} (opens in your browser)`}
+      accessibilityLabel={t('settings.controls.externalLink', { label })}
       accessibilityHint={url}
       onPress={() => onOpen(url)}
       testID={testID}

@@ -12,6 +12,7 @@ import { BookySettingsSection } from '@/features/booky/BookySettingsSection';
 import { useLibraryEvent } from '@/features/events';
 import { useReminderSetting } from '@/features/loans/useReminderSync';
 import { LoadingPage } from '@/features/navigation/LoadingPage';
+import { t } from '@/i18n';
 import { Testids } from '@/testing/testids.gen';
 import { useTheme } from '@/theme';
 
@@ -24,7 +25,6 @@ import type { ReactNode } from 'react';
 
 const T = Testids.settings;
 const go = (href: Href) => () => router.navigate(href);
-const count = (n: number, one: string, many: string) => (n === 1 ? `1 ${one}` : `${n} ${many}`);
 
 function useCounts() {
   const db = useDatabase();
@@ -44,19 +44,19 @@ function useCounts() {
 }
 
 function googleBooksNote(settings: AppSettings): string {
-  if (!settings.googleBooksEnabled) return 'Only Open Library is asked for book details.';
+  if (!settings.googleBooksEnabled) return t('settings.lookups.googleBooksOff');
   return GOOGLE_BOOKS_KEYED
-    ? 'Asked alongside Open Library, with this build’s own Google Books access.'
-    : 'Asked alongside Open Library. Without its own access key, Google Books can be slow at busy times.';
+    ? t('settings.lookups.googleBooksKeyed')
+    : t('settings.lookups.googleBooksUnkeyed');
 }
 
 function LendingRows() {
   const { spacing } = useTheme();
   const reminders = useReminderSetting();
   const note = !reminders.supported
-    ? 'Reminders work in the Android app.'
+    ? t('settings.lending.remindersUnsupported')
     : reminders.denied
-      ? 'Notifications are turned off for MyShelf. You can allow them in your phone’s settings, then try again.'
+      ? t('settings.lending.remindersDenied')
       : null;
   return (
     <View style={{ paddingHorizontal: spacing.xs }}>
@@ -85,18 +85,18 @@ export function SettingsScreen() {
       <View style={{ gap: spacing.xs }}>
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
           <Heading level={1} testID={T.title} style={{ flex: 1 }}>
-            Settings
+            {t('settings.screen.title')}
           </Heading>
           <HelpButton screen="settings" />
         </View>
-        <Text color="inkMuted">Everything here stays on this phone. There are no accounts and nothing to sign in to.</Text>
+        <Text color="inkMuted">{t('settings.screen.intro')}</Text>
       </View>
 
-      <SettingsSection title="Library" intro="How your shelf looks when you open it, and how long loans last." testID={T.section}>
+      <SettingsSection title={t('settings.library.title')} intro={t('settings.library.intro')} testID={T.section}>
         <SettingsLinkRow
           icon="bookshelf"
-          label="Shelf and lending"
-          description={`${sortLabel(settings.shelfSort)} · lend for ${loanLengthLabel(settings.loanDays)}`}
+          label={t('settings.library.preferencesLabel')}
+          description={t('settings.library.preferencesDescription', { sort: sortLabel(settings.shelfSort), loanLength: loanLengthLabel(settings.loanDays) })}
           onPress={go('/settings/preferences')}
           testID={T.preferences}
         />
@@ -104,10 +104,10 @@ export function SettingsScreen() {
 
       {bookySection}
 
-      <SettingsSection title="Lookups" intro="Where MyShelf finds book details and covers. Only ISBNs and search words are sent." testID={T.section}>
+      <SettingsSection title={t('settings.lookups.title')} intro={t('settings.lookups.intro')} testID={T.section}>
         <SettingsSwitchRow
           icon="book-search-outline"
-          label="Ask Google Books too"
+          label={t('settings.lookups.googleBooksLabel')}
           description={googleBooksNote(settings)}
           value={settings.googleBooksEnabled}
           onChange={(on) => void set('googleBooksEnabled', on)}
@@ -116,8 +116,8 @@ export function SettingsScreen() {
         <SettingsDivider />
         <SettingsSwitchRow
           icon="image-outline"
-          label="Fetch covers on mobile data"
-          description={settings.coversOnMobileData ? 'Missing covers are fetched on any connection.' : 'Missing covers wait for Wi-Fi.'}
+          label={t('settings.lookups.coversLabel')}
+          description={settings.coversOnMobileData ? t('settings.lookups.coversAnyConnection') : t('settings.lookups.coversWifiOnly')}
           value={settings.coversOnMobileData}
           onChange={(on) => void set('coversOnMobileData', on)}
           testID={T.coversOnDataToggle}
@@ -125,57 +125,57 @@ export function SettingsScreen() {
         <SettingsDivider />
         <SettingsLinkRow
           icon="timer-sand"
-          label="Pending lookups"
-          description="ISBNs waiting for the internet"
-          value={counts ? (counts.pending ? `${counts.pending} waiting` : 'None') : null}
+          label={t('settings.lookups.pendingLabel')}
+          description={t('settings.lookups.pendingDescription')}
+          value={counts ? (counts.pending ? t('settings.lookups.pendingWaiting', { count: counts.pending }) : t('settings.lookups.pendingNone')) : null}
           onPress={go('/settings/pending')}
           testID={T.pending}
         />
       </SettingsSection>
 
-      <SettingsSection title="Lending" testID={T.section}>
+      <SettingsSection title={t('settings.lending.title')} testID={T.section}>
         <LendingRows />
         <SettingsDivider />
         <SettingsLinkRow
           icon="account-multiple-outline"
-          label="Borrowers"
-          description="Rename or remove the people you lend to"
-          value={counts ? count(counts.borrowers, 'person', 'people') : null}
+          label={t('settings.lending.borrowersLabel')}
+          description={t('settings.lending.borrowersDescription')}
+          value={counts ? t('settings.lending.borrowersCount', { count: counts.borrowers }) : null}
           onPress={go('/settings/borrowers')}
           testID={T.borrowers}
         />
       </SettingsSection>
 
-      <SettingsSection title="Backup & data" intro="Your library lives only on this phone. A backup file keeps it safe." testID={T.section}>
+      <SettingsSection title={t('settings.data.title')} intro={t('settings.data.intro')} testID={T.section}>
         <SettingsLinkRow
           icon="content-save-outline"
-          label="Back up your library"
-          description="Save a file you can restore on any phone"
-          value={`Last: ${lastBackupLabel(settings['backup.lastAt'])}`}
+          label={t('settings.data.backUpLabel')}
+          description={t('settings.data.backUpDescription')}
+          value={t('settings.data.lastBackup', { when: lastBackupLabel(settings['backup.lastAt']) })}
           onPress={go('/settings/backup')}
           testID={T.exportBackup}
         />
         <SettingsDivider />
         <SettingsLinkRow
           icon="backup-restore"
-          label="Restore from a backup"
-          description="Bring back a library from a backup file"
+          label={t('settings.data.restoreLabel')}
+          description={t('settings.data.restoreDescription')}
           onPress={go('/settings/restore')}
           testID={T.importBackup}
         />
         <SettingsDivider />
         <SettingsLinkRow
           icon="file-delimited-outline"
-          label="Export as a spreadsheet"
-          description="A CSV file of your books for Excel or Sheets"
+          label={t('settings.data.exportCsvLabel')}
+          description={t('settings.data.exportCsvDescription')}
           onPress={go('/settings/export-csv')}
           testID={T.exportCsv}
         />
         <SettingsDivider />
         <SettingsLinkRow
           icon="file-import-outline"
-          label="Import books from a spreadsheet"
-          description="A CSV file, including a Goodreads export"
+          label={t('settings.data.importCsvLabel')}
+          description={t('settings.data.importCsvDescription')}
           onPress={go('/settings/import-csv')}
           testID={T.importCsv}
         />
@@ -183,19 +183,19 @@ export function SettingsScreen() {
         <SettingsLinkRow
           icon="delete-outline"
           tone="danger"
-          label="Erase library"
-          description="Remove every book from this phone"
+          label={t('settings.data.eraseLabel')}
+          description={t('settings.data.eraseDescription')}
           onPress={go('/settings/erase')}
           testID={T.erase}
         />
       </SettingsSection>
 
-      <SettingsSection title="About" testID={T.section}>
+      <SettingsSection title={t('settings.about.title')} testID={T.section}>
         <SettingsLinkRow
           icon="information-outline"
-          label="About MyShelf"
-          description="Credits, licences and privacy"
-          value={`Version ${appVersion()}`}
+          label={t('settings.about.label')}
+          description={t('settings.about.description')}
+          value={t('settings.about.version', { version: appVersion() })}
           onPress={go('/settings/about')}
           testID={T.about}
         />
