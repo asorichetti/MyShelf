@@ -176,10 +176,17 @@ register({
     await c.snap('empty-shelf-tip');
     await c.page.locator(tid(Testids.booky.mute)).click();
     await closed(c, bubble, '/ (muted)');
-    // Settings save in the background: confirm the mute is stored before reloading (Settings → Reset tips would clear it).
-    await c.page.waitForTimeout(500);
+    // The mute and the finished onboarding save in the background through the
+    // database queue. Opening Settings reads settings back through the same
+    // queue, so once it has loaded, both saves have landed; reload after that.
+    await c.page.locator(tid(Testids.tabs.settings)).click();
+    await waitForPath(c, '/settings', '/ -> Settings');
+    await waitVisible(c, tid(Testids.settings.googleBooksToggle), '/settings (settings read back)');
 
     await c.page.reload();
+    await waitVisible(c, tid(Testids.settings.googleBooksToggle), '/settings (reload)');
+    await c.page.locator(tid(Testids.tabs.shelf)).click();
+    await waitForPath(c, '/', '/settings -> Shelf');
     await waitVisible(c, emptyState, '/ (reload)');
     await c.page.waitForTimeout(1_500);
     expect((await c.page.locator(bubble).count()) === 0, '/ (reload): the muted empty-shelf tip came back');
