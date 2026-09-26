@@ -17,7 +17,7 @@ import { fileURLToPath } from 'node:url';
 
 import { chromium } from 'playwright';
 
-import { FontPath, MockFiles, MockIndexRoutes, fixtures, selfTestConfig } from './fixtures.ts';
+import { FontPath, LazyImagePath, LazyImagePng, MockFiles, MockIndexRoutes, fixtures, selfTestConfig } from './fixtures.ts';
 import { Browser, Viewports } from '../../browser/browser.ts';
 import { Listeners } from '../../browser/listeners.ts';
 import { loadMockIndex, type MockIndex } from '../../mockapi/index.ts';
@@ -70,6 +70,7 @@ describe('gate self-tests', { skip }, () => {
     for (const f of fixtures) writeFileSync(join(dir, `${f.name}.html`), f.html);
     mkdirSync(dirname(join(dir, FontPath)), { recursive: true });
     copyFileSync(fontSource, join(dir, FontPath));
+    writeFileSync(join(dir, LazyImagePath), Buffer.from(LazyImagePng, 'base64'));
     const cfg = join(dir, 'gates.config.json');
     writeFileSync(cfg, JSON.stringify(selfTestConfig));
     loadConfig(cfg);

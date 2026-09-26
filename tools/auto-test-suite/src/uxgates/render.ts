@@ -124,9 +124,12 @@ export async function renderAudit(cfg: RenderAuditConfig): Promise<RenderAuditFi
   }
 
   // Images still downloading are not broken yet: give them time to load or fail.
+  // A lazy image far below the fold (a long list at 200 % text) may not have
+  // been asked for at all: ask for it now, so it is judged on whether it loads.
   const imageWaitMs = cfg.imageWaitMs ?? 15000;
   const waitStarted = Date.now();
   const inFlight = [...document.images].filter((img) => !img.complete);
+  for (const img of inFlight) if (img.loading === 'lazy') img.loading = 'eager';
   if (inFlight.length) {
     const settled = inFlight.map(
       (img) =>

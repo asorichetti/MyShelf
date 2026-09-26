@@ -43,6 +43,10 @@ export const MockFiles: Record<string, string> = {
 };
 
 // A valid 1x1 PNG and a byte string no decoder accepts.
+/** A small PNG the self-test serves as a file, like a real cover, for the lazy-image fixture. */
+export const LazyImagePath = 'lazy.png';
+export const LazyImagePng = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
+
 const PNG = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
 const JUNK = 'base64,AAAAAAAA';
 
@@ -193,6 +197,14 @@ export const fixtures: Fixture[] = [
       const broken = new FontFace('Broken', 'url(data:font/ttf;${JUNK})');
       document.fonts.add(broken);
       track(broken.load());`,
+    }),
+  },
+  {
+    name: 'clean-lazy-offscreen',
+    fires: [],
+    why: 'has a lazy image far down a scrolling list, which the browser has not asked for yet (a long list at 200 % text); the gate asks for it and it loads',
+    html: page({
+      main: cleanMain({ extra: `<div style="height:200px; overflow-y:auto"><div style="height:9000px"></div><img alt="" loading="lazy" src="/${LazyImagePath}" width="16" height="16"></div>` }),
     }),
   },
   {
