@@ -44,14 +44,14 @@ Recognition runs on the device; the only network traffic is ISBN or title lookup
 | Data | SQLite via `expo-sqlite`, versioned migrations, repository layer |
 | Recognition | `expo-camera` barcode scanning, Google ML Kit on-device text recognition |
 | Metadata | Open Library and Google Books APIs |
-| Testing | Jest + Testing Library; the auto test suite (Go + Playwright) against the web build; Maestro on device |
+| Testing | Jest + Testing Library; the auto test suite (TypeScript + Playwright) against the web build; Maestro on device |
 | CI / release | GitHub Actions; local or EAS free-tier Android builds |
 
 Design decisions are recorded as ADRs in [`docs/adr/`](docs/adr/).
 
 ## Getting started
 
-Prerequisites: Node.js 22 or newer and npm. For the Android app: Android Studio with an emulator, or an Android phone with USB debugging. Go (the version in `tools/auto-test-suite/go.mod`) is needed for the auto test suite, the browser-driven UI test tool.
+Prerequisites: Node.js 22 or newer and npm. For the Android app: Android Studio with an emulator, or an Android phone with USB debugging.
 
 ```bash
 git clone https://github.com/asorichetti/MyShelf.git
@@ -74,23 +74,24 @@ From Phase 03 onward the app uses a native text-recognition module, so it needs 
 | `npm run export:web` | static web build into `dist/` |
 | `npm run typecheck` | TypeScript check |
 | `npm test` | Jest unit and component tests |
-| `npm run selectors:gen` | regenerate test ids (TypeScript and Go) from `src/testing/selectors.json` |
-| `npm run selectors:check` | fail if the generated test id files are stale |
+| `npm run selectors:gen` | regenerate the test ids in `src/testing/testids.gen.ts` from `src/testing/selectors.json` |
+| `npm run selectors:check` | fail if the generated test id file is stale |
 | `npm run check` | everything CI runs for the app: selectors check, typecheck and tests |
 | `npm run autotest:install-browser` | one time: install Chromium for the auto test suite |
-| `npm run autotest:check` | format check, vet and unit tests for the auto test suite |
-| `npm run -s autotest:smoke` | build the auto test suite and run the core journeys with UX gates enforced (needs the web server: `CI=1 npx expo start --web --port 8081`) |
-| `npm run -s autotest:journeys` | build and run every journey |
+| `npm run autotest:check` | typecheck and unit tests for the auto test suite |
+| `npm run -s autotest:smoke` | run the core journeys with UX gates enforced (needs the web server: `CI=1 npx expo start --web --port 8081`) |
+| `npm run -s autotest:journeys` | run every journey |
+| `npm run -s autotest -- <command>` | run any auto test suite command, e.g. `navigate --url /` |
 
 ## Testing
 
 MyShelf is tested at three levels:
 
 1. **Jest** — every module, from pure domain helpers to screens. Database repositories run against a real in-memory SQLite database; network calls use recorded API fixtures.
-2. **Auto test suite** — a Go + Playwright command-line tool ([`tools/auto-test-suite`](tools/auto-test-suite/README.md)) that drives the web build through scripted journeys. Every run prints JSON and saves an evidence bundle (screenshot, rendered DOM, console and network logs, gate results), and applies UX gates for page state, rendering, console errors, network failures and accessibility.
+2. **Auto test suite** — a TypeScript + Playwright command-line tool ([`tools/auto-test-suite`](tools/auto-test-suite/README.md)) that drives the web build through scripted journeys. Every run prints JSON and saves an evidence bundle (screenshot, rendered DOM, console and network logs, gate results), and applies UX gates for page state, rendering, console errors, network failures and accessibility.
 3. **Maestro** — YAML flows on an Android emulator or device for the camera, text recognition and other native features.
 
-Test ids come from a single [`src/testing/selectors.json`](src/testing/selectors.json), generated into TypeScript for the app and Go for the UI tool, so all three levels agree. No change is done until `npm run check` and the UI smoke run with gates enforced are green. The full strategy is in [`PLAN.md`](PLAN.md#10-testing-strategy).
+Test ids come from a single [`src/testing/selectors.json`](src/testing/selectors.json), generated into one TypeScript module used by the app, Jest and the auto test suite, so all three levels agree. No change is done until `npm run check` and the UI smoke run with gates enforced are green. The full strategy is in [`PLAN.md`](PLAN.md#10-testing-strategy).
 
 ## Project docs
 

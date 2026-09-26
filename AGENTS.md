@@ -28,16 +28,14 @@ Use `npx`, not `bunx` (this project uses npm; there is no `bun.lock`).
 | `npm run typecheck` | `tsc --noEmit` | available |
 | `npm test` | Jest | available |
 | `npm run selectors:gen` | regenerate test ids from `src/testing/selectors.json` | available |
-| `npm run selectors:check` | fail if generated test id files are stale | available |
+| `npm run selectors:check` | fail if the generated test id file is stale | available |
 | `npm run check` | `selectors:check` + `typecheck` + `test --ci` | available (lint added in P00-20) |
 | `npm run lint` / `npx expo lint` | ESLint | to be created in P00-20 |
-| `npm run autotest:install-browser` | one time: Playwright driver + Chromium for the auto test suite | available |
-| `npm run autotest:build` | build the auto test suite to `tools/auto-test-suite/bin/auto-test-suite` | available |
-| `npm run autotest:check` | gofmt + `go vet` + `go test` for the auto test suite | available |
-| `npm run -s autotest:smoke` | build and run `smoke` (core journeys, gates fail); needs the web server on 8081 | available |
-| `npm run -s autotest:journeys` | build and run every journey (`journey --all`); add flags after `--`, e.g. `-- --ux-gates fail` | available |
-| `tools/auto-test-suite/bin/auto-test-suite <command>` | any auto test suite command (`navigate`, `journey`, `smoke`, `screenshot`, `interact`); see [its README](tools/auto-test-suite/README.md) | available after `autotest:build` |
-| `npm run -s autotest -- <command>` | build and run any auto test suite command in one step | to be created in P00-21 |
+| `npm run autotest:install-browser` | one time: Chromium for the auto test suite | available |
+| `npm run -s autotest -- <command> [flags]` | run any auto test suite command (`navigate`, `journey`, `smoke`, `screenshot`, `interact`); see [its README](tools/auto-test-suite/README.md) | available |
+| `npm run -s autotest:smoke` | `smoke`: core journeys, gates set to fail; needs the web server on 8081 | available |
+| `npm run -s autotest:journeys` | every journey (`journey --all`); add flags after `--`, e.g. `-- --ux-gates fail` | available |
+| `npm run autotest:check` | typecheck and unit tests for the auto test suite | available |
 | `maestro test .maestro/` | on-device flows | to be created in P00-18 |
 | `npx expo run:android` | local development build (needed from Phase 03 for ML Kit) | works now; dev client added in P03-01 |
 | `npx expo-doctor` | diagnose dependency/config issues | available |
@@ -66,8 +64,8 @@ Use `npx`, not `bunx` (this project uses npm; there is no `bun.lock`).
 
 ### Test ids
 
-- Test ids are defined **only** in `src/testing/selectors.json` (groups and keys camelCase, ids kebab-case, globally unique). Run `npm run selectors:gen` and commit the generated files.
-- In app code and Jest use `Testids.group.key` from `@/testing/testids.gen`; in the auto test suite use the generated Go `selectors` package; in Maestro use the id string from `selectors.json`.
+- Test ids are defined **only** in `src/testing/selectors.json` (groups and keys camelCase, ids kebab-case, globally unique). Run `npm run selectors:gen` and commit the generated `src/testing/testids.gen.ts`.
+- In app code, Jest and auto test suite journeys use `Testids.group.key` from `src/testing/testids.gen.ts` (`@/testing/testids.gen` in the app); in Maestro use the id string from `selectors.json`.
 - Never type a raw test id string anywhere else.
 - Every screen renders exactly one page-state marker (`pageState.loading`, `pageState.content` or `pageState.error`).
 
@@ -87,7 +85,7 @@ Use `npx`, not `bunx` (this project uses npm; there is no `bun.lock`).
 Every card lists the tests it adds. Three levels (details in `PLAN.md` §10):
 
 - **Jest** for every module. Repository tests use `@jest-environment node` and a real in-memory SQLite database. Network is always mocked with recorded fixtures.
-- **Auto test suite** (`tools/auto-test-suite`, Go + Playwright; reference in [its README](tools/auto-test-suite/README.md)) drives the web build: `navigate`, `journey`, `smoke`, `screenshot`, `interact`. Each command prints one JSON document and writes an evidence bundle (`screenshot.png`, `page.html`, `console.json`, `network.json`, `uxgates.json`) under `screenshots/` (git-ignored). UX gates (`pagestate`, `render`, `console`, `network`, `a11y`) run alongside assertions; exemptions need a written reason (`gates.config.json`, the console allowlist, or a per-journey `Gates.Waive`). Journeys self-register in `tools/auto-test-suite/internal/journeys/` with a name, suite and description, and run in a fresh browser each; from P01-01 they start from a fixture via `/e2e?fixture=<name>&next=<route>`.
+- **Auto test suite** (`tools/auto-test-suite`, TypeScript + Playwright; reference in [its README](tools/auto-test-suite/README.md)) drives the web build: `navigate`, `journey`, `smoke`, `screenshot`, `interact`. Each command prints one JSON document and writes an evidence bundle (`screenshot.png`, `page.html`, `console.json`, `network.json`, `uxgates.json`) under `screenshots/` (git-ignored). UX gates (`pagestate`, `render`, `console`, `network`, `a11y`) run alongside assertions; exemptions need a written reason (`gates.config.json`, the console allowlist, or a per-journey waiver). Journeys self-register in `tools/auto-test-suite/src/journeys/` with a name, suite and description, and run in a fresh browser each; from P01-01 they start from a fixture via `/e2e?fixture=<name>&next=<route>`.
 - **Maestro** flows in `.maestro/` for camera, OCR and other native-only behaviour, run on an emulator or device.
 
 Before a card is done, both must be green:
