@@ -254,7 +254,7 @@ register({
     const names = await rowNames(c);
     const onLoan = names.filter((n) => n.includes('on loan'));
     expect(
-      onLoan.join('|') === 'Dune, by Frank Herbert, 1965, on loan to Sam|The Murder of Roger Ackroyd, by Agatha Christie, 1926, on loan to Priya, overdue',
+      onLoan.join('|') === 'Dune, by Frank Herbert, 1965, rated 4 out of 5, on loan to Sam|The Murder of Roger Ackroyd, by Agatha Christie, 1926, on loan to Priya, overdue',
       `/: expected Dune and Roger Ackroyd to be named as on loan, found ${q(onLoan)}`,
     );
     const badges = await c.page.locator(`${shelfRow} ${tid(Testids.bookLoan.badge)}`).evaluateAll((els) =>

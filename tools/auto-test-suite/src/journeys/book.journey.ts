@@ -172,7 +172,7 @@ register({
 
     await c.page.locator(tid(Testids.snackbar.action)).click();
     await waitForCount(c, row, 12, '/ after undo');
-    expect((await rowNames(c)).includes('Dune, by Frank Herbert, 1965, on loan to Sam'), '/ after undo: expected Dune back, still on loan');
+    expect((await rowNames(c)).includes('Dune, by Frank Herbert, 1965, rated 4 out of 5, on loan to Sam'), '/ after undo: expected Dune back, still on loan');
     await c.snap('undone');
   },
 });

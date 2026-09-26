@@ -297,7 +297,7 @@ register({
     await toggle.click();
     expect((await toggle.getAttribute('aria-checked')) === 'true', '/settings/export-csv: expected the switch to turn on');
     const withLoans = await download(c, tid(Testids.csvExport.export), '/settings/export-csv (with loans)');
-    expect(withLoans.text.split('\r\n')[0].endsWith('Groups,On loan to,Lent on,Due on,Notes,Added'), `csv: expected the loan columns, found ${q(withLoans.text.split('\r\n')[0])}`);
+    expect(withLoans.text.split('\r\n')[0].endsWith('Groups,Rating,On loan to,Lent on,Due on,Notes,Added'), `csv: expected the loan columns, found ${q(withLoans.text.split('\r\n')[0])}`);
     expect(/\r\nDune,[^\r\n]*,Sam,2026-/.test(withLoans.text), 'csv: expected Dune on loan to Sam');
   },
 });

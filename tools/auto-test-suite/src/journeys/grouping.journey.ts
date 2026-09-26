@@ -102,7 +102,7 @@ register({
     const tops = await c.page.locator(tid(sv.coverCell)).evaluateAll((els) => els.slice(0, 4).map((el) => Math.round(el.getBoundingClientRect().top)));
     expect(tops[0] === tops[1] && tops[1] === tops[2] && tops[3] > tops[0], `/ covers: expected 3 covers per row on a phone, found tops ${q(tops)}`);
     const cellNames = await names(c, tid(sv.coverCell));
-    expect(cellNames.includes('Dune, by Frank Herbert, 1965, on loan to Sam'), `/ covers: expected cells named like list rows, found ${q(cellNames)}`);
+    expect(cellNames.includes('Dune, by Frank Herbert, 1965, rated 4 out of 5, on loan to Sam'), `/ covers: expected cells named like list rows, found ${q(cellNames)}`);
     const images = await c.page.locator(`${tid(sv.coverCell)} ${tid(Testids.cover.image)}`).count();
     expect(images >= 10, `/ covers: expected real cover images front and centre, found ${images}`);
     await c.checkGates('/ (covers)');
@@ -111,7 +111,7 @@ register({
     await c.page.locator(tid(sv.modeSpines)).click();
     await waitForCount(c, tid(sv.spine), 12, '/ spines');
     const spineNames = await names(c, tid(sv.spine));
-    expect(spineNames.includes('Good Omens, by Terry Pratchett and Neil Gaiman, 1990'), `/ spines: expected each spine named in full, found ${q(spineNames)}`);
+    expect(spineNames.includes('Good Omens, by Terry Pratchett and Neil Gaiman, 1990, rated 5 out of 5'), `/ spines: expected each spine named in full, found ${q(spineNames)}`);
     const widths = await c.page.locator(tid(sv.spine)).evaluateAll((els) => els.map((el) => el.getBoundingClientRect().width));
     expect(widths.every((w) => w >= 48), `/ spines: every spine should be at least 48 px wide, found ${q(widths)}`);
     await c.checkGates('/ (spines)');
