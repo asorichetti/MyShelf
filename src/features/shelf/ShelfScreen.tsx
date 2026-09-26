@@ -15,7 +15,7 @@ import { Booky, HelpButton, useBooky } from '@/components/booky';
 import { GroupEditorSheet, type GroupDraft } from '@/components/groups/GroupEditorSheet';
 import { GroupPickerSheet } from '@/components/groups/GroupPickerSheet';
 import { ShelfLoanStamp } from '@/components/loans/ShelfLoanStamp';
-import { Button, Chip, ConfirmDialog, EmptyState, Heading, Screen, Text, useSnackbar } from '@/components/ui';
+import { Button, Chip, ConfirmDialog, EmptyState, Heading, Screen, Text, useFloatClearance, useSnackbar } from '@/components/ui';
 import { useBottomObstacle } from '@/components/ui/layers';
 import type { ShelfSection } from '@/db';
 import { activeFilterCount, filterChips, languages, noFilters, today, type BookListItem, type ShelfGroupBy } from '@/domain';
@@ -101,6 +101,8 @@ export function ShelfScreen() {
   const isEmpty = total === 0;
   // Booky's tips step aside for the Add book button (P07-07).
   const { attach: attachFab, onLayout: layoutFab } = useBottomObstacle(!selection.selecting && !isEmpty && total != null);
+  // Room below the list for Booky's floating tip, so no row stays stuck under it.
+  const { attach: attachRoom, onLayout: layoutRoom, clearance } = useFloatClearance();
   // Booky's empty-shelf tip: a welcome tip, once a session, only after the onboarding
   // (asked again when Booky's memory reloads, e.g. just after the onboarding finished).
   useEffect(() => {
@@ -294,26 +296,29 @@ export function ShelfScreen() {
 
   return (
     <Screen testID={Testids.home.root} scroll={false} contentStyle={[styles.fill, { paddingBottom: 0 }]}>
-      <SectionList
-        testID={Testids.home.list}
-        sections={isEmpty ? [] : rowSections}
-        keyExtractor={(row) => row.key}
-        renderItem={renderItem}
-        renderSectionHeader={renderSectionHeader}
-        stickySectionHeadersEnabled={false}
-        ListHeaderComponent={header}
-        ListEmptyComponent={isEmpty ? emptyShelf : items && (activeQuery || filterCount) ? noMatches : null}
-        ItemSeparatorComponent={viewMode === 'list' ? Separator : viewMode === 'covers' ? SmallSeparator : null}
-        onLayout={onListLayout}
-        contentContainerStyle={{ paddingBottom: sizes.touchTarget * (selecting ? 4 : 1) + spacing.xxl * 2, paddingHorizontal: spacing.xxs }}
-        keyboardShouldPersistTaps="handled"
-        keyboardDismissMode="on-drag"
-        // Section headers and footers take slots too, so a first screenful needs a few more.
-        initialNumToRender={16}
-        maxToRenderPerBatch={16}
-        windowSize={9}
-        style={styles.fill}
-      />
+      {/* Measured for the room Booky's tip needs (a list cannot measure itself in the window). */}
+      <View ref={attachRoom} onLayout={layoutRoom} style={styles.fill}>
+        <SectionList
+          testID={Testids.home.list}
+          sections={isEmpty ? [] : rowSections}
+          keyExtractor={(row) => row.key}
+          renderItem={renderItem}
+          renderSectionHeader={renderSectionHeader}
+          stickySectionHeadersEnabled={false}
+          ListHeaderComponent={header}
+          ListEmptyComponent={isEmpty ? emptyShelf : items && (activeQuery || filterCount) ? noMatches : null}
+          ItemSeparatorComponent={viewMode === 'list' ? Separator : viewMode === 'covers' ? SmallSeparator : null}
+          onLayout={onListLayout}
+          contentContainerStyle={{ paddingBottom: sizes.touchTarget * (selecting ? 4 : 1) + spacing.xxl * 2 + clearance, paddingHorizontal: spacing.xxs }}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
+          // Section headers and footers take slots too, so a first screenful needs a few more.
+          initialNumToRender={16}
+          maxToRenderPerBatch={16}
+          windowSize={9}
+          style={styles.fill}
+        />
+      </View>
       {selecting && addTo != null ? (
         <SelectionBar
           count={selection.count}

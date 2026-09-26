@@ -4,6 +4,8 @@ import { SafeAreaView, type Edge } from 'react-native-safe-area-context';
 import { Testids } from '@/testing/testids.gen';
 import { useTheme } from '@/theme';
 
+import { useFloatClearance } from './floatClearance';
+
 import type { ReactNode } from 'react';
 
 export interface ScreenProps {
@@ -12,7 +14,12 @@ export interface ScreenProps {
   testID?: string;
   /** Page-state marker placed on the outer container (exactly one per screen). */
   pageState?: 'loading' | 'content' | 'error';
-  /** Wrap content in a ScrollView (default true). */
+  /**
+   * Wrap content in a ScrollView (default true). While Booky's tip floats,
+   * the scroll view makes room for it below the content (`useFloatClearance`),
+   * so nothing stays stuck under it. A screen with its own scroller does the
+   * same there.
+   */
   scroll?: boolean;
   /** Safe-area edges to pad. Tab screens skip the bottom edge (the tab bar handles it). */
   edges?: Edge[];
@@ -31,6 +38,7 @@ export function Screen({
   contentStyle,
 }: ScreenProps) {
   const theme = useTheme();
+  const { attach: attachRoom, onLayout: layoutRoom, clearance } = useFloatClearance();
   const main = (
     <View
       role="main"
@@ -53,7 +61,12 @@ export function Screen({
     >
       <SafeAreaView edges={edges} style={styles.fill}>
         {scroll ? (
-          <ScrollView contentContainerStyle={styles.grow} keyboardShouldPersistTaps="handled">
+          <ScrollView
+            ref={attachRoom}
+            onLayout={layoutRoom}
+            contentContainerStyle={[styles.grow, clearance ? { paddingBottom: clearance } : null]}
+            keyboardShouldPersistTaps="handled"
+          >
             {main}
           </ScrollView>
         ) : (

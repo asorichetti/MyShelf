@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { StyleSheet, Text, useWindowDimensions, View, type LayoutChangeEvent } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { useLayers } from '@/components/ui/layers';
+import { setFloatingBox, useLayers } from '@/components/ui/layers';
 import { useEscapeKey } from '@/hooks/useEscapeKey';
 import { useKeyboardHeight } from '@/hooks/useKeyboardHeight';
 import { useScreenReader } from '@/hooks/useScreenReader';
@@ -68,6 +68,10 @@ export function tipWaits(segments: readonly string[], tip: Pick<ShownTip, 'tip'>
  * open, on the onboarding and on screens whose bottom bar holds the primary
  * action; the tip waits and shows when it can. A screen-bound tip is put away
  * when the user moves to another screen.
+ *
+ * Nothing stays stuck under the tip (PLAN §8): while it floats, the screen's
+ * scroller makes room below its content (`useFloatClearance`, from the box
+ * published with `setFloatingBox`).
  */
 export function BookyOverlay() {
   const { tip, dismissTip, help, closeHelp } = useBooky();
@@ -120,8 +124,14 @@ function PlacedTip({ tip, onTabs }: { tip: ShownTip; onTabs: boolean }) {
   // Escape puts the tip away (web), unless a dialog has Escape for itself.
   useEscapeKey(shown ? dismissTip : null);
   useEffect(() => {
-    if (!shown) setTipBox(null);
-    return () => setTipBox(null);
+    if (!shown) {
+      setTipBox(null);
+      setFloatingBox(null);
+    }
+    return () => {
+      setTipBox(null);
+      setFloatingBox(null);
+    };
   }, [shown]);
   if (!shown) return null;
 
@@ -141,7 +151,12 @@ function PlacedTip({ tip, onTabs }: { tip: ShownTip; onTabs: boolean }) {
   }
   const onLayout = (e: LayoutChangeEvent) => {
     setBubbleHeight(Math.round(e.nativeEvent.layout.height));
-    host.current?.measureInWindow?.((x, y, width, height) => setTipBox({ x, y, width, height }));
+    host.current?.measureInWindow?.((x, y, width, height) => {
+      const measured = { x, y, width, height };
+      setTipBox(measured);
+      // Scrolling screens make room for it below their content.
+      setFloatingBox(measured);
+    });
   };
 
   if (tip.tip.celebration) {

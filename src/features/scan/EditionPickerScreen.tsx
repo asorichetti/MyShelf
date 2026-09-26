@@ -8,7 +8,7 @@ import { Booky, HelpButton } from '@/components/booky';
 import { DuplicateSheet } from '@/components/scan/DuplicateSheet';
 import { EditionRow } from '@/components/scan/EditionRow';
 import { WorkGroup } from '@/components/scan/WorkGroup';
-import { Button, Chip, EmptyState, Heading, Screen, Text, TopBar, useSnackbar } from '@/components/ui';
+import { Button, Chip, EmptyState, Heading, Screen, Text, TopBar, useFloatClearance, useSnackbar } from '@/components/ui';
 import { useBottomObstacle } from '@/components/ui/layers';
 import { genresRepo, useDatabase } from '@/db';
 import { languageName, type BookDetail } from '@/domain';
@@ -48,6 +48,8 @@ export function EditionPickerScreen() {
   const [shown, setShown] = useState<Record<string, number>>({});
   // Booky's help tip sits above the bottom bar, never over "This is my edition" (P07-07).
   const { attach: attachBar, onLayout: layoutBar } = useBottomObstacle(session != null);
+  // Room for Booky's floating tip below the list.
+  const { attach: attachRoom, onLayout: layoutRoom, clearance } = useFloatClearance();
 
   if (!session) {
     return (
@@ -117,7 +119,12 @@ export function EditionPickerScreen() {
 
   return (
     <Screen testID={Testids.picker.root} scroll={false} edges={[...EDGES]} contentStyle={{ padding: 0, gap: 0, flex: 1 }}>
-      <ScrollView style={styles.fill} contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xxl }}>
+      <ScrollView
+        ref={attachRoom}
+        onLayout={layoutRoom}
+        style={styles.fill}
+        contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xxl + clearance }}
+      >
         <View style={{ gap: spacing.xs }}>
           <TopBar onBack={backToScan} backLabel={t('scan.backToScanning')}>
             <HelpButton screen="editions" />

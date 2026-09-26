@@ -10,6 +10,9 @@ import { Dimensions, type LayoutChangeEvent, type View } from 'react-native';
  * - bottom obstacles: things anchored near the bottom edge that must stay
  *   uncovered: the Shelf's Add book button, the selection bar, the snackbar.
  *   Each is measured in window coordinates.
+ * - the floating box: where Booky's tip floats right now (window
+ *   coordinates), so scrolling screens can make room below their content
+ *   and nothing stays stuck under it (`useFloatClearance`).
  *
  * A module-level store (no provider): Sheet, ConfirmDialog and friends
  * register themselves wherever they are rendered.
@@ -26,16 +29,19 @@ export interface ObstacleRect {
 export interface LayersSnapshot {
   blocking: number;
   obstacles: readonly ObstacleRect[];
+  /** Booky's floating tip, while one is on screen. */
+  floating: ObstacleRect | null;
 }
 
 let nextId = 1;
 const blocking = new Set<number>();
 const obstacles = new Map<number, ObstacleRect>();
+let floating: ObstacleRect | null = null;
 const listeners = new Set<() => void>();
-let snapshot: LayersSnapshot = { blocking: 0, obstacles: [] };
+let snapshot: LayersSnapshot = { blocking: 0, obstacles: [], floating: null };
 
 function changed() {
-  snapshot = { blocking: blocking.size, obstacles: [...obstacles.values()] };
+  snapshot = { blocking: blocking.size, obstacles: [...obstacles.values()], floating };
   for (const l of [...listeners]) l();
 }
 
@@ -113,10 +119,19 @@ export function useBottomObstacle(active = true): { attach: (view: View | null) 
   return { attach, onLayout };
 }
 
+/** Where the floating tip is now (window coordinates), or null when none is showing. */
+export function setFloatingBox(next: ObstacleRect | null): void {
+  const same = next === floating || (next && floating && next.x === floating.x && next.y === floating.y && next.width === floating.width && next.height === floating.height);
+  if (same) return;
+  floating = next;
+  changed();
+}
+
 /** Tests: forget everything. */
 export function resetLayers(): void {
   blocking.clear();
   obstacles.clear();
+  floating = null;
   changed();
 }
 

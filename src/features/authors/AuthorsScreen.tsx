@@ -1,9 +1,9 @@
 import { router } from 'expo-router';
-import { useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { Booky } from '@/components/booky';
-import { EmptyState, Heading, LetterIndex, Screen, Text, TopBar } from '@/components/ui';
+import { EmptyState, Heading, LetterIndex, Screen, Text, TopBar, useFloatClearance } from '@/components/ui';
 import type { AuthorWithCount } from '@/db';
 import { authorLetter } from '@/domain';
 import { goBackOr } from '@/features/navigation/goBack';
@@ -36,6 +36,15 @@ export function AuthorsScreen() {
   const scroller = useRef<ScrollView>(null);
   const offsets = useRef(new Map<string, number>());
   const [current, setCurrent] = useState<string | null>(null);
+  // Room for Booky's floating tip below the list.
+  const { attach: attachRoom, onLayout: layoutRoom, clearance } = useFloatClearance();
+  const attachScroller = useCallback(
+    (node: ScrollView | null) => {
+      scroller.current = node;
+      attachRoom(node);
+    },
+    [attachRoom],
+  );
 
   if (!authors) return <LoadingPage />;
 
@@ -65,7 +74,12 @@ export function AuthorsScreen() {
       ) : (
         <>
           <LetterIndex letters={sections.map((s) => s.letter)} current={current} onSelect={jump} testID={Testids.authors.letter} />
-          <ScrollView ref={scroller} style={styles.fill} contentContainerStyle={{ gap: spacing.md, paddingBottom: spacing.xxl }}>
+          <ScrollView
+            ref={attachScroller}
+            onLayout={layoutRoom}
+            style={styles.fill}
+            contentContainerStyle={{ gap: spacing.md, paddingBottom: spacing.xxl + clearance }}
+          >
             {sections.map((section) => (
               <View key={section.letter} onLayout={(e) => offsets.current.set(section.letter, e.nativeEvent.layout.y)} style={{ gap: spacing.xs }}>
                 <Heading level={2} accessibilityLabel={section.letter === '#' ? t('authors.index.symbols') : t('authors.index.letter', { letter: section.letter })}>

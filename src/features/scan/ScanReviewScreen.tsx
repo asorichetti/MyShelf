@@ -6,7 +6,7 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 import { candidateFacts } from '@/components/book/CandidateCard';
 import { CoverImage } from '@/components/book/CoverImage';
 import { Booky, bookCount, useBooky } from '@/components/booky';
-import { Button, CatalogueCard, EmptyState, Heading, Screen, Stamp, Text, TopBar, useSnackbar } from '@/components/ui';
+import { Button, CatalogueCard, EmptyState, Heading, Screen, Stamp, Text, TopBar, useFloatClearance, useSnackbar } from '@/components/ui';
 import { useDatabase } from '@/db';
 import { joinNames } from '@/domain';
 import { goBackOr } from '@/features/navigation/goBack';
@@ -74,6 +74,8 @@ export function ScanReviewScreen() {
   const { emit } = useBooky();
   const { show } = useSnackbar();
   const [saving, setSaving] = useState(false);
+  // Room for Booky's floating tip below the list.
+  const { attach: attachRoom, onLayout: layoutRoom, clearance } = useFloatClearance();
   const ready = tray.filter((i): i is TrayItem & { candidate: NonNullable<TrayItem['candidate']> } => i.status === 'ready' && i.candidate !== null);
   const waiting = tray.length - ready.length;
 
@@ -104,7 +106,12 @@ export function ScanReviewScreen() {
 
   return (
     <Screen testID={Testids.scanReview.root} scroll={false} edges={[...EDGES]} contentStyle={{ padding: 0, gap: 0, flex: 1 }}>
-      <ScrollView style={styles.fill} contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xxl }}>
+      <ScrollView
+        ref={attachRoom}
+        onLayout={layoutRoom}
+        style={styles.fill}
+        contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xxl + clearance }}
+      >
         <View style={{ gap: spacing.xs }}>
           <TopBar onBack={backToScan} backLabel={t('scan.backToScanning')} />
           <Heading level={1}>{t('scanReview.title')}</Heading>
