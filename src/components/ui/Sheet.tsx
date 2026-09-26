@@ -19,6 +19,8 @@ export interface SheetProps {
   children: ReactNode;
   /** Buttons pinned under the scrolling content (e.g. Cancel / Save). */
   footer?: ReactNode;
+  /** While true (a save in progress), back, Escape and the scrim do not close it. */
+  busy?: boolean;
   testID?: string;
 }
 
@@ -27,13 +29,14 @@ export interface SheetProps {
  * footer stays put. Android back, Escape on web and a tap on the scrim close
  * it; the web Modal traps focus inside and gives it back on close.
  */
-export function Sheet({ visible, title, subtitle, onClose, children, footer, testID }: SheetProps) {
+export function Sheet({ visible, title, subtitle, onClose, children, footer, busy = false, testID }: SheetProps) {
   const theme = useTheme();
   const { colors, spacing, radii, sizes } = theme;
   const insets = useSafeAreaInsets();
   const reduceMotion = useReducedMotion();
+  const close = busy ? () => {} : onClose;
   return (
-    <Modal visible={visible} transparent animationType={reduceMotion ? 'none' : SHEET_ANIMATION} onRequestClose={onClose} statusBarTranslucent>
+    <Modal visible={visible} transparent animationType={reduceMotion ? 'none' : SHEET_ANIMATION} onRequestClose={close} statusBarTranslucent>
       <View style={[styles.backdrop, { backgroundColor: colors.scrim }]}>
         <View
           role="dialog"
@@ -72,7 +75,7 @@ export function Sheet({ visible, title, subtitle, onClose, children, footer, tes
           aria-hidden
           focusable={false}
           style={StyleSheet.absoluteFill}
-          onPress={onClose}
+          onPress={close}
         />
       </View>
     </Modal>

@@ -14,10 +14,11 @@ export function containsAll(s: string, ...subs: string[]): boolean {
 /**
  * Loads an E2E fixture (`empty`, `demo`, `large`) through the app's /e2e route
  * and waits until it has redirected to `next`. The page gates run on the
- * landing screen.
+ * landing screen. `today` (YYYY-MM-DD) freezes the app's clock, so loan
+ * dates in the fixture are fixed.
  */
-export async function openFixture(c: Context, fixture: string, next = '/'): Promise<void> {
-  const path = `/e2e?fixture=${fixture}&next=${encodeURIComponent(next)}`;
+export async function openFixture(c: Context, fixture: string, next = '/', today?: string): Promise<void> {
+  const path = `/e2e?fixture=${fixture}${today ? `&today=${today}` : ''}&next=${encodeURIComponent(next)}`;
   await c.goto(path);
   try {
     await c.page.waitForURL((u) => u.pathname === next, { timeout: 15_000 });

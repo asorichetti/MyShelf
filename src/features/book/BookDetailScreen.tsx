@@ -7,8 +7,9 @@ import { GenreChips } from '@/components/book/GenreChips';
 import { SummaryText } from '@/components/book/SummaryText';
 import { Booky } from '@/components/booky';
 import { ConfirmDialog, EmptyState, Heading, IconButton, Menu, Screen, Stamp, Text, useSnackbar } from '@/components/ui';
-import { daysOverdue, formatDate, loanStatus, today, type BookDetail } from '@/domain';
+import type { BookDetail } from '@/domain';
 import { BookGroupsSection } from '@/features/groups/BookGroupsSection';
+import { BookLoanSection } from '@/features/loans/BookLoanSection';
 import { BookSeries } from '@/features/series/BookSeries';
 import { Testids } from '@/testing/testids.gen';
 import { useTheme } from '@/theme';
@@ -30,29 +31,6 @@ function Section({ title, children, testID }: { title: string; children: React.R
     <View style={{ gap: spacing.sm }} testID={testID}>
       <Heading level={2}>{title}</Heading>
       {children}
-    </View>
-  );
-}
-
-function LoanStatus({ loan }: { loan: NonNullable<BookDetail['openLoan']> }) {
-  const { spacing } = useTheme();
-  const now = today();
-  const status = loanStatus(loan, now);
-  const dueShort = loan.dueOn ? `Due ${formatDate(loan.dueOn).replace(/ \d{4}$/, '')}` : null;
-  const stamp =
-    status === 'overdue'
-      ? { label: 'Overdue', tone: 'danger' as const }
-      : { label: dueShort ?? 'On loan', tone: status === 'due-soon' ? ('warn' as const) : ('accent' as const) };
-  const overdueDays = daysOverdue(loan, now);
-  const due = !loan.dueOn
-    ? ''
-    : status === 'overdue'
-      ? ` It was due back on ${formatDate(loan.dueOn)} (${overdueDays === 1 ? '1 day' : `${overdueDays} days`} ago).`
-      : ` Due back on ${formatDate(loan.dueOn)}.`;
-  return (
-    <View style={[styles.loan, { gap: spacing.md }]}>
-      <Stamp label={stamp.label} tone={stamp.tone} />
-      <Text style={styles.flex}>{`Lent to ${loan.borrowerName} on ${formatDate(loan.lentOn)}.${due}`}</Text>
     </View>
   );
 }
@@ -146,7 +124,7 @@ function BookDetailContent({ book }: { book: BookDetail }) {
       ) : null}
       <BookGroupsSection bookId={book.id} title={book.title} />
       <Section title="Loan" testID={Testids.bookDetail.loan}>
-        {book.openLoan ? <LoanStatus loan={book.openLoan} /> : <Text color="inkMuted">On the shelf, not lent to anyone.</Text>}
+        <BookLoanSection book={book} />
       </Section>
     </Screen>
   );
@@ -188,6 +166,5 @@ export function BookDetailScreen() {
 const styles = StyleSheet.create({
   bar: { flexDirection: 'row', alignItems: 'center' },
   flex: { flex: 1 },
-  loan: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap' },
   warning: { flexDirection: 'row', alignItems: 'center' },
 });

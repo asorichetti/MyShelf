@@ -57,7 +57,7 @@ describe('Book detail', () => {
     expect(screen.getByTestId(Testids.bookDetail.genres)).toHaveTextContent(/Science Fiction$/);
     expect(screen.getByTestId(Testids.bookDetail.notes)).toHaveTextContent('Signed bookplate inside the front cover.');
     expect(screen.getByTestId(Testids.bookDetail.loan)).toHaveTextContent(/Lent to Sam on 5 Jun 2026\. Due back on 26 Jun 2026\./);
-    expect(screen.getByText('Due 26 Jun')).toBeOnTheScreen();
+    expect(screen.getByText('On loan · Sam · Due 26 Jun')).toBeOnTheScreen();
     expect(screen.queryByTestId(Testids.bookDetail.series)).toBeNull();
   });
 
@@ -67,7 +67,7 @@ describe('Book detail', () => {
     expect(screen.getByTestId(Testids.bookDetail.loan)).toHaveTextContent(/not lent to anyone/);
     screen.unmount();
     await openBook(await idOf('9780007527526'));
-    expect(screen.getByText('Overdue')).toBeOnTheScreen();
+    expect(screen.getByText('On loan · Priya · Overdue · 5 days')).toBeOnTheScreen();
     expect(screen.getByTestId(Testids.bookDetail.loan)).toHaveTextContent(/5 days ago/);
   });
 

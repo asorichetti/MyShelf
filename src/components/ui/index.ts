@@ -3,6 +3,7 @@ export { Card, type CardProps } from './Card';
 export { CatalogueCard, type CatalogueCardProps } from './CatalogueCard';
 export { Chip, type ChipProps } from './Chip';
 export { ConfirmDialog, type ConfirmDialogProps } from './ConfirmDialog';
+export { DateField, type DateFieldProps } from './DateField';
 export { EmptyState, type EmptyStateAction, type EmptyStateProps } from './EmptyState';
 export { Heading, type HeadingLevel, type HeadingProps } from './Heading';
 export { LetterIndex, type LetterIndexProps } from './LetterIndex';
