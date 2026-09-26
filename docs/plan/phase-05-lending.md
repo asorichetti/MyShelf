@@ -65,12 +65,13 @@ Never lose a book to a friend again. The user records who borrowed a book and wh
 - **Tests:** `src/features/loans/__tests__/useLoans.test.tsx`, `src/components/loans/__tests__/LoanRow.test.tsx`, `src/__tests__/loansTab.test.tsx`.
 - **Delivered:** "Out now · 2" and "History · 1" are a `role="tablist"` of two 48 dp tabs over one tab panel. Out now is sorted by `sortOutNow` (overdue first, most overdue on top, then soonest due, undated last); History is the new `loansRepo.listReturnedLoans` (most recently returned first). Loan detail rows now carry the book's cover (`bookCoverUri`, optional on `LoanWithDetails`). `LoanRow` is a card pocket (berry rim, cover, title as a button to the book, "With [Sam]" as a button to the borrower, lent date, note, stamp, "Mark returned"); stamps come from `loanStamp()`: "OVERDUE · 3 DAYS" (danger), "DUE TODAY" / "DUE TOMORROW" / "DUE 12 OCT" within three days (warn), "DUE 12 OCT" later (accent), "ON LOAN" undated, "RETURNED 12 OCT" (success), each with a spoken description. The borrower filter is a `SelectField` ("Everyone" or a borrower who appears in either list), shown when there are two or more. The Loans tab badge is `useOverdueCount()` (new `loansRepo.countOverdueLoans`) in `TabsLayout`, drawn in danger ink, and the tab is then named "Loans, 1 overdue". The screen also stamps "1 BOOK OVERDUE" under the title. Empty: sleepy Booky, "Every book is home. Lovely."
 
-### P05-06 Borrower detail
+### P05-06 Borrower detail — done
 
 - **Description:** Route `src/app/borrower/[id].tsx`: name, contact, "Currently has" list, "Has borrowed before" list, edit/delete. Reachable from loan rows and from Settings → Borrowers (P08-01).
 - **Files:** `src/app/borrower/[id].tsx`, `src/features/loans/useBorrower.ts`.
 - **Acceptance:** lists correct for `demo`; delete blocked message when books are out.
 - **Tests:** `src/__tests__/borrowerDetail.test.tsx`.
+- **Delivered:** the route re-exports `BorrowerScreen` (`src/features/loans/BorrowerScreen.tsx`). A borrower's card (the h1 name, contact or a hint to add one, "Has 1 book now · borrowed 2 times since 17 Mar 2026") heads "Currently has" (with Mark returned) and "Has borrowed before". Edit opens a sheet for name and contact and refuses a name another borrower already has. Delete is refused with an inline alert while books are out ("Sam still has 1 book of yours. Mark it returned first…"); otherwise it confirms, then clears the returned history and deletes in one transaction (`removeBorrower`) and goes back to Loans. An unknown id shows "Borrower not found" (`page-error`). Loan rows' borrower names and book detail's "About Sam" open it; Settings → Borrowers comes with P08-01.
 
 ### P05-07 Loan history on book detail
 

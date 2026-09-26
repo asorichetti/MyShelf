@@ -57,6 +57,7 @@ export function LoansScreen() {
   const returning = useReturnFlow();
 
   const openBook = useCallback((id: number) => router.navigate({ pathname: '/book/[id]', params: { id: String(id) } }), []);
+  const openBorrower = useCallback((id: number) => router.navigate({ pathname: '/borrower/[id]', params: { id: String(id) } }), []);
 
   const borrowers = useMemo(() => {
     const seen = new Map<number, string>();
@@ -130,7 +131,7 @@ export function LoansScreen() {
       ) : null}
       <View nativeID={PANEL_ID} role="tabpanel" aria-label={section === 'out' ? 'Out now' : 'History'} testID={Testids.loans.list} style={{ gap: spacing.md }}>
         {shown?.length ? (
-          shown.map((loan) => <LoanRow key={loan.id} loan={loan} today={today} onOpenBook={openBook} onReturn={returning.start} />)
+          shown.map((loan) => <LoanRow key={loan.id} loan={loan} today={today} onOpenBook={openBook} onOpenBorrower={openBorrower} onReturn={returning.start} />)
         ) : (
           <View testID={Testids.loans.empty}>{empty}</View>
         )}

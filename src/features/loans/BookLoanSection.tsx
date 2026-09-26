@@ -1,4 +1,5 @@
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { router } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
@@ -81,6 +82,13 @@ export function BookLoanSection({ book }: { book: BookDetail }) {
               icon={<MaterialCommunityIcons name="book-arrow-left-outline" size={sizes.icon} color={colors.onPrimary} />}
               onPress={() => returning.start({ ...loan, bookTitle: book.title })}
               testID={Testids.returnLoan.open}
+            />
+            <Button
+              label={`About ${loan.borrowerName}`}
+              variant="ghost"
+              accessibilityLabel={`See everything ${loan.borrowerName} has borrowed`}
+              onPress={() => router.navigate({ pathname: '/borrower/[id]', params: { id: String(loan.borrowerId) } })}
+              testID={Testids.bookLoan.borrower}
             />
           </View>
         </>

@@ -1,6 +1,6 @@
 import { act, fireEvent, screen, within } from 'expo-router/testing-library';
 
-import { booksRepo, type Db } from '@/db';
+import { booksRepo, loansRepo, type Db } from '@/db';
 import { setToday } from '@/domain';
 import { createTestDb } from '@/testing/createTestDb';
 import { loadFixture } from '@/testing/loadFixture';
@@ -17,7 +17,7 @@ afterEach(async () => {
   await db.close();
 });
 
-const routes = { 'book/[id]': stubScreen('book') };
+const routes = { 'book/[id]': stubScreen('book'), 'borrower/[id]': stubScreen('borrower') };
 
 async function openLoans() {
   const r = renderApp(db, '/loans', routes);
@@ -87,12 +87,20 @@ describe('Loans tab (P05-05)', () => {
     expect(titles()).toEqual(['Mort']);
   });
 
-  it('opens the book from a row', async () => {
+  it('opens the book and the borrower from a row', async () => {
     await loadFixture(db, 'demo');
     const r = await openLoans();
     const [dune] = await booksRepo.findBooksByIsbn(db, '9780441172719');
     await press(screen.getAllByTestId(Testids.loans.rowBook)[1]);
     expect(r.getPathname()).toBe(`/book/${dune.id}`);
+  });
+
+  it('opens a borrower from a row', async () => {
+    await loadFixture(db, 'demo');
+    const r = await openLoans();
+    const sam = (await loansRepo.listBorrowers(db)).find((b) => b.name === 'Sam')!;
+    await press(screen.getAllByTestId(Testids.loans.rowBorrower)[1]);
+    expect(r.getPathname()).toBe(`/borrower/${sam.id}`);
   });
 
   it('shows sleepy Booky when every book is home', async () => {

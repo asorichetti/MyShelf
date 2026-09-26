@@ -197,6 +197,36 @@ register({
 });
 
 register({
+  name: 'borrower-detail',
+  suite: 'p05',
+  desc: 'Loans tab -> Sam on Dune\'s row -> borrower detail with Dune under "Currently has" and Mort under "Has borrowed before"; removing Sam is blocked while Dune is out',
+  async run(c) {
+    await openFixture(c, 'demo', '/loans', TODAY);
+    await waitForCount(c, loanRow, 2, '/loans');
+    await c.page.locator(loanRow).filter({ hasText: 'Dune' }).locator(tid(Testids.loans.rowBorrower)).click();
+    const path = await waitForPath(c, /^\/borrower\/\d+$/, '/loans -> Sam');
+    await waitVisible(c, tid(Testids.borrower.name), path);
+    await c.checkGates(path);
+    const name = await textOf(c, tid(Testids.borrower.name));
+    expect(name === 'Sam', `${path}: expected the h1 ${q('Sam')}, found ${q(name)}`);
+    const current = await textOf(c, tid(Testids.borrower.current));
+    expect(current.includes('Dune') && !current.includes('Mort'), `${path}: expected Dune (only) under "Currently has", found ${q(current)}`);
+    const past = await textOf(c, tid(Testids.borrower.past));
+    expect(past.includes('Mort') && !past.includes('Dune'), `${path}: expected Mort (only) under "Has borrowed before", found ${q(past)}`);
+    const stats = await textOf(c, tid(Testids.borrower.stats));
+    expect(stats === 'Has 1 book now · borrowed 2 times since 17 Mar 2026', `${path}: expected the borrower's stats, found ${q(stats)}`);
+    await c.snap('borrower-detail');
+
+    await c.page.locator(tid(Testids.borrower.delete)).click();
+    await waitVisible(c, tid(Testids.borrower.blocked), `${path} (delete)`);
+    const blocked = await textOf(c, tid(Testids.borrower.blocked));
+    expect(blocked.includes('Sam still has 1 book of yours'), `${path}: expected the blocked-delete message, found ${q(blocked)}`);
+    expect((await c.page.locator(tid(Testids.borrower.blocked)).getAttribute('role')) === 'alert', `${path}: expected the blocked message to be role=alert`);
+    expect((await c.page.locator(tid(Testids.dialog.root)).count()) === 0, `${path}: expected no delete confirmation while a book is out`);
+  },
+});
+
+register({
   name: 'loans-empty',
   suite: 'p05',
   desc: 'Fixture "empty": the Loans tab shows sleepy Booky with "Every book is home. Lovely."',

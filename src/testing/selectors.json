@@ -73,6 +73,25 @@
     "historyRow": "book-loan-history-row",
     "badge": "book-loan-badge"
   },
+  "borrower": {
+    "root": "borrower-root",
+    "back": "borrower-back",
+    "name": "borrower-name",
+    "contact": "borrower-contact",
+    "stats": "borrower-stats",
+    "current": "borrower-current",
+    "past": "borrower-past",
+    "edit": "borrower-edit",
+    "delete": "borrower-delete",
+    "blocked": "borrower-blocked",
+    "editSheet": "borrower-edit-sheet",
+    "editName": "borrower-edit-name",
+    "editContact": "borrower-edit-contact",
+    "editError": "borrower-edit-error",
+    "editSave": "borrower-edit-save",
+    "missing": "borrower-missing",
+    "missingBack": "borrower-missing-back"
+  },
   "groups": {
     "root": "groups-root",
     "title": "groups-title",
