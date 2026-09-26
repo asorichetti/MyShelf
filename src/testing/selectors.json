@@ -16,6 +16,7 @@
     "sortAuthor": "home-sort-author",
     "sortYear": "home-sort-year",
     "sortAdded": "home-sort-added",
+    "sortRating": "home-sort-rating",
     "sortDirection": "home-sort-direction",
     "resultCount": "home-result-count",
     "noMatches": "home-no-matches"
@@ -233,7 +234,8 @@
     "back": "book-detail-back",
     "edit": "book-detail-edit",
     "more": "book-detail-more",
-    "delete": "book-detail-delete"
+    "delete": "book-detail-delete",
+    "rating": "book-detail-rating"
   },
   "bookForm": {
     "root": "book-form-root",
@@ -257,6 +259,7 @@
     "genreChip": "book-form-genre-chip",
     "coverPick": "book-form-cover-pick",
     "coverCamera": "book-form-cover-camera",
+    "rating": "book-form-rating",
     "coverRemove": "book-form-cover-remove",
     "summary": "book-form-summary",
     "notes": "book-form-notes",
@@ -329,6 +332,7 @@
     "groupBySeries": "shelf-group-by-series",
     "groupByAuthor": "shelf-group-by-author",
     "groupByGroup": "shelf-group-by-group",
+    "groupByRating": "shelf-group-by-rating",
     "sectionHeader": "shelf-section-header",
     "modeList": "shelf-mode-list",
     "modeCovers": "shelf-mode-covers",
@@ -354,6 +358,8 @@
     "filterYearFrom": "shelf-filter-year-from",
     "filterYearTo": "shelf-filter-year-to",
     "filterRecent": "shelf-filter-recent",
+    "filterRatingAny": "shelf-filter-rating-any",
+    "filterRating": "shelf-filter-rating",
     "browse": "shelf-browse",
     "browseGenres": "shelf-browse-genres",
     "browseSeries": "shelf-browse-series",
@@ -513,5 +519,6 @@
     "copy": "error-boundary-copy",
     "copied": "error-boundary-copied",
     "details": "error-boundary-details"
-  }
+  },
+  "rating": { "control": "rating-control", "star": "rating-star", "clear": "rating-clear", "status": "rating-status", "display": "rating-display" }
 }

@@ -26,6 +26,7 @@ export {
   type SnackbarProps,
 } from './Snackbar';
 export { Stamp, type StampProps, type StampTone } from './Stamp';
+export { StarRating, StarRatingDisplay, type StarRatingDisplayProps, type StarRatingProps } from './StarRating';
 export { Text, type TextProps } from './Text';
 export { TextField, type TextFieldProps } from './TextField';
 export { TopBar, type TopBarProps } from './TopBar';
