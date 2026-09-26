@@ -14,6 +14,7 @@ import {
   parseSavedPresets,
   parseShelfSort,
   parseSortLevels,
+  presetName,
   presetNameProblem,
   removeLevel,
   renameSavedPreset,
@@ -73,7 +74,7 @@ describe('parseShelfSort', () => {
 
 describe('presets', () => {
   it('are the eight asked for, each at most four levels', () => {
-    expect(sortPresets.map((p) => p.name)).toEqual(['Library order', 'Series reading order', 'Call number', 'Newest additions', 'A–Z by title', 'By author', 'Rainbow', 'Surprise me']);
+    expect(sortPresets.map((p) => presetName(p))).toEqual(['Library order', 'Series reading order', 'Call number', 'Newest additions', 'A–Z by title', 'By author', 'Rainbow', 'Surprise me']);
     for (const p of sortPresets) expect(p.levels.length).toBeLessThanOrEqual(MAX_SORT_LEVELS);
   });
 
@@ -93,10 +94,10 @@ describe('presets', () => {
 
   it('matches levels back to a preset (built-in first, then saved)', () => {
     const saved: SavedSortPreset[] = [{ id: 'p1', name: 'Mine', levels: lv(['pages', 'desc']) }];
-    expect(matchingPreset(lv(['added', 'desc']), saved)?.name).toBe('Newest additions');
-    expect(matchingPreset(lv(['pages', 'desc']), saved)?.name).toBe('Mine');
+    expect(presetName(matchingPreset(lv(['added', 'desc']), saved)!)).toBe('Newest additions');
+    expect(presetName(matchingPreset(lv(['pages', 'desc']), saved)!)).toBe('Mine');
     expect(matchingPreset(lv(['pages']), saved)).toBeNull();
-    expect(matchingPreset(defaultShelfSort.levels)?.name).toBe('A–Z by title');
+    expect(presetName(matchingPreset(defaultShelfSort.levels)!)).toBe('A–Z by title');
   });
 });
 

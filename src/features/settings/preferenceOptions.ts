@@ -1,11 +1,13 @@
-import { describeSort } from '@/db/sortKeys';
+import { sortKeyRegistry } from '@/db/sortKeys';
 import {
   applyPreset,
   dateFormatLabels,
   dateFormats,
   defaultShelfSort,
+  describeSort,
   parseSavedPresets,
   parseShelfSort,
+  presetName,
   sameLevels,
   shelfGroupings,
   shelfViewModes,
@@ -48,11 +50,11 @@ export const storedPresets = (value: unknown): SavedSortPreset[] => parseSavedPr
  */
 export function sortOptions(sort: ShelfSort, saved: readonly SavedSortPreset[]) {
   const options = [
-    ...sortPresets.map((p) => ({ value: `preset:${p.id}`, label: p.name })),
+    ...sortPresets.map((p) => ({ value: `preset:${p.id}`, label: presetName(p) })),
     ...saved.map((p) => ({ value: `saved:${p.id}`, label: p.name })),
     ...singleKeyChoices.map((c) => ({ value: `level:${c.level.key}:${c.level.direction}`, label: translate(c.label) })),
   ];
-  if (sortValue(sort, saved) === 'custom') options.push({ value: 'custom', label: t('preferences.sort.custom', { summary: describeSort(sort.levels) }) });
+  if (sortValue(sort, saved) === 'custom') options.push({ value: 'custom', label: t('preferences.sort.custom', { summary: describeSort(sort.levels, sortKeyRegistry) }) });
   return options;
 }
 
@@ -68,7 +70,7 @@ export function sortValue(sort: ShelfSort, saved: readonly SavedSortPreset[] = [
 
 export function sortLabel(sort: ShelfSort, saved: readonly SavedSortPreset[] = []): string {
   const value = sortValue(sort, saved);
-  return sortOptions(sort, saved).find((o) => o.value === value)?.label ?? describeSort(sort.levels);
+  return sortOptions(sort, saved).find((o) => o.value === value)?.label ?? describeSort(sort.levels, sortKeyRegistry);
 }
 
 /** The sort a Settings choice stands for; null for "custom" (nothing to change) or an unknown value. */

@@ -3,21 +3,19 @@ import {
   defaultShelfSort,
   hashColour,
   languages,
-  sectionSort,
   sortKeyIds,
-  type ShelfGroupBy,
   type ShelfSort,
   type SortDirection,
   type SortKeyId,
   type SortKeyInfo,
-  type SortLevel,
 } from '@/domain';
 
 import type { Db, SqlValue } from './types';
 
 /**
  * The sort key registry (P11-01): every key the Shelf can sort by, in one
- * place — its label, its natural direction and what each direction is called,
+ * place — its label, its natural direction and what each direction is called
+ * (catalogue keys in `src/i18n/en.ts` under `sort.`, translated when shown),
  * the SQL value it orders by, and the joins that SQL reads. The Shelf query
  * (`listBookItems`) builds its ORDER BY from here and nowhere else.
  *
@@ -258,14 +256,14 @@ async function callNumberRanks(db: Db): Promise<Map<number, number>> {
 
 // ---- The registry ----
 
-const AZ = { asc: 'A to Z', desc: 'Z to A' } as const;
+const AZ = { asc: 'sort.direction.aToZ', desc: 'sort.direction.zToA' } as const;
 
 type Defs = { [K in SortKeyId]: Omit<SortKeyDef, 'id'> };
 
 const defs: Defs = {
   title: {
-    label: 'Title',
-    hint: 'Ignoring a leading The, A or An',
+    label: 'sort.keys.title.label',
+    hint: 'sort.keys.title.hint',
     defaultDirection: 'asc',
     directionLabels: AZ,
     joins: [],
@@ -273,8 +271,8 @@ const defs: Defs = {
     value: () => TITLE_KEY,
   },
   author: {
-    label: 'Author',
-    hint: 'First author’s surname',
+    label: 'sort.keys.author.label',
+    hint: 'sort.keys.author.hint',
     defaultDirection: 'asc',
     directionLabels: AZ,
     joins: [],
@@ -282,8 +280,8 @@ const defs: Defs = {
     value: () => FIRST_AUTHOR,
   },
   series: {
-    label: 'Series',
-    hint: 'Series name; books in no series last',
+    label: 'sort.keys.series.label',
+    hint: 'sort.keys.series.hint',
     defaultDirection: 'asc',
     directionLabels: AZ,
     joins: ['series'],
@@ -291,16 +289,16 @@ const defs: Defs = {
     value: () => foldSql('s.name'),
   },
   seriesPosition: {
-    label: 'Number in series',
-    hint: 'Book 1, 2, 2.5, 3…',
+    label: 'sort.keys.seriesPosition.label',
+    hint: 'sort.keys.seriesPosition.hint',
     defaultDirection: 'asc',
-    directionLabels: { asc: 'First to last', desc: 'Last to first' },
+    directionLabels: { asc: 'sort.direction.firstToLast', desc: 'sort.direction.lastToFirst' },
     joins: [],
     value: () => 'b.series_position',
   },
   genre: {
-    label: 'Genre',
-    hint: 'A book in several genres files under the first alphabetically',
+    label: 'sort.keys.genre.label',
+    hint: 'sort.keys.genre.hint',
     defaultDirection: 'asc',
     directionLabels: AZ,
     joins: [],
@@ -308,41 +306,41 @@ const defs: Defs = {
     value: () => PRIMARY_GENRE,
   },
   year: {
-    label: 'Year published',
-    hint: 'Publication year',
+    label: 'sort.keys.year.label',
+    hint: 'sort.keys.year.hint',
     defaultDirection: 'asc',
-    directionLabels: { asc: 'Oldest first', desc: 'Newest first' },
+    directionLabels: { asc: 'sort.direction.oldestFirst', desc: 'sort.direction.newestFirst' },
     joins: [],
     value: () => 'b.publication_year',
   },
   added: {
-    label: 'Date added',
-    hint: 'When it joined your shelf',
+    label: 'sort.keys.added.label',
+    hint: 'sort.keys.added.hint',
     defaultDirection: 'desc',
-    directionLabels: { asc: 'Oldest first', desc: 'Newest first' },
+    directionLabels: { asc: 'sort.direction.oldestFirst', desc: 'sort.direction.newestFirst' },
     joins: [],
     value: () => 'b.created_at',
     then: 'b.id',
   },
   updated: {
-    label: 'Last edited',
-    hint: 'When its details last changed',
+    label: 'sort.keys.updated.label',
+    hint: 'sort.keys.updated.hint',
     defaultDirection: 'desc',
-    directionLabels: { asc: 'Longest ago first', desc: 'Most recent first' },
+    directionLabels: { asc: 'sort.direction.longestAgoFirst', desc: 'sort.direction.mostRecentFirst' },
     joins: [],
     value: () => 'b.updated_at',
   },
   pages: {
-    label: 'Page count',
-    hint: 'Number of pages',
+    label: 'sort.keys.pages.label',
+    hint: 'sort.keys.pages.hint',
     defaultDirection: 'asc',
-    directionLabels: { asc: 'Shortest first', desc: 'Longest first' },
+    directionLabels: { asc: 'sort.direction.shortestFirst', desc: 'sort.direction.longestFirst' },
     joins: [],
     value: () => 'b.page_count',
   },
   publisher: {
-    label: 'Publisher',
-    hint: 'Publisher’s name',
+    label: 'sort.keys.publisher.label',
+    hint: 'sort.keys.publisher.hint',
     defaultDirection: 'asc',
     directionLabels: AZ,
     joins: [],
@@ -350,8 +348,8 @@ const defs: Defs = {
     value: () => textOrNull('b.publisher'),
   },
   language: {
-    label: 'Language',
-    hint: 'Language name, in English',
+    label: 'sort.keys.language.label',
+    hint: 'sort.keys.language.hint',
     defaultDirection: 'asc',
     directionLabels: AZ,
     joins: [],
@@ -359,24 +357,24 @@ const defs: Defs = {
     value: () => foldSql(`(${LANGUAGE_NAME})`),
   },
   format: {
-    label: 'Format',
-    hint: 'Hardback, paperback, e-book, audiobook',
+    label: 'sort.keys.format.label',
+    hint: 'sort.keys.format.hint',
     defaultDirection: 'asc',
-    directionLabels: { asc: 'Hardback first', desc: 'Audiobook first' },
+    directionLabels: { asc: 'sort.direction.hardbackFirst', desc: 'sort.direction.audiobookFirst' },
     joins: [],
     value: () => FORMAT_ORDER,
   },
   onLoan: {
-    label: 'On loan',
-    hint: 'Books lent out, or books at home',
+    label: 'sort.keys.onLoan.label',
+    hint: 'sort.keys.onLoan.hint',
     defaultDirection: 'asc',
-    directionLabels: { asc: 'On loan first', desc: 'At home first' },
+    directionLabels: { asc: 'sort.direction.onLoanFirst', desc: 'sort.direction.atHomeFirst' },
     joins: ['openLoan'],
     value: () => '(ol.id IS NULL)',
   },
   borrower: {
-    label: 'Borrower',
-    hint: 'Who has it; books at home last',
+    label: 'sort.keys.borrower.label',
+    hint: 'sort.keys.borrower.hint',
     defaultDirection: 'asc',
     directionLabels: AZ,
     joins: ['openLoan'],
@@ -384,8 +382,8 @@ const defs: Defs = {
     value: () => foldSql('olp.name'),
   },
   group: {
-    label: 'Group',
-    hint: 'Your groups; a book in several files under the first alphabetically',
+    label: 'sort.keys.group.label',
+    hint: 'sort.keys.group.hint',
     defaultDirection: 'asc',
     directionLabels: AZ,
     joins: [],
@@ -393,25 +391,25 @@ const defs: Defs = {
     value: () => FIRST_GROUP,
   },
   titleLength: {
-    label: 'Title length',
-    hint: 'Number of letters in the title',
+    label: 'sort.keys.titleLength.label',
+    hint: 'sort.keys.titleLength.hint',
     defaultDirection: 'asc',
-    directionLabels: { asc: 'Shortest first', desc: 'Longest first' },
+    directionLabels: { asc: 'sort.direction.shortestFirst', desc: 'sort.direction.longestFirst' },
     joins: [],
     value: () => 'length(b.title)',
   },
   colour: {
-    label: 'Spine colour',
-    hint: 'A rainbow of the colours the app gives each spine (not the cover photo)',
+    label: 'sort.keys.colour.label',
+    hint: 'sort.keys.colour.hint',
     defaultDirection: 'asc',
-    directionLabels: { asc: 'Red to violet', desc: 'Violet to red' },
+    directionLabels: { asc: 'sort.direction.redToViolet', desc: 'sort.direction.violetToRed' },
     joins: [],
     rank: colourRanks,
     value: rankTerm,
   },
   callNumber: {
-    label: 'Call number',
-    hint: 'Class, author and year, as on the book’s card',
+    label: 'sort.keys.callNumber.label',
+    hint: 'sort.keys.callNumber.hint',
     defaultDirection: 'asc',
     directionLabels: AZ,
     joins: [],
@@ -419,18 +417,18 @@ const defs: Defs = {
     value: rankTerm,
   },
   rating: {
-    label: 'Rating',
-    hint: 'Your stars; unrated books last',
+    label: 'sort.keys.rating.label',
+    hint: 'sort.keys.rating.hint',
     defaultDirection: 'desc',
-    directionLabels: { asc: 'Lowest first', desc: 'Highest first' },
+    directionLabels: { asc: 'sort.direction.lowestFirst', desc: 'sort.direction.highestFirst' },
     joins: [],
     value: () => 'b.rating',
   },
   shuffle: {
-    label: 'Surprise me',
-    hint: 'A shuffle that stays put until you shuffle again',
+    label: 'sort.keys.shuffle.label',
+    hint: 'sort.keys.shuffle.hint',
     defaultDirection: 'asc',
-    directionLabels: { asc: 'Shuffled', desc: 'Shuffled' },
+    directionLabels: { asc: 'sort.direction.shuffled', desc: 'sort.direction.shuffled' },
     fixedDirection: true,
     joins: [],
     value: (ctx) => shuffleSql(ctx.seed),
@@ -446,10 +444,6 @@ export const sortKeyList: readonly SortKeyDef[] = sortKeyIds.map((id) => sortKey
 
 export function sortKeyDef(id: SortKeyId): SortKeyDef {
   return sortKeyRegistry[id];
-}
-
-export function directionLabel(level: SortLevel): string {
-  return sortKeyRegistry[level.key].directionLabels[level.direction];
 }
 
 // ---- ORDER BY ----
@@ -505,29 +499,4 @@ export async function buildSortSql(db: Db, sort: ShelfSort = defaultShelfSort, o
   if (!sort.levels.some((l) => l.key === 'title')) terms.push(`${TITLE_KEY} COLLATE NOCASE ASC`);
   terms.push('b.id ASC');
   return { orderBy: terms.join(',\n  '), params, joins: [...joins] };
-}
-
-// ---- Summary ----
-
-/** "Title (Z to A)" for a level whose direction is not the key's natural one; just "Title" otherwise. */
-function levelText(level: SortLevel): string {
-  const def = sortKeyRegistry[level.key];
-  return def.fixedDirection || level.direction === def.defaultDirection ? def.label : `${def.label} (${def.directionLabels[level.direction]})`;
-}
-
-/**
- * The Shelf's sort in words: "Genre, then Author, then Series". Grouped by
- * the first level's own key, that level orders the sections and says so:
- * "Genre (as sections), then Author".
- */
-export function describeSort(levels: readonly SortLevel[], groupBy: ShelfGroupBy = 'none'): string {
-  const { skipped } = sectionSort(levels, groupBy);
-  const parts = levels.map((l, i) => {
-    if (i === 0 && skipped) {
-      const def = sortKeyRegistry[l.key];
-      return l.direction === def.defaultDirection ? `${def.label} (as sections)` : `${def.label} (as sections, ${def.directionLabels[l.direction]})`;
-    }
-    return levelText(l);
-  });
-  return parts.join(', then ');
 }

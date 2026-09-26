@@ -2,11 +2,13 @@
  * @jest-environment node
  */
 import { booksRepo, shelfSectionsRepo, type Db } from '@/db';
-import { describeSort } from '@/db/sortKeys';
-import { applyPreset, sortPreset, type ShelfSort, type SortPresetId } from '@/domain';
+import { sortKeyRegistry } from '@/db/sortKeys';
+import { applyPreset, describeSort as describeLevels, sortPreset, type ShelfGroupBy, type ShelfSort, type SortLevel, type SortPresetId } from '@/domain';
 import { createTestDb } from '@/testing/createTestDb';
 import { loadFixture } from '@/testing/loadFixture';
 import { levels } from '@/testing/sorts';
+
+const describeSort = (l: readonly SortLevel[], g?: ShelfGroupBy) => describeLevels(l, sortKeyRegistry, g);
 
 let db: Db;
 beforeAll(async () => {

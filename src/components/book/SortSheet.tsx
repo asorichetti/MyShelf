@@ -8,18 +8,21 @@ import {
   addSavedPreset,
   applyPreset,
   deleteSavedPreset,
+  describeSort,
   flipLevel,
-  groupByLabels,
+  groupByLabelKeys,
   MAX_PRESET_NAME,
   MAX_SORT_LEVELS,
   moveLevel,
   newPresetId,
   newSeed,
+  presetName,
   presetNameProblem,
   removeLevel,
   renameSavedPreset,
   sameLevels,
   sectionSort,
+  sortDirectionLabel,
   sortPresets,
   type PresetNameProblem,
   type SavedSortPreset,
@@ -29,6 +32,7 @@ import {
   type SortKeyInfo,
   type SortLevel,
 } from '@/domain';
+import { t, translate, type MessageKey } from '@/i18n';
 import { Testids } from '@/testing/testids.gen';
 import { useTheme } from '@/theme';
 
@@ -38,8 +42,6 @@ export interface SortSheetProps {
   visible: boolean;
   /** Every key there is, in the order offered (the registry's `sortKeyList`). */
   keys: readonly SortKeyInfo[];
-  /** The sort in words ("Genre, then Author"); `groupBy` marks a first level that orders the sections. */
-  describe: (levels: readonly SortLevel[], groupBy?: ShelfGroupBy) => string;
   sort: ShelfSort;
   groupBy: ShelfGroupBy;
   presets: readonly SavedSortPreset[];
@@ -48,14 +50,16 @@ export interface SortSheetProps {
   onClose: () => void;
 }
 
-const nameProblems: Record<PresetNameProblem, string> = {
-  empty: 'Give it a name.',
-  tooLong: `Keep it under ${MAX_PRESET_NAME + 1} characters.`,
-  taken: 'You already have a preset with that name.',
-  full: 'That’s as many presets as I can keep. Delete one first.',
+const nameProblem = (problem: PresetNameProblem): string =>
+  problem === 'tooLong' ? t('sort.nameProblem.tooLong', { count: MAX_PRESET_NAME + 1 }) : translate(nameProblemKeys[problem]);
+const nameProblemKeys: Record<Exclude<PresetNameProblem, 'tooLong'>, MessageKey> = {
+  empty: 'sort.nameProblem.empty',
+  taken: 'sort.nameProblem.taken',
+  full: 'sort.nameProblem.full',
 };
 
-const levelName = (index: number) => (index === 0 ? 'Sort by' : 'Then by');
+/** "Sort by" for the first level, "Then by" for the rest. */
+const levelName = (index: number) => t(index === 0 ? 'sort.sheet.levelFirst' : 'sort.sheet.levelNext');
 
 /**
  * The Shelf's Sort sheet (P11-03): preset chips at the top, the user's saved
@@ -70,10 +74,12 @@ export function SortSheet(props: SortSheetProps) {
   return props.visible ? <OpenSortSheet {...props} /> : null;
 }
 
-function OpenSortSheet({ visible, keys, describe, sort, groupBy, presets, onChange, onPresetsChange, onClose }: SortSheetProps) {
+function OpenSortSheet({ visible, keys, sort, groupBy, presets, onChange, onPresetsChange, onClose }: SortSheetProps) {
   const { spacing, colors, radii, sizes } = useTheme();
   const byId = Object.fromEntries(keys.map((k) => [k.id, k])) as Record<SortKeyId, SortKeyInfo>;
-  const directionLabel = (level: SortLevel) => byId[level.key].directionLabels[level.direction];
+  const label = (key: SortKeyId) => translate(byId[key].label);
+  const directionLabel = (level: SortLevel) => sortDirectionLabel(byId, level);
+  const describe = (l: readonly SortLevel[], g: ShelfGroupBy = 'none') => describeSort(l, byId, g);
   const { levels } = sort;
   const [picking, setPicking] = useState<number | null>(null);
   const [announcement, setAnnouncement] = useState('');
@@ -94,18 +100,18 @@ function OpenSortSheet({ visible, keys, describe, sort, groupBy, presets, onChan
     const level = levels[index];
     const to = index + by;
     setLevels(moveLevel(levels, index, by));
-    setAnnouncement(`${byId[level.key].label} moved to level ${to + 1} of ${levels.length}`);
+    setAnnouncement(t('sort.announce.moved', { key: label(level.key), number: to + 1, total: levels.length }));
     // Keep focus with the level; at an end the other arrow is the useful one.
     const atEnd = to === 0 || to === levels.length - 1;
     focusRow(level.key, atEnd ? (by < 0 ? 'down' : 'up') : by < 0 ? 'up' : 'down');
   };
 
   const remove = (index: number) => {
-    const label = byId[levels[index].key].label;
+    const removed = label(levels[index].key);
     const next = removeLevel(levels, index);
     setLevels(next);
     setPicking(null);
-    setAnnouncement(`Removed ${label}`);
+    setAnnouncement(t('sort.announce.removed', { key: removed }));
     const neighbour = next[Math.min(index, next.length - 1)];
     focusRow(neighbour.key);
   };
@@ -116,7 +122,7 @@ function OpenSortSheet({ visible, keys, describe, sort, groupBy, presets, onChan
     if (!def || levels.length >= MAX_SORT_LEVELS) return;
     setLevels([...levels, { key: def.id, direction: def.defaultDirection }]);
     setPicking(levels.length);
-    setAnnouncement(`Added level ${levels.length + 1}: ${def.label}. Choose what to sort by.`);
+    setAnnouncement(t('sort.announce.added', { number: levels.length + 1, key: translate(def.label) }));
     focusRow(def.id);
   };
 
@@ -124,25 +130,25 @@ function OpenSortSheet({ visible, keys, describe, sort, groupBy, presets, onChan
     const def = byId[key];
     setLevels(levels.map((l, i) => (i === index ? { key, direction: def.defaultDirection } : l)));
     setPicking(null);
-    setAnnouncement(`${levelName(index)} ${def.label}, ${def.directionLabels[def.defaultDirection]}`);
+    setAnnouncement(t('sort.announce.chosen', { level: levelName(index), key: translate(def.label), direction: translate(def.directionLabels[def.defaultDirection]) }));
     focusRow(key);
   };
 
   const flip = (index: number) => {
     const next = flipLevel(levels, index);
     setLevels(next);
-    setAnnouncement(`${byId[next[index].key].label}: ${directionLabel(next[index])}`);
+    setAnnouncement(t('sort.announce.flipped', { key: label(next[index].key), direction: directionLabel(next[index]) }));
   };
 
   const savePreset = () => {
     if (naming == null) return;
     const problem = presetNameProblem(naming, presets);
     if (problem) {
-      setNameError(nameProblems[problem]);
+      setNameError(nameProblem(problem));
       return;
     }
     onPresetsChange(addSavedPreset(presets, naming, levels, newPresetId(presets)));
-    setAnnouncement(`Saved “${naming.trim()}”`);
+    setAnnouncement(t('sort.announce.saved', { name: naming.trim() }));
     setNaming(null);
     setNameError(null);
   };
@@ -151,11 +157,11 @@ function OpenSortSheet({ visible, keys, describe, sort, groupBy, presets, onChan
     if (!renaming) return;
     const problem = presetNameProblem(renaming.name, presets, renaming.id);
     if (problem) {
-      setRenameError(nameProblems[problem]);
+      setRenameError(nameProblem(problem));
       return;
     }
     onPresetsChange(renameSavedPreset(presets, renaming.id, renaming.name));
-    setAnnouncement(`Renamed to “${renaming.name.trim()}”`);
+    setAnnouncement(t('sort.announce.renamed', { name: renaming.name.trim() }));
     setRenaming(null);
     setRenameError(null);
   };
@@ -166,28 +172,28 @@ function OpenSortSheet({ visible, keys, describe, sort, groupBy, presets, onChan
   return (
     <Sheet
       visible={visible}
-      title="Sort your shelf"
+      title={t('sort.sheet.title')}
       subtitle={describe(levels, groupBy)}
       onClose={onClose}
       testID={T.root}
-      footer={<Button label="Done" onPress={onClose} testID={T.done} />}
+      footer={<Button label={t('sort.sheet.done')} onPress={onClose} testID={T.done} />}
     >
       <Text role="status" aria-live="polite" accessibilityLiveRegion="polite" variant="caption" color="inkMuted" testID={T.status}>
         {announcement || ' '}
       </Text>
 
-      <View role="radiogroup" aria-label="Presets" style={{ gap: spacing.xs }}>
-        <Heading level={3}>Presets</Heading>
+      <View role="radiogroup" aria-label={t('sort.sheet.presets')} style={{ gap: spacing.xs }}>
+        <Heading level={3}>{t('sort.sheet.presets')}</Heading>
         <View style={[styles.wrap, { columnGap: spacing.sm }]}>
           {sortPresets.map((p) => (
             <Chip
               key={p.id}
               role="radio"
-              label={p.name}
+              label={presetName(p)}
               selected={sameLevels(p.levels, levels)}
               onPress={() => {
                 onChange(applyPreset(p.levels));
-                setAnnouncement(p.id === 'surprise' ? 'Shuffled' : `Sorted by ${p.name}`);
+                setAnnouncement(p.id === 'surprise' ? t('sort.announce.shuffled') : t('sort.announce.sortedBy', { name: presetName(p) }));
               }}
               testID={T.preset}
             />
@@ -196,11 +202,11 @@ function OpenSortSheet({ visible, keys, describe, sort, groupBy, presets, onChan
         {shuffles ? (
           <Button
             variant="secondary"
-            label="Shuffle again"
+            label={t('sort.sheet.shuffleAgain')}
             icon={<MaterialCommunityIcons name="shuffle-variant" size={sizes.icon} color={colors.onPrimaryContainer} />}
             onPress={() => {
               onChange({ levels, seed: newSeed() });
-              setAnnouncement('Shuffled again');
+              setAnnouncement(t('sort.announce.shuffledAgain'));
             }}
             testID={T.reshuffle}
             style={{ alignSelf: 'flex-start' }}
@@ -209,13 +215,13 @@ function OpenSortSheet({ visible, keys, describe, sort, groupBy, presets, onChan
       </View>
 
       {presets.length ? (
-        <View role="group" aria-label="Your presets" style={{ gap: spacing.xs }}>
-          <Heading level={3}>Your presets</Heading>
+        <View role="group" aria-label={t('sort.sheet.yourPresets')} style={{ gap: spacing.xs }}>
+          <Heading level={3}>{t('sort.sheet.yourPresets')}</Heading>
           {presets.map((p) =>
             renaming?.id === p.id ? (
               <View key={p.id} style={{ gap: spacing.xs }}>
                 <TextField
-                  label={`New name for ${p.name}`}
+                  label={t('sort.sheet.renameField', { name: p.name })}
                   value={renaming.name}
                   onChangeText={(name) => setRenaming({ id: p.id, name })}
                   maxLength={MAX_PRESET_NAME}
@@ -225,8 +231,16 @@ function OpenSortSheet({ visible, keys, describe, sort, groupBy, presets, onChan
                   testID={T.renameField}
                 />
                 <View style={[styles.row, { gap: spacing.sm }]}>
-                  <Button variant="ghost" label="Cancel" onPress={() => { setRenaming(null); setRenameError(null); }} testID={T.renameCancel} />
-                  <Button variant="secondary" label="Rename" onPress={saveRename} testID={T.renameSave} />
+                  <Button
+                    variant="ghost"
+                    label={t('sort.sheet.cancel')}
+                    onPress={() => {
+                      setRenaming(null);
+                      setRenameError(null);
+                    }}
+                    testID={T.renameCancel}
+                  />
+                  <Button variant="secondary" label={t('sort.sheet.rename')} onPress={saveRename} testID={T.renameSave} />
                 </View>
               </View>
             ) : (
@@ -234,23 +248,23 @@ function OpenSortSheet({ visible, keys, describe, sort, groupBy, presets, onChan
                 <View style={styles.fill}>
                   <Chip
                     label={p.name}
-                    accessibilityLabel={`${p.name}: ${describe(p.levels)}`}
+                    accessibilityLabel={t('sort.sheet.savedPresetLabel', { name: p.name, summary: describe(p.levels) })}
                     selected={sameLevels(p.levels, levels)}
                     onPress={() => {
                       onChange(applyPreset(p.levels));
-                      setAnnouncement(`Sorted by ${p.name}`);
+                      setAnnouncement(t('sort.announce.sortedBy', { name: p.name }));
                     }}
                     testID={T.savedPreset}
                   />
                 </View>
-                <IconButton icon="pencil-outline" accessibilityLabel={`Rename ${p.name}`} onPress={() => setRenaming({ id: p.id, name: p.name })} testID={T.savedRename} />
+                <IconButton icon="pencil-outline" accessibilityLabel={t('sort.sheet.renameLabel', { name: p.name })} onPress={() => setRenaming({ id: p.id, name: p.name })} testID={T.savedRename} />
                 <IconButton
                   icon="delete-outline"
                   variant="danger"
-                  accessibilityLabel={`Delete ${p.name}`}
+                  accessibilityLabel={t('sort.sheet.deleteLabel', { name: p.name })}
                   onPress={() => {
                     onPresetsChange(deleteSavedPreset(presets, p.id));
-                    setAnnouncement(`Deleted “${p.name}”`);
+                    setAnnouncement(t('sort.announce.deleted', { name: p.name }));
                   }}
                   testID={T.savedDelete}
                 />
@@ -261,15 +275,16 @@ function OpenSortSheet({ visible, keys, describe, sort, groupBy, presets, onChan
       ) : null}
 
       <View style={{ gap: spacing.sm }}>
-        <Heading level={3}>Your sort</Heading>
+        <Heading level={3}>{t('sort.sheet.yourSort')}</Heading>
         {skipped ? (
           <Text variant="caption" color="inkMuted" testID={T.groupNote}>
-            {`Grouped by ${groupByLabels[groupBy].toLowerCase()}: ${byId[skipped.key].label} orders the sections, so inside them the next level decides.`}
+            {t('sort.sheet.groupNote', { grouping: translate(groupByLabelKeys[groupBy]).toLocaleLowerCase(), key: label(skipped.key) })}
           </Text>
         ) : null}
-        <View role="list" aria-label="Sort levels" style={{ gap: spacing.sm }}>
+        <View role="list" aria-label={t('sort.sheet.levels')} style={{ gap: spacing.sm }}>
           {levels.map((level, index) => {
             const def = byId[level.key];
+            const keyLabel = translate(def.label);
             const open = picking === index;
             const used = new Set(levels.filter((_, i) => i !== index).map((l) => l.key));
             return (
@@ -277,18 +292,18 @@ function OpenSortSheet({ visible, keys, describe, sort, groupBy, presets, onChan
                 key={level.key}
                 ref={(el) => void rows.current.set(level.key, el)}
                 role="listitem"
-                aria-label={`Level ${index + 1}: ${levelName(index)} ${def.label}, ${directionLabel(level)}`}
+                aria-label={t('sort.sheet.levelName', { number: index + 1, level: levelName(index), key: keyLabel, direction: directionLabel(level) })}
                 testID={T.level}
                 style={[styles.level, { gap: spacing.xs, padding: spacing.sm, borderRadius: radii.md, borderColor: colors.border, backgroundColor: colors.surface }]}
               >
                 <Text variant="label" color="inkMuted">
-                  {`${index + 1}. ${levelName(index)}`}
+                  {t('sort.sheet.levelHeading', { number: index + 1, level: levelName(index) })}
                 </Text>
                 <View style={[styles.row, styles.wrap, { gap: spacing.xs }]}>
                   <Button
                     variant="secondary"
-                    label={def.label}
-                    accessibilityLabel={`${levelName(index)}: ${def.label}. Change`}
+                    label={keyLabel}
+                    accessibilityLabel={t('sort.sheet.keyButton', { level: levelName(index), key: keyLabel })}
                     icon={<MaterialCommunityIcons name={open ? 'chevron-up' : 'chevron-down'} size={sizes.icon} color={colors.onPrimaryContainer} />}
                     expanded={open}
                     onPress={() => setPicking(open ? null : index)}
@@ -298,7 +313,7 @@ function OpenSortSheet({ visible, keys, describe, sort, groupBy, presets, onChan
                     <Button
                       variant="ghost"
                       label={directionLabel(level)}
-                      accessibilityLabel={`${def.label} order: ${directionLabel(level)}. Reverse`}
+                      accessibilityLabel={t('sort.sheet.directionButton', { key: keyLabel, direction: directionLabel(level) })}
                       icon={<MaterialCommunityIcons name="swap-vertical" size={sizes.icon} color={colors.primary} />}
                       onPress={() => flip(index)}
                       testID={T.levelDirection}
@@ -306,29 +321,29 @@ function OpenSortSheet({ visible, keys, describe, sort, groupBy, presets, onChan
                   )}
                   <View style={[styles.row, styles.push]}>
                     <View ref={(el) => void rows.current.set(`${level.key}:up`, el)}>
-                      <IconButton icon="arrow-up" accessibilityLabel={`Move ${def.label} up`} disabled={index === 0} onPress={() => move(index, -1)} testID={T.levelUp} />
+                      <IconButton icon="arrow-up" accessibilityLabel={t('sort.sheet.moveUp', { key: keyLabel })} disabled={index === 0} onPress={() => move(index, -1)} testID={T.levelUp} />
                     </View>
                     <View ref={(el) => void rows.current.set(`${level.key}:down`, el)}>
                       <IconButton
                         icon="arrow-down"
-                        accessibilityLabel={`Move ${def.label} down`}
+                        accessibilityLabel={t('sort.sheet.moveDown', { key: keyLabel })}
                         disabled={index === levels.length - 1}
                         onPress={() => move(index, 1)}
                         testID={T.levelDown}
                       />
                     </View>
-                    <IconButton icon="close" accessibilityLabel={`Remove ${def.label}`} disabled={levels.length <= 1} onPress={() => remove(index)} testID={T.levelRemove} />
+                    <IconButton icon="close" accessibilityLabel={t('sort.sheet.remove', { key: keyLabel })} disabled={levels.length <= 1} onPress={() => remove(index)} testID={T.levelRemove} />
                   </View>
                 </View>
                 <Text variant="caption" color="inkMuted">
-                  {def.hint}
+                  {translate(def.hint)}
                 </Text>
                 {open ? (
-                  <View role="radiogroup" aria-label={`${levelName(index)}: choose a key`} style={[styles.wrap, { columnGap: spacing.sm }]}>
+                  <View role="radiogroup" aria-label={t('sort.sheet.chooseKey', { level: levelName(index) })} style={[styles.wrap, { columnGap: spacing.sm }]}>
                     {keys
                       .filter((d) => !used.has(d.id))
                       .map((d) => (
-                        <Chip key={d.id} role="radio" label={d.label} selected={d.id === level.key} onPress={() => choose(index, d.id)} testID={T.levelKeyOption} />
+                        <Chip key={d.id} role="radio" label={translate(d.label)} selected={d.id === level.key} onPress={() => choose(index, d.id)} testID={T.levelKeyOption} />
                       ))}
                   </View>
                 ) : null}
@@ -337,13 +352,13 @@ function OpenSortSheet({ visible, keys, describe, sort, groupBy, presets, onChan
           })}
         </View>
         <Text variant="caption" color="inkMuted">
-          Books still tied after the last level go by title.
+          {t('sort.sheet.tiebreak')}
         </Text>
         <View style={[styles.row, styles.wrap, { gap: spacing.sm }]}>
           <Button
             variant="secondary"
-            label="Add a level"
-            accessibilityLabel={levels.length >= MAX_SORT_LEVELS ? `Add a level (at most ${MAX_SORT_LEVELS})` : 'Add a level'}
+            label={t('sort.sheet.addLevel')}
+            accessibilityLabel={levels.length >= MAX_SORT_LEVELS ? t('sort.sheet.addLevelFull', { max: MAX_SORT_LEVELS }) : t('sort.sheet.addLevel')}
             icon={<MaterialCommunityIcons name="plus" size={sizes.icon} color={colors.onPrimaryContainer} />}
             disabled={levels.length >= MAX_SORT_LEVELS}
             onPress={add}
@@ -352,7 +367,7 @@ function OpenSortSheet({ visible, keys, describe, sort, groupBy, presets, onChan
           {naming == null ? (
             <Button
               variant="ghost"
-              label="Save as preset"
+              label={t('sort.sheet.savePreset')}
               icon={<MaterialCommunityIcons name="content-save-outline" size={sizes.icon} color={colors.primary} />}
               disabled={matchesSaved || sortPresets.some((p) => sameLevels(p.levels, levels))}
               onPress={() => setNaming('')}
@@ -363,14 +378,14 @@ function OpenSortSheet({ visible, keys, describe, sort, groupBy, presets, onChan
         {naming != null ? (
           <View style={{ gap: spacing.xs }}>
             <TextField
-              label="Preset name"
+              label={t('sort.sheet.presetName')}
               value={naming}
-              onChangeText={(t) => {
-                setNaming(t);
+              onChangeText={(text) => {
+                setNaming(text);
                 setNameError(null);
               }}
               maxLength={MAX_PRESET_NAME}
-              placeholder="e.g. Reading pile"
+              placeholder={t('sort.sheet.presetPlaceholder')}
               errorText={nameError ?? undefined}
               helperText={describe(levels)}
               onSubmitEditing={savePreset}
@@ -378,8 +393,16 @@ function OpenSortSheet({ visible, keys, describe, sort, groupBy, presets, onChan
               testID={T.presetName}
             />
             <View style={[styles.row, { gap: spacing.sm }]}>
-              <Button variant="ghost" label="Cancel" onPress={() => { setNaming(null); setNameError(null); }} testID={T.presetCancel} />
-              <Button variant="secondary" label="Save preset" onPress={savePreset} testID={T.presetSave} />
+              <Button
+                variant="ghost"
+                label={t('sort.sheet.cancel')}
+                onPress={() => {
+                  setNaming(null);
+                  setNameError(null);
+                }}
+                testID={T.presetCancel}
+              />
+              <Button variant="secondary" label={t('sort.sheet.savePresetButton')} onPress={savePreset} testID={T.presetSave} />
             </View>
           </View>
         ) : null}

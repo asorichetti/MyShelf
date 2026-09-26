@@ -1,3 +1,5 @@
+import { t, translate, type MessageKey } from '@/i18n';
+
 import type { ShelfGroupBy } from './shelfView';
 
 /**
@@ -47,19 +49,54 @@ export const MAX_SORT_LEVELS = 4;
 
 /**
  * What the Sort sheet and the Shelf's summary need to know about a key. The
- * registry (`src/db/sortKeys.ts`) defines one per key, with its SQL.
+ * registry (`src/db/sortKeys.ts`) defines one per key, with its SQL. The
+ * words are catalogue keys, translated when shown.
  */
 export interface SortKeyInfo {
   id: SortKeyId;
   /** "Author": the key's name in the sort sheet and the Shelf's summary. */
-  label: string;
+  label: MessageKey;
   /** One line saying exactly what is compared. */
-  hint: string;
+  hint: MessageKey;
   defaultDirection: SortDirection;
   /** What each direction is called ("A to Z", "Newest first", "Shortest first"). */
-  directionLabels: Record<SortDirection, string>;
+  directionLabels: Record<SortDirection, MessageKey>;
   /** True when there is no direction to choose (the shuffle). */
   fixedDirection?: boolean;
+}
+
+/** Every key's words, by id (the registry's `sortKeyRegistry`). */
+export type SortKeyTable = Readonly<Record<SortKeyId, SortKeyInfo>>;
+
+/** "Author". */
+export const sortKeyLabel = (keys: SortKeyTable, key: SortKeyId): string => translate(keys[key].label);
+
+/** "A to Z", "Newest first". */
+export const sortDirectionLabel = (keys: SortKeyTable, level: SortLevel): string => translate(keys[level.key].directionLabels[level.direction]);
+
+/** "Title (Z to A)" for a level whose direction is not the key's usual one; just "Title" otherwise. */
+function levelText(keys: SortKeyTable, level: SortLevel): string {
+  const info = keys[level.key];
+  const label = translate(info.label);
+  return info.fixedDirection || level.direction === info.defaultDirection ? label : t('sort.summary.withDirection', { key: label, direction: sortDirectionLabel(keys, level) });
+}
+
+/**
+ * The sort in words: "Genre, then Author, then Series". Grouped by the first
+ * level's own key, that level orders the sections and says so: "Genre (as
+ * sections), then Author".
+ */
+export function describeSort(levels: readonly SortLevel[], keys: SortKeyTable, groupBy: ShelfGroupBy = 'none'): string {
+  const { skipped } = sectionSort(levels, groupBy);
+  const parts = levels.map((l, i) => {
+    if (i > 0 || !skipped) return levelText(keys, l);
+    const info = keys[l.key];
+    const label = translate(info.label);
+    return l.direction === info.defaultDirection
+      ? t('sort.summary.asSections', { key: label })
+      : t('sort.summary.asSectionsWithDirection', { key: label, direction: sortDirectionLabel(keys, l) });
+  });
+  return parts.join(t('sort.summary.separator'));
 }
 
 export const defaultShelfSort: ShelfSort = { levels: [{ key: 'title', direction: 'asc' }] };
@@ -144,7 +181,8 @@ export type SortPresetId = (typeof sortPresetIds)[number];
 
 export interface SortPreset {
   id: SortPresetId;
-  name: string;
+  /** A catalogue key: translate it (or use `presetName`) to show it. */
+  name: MessageKey;
   levels: SortLevel[];
 }
 
@@ -155,15 +193,20 @@ const asc = (key: SortKeyId): SortLevel => ({ key, direction: 'asc' });
  * order" (genre, author, series, number in series, title) fits in four levels.
  */
 export const sortPresets: readonly SortPreset[] = [
-  { id: 'library', name: 'Library order', levels: [asc('genre'), asc('author'), asc('series'), asc('seriesPosition')] },
-  { id: 'seriesOrder', name: 'Series reading order', levels: [asc('series'), asc('seriesPosition')] },
-  { id: 'callNumber', name: 'Call number', levels: [asc('callNumber')] },
-  { id: 'newest', name: 'Newest additions', levels: [{ key: 'added', direction: 'desc' }] },
-  { id: 'titleAZ', name: 'A–Z by title', levels: [asc('title')] },
-  { id: 'byAuthor', name: 'By author', levels: [asc('author'), asc('series'), asc('seriesPosition'), asc('year')] },
-  { id: 'rainbow', name: 'Rainbow', levels: [asc('colour')] },
-  { id: 'surprise', name: 'Surprise me', levels: [asc('shuffle')] },
+  { id: 'library', name: 'sort.presets.library', levels: [asc('genre'), asc('author'), asc('series'), asc('seriesPosition')] },
+  { id: 'seriesOrder', name: 'sort.presets.seriesOrder', levels: [asc('series'), asc('seriesPosition')] },
+  { id: 'callNumber', name: 'sort.presets.callNumber', levels: [asc('callNumber')] },
+  { id: 'newest', name: 'sort.presets.newest', levels: [{ key: 'added', direction: 'desc' }] },
+  { id: 'titleAZ', name: 'sort.presets.titleAZ', levels: [asc('title')] },
+  { id: 'byAuthor', name: 'sort.presets.byAuthor', levels: [asc('author'), asc('series'), asc('seriesPosition'), asc('year')] },
+  { id: 'rainbow', name: 'sort.presets.rainbow', levels: [asc('colour')] },
+  { id: 'surprise', name: 'sort.presets.surprise', levels: [asc('shuffle')] },
 ];
+
+/** A preset's name as shown: a built-in one translated, a saved one as the user typed it. */
+export function presetName(preset: SortPreset | SavedSortPreset): string {
+  return (sortPresets as readonly (SortPreset | SavedSortPreset)[]).includes(preset) ? translate((preset as SortPreset).name) : preset.name;
+}
 
 export function sortPreset(id: SortPresetId): SortPreset {
   return sortPresets.find((p) => p.id === id)!;
@@ -208,7 +251,7 @@ export function presetNameProblem(name: string, saved: readonly SavedSortPreset[
   if (!n) return 'empty';
   if (n.length > MAX_PRESET_NAME) return 'tooLong';
   const lower = n.toLocaleLowerCase();
-  const taken = saved.some((p) => p.id !== exceptId && p.name.toLocaleLowerCase() === lower) || sortPresets.some((p) => p.name.toLocaleLowerCase() === lower);
+  const taken = saved.some((p) => p.id !== exceptId && p.name.toLocaleLowerCase() === lower) || sortPresets.some((p) => translate(p.name).toLocaleLowerCase() === lower);
   if (taken) return 'taken';
   if (exceptId == null && saved.length >= MAX_SAVED_PRESETS) return 'full';
   return null;

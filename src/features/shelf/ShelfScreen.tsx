@@ -19,8 +19,8 @@ import { ShelfLoanStamp } from '@/components/loans/ShelfLoanStamp';
 import { Button, Chip, ConfirmDialog, EmptyState, Heading, Screen, Text, useFloatClearance, useSnackbar } from '@/components/ui';
 import { useBottomObstacle } from '@/components/ui/layers';
 import type { ShelfSection } from '@/db';
-import { describeSort, sortKeyList } from '@/db/sortKeys';
-import { activeFilterCount, filterChips, languages, matchingPreset, noFilters, today, type BookListItem, type ShelfGroupBy } from '@/domain';
+import { sortKeyList, sortKeyRegistry } from '@/db/sortKeys';
+import { activeFilterCount, describeSort, filterChips, languages, matchingPreset, noFilters, presetName, today, type BookListItem, type ShelfGroupBy } from '@/domain';
 import { useGroups } from '@/features/groups/useGroups';
 import { ShelfPendingBanner } from '@/features/lookup/PendingLookupsProvider';
 import { goBackOr } from '@/features/navigation/goBack';
@@ -114,9 +114,9 @@ export function ShelfScreen() {
   const filterCount = activeFilterCount(filters);
   const genreNames = useMemo(() => new Map(shelf.filterOptions?.genres.map((g) => [g.id, g.name]) ?? []), [shelf.filterOptions]);
   const chips = filterChips(filters, (id) => genreNames.get(id), languageName);
-  const sortDescription = describeSort(shelf.sort.levels, groupBy);
+  const sortDescription = describeSort(shelf.sort.levels, sortKeyRegistry, groupBy);
   const preset = matchingPreset(shelf.sort.levels, shelf.presets);
-  const sortLabel = preset?.name ?? (shelf.sort.levels.length === 1 ? sortDescription : 'Custom');
+  const sortLabel = preset ? presetName(preset) : shelf.sort.levels.length === 1 ? sortDescription : t('sort.summary.custom');
 
   // Width the rows can use (the list pads 2 px each side).
   const width = (listWidth || Math.min(window.width, sizes.contentMaxWidth) - spacing.lg * 2) - spacing.xxs * 2;
@@ -247,7 +247,7 @@ export function ShelfScreen() {
             </View>
           ) : null}
           <Text variant="caption" color="inkMuted" testID={Testids.home.sortSummary}>
-            {`Sorted by ${sortDescription}`}
+            {t('sort.summary.shelf', { summary: sortDescription })}
           </Text>
           <Text
             variant="caption"
@@ -385,7 +385,6 @@ export function ShelfScreen() {
       <SortSheet
         visible={sortOpen}
         keys={sortKeyList}
-        describe={describeSort}
         sort={shelf.sort}
         groupBy={groupBy}
         presets={shelf.presets}

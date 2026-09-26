@@ -39,7 +39,7 @@ describe('ShelfToolbar sort button', () => {
     const { onOpenSort } = renderToolbar();
     const button = screen.getByTestId(Testids.home.sortButton);
     expect(button).toHaveTextContent(/Sort: Library order$/);
-    expect(button.props.accessibilityLabel).toBe('Sort: Genre, then Author');
+    expect(button.props.accessibilityLabel).toBe('Sort by Genre, then Author');
     expect(button).toBeCollapsed();
     fireEvent.press(button);
     expect(onOpenSort).toHaveBeenCalledTimes(1);
