@@ -315,5 +315,34 @@
     "detail": "author-detail-root",
     "detailTitle": "author-detail-title",
     "detailSection": "author-detail-section"
+  },
+  "lookup": {
+    "root": "lookup-root",
+    "isbnInput": "lookup-isbn-input",
+    "isbnSubmit": "lookup-isbn-submit",
+    "searchInput": "lookup-search-input",
+    "searchSubmit": "lookup-search-submit",
+    "loading": "lookup-loading",
+    "results": "lookup-results",
+    "candidate": "lookup-candidate",
+    "noResults": "lookup-no-results",
+    "addManually": "lookup-add-manually",
+    "cancel": "lookup-cancel",
+    "error": "lookup-error",
+    "warning": "lookup-warning",
+    "chosen": "lookup-chosen",
+    "searchAgain": "lookup-search-again",
+    "showMore": "lookup-show-more",
+    "findCover": "lookup-find-cover"
+  },
+  "pending": { "banner": "pending-banner", "retry": "pending-retry" },
+  "refresh": {
+    "root": "refresh-root",
+    "open": "refresh-open",
+    "fieldRow": "refresh-field-row",
+    "fieldToggle": "refresh-field-toggle",
+    "apply": "refresh-apply",
+    "cancel": "refresh-cancel",
+    "noChanges": "refresh-no-changes"
   }
 }

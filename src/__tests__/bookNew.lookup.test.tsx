@@ -1,0 +1,186 @@
+import { act, fireEvent, screen, within } from 'expo-router/testing-library';
+
+import { booksRepo, type Db } from '@/db';
+import { BookDetailScreen } from '@/features/book/BookDetailScreen';
+import { AddBookScreen, EditBookScreen } from '@/features/book/BookFormScreen';
+import { attachBestCover } from '@/features/covers';
+import { resolveCover } from '@/services/covers';
+import { OL_BOOKS } from '@/services/metadata/__fixtures__/openLibraryRoutes';
+import { createTestDb } from '@/testing/createTestDb';
+import { createFixtureMetadata, type FixtureMetadata } from '@/testing/fixtureMetadata';
+import { loadFixture } from '@/testing/loadFixture';
+import { advance, renderApp } from '@/testing/renderApp';
+import { Testids } from '@/testing/testids.gen';
+
+let mockMetadata: FixtureMetadata;
+
+jest.mock('@/features/lookup/metadataService', () => ({
+  useMetadataService: () => mockMetadata.service,
+  getLookupServices: () => ({ http: mockMetadata.http, metadata: mockMetadata.service }),
+}));
+jest.mock('@/services/covers', () => ({
+  ...jest.requireActual('@/services/covers'),
+  resolveCover: jest.fn(async () => ({ cover: null, tried: [] })),
+}));
+jest.mock('@/features/covers', () => ({
+  ...jest.requireActual('@/features/covers'),
+  attachBestCover: jest.fn(async () => ({ status: 'none', tried: [] })),
+}));
+
+let db: Db;
+beforeEach(async () => {
+  db = await createTestDb();
+  mockMetadata = createFixtureMetadata();
+  jest.mocked(attachBestCover).mockClear();
+});
+afterEach(() => db.close());
+
+const routes = { 'book/new': AddBookScreen, 'book/[id]': BookDetailScreen, 'book/[id]/edit': EditBookScreen };
+const f = Testids.bookForm;
+const l = Testids.lookup;
+
+async function press(testID: string) {
+  // Not awaiting the handler: a lookup that never settles must not hang the test.
+  await act(async () => {
+    fireEvent.press(screen.getByTestId(testID));
+  });
+  await advance(0);
+}
+
+async function openAddForm() {
+  await loadFixture(db, 'empty');
+  const r = renderApp(db, '/book/new', routes);
+  await advance(0);
+  return r;
+}
+
+async function lookUp(isbn: string) {
+  fireEvent.changeText(screen.getByTestId(l.isbnInput), isbn);
+  await press(l.isbnSubmit);
+  await advance(0);
+}
+
+const value = (testID: string) => screen.getByTestId(testID).props.value;
+
+describe('Look up by ISBN on the add form', () => {
+  it('fills every mapped field from the chosen candidate, keeps the user’s edits, and records the source', async () => {
+    const r = await openAddForm();
+    await lookUp('978-0-552-16659-1');
+    const cards = screen.getAllByTestId(l.candidate);
+    expect(cards).toHaveLength(1);
+    expect(cards[0].props.accessibilityLabel).toMatch(/^The Colour of Magic, by Terry Pratchett, 1985, Corgi Books.*ISBN 9780552166591, from Open Library$/);
+
+    await press(l.candidate);
+    expect(screen.getByTestId(l.chosen)).toHaveTextContent(/Filled in from Open Library/);
+    expect(value(f.title)).toBe('The Colour of Magic');
+    expect(value(f.isbn)).toBe('9780552166591');
+    expect(value(f.publisher)).toBe('Corgi Books');
+    expect(value(f.year)).toBe('1985');
+    expect(value(f.seriesName)).toBe('Discworld');
+    expect(value(f.seriesPosition)).toBe('1');
+    expect(value(f.summary).length).toBeGreaterThan(40);
+    expect(screen.getAllByTestId(f.authorChip).map((c) => c.props.accessibilityLabel ?? '')).toHaveLength(1);
+    expect(screen.getByText('Terry Pratchett')).toBeOnTheScreen();
+    expect(within(screen.getByTestId(f.root)).getAllByTestId(f.genreChip).length).toBeGreaterThan(0);
+    expect(screen.getByText('Fantasy')).toBeOnTheScreen();
+    // The real cover goes on the card straight away.
+    expect(screen.getByTestId(Testids.cover.image, { includeHiddenElements: true })).toBeOnTheScreen();
+    expect(screen.queryByTestId(Testids.cover.fallback, { includeHiddenElements: true })).toBeNull();
+
+    // The user's edits after choosing are what gets saved.
+    fireEvent.changeText(screen.getByTestId(f.title), 'The Colour of Magic (signed)');
+    fireEvent.changeText(screen.getByTestId(f.notes), 'From the Oxfam shop');
+    await press(f.save);
+    await advance(0);
+
+    const [book] = await booksRepo.listBooks(db);
+    expect(r.getPathname()).toBe(`/book/${book.id}`);
+    expect(book).toMatchObject({
+      title: 'The Colour of Magic (signed)',
+      notes: 'From the Oxfam shop',
+      isbn13: '9780552166591',
+      publisher: 'Corgi Books',
+      publicationYear: 1985,
+      source: 'openlibrary',
+      sourceId: 'OL28477029M',
+    });
+    const detail = await booksRepo.getBookDetail(db, book.id);
+    expect(detail?.series?.name).toBe('Discworld');
+    expect(detail?.seriesPosition).toBe(1);
+    // The best real version of the cover is stored after the save.
+    expect(attachBestCover).toHaveBeenCalledWith(db, book.id, expect.objectContaining({ isbn13: '9780552166591' }), expect.objectContaining({ replace: true }));
+  });
+
+  it('shows Booky thinking while it looks, and Cancel stops the lookup', async () => {
+    jest.spyOn(mockMetadata.service, 'lookupIsbn').mockImplementation(
+      (_isbn, { signal } = {}) =>
+        new Promise((_resolve, reject) => signal?.addEventListener('abort', () => reject(Object.assign(new Error('aborted'), { name: 'AbortError' })))),
+    );
+    await openAddForm();
+    await lookUp(OL_BOOKS.colourOfMagic);
+    expect(screen.getByTestId(l.loading)).toHaveTextContent(/Looking up 978-0-552-16659-1…/);
+    await press(l.cancel);
+    expect(screen.queryByTestId(l.loading)).toBeNull();
+    expect(screen.queryByTestId(l.candidate)).toBeNull();
+  });
+
+  it('offers to add an unknown ISBN by hand, keeping the ISBN', async () => {
+    await openAddForm();
+    await lookUp(OL_BOOKS.unknown);
+    expect(screen.getByTestId(l.noResults)).toHaveTextContent(/I couldn’t find that one/);
+    await press(l.addManually);
+    await advance(20);
+    expect(screen.queryByTestId(l.noResults)).toBeNull();
+    expect(value(f.isbn)).toBe(OL_BOOKS.unknown);
+    expect(await booksRepo.countBooks(db)).toBe(0);
+  });
+
+  it('searches online and fills the form from a work', async () => {
+    await openAddForm();
+    fireEvent.changeText(screen.getByTestId(l.searchInput), 'colour of magic pratchett');
+    await press(l.searchSubmit);
+    await advance(0);
+    const cards = screen.getAllByTestId(l.candidate);
+    expect(cards.length).toBeGreaterThan(1);
+    expect(cards[0].props.accessibilityLabel).toMatch(/^The Colour of Magic, by Terry Pratchett/);
+    await act(async () => fireEvent.press(cards[0]));
+    expect(value(f.title)).toBe('The Colour of Magic');
+  });
+
+  it('a manually typed book saves as manual, with no lookup', async () => {
+    await openAddForm();
+    fireEvent.changeText(screen.getByTestId(f.title), 'Typed');
+    await press(f.save);
+    const [book] = await booksRepo.listBooks(db);
+    expect(book.source).toBe('manual');
+    expect(attachBestCover).not.toHaveBeenCalled();
+  });
+});
+
+describe('Find a cover online', () => {
+  it('puts the best real cover on the card from the ISBN, and stores it on save', async () => {
+    const resolve = jest.mocked(resolveCover);
+    resolve.mockResolvedValueOnce({
+      cover: { url: 'https://covers.openlibrary.org/b/id/14647238-L.jpg', origin: 'openlibrary-edition', width: 400, height: 600, shape: 'portrait', format: 'jpeg', contentType: 'image/jpeg', bytes: new Uint8Array() },
+      tried: [],
+    });
+    await openAddForm();
+    fireEvent.changeText(screen.getByTestId(f.title), 'The Colour of Magic');
+    fireEvent.changeText(screen.getByTestId(f.isbn), OL_BOOKS.colourOfMagic);
+    await press(l.findCover);
+    await advance(0);
+    expect(resolve).toHaveBeenCalled();
+    expect(screen.getByTestId(Testids.cover.image, { includeHiddenElements: true })).toBeOnTheScreen();
+    expect(screen.getByTestId(Testids.snackbar.root)).toHaveTextContent('Found the cover and put it on the card.');
+    await press(f.save);
+    const [book] = await booksRepo.listBooks(db);
+    expect(book.coverUri).toBe('https://covers.openlibrary.org/b/id/14647238-L.jpg');
+    expect(attachBestCover).toHaveBeenCalledWith(db, book.id, expect.objectContaining({ olEditionCoverIds: [14647238] }), expect.objectContaining({ replace: true }));
+  });
+
+  it('asks for an ISBN or title and author first', async () => {
+    await openAddForm();
+    await press(l.findCover);
+    expect(screen.getByTestId(Testids.snackbar.root)).toHaveTextContent(/Add the ISBN, or the title and author/);
+  });
+});

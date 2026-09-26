@@ -10,6 +10,7 @@ export {
   type CoverOrigin,
   type CoverSource,
 } from './coverUrls';
+export { GOOGLE_COVERS_REACHABLE } from './googleCovers';
 export { readImageSize, type ImageSize } from './imageSize';
 export { resolveCover, type CoverResolution, type CoverTrial, type ResolveCoverOptions, type ResolvedCover } from './resolveCover';
 export { compareCovers, coverShape, isGoodCover, validateCover, type CoverCheck, type CoverRejection, type CoverShape } from './validateCover';

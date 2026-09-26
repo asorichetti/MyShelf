@@ -93,6 +93,7 @@ test('requests are classified against the origin under test', () => {
   assert.equal(classify('https://openlibrary.org/isbn/1.json', base), 'mocked-host');
   assert.equal(classify('https://www.googleapis.com/books/v1/volumes?q=x', base), 'mocked-host');
   assert.equal(classify('https://covers.openlibrary.org/b/id/1-L.jpg', base), 'covers');
+  assert.equal(classify('https://books.google.com/books/content?id=x&img=1', base), 'covers');
   assert.equal(classify('https://fonts.gstatic.com/x.woff2', base), 'external');
   assert.equal(classify('http://localhost:8081/', base), 'external');
 });

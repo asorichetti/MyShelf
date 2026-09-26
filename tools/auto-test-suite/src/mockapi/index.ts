@@ -10,8 +10,12 @@ import { fileURLToPath } from 'node:url';
 /** The hosts whose requests are answered from the index (and only from it). */
 export const MockedHosts = ['openlibrary.org', 'www.googleapis.com'] as const;
 
-/** Covers are answered by the generated test JPEGs (browser/covers.ts) unless the index has an entry. */
-export const CoversHost = 'covers.openlibrary.org';
+/**
+ * Cover image hosts: answered by the generated test JPEGs (browser/covers.ts)
+ * unless the index has an entry. Google Books thumbnails (books.google.com)
+ * show in candidate cards as plain <img>s, which need no CORS.
+ */
+export const CoverHosts = ['covers.openlibrary.org', 'books.google.com'] as const;
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '../../../..');
 
@@ -108,8 +112,8 @@ export function loadMockIndex(dir: string): MockIndex {
     for (const k of Object.keys(e)) if (!entryKeys.has(k)) throw new Error(`${where}: unknown field "${k}"`);
     if (typeof e.url !== 'string' || !/^https:\/\//.test(e.url)) throw new Error(`${where}: "url" must be an https URL`);
     const host = new URL(e.url.replace(/\*/g, 'x')).host;
-    if (![...MockedHosts, CoversHost].includes(host as never)) {
-      throw new Error(`${where}: ${host} is not a mocked host (${[...MockedHosts, CoversHost].join(', ')})`);
+    if (![...MockedHosts, ...CoverHosts].includes(host as never)) {
+      throw new Error(`${where}: ${host} is not a mocked host (${[...MockedHosts, ...CoverHosts].join(', ')})`);
     }
     const status = e.status ?? 200;
     if (!Number.isInteger(status) || status < 100 || status > 599) throw new Error(`${where}: bad status ${String(e.status)}`);
@@ -165,7 +169,7 @@ export function classify(url: string, baseOrigin: string): Disposition {
   }
   if (u.protocol !== 'http:' && u.protocol !== 'https:') return 'same-origin';
   if (u.origin === baseOrigin) return 'same-origin';
-  if (u.host === CoversHost) return 'covers';
+  if ((CoverHosts as readonly string[]).includes(u.host)) return 'covers';
   if ((MockedHosts as readonly string[]).includes(u.host)) return 'mocked-host';
   return 'external';
 }

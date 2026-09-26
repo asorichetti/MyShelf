@@ -6,6 +6,7 @@ import { Booky } from '@/components/booky';
 import { ConfirmDialog, Screen, Text, useSnackbar } from '@/components/ui';
 import type { BookDraft } from '@/domain';
 import { useSeriesOptions } from '@/features/series/useSeriesOptions';
+import { useAddBookLookup } from '@/features/lookup/useAddBookLookup';
 
 import { BookMissing, goBackOrShelf } from './BookDetailScreen';
 import { pickCover, type CoverSource } from './pickCover';
@@ -22,6 +23,7 @@ function BookFormScreen({ bookId, prefill }: { bookId: number | null; prefill?: 
   const formRef = useRef<BookFormHandle>(null);
   const { show } = useSnackbar();
   const guard = useUnsavedChangesGuard(form.dirty && !form.saving);
+  const lookup = useAddBookLookup(mode, form, (field) => formRef.current?.focusField(field));
 
   if (form.status === 'missing') return <BookMissing />;
   if (form.status === 'loading') {
@@ -53,6 +55,7 @@ function BookFormScreen({ bookId, prefill }: { bookId: number | null; prefill?: 
         return;
       }
       guard.release();
+      lookup.afterSave(result.id);
       if (mode === 'add') {
         router.replace({ pathname: '/book/[id]', params: { id: String(result.id) } });
         show({ message: `Saved “${result.title}” to your shelf` });
@@ -85,7 +88,8 @@ function BookFormScreen({ bookId, prefill }: { bookId: number | null; prefill?: 
         onCancel={goBackOrShelf}
         onPickCover={chooseCover}
         existingSeries={existingSeries}
-        // onFindCoverOnline arrives with online cover search (P02-11).
+        onFindCoverOnline={lookup.findCoverOnline}
+        header={lookup.panel}
       />
       <ConfirmDialog
         visible={guard.asking}

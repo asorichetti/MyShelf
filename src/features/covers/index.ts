@@ -1,6 +1,6 @@
 import { settingsRepo, type Db } from '@/db';
 import { getLookupServices } from '@/features/lookup/metadataService';
-import { coverSourceFromCandidate } from '@/services/covers';
+import { coverSourceFromCandidate, GOOGLE_COVERS_REACHABLE } from '@/services/covers';
 import type { BookCandidate } from '@/services/metadata';
 
 
@@ -9,6 +9,11 @@ import { backfillCovers, type BackfillSummary } from './backfillCovers';
 
 export { attachBestCover, type AttachCoverOptions, type AttachCoverResult } from './attachCover';
 export { backfillCovers, type BackfillCoversOptions, type BackfillSummary } from './backfillCovers';
+
+/** Google Books covers, when the user allows Google Books and the platform can read its images. */
+export async function includeGoogleCovers(db: Db): Promise<boolean> {
+  return GOOGLE_COVERS_REACHABLE && (await settingsRepo.getSetting(db, 'googleBooksEnabled'));
+}
 
 /**
  * After saving a book from a lookup candidate (P02-11, P03-09): find its
@@ -23,14 +28,14 @@ export async function attachCoverFromCandidate(
   { signal, replace }: { signal?: AbortSignal; replace?: boolean } = {},
 ): Promise<AttachCoverResult> {
   const { http } = getLookupServices(db);
-  const includeGoogle = await settingsRepo.getSetting(db, 'googleBooksEnabled');
+  const includeGoogle = await includeGoogleCovers(db);
   return attachBestCover(db, bookId, coverSourceFromCandidate(candidate), { http, signal, includeGoogle, replace });
 }
 
 /** The cover backfill with the app's services; run on start-up and on returning to the foreground. */
 export async function backfillCoversNow(db: Db, { signal, limit }: { signal?: AbortSignal; limit?: number } = {}): Promise<BackfillSummary> {
   const { http, metadata } = getLookupServices(db);
-  const includeGoogle = await settingsRepo.getSetting(db, 'googleBooksEnabled');
+  const includeGoogle = await includeGoogleCovers(db);
   return backfillCovers(db, {
     http,
     signal,

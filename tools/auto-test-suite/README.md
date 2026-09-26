@@ -367,9 +367,10 @@ is covered:
 - Requests to `openlibrary.org` and `www.googleapis.com` are answered from the
   fixture index given by `--mock-api <dir>` (default
   `src/services/metadata/__fixtures__`, so `smoke` needs no flag).
-- Requests to `covers.openlibrary.org` are answered from the index when it has
-  an entry, and otherwise by the generated test JPEGs (see
-  [Book covers](#book-covers)).
+- Requests to the cover hosts (`covers.openlibrary.org`, and
+  `books.google.com` for Google Books thumbnails shown in lookup results) are
+  answered from the index when it has an entry, and otherwise by the
+  generated test JPEGs (see [Book covers](#book-covers)).
 - Any other request that leaves the origin under test, and any URL on the
   mocked hosts that the index does not list, is **aborted** and reported by
   the `network` gate under the rule `unmocked`, naming the URL. So a journey

@@ -81,6 +81,8 @@ export interface BookFormProps {
   existingSeries?: readonly SeriesOption[];
   /** A series hint from the lookup the draft came from (P02-08): shown as "Suggested: Discworld #5". */
   seriesSuggestion?: SeriesSuggestion | null;
+  /** Extra content under the heading, e.g. the add form's "Find it online" lookup (P02-11). */
+  header?: React.ReactNode;
   ref?: Ref<BookFormHandle>;
 }
 
@@ -120,6 +122,7 @@ export function BookForm({
   onFindCoverOnline,
   existingSeries = NO_SERIES,
   seriesSuggestion = null,
+  header,
   ref,
 }: BookFormProps) {
   const theme = useTheme();
@@ -184,6 +187,8 @@ export function BookForm({
           </Text>
         </View>
 
+        {header}
+
         {hasErrors ? (
           <View
             role="alert"
@@ -224,6 +229,7 @@ export function BookForm({
                   label="Find a cover online"
                   icon={<MaterialCommunityIcons name="web" size={sizes.icon} color={colors.onPrimaryContainer} />}
                   onPress={onFindCoverOnline}
+                  testID={Testids.lookup.findCover}
                 />
               ) : null}
               {draft.coverUri ? (
