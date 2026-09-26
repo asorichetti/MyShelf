@@ -383,6 +383,8 @@ register({
     await waitVisible(c, tid(Testids.lend.sheet), `${BOOK} (lend)`);
     await expectFocus(c, Testids.lend.borrowerSearch, `${BOOK} (lend sheet)`);
     await c.page.keyboard.type('Sam');
+    // The search answers asynchronously; as a person would, wait for Sam to be listed before tabbing to him.
+    await waitVisible(c, tid(Testids.lend.borrowerOption), `${BOOK} (lend sheet, "Sam" listed)`);
     await tabTo(c, Testids.lend.borrowerOption, `${BOOK} (lend sheet)`, 5);
     await c.page.keyboard.press('Enter');
     await waitVisible(c, tid(Testids.lend.borrowerSelected), `${BOOK} (Sam chosen)`);
