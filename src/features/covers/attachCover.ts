@@ -14,6 +14,13 @@ export interface AttachCoverOptions {
   now?: () => number;
   /** Stores the image; defaults to the platform `downloadCover` (a file on native, the remote URL on web). */
   downloadCover?: typeof platformDownloadCover;
+  /**
+   * More to go on when `source` leads to no usable cover: e.g. the backfill
+   * starts from cover ids found in a batch search and falls back to the full
+   * ISBN lookup. Its new places are tried before the search is recorded as
+   * empty. Rejecting with `OfflineError` counts as offline.
+   */
+  moreSource?: () => Promise<CoverSource | null>;
 }
 
 export type AttachCoverResult =
@@ -37,7 +44,7 @@ export type AttachCoverResult =
  * generated cover); rejects only when cancelled.
  */
 export async function attachBestCover(db: Db, bookId: number, source: CoverSource, options: AttachCoverOptions): Promise<AttachCoverResult> {
-  const { http, signal, includeGoogle, replace = false, now = Date.now, downloadCover = platformDownloadCover } = options;
+  const { http, signal, includeGoogle, replace = false, now = Date.now, downloadCover = platformDownloadCover, moreSource } = options;
   const book = await booksRepo.getBook(db, bookId);
   if (!book) return { status: 'failed', error: `No book ${bookId}` };
   if (book.coverUri?.trim() && !replace) return { status: 'kept' };
@@ -48,7 +55,14 @@ export async function attachBestCover(db: Db, bookId: number, source: CoverSourc
   };
 
   try {
-    const { cover, tried } = await resolveCover(source, { http, signal, includeGoogle });
+    let { cover, tried } = await resolveCover(source, { http, signal, includeGoogle });
+    const more = !cover && moreSource ? await moreSource() : null;
+    if (more) {
+      const skipUrls = new Set(tried.map((t) => t.url));
+      const second = await resolveCover(more, { http, signal, includeGoogle, skipUrls });
+      cover = second.cover;
+      tried = [...tried, ...second.tried];
+    }
     if (!cover) {
       await record('none');
       return { status: 'none', tried };
