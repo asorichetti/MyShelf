@@ -36,12 +36,13 @@ A usable, offline catalogue: the user can add a book by hand, see it on the Shel
 - **Tests:** `src/testing/__tests__/loadFixture.test.ts` (node env: counts per table for each fixture), `src/app/e2e/__tests__/e2e.test.tsx` (flag on/off behaviour).
 - **Delivered:** the route re-exports `E2eScreen` from `src/features/e2e/` (with `e2eFlag.ts`), so the flag test is `src/features/e2e/__tests__/e2e.test.tsx` (nothing but routes lives in `src/app`). The flag is on for `expo start` through the committed `.env.development` (`EXPO_PUBLIC_E2E=1`); `expo export` and release builds do not load that file. The wipe is `libraryRepo.wipeLibrary(db)` (`src/db/repositories/library.ts`, with `countRows` for tests), since SQL stays in `src/db`; settings survive a wipe. Fixture types are in `src/testing/fixtures/types.ts`; loan dates are relative to `today()` (so the overdue loan stays overdue), and `setToday()` in `src/domain/dates.ts` freezes them. `demo` also has a returned loan (Mort) for loan history; `next` must be an in-app path. An unknown fixture shows `page-error` and loads nothing.
 
-### P01-02 Books repository: list, search and sort queries
+### P01-02 Books repository: list, search and sort queries — done
 
 - **Description:** Extend `booksRepo` (`src/db/repositories/books.ts`, which already has `listBooks`, `searchBooks` and `countBooks`): `listBookItems(db, { query?, sort, direction, limit, offset })` returning `BookListItem` (id, title, subtitle, primary author, cover_uri, publication_year, series name + position, on-loan flag). Search matches title, subtitle, author names (as `searchBooks` does today) and ISBN (normalised) case-insensitively. Sorts: `title` (ignoring leading "The/A/An"), `author` (sort_name), `year`, `added` (created_at). `getBookDetail(db, id)` returns `BookDetail` with authors (ordered), genres, series, open loan.
 - **Files:** `src/db/repositories/books.ts`, `src/domain/book.ts` (`sortableTitle`).
 - **Acceptance:** each sort order correct on the `demo` fixture; search "prat" finds Pratchett; ISBN search with hyphens works; list query uses indexes (no N+1 — one query plus one for authors).
 - **Tests:** `src/db/repositories/__tests__/books.list.test.ts`, `src/domain/__tests__/book.test.ts`.
+- **Delivered:** `BookListItem` carries every credited author (`authors: string[]`, the first is the primary one) rather than one name, and search also matches the series name ("earthsea"). Sorting runs in SQL (a `CASE` twin of `sortableTitle`); books without an author or year sort last in both directions. `BookListItem`, `BookDetail`, `ShelfSort` and the display helpers `seriesLabel`, `formatSeriesPosition` and `joinNames` live in `src/domain/book.ts`. ISBN matching only kicks in for digit-like queries of four or more digits.
 
 ### P01-03 Shelf screen (list of catalogue cards)
 

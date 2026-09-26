@@ -1,3 +1,8 @@
+import type { BookAuthor } from './author';
+import type { BookGenre } from './genre';
+import type { Loan } from './loan';
+import type { Series } from './series';
+
 export const bookFormats = ['hardcover', 'paperback', 'ebook', 'audiobook', 'other'] as const;
 export type BookFormat = (typeof bookFormats)[number];
 
@@ -39,4 +44,59 @@ export type BookPatch = Partial<Editable>;
 export interface BookGroup<K> {
   key: K | null;
   books: Book[];
+}
+
+/** A compact row for the Shelf list. */
+export interface BookListItem {
+  id: number;
+  title: string;
+  subtitle: string | null;
+  /** Credited names in order. */
+  authors: string[];
+  coverUri: string | null;
+  publicationYear: number | null;
+  seriesName: string | null;
+  seriesPosition: number | null;
+  onLoan: boolean;
+}
+
+/** Everything the book detail page shows. */
+export interface BookDetail extends Book {
+  authors: BookAuthor[];
+  genres: BookGenre[];
+  series: Series | null;
+  openLoan: (Loan & { borrowerName: string }) | null;
+}
+
+export const shelfSortKeys = ['title', 'author', 'year', 'added'] as const;
+export type ShelfSortKey = (typeof shelfSortKeys)[number];
+export type SortDirection = 'asc' | 'desc';
+
+export interface ShelfSort {
+  sort: ShelfSortKey;
+  direction: SortDirection;
+}
+
+const LEADING_ARTICLE = /^(the|a|an)\s+(?=\S)/i;
+
+/** The title as a library files it: a leading "The", "A" or "An" is ignored ("The Hobbit" -> "Hobbit"). */
+export function sortableTitle(title: string): string {
+  const t = title.trim();
+  return t.replace(LEADING_ARTICLE, '');
+}
+
+/** Series position for display: whole numbers without ".0" (5), halves kept (2.5). */
+export function formatSeriesPosition(position: number): string {
+  return Number.isInteger(position) ? String(position) : String(Math.round(position * 10) / 10);
+}
+
+/** "Discworld #5", or just the name when the position is unknown. */
+export function seriesLabel(name: string, position: number | null): string {
+  return position == null ? name : `${name} #${formatSeriesPosition(position)}`;
+}
+
+/** "Terry Pratchett", "Terry Pratchett and Neil Gaiman", "A, B and C". */
+export function joinNames(names: readonly string[]): string {
+  if (names.length <= 1) return names[0] ?? '';
+  return `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`;
 }
