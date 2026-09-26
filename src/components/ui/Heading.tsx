@@ -1,5 +1,6 @@
 import { Text as RNText, type StyleProp, type TextStyle } from 'react-native';
 
+import { useLineClamp } from '@/hooks/useLineClamp';
 import { useTheme, type ColorRole } from '@/theme';
 
 import type { ReactNode } from 'react';
@@ -26,6 +27,7 @@ const variants = { 1: 'h1', 2: 'h2', 3: 'h3' } as const;
 export function Heading({ children, level = 1, color, align, style, testID, numberOfLines, nativeID, accessibilityLabel }: HeadingProps) {
   const theme = useTheme();
   const type = theme.typography[variants[level]];
+  const lines = useLineClamp(numberOfLines ?? 0);
   const tone: ColorRole = color ?? (level === 1 ? 'primary' : 'ink');
   return (
     <RNText
@@ -34,7 +36,7 @@ export function Heading({ children, level = 1, color, align, style, testID, numb
       testID={testID}
       nativeID={nativeID}
       accessibilityLabel={accessibilityLabel}
-      numberOfLines={numberOfLines}
+      numberOfLines={numberOfLines ? lines : undefined}
       style={[type, { color: theme.colors[tone], textAlign: align }, style]}
     >
       {children}

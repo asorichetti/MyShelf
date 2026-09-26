@@ -2,7 +2,8 @@ import { createContext, useContext, useLayoutEffect, useMemo, useState, type Rea
 import { useColorScheme } from 'react-native';
 
 import { applyThemeToDocument } from './cssVars';
-import { themes, type ColorSchemeName, type Theme } from './themes';
+import { platformScalesText, usePlatformFontScale } from './fontScale';
+import { scaleTheme, themes, type ColorSchemeName, type Theme } from './themes';
 
 /** Light, dark, or whatever the phone (or browser) is set to. */
 export type ThemePreference = 'system' | ColorSchemeName;
@@ -16,6 +17,7 @@ interface ThemePreferenceState {
 
 const ThemeContext = createContext<Theme>(themes.light);
 const PreferenceContext = createContext<ThemePreferenceState>({ preference: 'system', setPreference: () => {} });
+const FontScaleContext = createContext(1);
 
 export interface ThemeProviderProps {
   /** Force a colour scheme, whatever the preference and the system say (tests, previews). */
@@ -24,6 +26,13 @@ export interface ThemeProviderProps {
   theme?: Theme;
   /** The preference to start with (default `system`); `useThemePreference().setPreference` changes it. */
   initialPreference?: ThemePreference;
+  /**
+   * Text size as a factor of the design (1 = 100 %). Defaults to the system's
+   * font scale on a phone. On web, where nothing scales text by itself, a
+   * factor other than 1 enlarges the typography tokens (the E2E large-text
+   * emulation, P09-01).
+   */
+  fontScale?: number;
   children: ReactNode;
 }
 
@@ -39,11 +48,16 @@ export function resolveScheme(preference: ThemePreference, system: string | null
  * `useThemePreference`) resolved against the system colour scheme, which it
  * follows as it changes. On web the tokens are mirrored onto `:root`.
  */
-export function ThemeProvider({ scheme, theme, initialPreference = 'system', children }: ThemeProviderProps) {
+export function ThemeProvider({ scheme, theme, initialPreference = 'system', fontScale, children }: ThemeProviderProps) {
   const system = useColorScheme();
+  const systemFontScale = usePlatformFontScale();
+  const scale = fontScale ?? systemFontScale;
   const [preference, setPreference] = useState<ThemePreference>(initialPreference);
   const resolved = scheme ?? resolveScheme(preference, system);
-  const value = useMemo(() => theme ?? themes[resolved], [resolved, theme]);
+  const value = useMemo(() => {
+    const base = theme ?? themes[resolved];
+    return platformScalesText ? base : scaleTheme(base, scale);
+  }, [resolved, theme, scale]);
   const preferenceState = useMemo(() => ({ preference, setPreference }), [preference]);
 
   // Web only (cssVars.web.ts): mirror tokens onto :root as --ms-* properties.
@@ -51,13 +65,24 @@ export function ThemeProvider({ scheme, theme, initialPreference = 'system', chi
 
   return (
     <PreferenceContext.Provider value={preferenceState}>
-      <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
+      <FontScaleContext.Provider value={scale}>
+        <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
+      </FontScaleContext.Provider>
     </PreferenceContext.Provider>
   );
 }
 
 export function useTheme(): Theme {
   return useContext(ThemeContext);
+}
+
+/**
+ * How much bigger than designed text is drawn (1 = 100 %, 2 = the largest
+ * Android font size): for the few layouts with a fixed size that must make
+ * room for text, such as the tab bar.
+ */
+export function useFontScale(): number {
+  return useContext(FontScaleContext);
 }
 
 /** The theme preference and its setter (the app's settings watcher keeps it in step with the stored setting). */

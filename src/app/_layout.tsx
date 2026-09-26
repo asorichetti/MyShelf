@@ -10,6 +10,7 @@ import { DatabaseProvider, type DatabaseStatus } from '@/db';
 import { openAppDatabase } from '@/db/expo';
 import { BookyRoot } from '@/features/booky/BookyRoot';
 import { withE2eDatabaseFault } from '@/features/e2e/databaseFault';
+import { e2eFontScale } from '@/features/e2e/fontScale';
 import { LoanWatchers } from '@/features/loans/LoanWatchers';
 import { AppSnackbarHost } from '@/features/navigation/AppSnackbarHost';
 import { DatabaseErrorScreen } from '@/features/navigation/DatabaseErrorScreen';
@@ -25,6 +26,9 @@ SplashScreen.preventAutoHideAsync().catch(() => {});
 
 // The real opener, except on the web E2E build when a journey asks for a database failure.
 const openDatabase = withE2eDatabaseFault(openAppDatabase);
+
+// Only the web E2E build can override the text size (a large-text check); a phone uses its own setting.
+const fontScaleOverride = e2eFontScale();
 
 function RootStack() {
   const theme = useTheme();
@@ -68,7 +72,7 @@ export default function RootLayout() {
   }, [ready]);
 
   return (
-    <ThemeProvider>
+    <ThemeProvider fontScale={fontScaleOverride}>
       <DatabaseProvider
         open={openDatabase}
         onStatusChange={setDbState}

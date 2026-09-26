@@ -16,3 +16,7 @@ jest.mock('expo-notifications', () => jest.requireActual('./mocks/expoNotificati
 global.fetch = jest.fn(async (input: unknown) => {
   throw new TypeError(`Network request failed: tests do not use the network (${String(input)})`);
 }) as unknown as typeof fetch;
+
+// React Native's Jest preset reports a system font scale of 2; tests render
+// at the designed 100 % unless they set a font scale on ThemeProvider.
+jest.mock('@/theme/fontScale', () => ({ platformScalesText: true, usePlatformFontScale: () => 1 }));
