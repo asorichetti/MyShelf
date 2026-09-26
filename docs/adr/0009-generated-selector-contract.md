@@ -1,6 +1,6 @@
 # 0009. Test ids generated from one `selectors.json` into TS and Go
 
-- Status: Accepted
+- Status: Accepted; the Go output is removed by [0013](0013-typescript-auto-test-suite.md), so the generator emits only `src/testing/testids.gen.ts`, which the auto test suite imports
 - Date: 2026-09-25
 
 ## Context

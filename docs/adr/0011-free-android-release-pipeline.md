@@ -9,7 +9,7 @@ The app must be free to build and distribute. Options: EAS Build (cloud; has a l
 
 ## Decision
 
-- **CI:** GitHub Actions on every push and pull request runs `npm run check`, plus gofmt, `go vet`, `go test` and the auto test suite's `smoke` (gates set to fail) against the Expo web server; running it against a static web export instead is P00-22.
+- **CI:** GitHub Actions on every push and pull request runs `npm run check`, plus `npm run autotest:check` and the auto test suite's `smoke` (gates set to fail) against the Expo web server; running it against a static web export instead is P00-21.
 - **Builds:** `eas.json` defines `development`, `e2e`, `preview` (APK) and `production` (AAB) profiles. Builds can run on the EAS free tier or locally with `eas build --local` / `npx expo prebuild` + Gradle, which costs nothing.
 - **Releases:** a tag-triggered GitHub Actions workflow builds a signed release APK/AAB with Gradle on the runner and attaches it to a GitHub Release. The upload keystore is kept out of the repo and supplied as encrypted repository secrets.
 - Google Play publishing (one-time developer fee) is optional and outside the "free" requirement; GitHub Releases is the default distribution channel.

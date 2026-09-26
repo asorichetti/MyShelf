@@ -1,6 +1,6 @@
 # 0002. Web build as a test target; Maestro for device-only flows
 
-- Status: Accepted
+- Status: Accepted; tool language superseded by [0013](0013-typescript-auto-test-suite.md) (TypeScript, no Go)
 - Date: 2026-09-25
 
 ## Context

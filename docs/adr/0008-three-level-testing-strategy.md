@@ -1,6 +1,6 @@
 # 0008. Three-level testing strategy and a single regression gate
 
-- Status: Accepted
+- Status: Accepted; tool language superseded by [0013](0013-typescript-auto-test-suite.md) (TypeScript + Playwright)
 - Date: 2026-09-25
 
 ## Context
