@@ -15,14 +15,94 @@ var PageState = pageStateSelectors{
 }
 
 type homeSelectors struct {
-	Root  string
-	Title string
+	Root       string
+	Title      string
+	BookCount  string
+	ScanAction string
+	AskBooky   string
 }
 
 // Home selectors.
 var Home = homeSelectors{
-	Root:  `[data-testid="home-root"]`,
-	Title: `[data-testid="home-title"]`,
+	Root:       `[data-testid="home-root"]`,
+	Title:      `[data-testid="home-title"]`,
+	BookCount:  `[data-testid="home-book-count"]`,
+	ScanAction: `[data-testid="home-scan-action"]`,
+	AskBooky:   `[data-testid="home-ask-booky"]`,
+}
+
+type navSelectors struct {
+	TabShelf    string
+	TabScan     string
+	TabLoans    string
+	TabGroups   string
+	TabSettings string
+}
+
+// Nav selectors.
+var Nav = navSelectors{
+	TabShelf:    `[data-testid="tab-shelf"]`,
+	TabScan:     `[data-testid="tab-scan"]`,
+	TabLoans:    `[data-testid="tab-loans"]`,
+	TabGroups:   `[data-testid="tab-groups"]`,
+	TabSettings: `[data-testid="tab-settings"]`,
+}
+
+type scanSelectors struct {
+	Root  string
+	Title string
+}
+
+// Scan selectors.
+var Scan = scanSelectors{
+	Root:  `[data-testid="scan-root"]`,
+	Title: `[data-testid="scan-title"]`,
+}
+
+type loansSelectors struct {
+	Root  string
+	Title string
+}
+
+// Loans selectors.
+var Loans = loansSelectors{
+	Root:  `[data-testid="loans-root"]`,
+	Title: `[data-testid="loans-title"]`,
+}
+
+type groupsSelectors struct {
+	Root  string
+	Title string
+}
+
+// Groups selectors.
+var Groups = groupsSelectors{
+	Root:  `[data-testid="groups-root"]`,
+	Title: `[data-testid="groups-title"]`,
+}
+
+type settingsSelectors struct {
+	Root  string
+	Title string
+}
+
+// Settings selectors.
+var Settings = settingsSelectors{
+	Root:  `[data-testid="settings-root"]`,
+	Title: `[data-testid="settings-title"]`,
+}
+
+type notFoundSelectors struct {
+	Root     string
+	Title    string
+	HomeLink string
+}
+
+// NotFound selectors.
+var NotFound = notFoundSelectors{
+	Root:     `[data-testid="not-found-root"]`,
+	Title:    `[data-testid="not-found-title"]`,
+	HomeLink: `[data-testid="not-found-home-link"]`,
 }
 
 type bookySelectors struct {

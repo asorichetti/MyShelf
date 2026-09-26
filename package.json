@@ -56,6 +56,9 @@
     "testPathIgnorePatterns": [
       "/node_modules/",
       "/tools/"
+    ],
+    "setupFiles": [
+      "<rootDir>/src/testing/jest.setup.ts"
     ]
   }
 }

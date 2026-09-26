@@ -8,6 +8,37 @@ export const Testids = {
   home: {
     root: 'home-root',
     title: 'home-title',
+    bookCount: 'home-book-count',
+    scanAction: 'home-scan-action',
+    askBooky: 'home-ask-booky',
+  },
+  nav: {
+    tabShelf: 'tab-shelf',
+    tabScan: 'tab-scan',
+    tabLoans: 'tab-loans',
+    tabGroups: 'tab-groups',
+    tabSettings: 'tab-settings',
+  },
+  scan: {
+    root: 'scan-root',
+    title: 'scan-title',
+  },
+  loans: {
+    root: 'loans-root',
+    title: 'loans-title',
+  },
+  groups: {
+    root: 'groups-root',
+    title: 'groups-title',
+  },
+  settings: {
+    root: 'settings-root',
+    title: 'settings-title',
+  },
+  notFound: {
+    root: 'not-found-root',
+    title: 'not-found-title',
+    homeLink: 'not-found-home-link',
   },
   booky: {
     avatar: 'booky-avatar',

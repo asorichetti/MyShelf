@@ -4,6 +4,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 
+import { BookyProvider } from '@/components/booky';
 import { ThemeProvider, useTheme } from '@/theme';
 import { appFonts } from '@/theme/fonts';
 
@@ -13,10 +14,13 @@ SplashScreen.preventAutoHideAsync().catch(() => {});
 function RootStack() {
   const theme = useTheme();
   return (
-    <>
+    <BookyProvider>
       <StatusBar style="dark" />
-      <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: theme.colors.paper } }} />
-    </>
+      <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: theme.colors.paper } }}>
+        <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="+not-found" options={{ title: 'Not found' }} />
+      </Stack>
+    </BookyProvider>
   );
 }
 
