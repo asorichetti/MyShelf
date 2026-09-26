@@ -127,8 +127,18 @@ Each journey is added by the card that builds its screen. Suite `core` journeys 
 | `booky-mute-tip` | `p07` | trigger empty-shelf tip → mute → reload → tip not shown |
 | `booky-modes` | `p07` | set Off → avatar hidden, help still works; set Quiet → book-added tip not shown |
 | `empty-states-gallery` | `p07` | fixture `empty`; visit every empty state; screenshot each for review |
+| `booky-help-screens` | `p07` | help on book detail, series detail and the edition picker; More help opens the sheet |
+| `booky-placement` | `p07` | the bubble never covers the Add book button, the selection bar or the snackbar (mobile and tablet), hides behind sheets |
+| `booky-dismiss` | `p07` | tap outside, Escape and the 8 s auto-dismiss |
+| `booky-motion` | `p07` | Booky moves normally and not at all with reduced motion; no layout shift |
+| `booky-keyboard` | `p07` | keyboard only: no focus steal, one polite announcement, buttons reachable, Enter on ✕ |
+
+All Phase 07 journeys are in suite `p07` (the table first had `onboarding-first-run` and `booky-help-each-tab` in `core`).
 
 ## Maestro flows
+
+Not written yet: `.maestro/` does not exist until P00-18, and no device or emulator was available. The E2E build hides the onboarding unless a fixture asks, so `onboarding.yaml` should start from `myshelf://e2e?fixture=first-run`.
+
 
 | Flow | Checks |
 |---|---|

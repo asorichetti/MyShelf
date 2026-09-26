@@ -530,6 +530,17 @@ Re-export after changing app code: `--serve` tests whatever is in `dist/`.
 | `preferences-persist` | p08 | Newest first, 14-day loans, ISO dates, Google Books off → a reload keeps them → the Shelf opens newest first and the lend sheet offers a due date 14 days on, written in ISO |
 | `about-page` | p08 | Version and build, the data credits and MIT licence; the GitHub link opens `https://github.com/asorichetti/MyShelf` (`window.open` is stubbed); hundreds of packages in the licence list |
 | `settings-borrowers-pending` | p08 | Settings → Borrowers: Sam and Priya with loan counts; removing Priya is refused with an alert; renaming Sam shows on the Loans tab; Pending lookups is empty |
+| `onboarding-first-run` | p07 | Fixture `first-run` lands on `/onboarding`; four cards via Next, each "Page n of 4" in a polite live region with one Booky and one h1 (gates on each); no Skip on the last card; "Let’s fill your shelf" → `/scan`; starting again stays on the Shelf; screenshots `onboarding-1..4.png` |
+| `onboarding-skip` | p07 | Fixture `first-run`: Skip on the first card → the Shelf, and a reload does not bring the onboarding back |
+| `empty-states-gallery` | p07 | Fixture `empty`: the Shelf, Loans out and history, Groups, a new empty group, Series, Genres, Authors and the scan tray each show Booky and one clear action (gates on each); fixture `demo`: a search with no matches; screenshots `empty-<name>.png` |
+| `booky-help-each-tab` | p07 | Fixture `demo`: on every tab the help button (`booky-help-button`) opens thinking Booky with the screen's own words and "More help"; gates with the bubble open; ✕ closes it; screenshots `help-<tab>.png` |
+| `booky-help-screens` | p07 | Book detail, series detail and the edition picker explain themselves; "More help" opens `booky-help-sheet` (a dialog) and "Got it" closes it; on the picker the bubble sits above "This is my edition" |
+| `booky-placement` | p07 | Fixture `demo`: the bubble never overlaps the Add book button (lifted on mobile, beside it on tablet), the selection bar or the Undo snackbar, hides while the filter sheet is open and comes back; screenshots `placement-*.png` |
+| `booky-mute-tip` | p07 | Fixture `first-run` → Skip → the empty-shelf tip → "Don’t show tips like this" → reload → no tip |
+| `booky-dismiss` | p07 | A tap elsewhere closes the tip (and still works), so does Escape, and a tip without an action closes by itself after 8 s |
+| `booky-modes` | p07 | Settings → Booky: Off hides every Booky and help opens the sheet without him; Quiet: a scanned book gets no "Shelved!" |
+| `booky-motion` | p07 | Booky's transform changes over time; with `prefers-reduced-motion` it never does, and the bubble does not move the page |
+| `booky-keyboard` | p07 | Keyboard only: the help button opens a tip without moving focus, the tip is in the polite announcer (and only there), More help and ✕ are reachable with Tab, Enter on ✕ closes it |
 
 ### Adding a journey
 

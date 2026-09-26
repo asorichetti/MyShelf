@@ -182,7 +182,7 @@ MyShelf/
 │   │   └── e2e/                P01-01 fixture loader, P03-07 scan injection (E2E builds only)
 │   ├── components/
 │   │   ├── ui/                 [main] Screen, Heading, Text, Button, Card, EmptyState, TextField; P00-30 IconButton, CatalogueCard, Chip, Stamp, ConfirmDialog, Snackbar
-│   │   ├── booky/              [main] Booky, BookyBubble, BookyProvider (useBooky, BookyTipHost), expressions
+│   │   ├── booky/              [main] Booky, BookyBubble, BookyProvider (useBooky), BookyOverlay, tips catalogue and engine, help
 │   │   └── book/               P01 BookRow, CoverImage, Spine …
 │   ├── db/                     [main] Db interface (types.ts), createDb, adapters expo.ts · node.ts, migrate.ts, migrations/, repositories/, DatabaseProvider.tsx
 │   ├── domain/                 [main] models + pure helpers (isbn, dates, author sort names …)
@@ -452,7 +452,7 @@ Booky is a small purple **bookmark** with a tassel, big friendly eyes and a gent
 
 ### Expressions
 
-Implemented in `src/components/booky` (P00-10) as one SVG component, `<Booky expression size animated />`. `BookyBubble` shows Booky with a titled message, optional actions and a dismiss button. `BookyProvider` (in the root layout) holds the current tip: `useBooky()` returns `{ tip, showTip(tip), dismissTip() }`, and `BookyTipHost` (placed once in the tab layout) floats the tip just above the tab bar.
+Implemented in `src/components/booky` (P00-10) as one SVG component, `<Booky expression size animated />`. `BookyBubble` shows Booky with a titled message, optional actions and a dismiss button. Every word Booky says is in a fixed catalogue (`tips.ts`, P07-01). Code tells Booky what happened with `useBooky().emit(event)` (or `emitBooky(event)` outside React); the rules engine (`engine.ts`, P07-02) picks the tip, if any, and `BookyProvider` (root layout, with its memory in `settings`) holds it. `BookyOverlay` (placed once in the root layout) floats it above the tab bar, clear of bottom actions (P07-07).
 
 | Expression | Used for |
 |---|---|
@@ -479,19 +479,17 @@ Implemented in `src/components/booky` (P00-10) as one SVG component, `<Booky exp
 
 ### Dismissal and control
 
-Today a tip closes with its ✕ button or after one of its actions runs. The rest of this section is built in Phase 07 (P07-02, P07-06).
-
-- Tap the bubble or the ✕ to dismiss; bubbles also auto-dismiss after 8 s unless they contain an action.
+- Tap anywhere outside the bubble, press Escape (web) or the ✕ to dismiss; bubbles also auto-dismiss after 8 s unless they contain an action (never while a screen reader is on).
 - "Don't show tips like this" on tip bubbles marks the tip id as muted in `settings`.
-- **Booky mode** in Settings: *Helpful* (default: all triggers), *Quiet* (errors, empty states and help button only), *Off* (Booky hidden except for the help button).
-- A tip is never shown twice in one session and never covers a primary action; the bubble positions itself above the tab bar.
+- **Booky mode** in Settings (`BookySettingsSection`, setting `bookyMode`): *Helpful* (default: all triggers), *Quiet* (errors, empty states and help button only), *Off* (Booky hidden everywhere; help buttons open the help sheet). "Reset tips" clears what was seen and muted.
+- Unprompted tips respect their frequency, a 30 s cooldown and open dialogs, and never cover a primary action: the bubble docks above the tab bar and steps aside or lifts above the Add book button, the selection bar, the snackbar and the keyboard.
 
 ### Accessibility
 
 - Booky is an image with an accessible label that names the expression (`role="img"`, e.g. "Booky the bookmark, smiling happily"); the SVG artwork inside is hidden from assistive tech. Booky is labelled rather than decorative because it often stands alone as an empty state's illustration and its expression carries tone; the bubble text remains the content that matters.
-- Bubble text sits in a polite live region (`accessibilityLiveRegion="polite"` on Android, `aria-live="polite"` on web), so new tips are announced without stealing focus.
+- Floating tips are announced once through a polite live region that is always mounted in the overlay (`accessibilityLiveRegion="polite"` on Android, `aria-live="polite"` on web); inline bubbles are their own polite live regions. Nothing steals focus.
 - The dismiss button has an accessible label ("Dismiss Booky's tip") and a 48 dp touch area (a 32 dp button with an 8 dp hit slop on every side).
-- Animations are disabled when the OS "reduce motion" setting is on (`useReducedMotion`). Today that is Booky's idle bob; blink and bubble pop come in P07-08.
+- Animations (the idle bob, the blink, the bubble's pop-in, the celebration) are off when the OS "reduce motion" setting is on; nothing starts until the preference is known (`useReducedMotionState`).
 - Information is never conveyed by Booky alone: every Booky message about an error also appears as inline text in the screen.
 
 ---
@@ -605,7 +603,7 @@ Every command runs from the repository root as `npm run -s autotest -- <command>
   Configuration lives in `gates.config.json` next to the gates: `render.requiredTokens`, `render.landmarks` (`main`) and per-gate `disabled` maps where every disabled rule needs a reason. Today only `a11y/skip-link` is off (by design: a mobile app has no repeated block to skip); every render rule is on, and `render.requiredTokens` lists the core `--ms-*` tokens (primary, paper, surface, ink and muted-ink colours, heading and body fonts, one spacing and one radius step). A journey can downgrade one rule for itself only, with a written reason; the finding stays in `uxgates.json` as a warning. URLs that are missing on purpose carry the expected-missing marker `__expected-404` instead of an allowlist entry. Contrast is not checked by the gates; it is enforced by the token contrast tests in Jest (P00-08). Touch targets are checked by the `a11y` rule `target-size` (P00-27), against `a11y.minTargetSize` (48).
 
 - **Journeys self-register.** Each journey lives in a file under `tools/auto-test-suite/src/journeys/` (one file per area) and registers itself with a unique name, a suite, a one-line description and a `run` function. `run` gets the Playwright page plus helpers to navigate with the gates, use a different content marker for screens the app does not own, save extra named screenshots and waive a rule with a reason; assertion messages say what was expected and what was found. Each journey runs in a **fresh browser, page and run directory**. Selectors are built from `Testids` imported from `src/testing/testids.gen.ts`, never from typed id strings. Suites: `core` (fast, essential; run by `smoke` and CI) and any other name for the rest (today `responsive` and `p00`); phase documents put non-core journeys in a suite named after the phase (`p01`, `p02`, …). From P01-01, journeys start from a known fixture via `/e2e?fixture=<name>&next=<route>`.
-- **Journeys today:** `home-loads` (core), `not-found` (core; the app's own not-found screen, no waivers), `tabs-navigate` (core; every tab, its URL, one `h1`, `aria-selected`, Booky on the empty Shelf), `booky-empty-shelf` (core; Booky's tip opens, passes the gates and dismisses), `home-responsive` (responsive), `theme-tokens` (p00; tokens on `:root` drive the body background and font).
+- **Journeys today:** `home-loads` (core), `not-found` (core; the app's own not-found screen, no waivers), `tabs-navigate` (core; every tab, its URL, one `h1`, `aria-selected`, Booky on the empty Shelf), `booky-empty-shelf` (core; Booky's tip opens, passes the gates and dismisses), Phase 07's Booky journeys (p07: onboarding, empty states, help, placement, modes, muting, dismissal, motion, keyboard), `home-responsive` (responsive), `theme-tokens` (p00; tokens on `:root` drive the body background and font).
 - **API mocking** (P02-13): the global flag `--mock-api <dir>` (default `src/services/metadata/__fixtures__`, `off` to disable) answers Open Library, Google Books and covers requests from a fixture index (`index.json`) through Playwright routing, registered before every page opens; any other request leaving the app is aborted and fails the `network` gate as `unmocked`, and fixture error responses marked `expected` are exempt. `scripts/record-fixture.mjs` records new fixtures.
 
 ### 10.3 Maestro (on device)
