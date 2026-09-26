@@ -33,9 +33,9 @@ These requests happen when you:
 - scan or type an ISBN, or search by title and author;
 - save a book (MyShelf fetches its cover);
 - come back online after scanning offline (the ISBNs you scanned are looked up then);
-- have books without a cover: now and then, a few at a time, MyShelf searches for a cover using the book's ISBN, or its title and first author.
+- have books without a cover (typed in by hand, imported from a spreadsheet, or restored from a backup): MyShelf looks for their covers when it starts or comes back to the foreground, and straight after an import or restore. It sends those books' ISBNs (up to 40 in one Open Library search), or a book's title and first author when it has no ISBN.
 
-**What is never sent:** your notes, series or groups, who borrowed what, borrowers' names or contact details, your photos, or the contents of your library as a whole. Nothing identifies you to these services beyond what any internet connection reveals (your IP address) and the app's name and version, which MyShelf sends as its User-Agent (`MyShelf/1.0.0 (+https://github.com/asorichetti/MyShelf)`) as the services ask.
+**What is never sent:** your notes, series or groups, who borrowed what, borrowers' names or contact details, or your photos. The ISBNs and titles looked up do say which books you have been adding (after restoring a backup on a new phone, that can be most of your library), but nothing identifies you to these services beyond what any internet connection reveals (your IP address) and the app's name and version, which MyShelf sends as its User-Agent (`MyShelf/1.0.0 (+https://github.com/asorichetti/MyShelf)`) as the services ask.
 
 Open Library and Google handle those requests under their own policies: the [Internet Archive's privacy policy](https://archive.org/about/terms.php) and the [Google Privacy Policy](https://policies.google.com/privacy).
 
