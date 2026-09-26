@@ -9,6 +9,7 @@ import { SnackbarProvider } from '@/components/ui';
 import { DatabaseProvider, type DatabaseStatus } from '@/db';
 import { openAppDatabase } from '@/db/expo';
 import { BookyRoot } from '@/features/booky/BookyRoot';
+import { withE2eDatabaseFault } from '@/features/e2e/databaseFault';
 import { LoanWatchers } from '@/features/loans/LoanWatchers';
 import { AppSnackbarHost } from '@/features/navigation/AppSnackbarHost';
 import { DatabaseErrorScreen } from '@/features/navigation/DatabaseErrorScreen';
@@ -21,6 +22,9 @@ import { appFonts } from '@/theme/fonts';
 
 // Keep the native splash up until fonts and the database are ready (must run at module scope).
 SplashScreen.preventAutoHideAsync().catch(() => {});
+
+// The real opener, except on the web E2E build when a journey asks for a database failure.
+const openDatabase = withE2eDatabaseFault(openAppDatabase);
 
 function RootStack() {
   const theme = useTheme();
@@ -66,7 +70,7 @@ export default function RootLayout() {
   return (
     <ThemeProvider>
       <DatabaseProvider
-        open={openAppDatabase}
+        open={openDatabase}
         onStatusChange={setDbState}
         fallback={fontsReady ? <LoadingScreen /> : null}
         renderError={(error, retry) => (fontsReady ? <DatabaseErrorScreen error={error} onRetry={retry} /> : null)}

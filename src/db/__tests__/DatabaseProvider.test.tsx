@@ -1,8 +1,11 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import { Pressable, Text } from 'react-native';
 
-import { apiCacheRepo, DatabaseProvider, getSchemaVersion, LATEST_VERSION, migrate, useDatabase, type Db } from '@/db';
+import { apiCacheRepo, DatabaseProvider, getSchemaVersion, LATEST_VERSION, migrate, MigrationError, useDatabase, type Db } from '@/db';
 import { openNodeDatabase } from '@/db/node';
+import { DatabaseErrorScreen } from '@/features/navigation/DatabaseErrorScreen';
+import { AppTestProviders } from '@/testing/render';
+import { Testids } from '@/testing/testids.gen';
 
 function UsesDb() {
   const db = useDatabase();
@@ -70,6 +73,49 @@ describe('DatabaseProvider', () => {
     fail = false;
     fireEvent.press(screen.getByRole('button', { name: 'retry' }));
     expect(await screen.findByTestId('has-db')).toBeOnTheScreen();
+    spy.mockRestore();
+  });
+
+  it('a migration failure (a database from a newer app) shows the recovery screen, and Try again reopens (P09-04)', async () => {
+    const spy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    const newer = await openNodeDatabase();
+    opened.push(newer);
+    await migrate(newer);
+    await newer.run("INSERT INTO schema_migrations (version, name) VALUES (999, '0999_from_the_future')");
+    let db = newer;
+    render(
+      <AppTestProviders>
+        <DatabaseProvider open={async () => db} renderError={(error, retry) => <DatabaseErrorScreen error={error} onRetry={retry} />}>
+          <UsesDb />
+        </DatabaseProvider>
+      </AppTestProviders>,
+    );
+    expect(await screen.findByTestId(Testids.dbError.root)).toBeOnTheScreen();
+    expect(screen.getByTestId(Testids.pageState.error)).toBeOnTheScreen();
+    expect(screen.getByTestId(Testids.dbError.title)).toHaveTextContent("I couldn't open your library");
+    expect(screen.getByText(/newer than this app understands/)).toBeOnTheScreen();
+    expect(spy).toHaveBeenCalledWith('Could not open the MyShelf database', expect.any(MigrationError));
+
+    db = await open();
+    fireEvent.press(screen.getByTestId(Testids.dbError.retry));
+    expect(await screen.findByTestId('has-db')).toHaveTextContent('ready');
+    expect(screen.queryByTestId(Testids.dbError.root)).toBeNull();
+    spy.mockRestore();
+  });
+
+  it('a failure after unmounting changes nothing', async () => {
+    const spy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    let reject: (e: Error) => void = () => {};
+    const view = render(
+      <DatabaseProvider open={() => new Promise<Db>((_, r) => (reject = r))} renderError={() => <Text>failed</Text>}>
+        <UsesDb />
+      </DatabaseProvider>,
+    );
+    view.unmount();
+    reject(new Error('too late'));
+    await new Promise((r) => setTimeout(r, 0));
+    // The failure is logged, and no state is set on the unmounted provider (React would warn).
+    expect(spy.mock.calls.map((c) => c[0])).toEqual(['Could not open the MyShelf database']);
     spy.mockRestore();
   });
 
