@@ -3,7 +3,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
-import { Booky, HelpButton } from '@/components/booky';
+import { Booky, HelpButton, useBookyTopic } from '@/components/booky';
 import { SeriesBookList } from '@/components/series/SeriesBookList';
 import { SeriesShelf, seriesSlots } from '@/components/series/SeriesShelf';
 import { booksText, progressSentence } from '@/components/series/seriesText';
@@ -346,7 +346,10 @@ function SeriesMissing() {
 /** `/series/[id]`: a series as a shelf, in order, with its gaps (P04-05). */
 export function SeriesDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const state = useSeries(parseSeriesId(id));
+  const seriesId = parseSeriesId(id);
+  const state = useSeries(seriesId);
+  // The page draws this series' gaps: Booky's gap tip is not floated over it.
+  useBookyTopic(seriesId == null ? null : `series:${seriesId}`);
   if (state.status === 'missing') return <SeriesMissing />;
   if (state.status === 'loading') {
     return (

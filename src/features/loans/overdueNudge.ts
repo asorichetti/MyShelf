@@ -23,13 +23,25 @@ export function overdueNudgeMessage(loan: Pick<LoanWithDetails, 'bookTitle' | 'b
   return t('loans.overdue.nudge', { title: loan.bookTitle, borrower: loan.borrowerName, when: overdueWhen(loan, today) });
 }
 
+/** Where an overdue loan is already on show (`topics.ts`): its book's page, its borrower's page and the Loans tab. */
+export function overdueTopics(loan: Pick<LoanWithDetails, 'bookId' | 'borrowerId'>): string[] {
+  return [`book:${loan.bookId}`, `borrower:${loan.borrowerId}`, 'loans'];
+}
+
 /**
  * One `loan-overdue` event per open overdue loan, most overdue first: the
- * engine shows the first it has not yet shown today (keyed by loan id).
+ * engine shows the first it has not yet shown today (keyed by loan id) and
+ * that is not on the screen in front already.
  */
 export function overdueNudgeEvents(overdue: readonly LoanWithDetails[], today: IsoDate): BookyEvent[] {
   return overdue
     .filter((l) => l.returnedOn == null && daysOverdue(l, today) > 0)
     .sort((a, b) => daysOverdue(b, today) - daysOverdue(a, today) || a.id - b.id)
-    .map((loan) => ({ type: 'loan-overdue', key: loan.id, vars: { title: loan.bookTitle, borrower: loan.borrowerName, when: overdueWhen(loan, today) } }));
+    .map((loan) => ({
+      type: 'loan-overdue',
+      key: loan.id,
+      vars: { title: loan.bookTitle, borrower: loan.borrowerName, when: overdueWhen(loan, today) },
+      // Not over a screen that already shows this loan with its "Mark returned": the book, the borrower, Loans.
+      topics: overdueTopics(loan),
+    }));
 }

@@ -17,6 +17,7 @@ import { Celebration } from './Celebration';
 import { HelpSheet } from './HelpSheet';
 import { placement } from './placement';
 import { setTipBox } from './tipBox';
+import { topicOnScreen, useTopicsVersion } from './topics';
 
 import type { TipTestGroup } from './tips';
 
@@ -53,10 +54,13 @@ const testIds: Record<TipTestGroup | 'booky', TipTestIds> = {
 /**
  * Whether a tip waits on this route: every tip on the fixture loader and the
  * onboarding; all but help (asked for, and placed above the bar) on screens
- * whose bottom bar holds the primary action.
+ * whose bottom bar holds the primary action; and a tip about what the screen
+ * already shows (its `topics`, e.g. an overdue nudge on that very book's
+ * page, next to its "Mark returned").
  */
-export function tipWaits(segments: readonly string[], tip: Pick<ShownTip, 'tip'>): boolean {
+export function tipWaits(segments: readonly string[], tip: Pick<ShownTip, 'tip' | 'event'>): boolean {
   if (QUIET_ROUTES.has(segments[0] ?? '')) return true;
+  if (topicOnScreen(tip.event.topics)) return true;
   return BOTTOM_BARS.has(segments.join('/')) && tip.tip.kind !== 'help';
 }
 
@@ -65,8 +69,9 @@ export function tipWaits(segments: readonly string[], tip: Pick<ShownTip, 'tip'>
  * layout). Docks above the tab bar (or the bottom edge on other screens) and
  * steps aside or lifts above the Add book button, the selection bar, the
  * snackbar and the keyboard (`placement`). Hidden while a dialog or sheet is
- * open, on the onboarding and on screens whose bottom bar holds the primary
- * action; the tip waits and shows when it can. A screen-bound tip is put away
+ * open, on the onboarding, on screens whose bottom bar holds the primary
+ * action and over a screen that already shows what the tip is about; the tip
+ * waits and shows when it can. A screen-bound tip is put away
  * when the user moves to another screen.
  *
  * Nothing stays stuck under the tip (PLAN §8): while it floats, the screen's
@@ -76,6 +81,8 @@ export function tipWaits(segments: readonly string[], tip: Pick<ShownTip, 'tip'>
 export function BookyOverlay() {
   const { tip, dismissTip, help, closeHelp } = useBooky();
   const segments = useSegments() as string[];
+  // Screens say what they show as they gain and lose focus.
+  useTopicsVersion();
   const pathname = usePathname();
   const bound = useRef<{ showId: number; path: string } | null>(null);
 

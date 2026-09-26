@@ -33,6 +33,10 @@ describe('overdueNudgeEvents', () => {
     expect(pick(state())).toMatchObject({ key: 'loan-overdue:1', text: '“Dune” was due back from Sam 3 days ago.', title: 'A gentle nudge', action: { label: 'Open loans', href: '/loans' } });
   });
 
+  it('is about the loan’s book, its borrower and the Loans tab, so it is not floated over them', () => {
+    expect(overdueNudgeEvents([dune], TODAY)[0]?.topics).toEqual([`book:${dune.bookId}`, `borrower:${dune.borrowerId}`, 'loans']);
+  });
+
   it('says "yesterday" for one day', () => {
     expect(overdueNudgeMessage(emma, TODAY)).toBe('“Emma” was due back from Priya yesterday.');
     expect(selectFirst(state(), overdueNudgeEvents([emma], TODAY), 0)?.text).toBe(overdueNudgeMessage(emma, TODAY));

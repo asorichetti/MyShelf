@@ -21,5 +21,6 @@ export { HelpSheet } from './HelpSheet';
 export { NUDGE_COOLDOWN_MS, selectTip, type BookyEvent, type EngineState, type SelectedTip } from './engine';
 export { bookyExpressions, expressionDescriptions, type BookyExpression } from './expressions';
 export { bookCount, formatTip } from './format';
+export { topicOnScreen, useBookyTopic } from './topics';
 export { tipById, tips, type BookyTrigger, type HelpScreen, type TipDef } from './tips';
 export { useInlineTip } from './useInlineTip';

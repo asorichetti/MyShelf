@@ -73,6 +73,11 @@ export interface BookyEvent {
   vars?: TipVars;
   /** Handlers for the tip's action ids (`read-cover`, or a screen's own `help-more`). */
   handlers?: Readonly<Record<string, () => void>>;
+  /**
+   * What the tip is about (`book:10`, `loans`): it is not floated over a
+   * screen that already shows one of these (`topics.ts`).
+   */
+  topics?: readonly string[];
 }
 
 /** A tip chosen for an event, with its text filled in. */

@@ -39,7 +39,8 @@ export function subscribeSeriesMilestones(listener: Listener): () => void {
 /** The Booky event for a milestone. */
 export function milestoneEvent(m: SeriesMilestone): BookyEvent {
   return m.type === 'series-gap'
-    ? { type: 'series-gap', key: m.seriesId, vars: { ...gapTipParts(m.seriesName, m.owned, m.gaps), seriesId: m.seriesId } }
+    ? // Not over the series' own page, which draws the gaps (`topics.ts`).
+      { type: 'series-gap', key: m.seriesId, vars: { ...gapTipParts(m.seriesName, m.owned, m.gaps), seriesId: m.seriesId }, topics: [`series:${m.seriesId}`] }
     : { type: 'series-complete', key: m.seriesId, vars: { whole: completionWhole(m.seriesName, m.total), seriesId: m.seriesId } };
 }
 

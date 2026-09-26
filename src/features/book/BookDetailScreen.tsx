@@ -5,7 +5,7 @@ import { StyleSheet, View } from 'react-native';
 import { BookHeader } from '@/components/book/BookHeader';
 import { GenreChips } from '@/components/book/GenreChips';
 import { SummaryText } from '@/components/book/SummaryText';
-import { Booky, HelpButton } from '@/components/booky';
+import { Booky, HelpButton, useBookyTopic } from '@/components/booky';
 import { ConfirmDialog, EmptyState, Heading, IconButton, Menu, Screen, Stamp, Text, useSnackbar } from '@/components/ui';
 import type { BookDetail } from '@/domain';
 import { BookGroupsSection } from '@/features/groups/BookGroupsSection';
@@ -158,7 +158,10 @@ export function BookMissing() {
 /** `/book/[id]`: a book's catalogue card, summary, genres, series, notes and loan status. */
 export function BookDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const state = useBook(parseBookId(id));
+  const bookId = parseBookId(id);
+  const state = useBook(bookId);
+  // The page shows this book's loan with "Mark returned": Booky's nudge about it is not floated over it.
+  useBookyTopic(bookId == null ? null : `book:${bookId}`);
   if (state.status === 'missing') return <BookMissing />;
   if (state.status === 'loading') {
     return (

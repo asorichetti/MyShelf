@@ -2,7 +2,7 @@ import { router } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
-import { Booky, HelpButton } from '@/components/booky';
+import { Booky, HelpButton, useBookyTopic } from '@/components/booky';
 import { LoanRow } from '@/components/loans/LoanRow';
 import { EmptyState, Heading, Screen, SelectField, Text } from '@/components/ui';
 import type { LoanWithDetails } from '@/domain';
@@ -57,6 +57,8 @@ export function LoansScreen() {
   const [section, setSection] = useState<Section>('out');
   const [borrowerId, setBorrowerId] = useState('');
   const returning = useReturnFlow();
+  // Every open loan is here, overdue first: Booky's overdue nudge is not floated over it.
+  useBookyTopic('loans');
 
   const openBook = useCallback((id: number) => router.navigate({ pathname: '/book/[id]', params: { id: String(id) } }), []);
   const openBorrower = useCallback((id: number) => router.navigate({ pathname: '/borrower/[id]', params: { id: String(id) } }), []);

@@ -15,6 +15,7 @@ import {
   type EngineState,
   type SelectedTip,
 } from './engine';
+import { topicOnScreen } from './topics';
 
 /** What Booky remembers between sessions (the app keeps it in `settings`). */
 export interface BookyStoreData {
@@ -127,7 +128,8 @@ export function BookyProvider({ children, store, reloadKey = 0, now = Date.now, 
   const emit = useCallback(
     async (emission: BookyEmission): Promise<ShownTip | null> => {
       await loaded.current;
-      const events: readonly BookyEvent[] = Array.isArray(emission) ? emission : [emission as BookyEvent];
+      // A tip about what the screen in front already shows is not floated over it (it stays unused, for later).
+      const events = (Array.isArray(emission) ? emission : [emission as BookyEvent]).filter((e: BookyEvent) => !topicOnScreen(e.topics));
       const t = clock.current.now();
       const state = { ...engine.current, blocked: isBlocked(), today: clock.current.today() };
       const chosen = selectFirst(state, events, t);

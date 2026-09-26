@@ -2,7 +2,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import { Booky } from '@/components/booky';
+import { Booky, useBookyTopic } from '@/components/booky';
 import { LoanRow } from '@/components/loans/LoanRow';
 import { Button, ConfirmDialog, EmptyState, Heading, IconButton, Screen, Sheet, Text, TextField, useSnackbar } from '@/components/ui';
 import { formatDate, today as todayOf, type Borrower } from '@/domain';
@@ -233,7 +233,10 @@ function BorrowerContent({ detail, hooks }: { detail: BorrowerDetail; hooks: Ret
 /** `/borrower/[id]`: a borrower's card, what they have now and what they borrowed before. */
 export function BorrowerScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const hooks = useBorrower(parseBookId(id));
+  const borrowerId = parseBookId(id);
+  const hooks = useBorrower(borrowerId);
+  // The page lists this borrower's loans with "Mark returned": Booky's nudge about them is not floated over it.
+  useBookyTopic(borrowerId == null ? null : `borrower:${borrowerId}`);
   if (hooks.status === 'missing') {
     return (
       <Screen pageState="error" testID={Testids.borrower.missing} centered edges={[...EDGES]}>
