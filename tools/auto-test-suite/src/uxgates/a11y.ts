@@ -17,7 +17,7 @@ export interface A11yAuditFinding {
 // visibility hidden, or inside aria-hidden) are ignored: a navigator keeps
 // inactive screens mounted, and they are not part of what the user perceives.
 // It must stay self-contained: page.evaluate serializes only this function.
-export function a11yAudit(cfg: { disabled: string[] }): A11yAuditFinding[] {
+export function a11yAudit(cfg: { disabled: string[]; minTargetSize: number }): A11yAuditFinding[] {
   const out: A11yAuditFinding[] = [];
   const off = new Set(cfg.disabled);
   const add = (rule: string, severity: Severity, message: string, detail?: Record<string, unknown>) => {
@@ -111,6 +111,39 @@ export function a11yAudit(cfg: { disabled: string[] }): A11yAuditFinding[] {
     if (!name(el)) add('accessible-name', 'error', describe(el) + ' has no accessible name', { element: describe(el), html: el.outerHTML.slice(0, 200) });
   }
 
+  // Touch targets: every visible, enabled control has a hit area of at least
+  // minTargetSize x minTargetSize CSS px, measured from its bounding box
+  // (react-native-web ignores hitSlop, so the box is the hit area). Exempt: a
+  // link inside running text (display inline, with other text in the same
+  // block), whose size is set by the line it sits in.
+  const min = cfg.minTargetSize;
+  const inlineInText = (el: Element) => {
+    if (getComputedStyle(el).display !== 'inline') return false;
+    const block = el.parentElement;
+    if (!block) return false;
+    const own = text(el);
+    return text(block).replace(own, '').trim().length > 0;
+  };
+  const disabledEl = (el: Element) =>
+    (el as HTMLButtonElement).disabled === true || el.getAttribute('aria-disabled') === 'true' || !!el.closest('fieldset[disabled]');
+  const small: { element: string; name: string; width: number; height: number }[] = [];
+  for (const el of interactive) {
+    if (!shown(el) || disabledEl(el)) continue;
+    const r = el.getBoundingClientRect();
+    if (r.width === 0 && r.height === 0) continue;
+    // Half a pixel of slack for subpixel layout.
+    if (r.width + 0.5 >= min && r.height + 0.5 >= min) continue;
+    const isLink = el.tagName === 'A' || el.getAttribute('role') === 'link';
+    if (isLink && inlineInText(el)) continue;
+    small.push({ element: describe(el), name: name(el).slice(0, 60), width: Math.round(r.width * 10) / 10, height: Math.round(r.height * 10) / 10 });
+  }
+  for (const s of small) {
+    add('target-size', 'error', s.element + ' "' + s.name + '" is ' + s.width + 'x' + s.height + 'px (want at least ' + min + 'x' + min + ')', {
+      ...s,
+      min,
+    });
+  }
+
   // First focusable element is a skip link.
   const focusable = [
     ...document.querySelectorAll(
@@ -147,7 +180,7 @@ export async function a11yGate(page: Page, target: string): Promise<Result> {
   const cfg = getConfig().a11y;
   const findings: RawFinding[] = [];
   try {
-    const raw = await page.evaluate(a11yAudit, { disabled: Object.keys(cfg.disabled) });
+    const raw = await page.evaluate(a11yAudit, { disabled: Object.keys(cfg.disabled), minTargetSize: cfg.minTargetSize });
     for (const f of raw) findings.push({ rule: f.rule, severity: f.severity, message: f.message, evidence: f.detail });
   } catch (err) {
     findings.push({ rule: 'evaluate', message: `a11y gate could not evaluate: ${errorMessage(err)}` });

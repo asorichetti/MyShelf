@@ -25,9 +25,14 @@ export interface RenderConfig {
 }
 
 export interface A11yConfig {
+  /** The smallest touch target (width and height, CSS px) the target-size rule accepts. */
+  minTargetSize: number;
   /** Maps an a11y rule id to the reason it is off. */
   disabled: Record<string, string>;
 }
+
+/** The target-size minimum when the config does not set one: the plan's 48 dp. */
+export const DefaultMinTargetSize = 48;
 
 /** Every rule id, so config typos are caught. */
 export const RenderRules = [
@@ -52,6 +57,7 @@ export const A11yRules = [
   'one-main',
   'nav-labels',
   'html-lang',
+  'target-size',
 ] as const;
 
 /** Silences one console error pattern. Both fields are required. */
@@ -144,14 +150,18 @@ export function parseConfig(raw: unknown, source: string): Config {
     if (!isObject(render)) throw new Error('parse gates config: render must be an object');
     if (!isObject(a11y)) throw new Error('parse gates config: a11y must be an object');
     onlyKeys(render, ['requiredTokens', 'landmarks', 'disabled'], 'render.');
-    onlyKeys(a11y, ['disabled'], 'a11y.');
+    onlyKeys(a11y, ['minTargetSize', 'disabled'], 'a11y.');
+    const minTarget = a11y.minTargetSize ?? DefaultMinTargetSize;
+    if (typeof minTarget !== 'number' || !Number.isFinite(minTarget) || minTarget <= 0) {
+      throw new Error('parse gates config: a11y.minTargetSize must be a positive number of CSS px');
+    }
     const cfg: Config = {
       render: {
         requiredTokens: stringList(render.requiredTokens, 'render.requiredTokens'),
         landmarks: stringList(render.landmarks, 'render.landmarks'),
         disabled: disabledMap(render.disabled, 'render', RenderRules),
       },
-      a11y: { disabled: disabledMap(a11y.disabled, 'a11y', A11yRules) },
+      a11y: { minTargetSize: minTarget, disabled: disabledMap(a11y.disabled, 'a11y', A11yRules) },
     };
     for (const t of cfg.render.requiredTokens) {
       if (!t.startsWith('--')) throw new Error(`render.requiredTokens: "${t}" must be a CSS custom property (start with --)`);

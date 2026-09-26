@@ -304,6 +304,7 @@ screens mounted.
 | `one-main` | Not exactly one visible `main` landmark |
 | `nav-labels` | A `nav` has no `aria-label`, or two share one |
 | `html-lang` | `<html>` has no `lang` |
+| `target-size` | A visible, enabled button, link, tab, menuitem, switch or checkbox has a bounding box smaller than `a11y.minTargetSize` (48 × 48 CSS px, the plan's 48 dp) in either dimension. The finding names the element, its accessible name and its size. Exempt: disabled controls (`disabled`, `aria-disabled="true"`) and a link inside running text (computed `display: inline` with other text in the same block), whose height is set by the line. The box is the hit area: react-native-web ignores `hitSlop`, so a small `Pressable` has to be given a bigger box, not a slop |
 
 The gate does not judge whether alt text is useful or focus order is sensible;
 that needs a human.
@@ -313,7 +314,7 @@ that needs a human.
 ```json
 {
   "render": { "requiredTokens": ["--ms-..."], "landmarks": ["main"], "disabled": { "<rule>": "<reason>" } },
-  "a11y":   { "disabled": { "<rule>": "<reason>" } }
+  "a11y":   { "minTargetSize": 48, "disabled": { "<rule>": "<reason>" } }
 }
 ```
 
@@ -328,6 +329,7 @@ Current decisions for this app:
 |---|---|---|
 | a11y `skip-link` | off | MyShelf is a mobile app rendered with react-native-web: there is no repeated header/nav block before the content, and a skip link has no native iOS/Android equivalent |
 | render `landmarks` | `main` only | Header and footer landmarks are optional in a mobile app shell |
+| a11y `minTargetSize` | 48 | `AGENTS.md` and `PLAN.md` require touch targets of at least 48 dp; one CSS px is one dp in the web build. WCAG 2.5.5 (AAA) asks for 44 and 2.5.8 (AA) for 24, so 48 is stricter than both |
 | render `requiredTokens` | core `--ms-*` tokens | Primary, paper, surface, ink and muted-ink colours, the heading and body fonts, one spacing and one radius step. The theme writes them onto `:root` at runtime; if it stops, the gate fails |
 
 Every other render and a11y rule is on.

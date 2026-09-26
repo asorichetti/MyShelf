@@ -93,6 +93,8 @@ describe('gates config', () => {
     'unknown field': [{ render: { landmark: ['main'] }, a11y: {} }, /unknown field "render\.landmark"/],
     'unknown section': [{ render: {}, a11y: {}, console: {} }, /unknown field "console"/],
     'wrong type': [{ render: { requiredTokens: '--ms-x' }, a11y: {} }, /array of strings/],
+    'zero target size': [{ render: {}, a11y: { minTargetSize: 0 } }, /minTargetSize must be a positive number/],
+    'string target size': [{ render: {}, a11y: { minTargetSize: '48' } }, /minTargetSize must be a positive number/],
   };
   for (const [name, [body, want]] of Object.entries(rejects)) {
     test(`rejects ${name}`, () => {
@@ -101,6 +103,18 @@ describe('gates config', () => {
       assert.throws(() => loadConfig(p), want);
     });
   }
+
+  test('minTargetSize defaults to the 48 dp touch target, and the shipped config says 48 too', () => {
+    assert.equal(parseConfig({}, 'x').a11y.minTargetSize, 48);
+    assert.equal(parseConfig({ a11y: { minTargetSize: 44 } }, 'x').a11y.minTargetSize, 44);
+    loadConfig('');
+    assert.equal(getConfig().a11y.minTargetSize, 48);
+  });
+
+  test('target-size is a known a11y rule, so it can be disabled only with a reason', () => {
+    assert.deepEqual(parseConfig({ a11y: { disabled: { 'target-size': 'why' } } }, 'x').a11y.disabled, { 'target-size': 'why' });
+    assert.throws(() => parseConfig({ a11y: { disabled: { 'target-size': ' ' } } }, 'x'), /a11y\.disabled\.target-size: a reason is required/);
+  });
 
   test('a rejected file leaves the active config unchanged', () => {
     loadConfig('');

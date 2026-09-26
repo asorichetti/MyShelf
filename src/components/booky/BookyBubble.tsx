@@ -65,7 +65,7 @@ export function BookyBubble({
               borderColor: colors.primary,
               borderRadius: radii.lg,
               padding: spacing.md,
-              paddingRight: onDismiss ? spacing.xxl + spacing.xs : spacing.md,
+              paddingRight: onDismiss ? theme.sizes.touchTarget : spacing.md,
               gap: spacing.xs,
               boxShadow: theme.elevation.raised,
             },
@@ -91,25 +91,31 @@ export function BookyBubble({
             </View>
           ) : null}
           {onDismiss ? (
+            // The hit area is a full touch target; only the circle inside it is
+            // drawn at the smaller icon-button size. (react-native-web ignores
+            // hitSlop, so the box itself must be big enough.)
             <Pressable
               role="button"
               accessibilityLabel="Dismiss Booky's tip"
               onPress={onDismiss}
               testID={dismissTestID}
-              hitSlop={spacing.sm}
-              style={({ pressed }) => [
-                styles.close,
-                {
-                  top: spacing.xs,
-                  right: spacing.xs,
-                  width: theme.sizes.iconButton,
-                  height: theme.sizes.iconButton,
-                  borderRadius: radii.pill,
-                  backgroundColor: pressed ? colors.surfaceTint : 'transparent',
-                },
-              ]}
+              style={[styles.close, { width: theme.sizes.touchTarget, height: theme.sizes.touchTarget }]}
             >
-              <MaterialCommunityIcons name="close" size={theme.sizes.icon} color={colors.inkMuted} />
+              {({ pressed }) => (
+                <View
+                  style={[
+                    styles.closeCircle,
+                    {
+                      width: theme.sizes.iconButton,
+                      height: theme.sizes.iconButton,
+                      borderRadius: radii.pill,
+                      backgroundColor: pressed ? colors.surfaceTint : 'transparent',
+                    },
+                  ]}
+                >
+                  <MaterialCommunityIcons name="close" size={theme.sizes.icon} color={colors.inkMuted} />
+                </View>
+              )}
             </Pressable>
           ) : null}
         </View>
@@ -134,5 +140,6 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   actions: { flexDirection: 'row', flexWrap: 'wrap' },
-  close: { position: 'absolute', alignItems: 'center', justifyContent: 'center' },
+  close: { position: 'absolute', top: 0, right: 0, alignItems: 'center', justifyContent: 'center' },
+  closeCircle: { alignItems: 'center', justifyContent: 'center' },
 });

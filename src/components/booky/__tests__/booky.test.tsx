@@ -78,6 +78,12 @@ describe('BookyBubble', () => {
     expect(node?.props['aria-live']).toBe('polite');
   });
 
+  it('gives the dismiss button a full touch target', () => {
+    renderWithTheme(<BookyBubble message="Hi" onDismiss={() => {}} />);
+    const button = screen.getByRole('button', { name: "Dismiss Booky's tip" });
+    expect(button).toHaveStyle({ width: 48, height: 48 });
+  });
+
   it('has no dismiss button without onDismiss', () => {
     renderWithTheme(<BookyBubble message="Hi" />);
     expect(screen.queryByRole('button', { name: "Dismiss Booky's tip" })).toBeNull();

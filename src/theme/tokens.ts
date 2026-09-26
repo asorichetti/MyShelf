@@ -189,7 +189,7 @@ export const spacing = {
 export const sizes = {
   /** Minimum touch target (dp). */
   touchTarget: 48,
-  /** Small icon button inside another control (e.g. a bubble's close button). */
+  /** Drawn size of a small icon button inside another control (e.g. a bubble's close button); its pressable box stays touchTarget. */
   iconButton: 32,
   icon: 20,
   /** Tab bar height above the bottom safe-area inset. */

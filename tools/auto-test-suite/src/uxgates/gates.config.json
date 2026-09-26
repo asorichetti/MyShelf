@@ -17,6 +17,7 @@
     "disabled": {}
   },
   "a11y": {
+    "minTargetSize": 48,
     "disabled": {
       "skip-link": "React Native Web mobile app: there is no repeated header or nav block before the content to skip past, and a skip link has no native iOS/Android equivalent. Tab bars are reached by the platform's own navigation."
     }
