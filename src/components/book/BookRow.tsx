@@ -3,21 +3,26 @@ import { memo, type ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { shelfLoanLabel } from '@/components/loans/ShelfLoanStamp';
-import { CatalogueCard, Text } from '@/components/ui';
-import { formatSeriesLabel, joinNames, today as todayOf, type BookListItem } from '@/domain';
+import { CatalogueCard, StarRatingDisplay, Text } from '@/components/ui';
+import { formatSeriesLabel, joinNames, ratedPhrase, today as todayOf, type BookListItem } from '@/domain';
 import { Testids } from '@/testing/testids.gen';
 import { useTheme } from '@/theme';
 
 import { CoverImage } from './CoverImage';
 
-/** "Mort, by Terry Pratchett, 1987" (+ ", on loan to Sam"): what a screen reader says for a row. */
+/**
+ * "Mort, by Terry Pratchett, 1987" (+ ", rated 4 out of 5", + ", on loan to
+ * Sam"): what a screen reader says for a row, a cover or a spine.
+ */
 export function bookRowLabel(
-  item: Pick<BookListItem, 'title' | 'authors' | 'publicationYear' | 'onLoan' | 'loanBorrower' | 'loanDueOn'>,
+  item: Pick<BookListItem, 'title' | 'authors' | 'publicationYear' | 'onLoan' | 'loanBorrower' | 'loanDueOn' | 'rating'>,
   today: string = todayOf(),
 ): string {
   const parts = [item.title];
   if (item.authors.length) parts.push(`by ${joinNames(item.authors)}`);
   if (item.publicationYear != null) parts.push(String(item.publicationYear));
+  const rated = ratedPhrase(item.rating);
+  if (rated) parts.push(rated);
   const loan = shelfLoanLabel(item, today);
   if (loan) parts.push(loan);
   return parts.join(', ');
@@ -36,8 +41,8 @@ export interface BookRowProps {
 
 /**
  * One book on the Shelf, as a compact catalogue card: cover thumbnail, title
- * in Lora, author and year typed in Courier Prime, a series badge and any
- * `badges` (the Shelf passes the loan stamp).
+ * in Lora, author and year typed in Courier Prime, the reader's stars, a
+ * series badge and any `badges` (the Shelf passes the loan stamp).
  */
 export const BookRow = memo(function BookRow({ item, onPress, onLongPress, selected, badges }: BookRowProps) {
   const { colors, spacing, radii, sizes } = useTheme();
@@ -66,13 +71,14 @@ export const BookRow = memo(function BookRow({ item, onPress, onLongPress, selec
       checked={selected}
       accessibilityLabel={bookRowLabel(item)}
       meta={
-        item.publicationYear != null || series || badges ? (
+        item.publicationYear != null || series || item.rating != null || badges ? (
           <View style={[styles.meta, { gap: spacing.sm, marginTop: spacing.xxs }]}>
             {item.publicationYear != null ? (
               <Text variant="mono" color="inkMuted">
                 {item.publicationYear}
               </Text>
             ) : null}
+            <StarRatingDisplay value={item.rating} />
             {series ? (
               <View style={[styles.badge, { backgroundColor: colors.primaryContainer, borderRadius: radii.pill, paddingHorizontal: spacing.sm }]}>
                 <Text variant="caption" color="onPrimaryContainer" numberOfLines={1}>

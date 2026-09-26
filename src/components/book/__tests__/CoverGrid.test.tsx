@@ -19,6 +19,12 @@ const book = (id: number, title: string, extra: Partial<BookListItem> = {}): Boo
 });
 
 describe('CoverGrid', () => {
+  it('names and shows a rated book’s stars under its title', () => {
+    renderWithTheme(<CoverGridRow items={[book(1, 'Mort', { rating: 5 })]} columns={3} width={354} onPress={jest.fn()} />);
+    expect(screen.getByRole('button', { name: 'Mort, by Terry Pratchett, 1987, rated 5 out of 5' })).toBeOnTheScreen();
+    expect(screen.getByTestId(Testids.rating.display, { includeHiddenElements: true })).toBeTruthy();
+  });
+
   it('uses three columns on a phone and more on wider screens', () => {
     expect(coverColumns(354)).toBe(3);
     expect(coverColumns(700)).toBe(5);
@@ -38,6 +44,7 @@ describe('CoverGrid', () => {
     expect(screen.getByRole('button', { name: 'Mort, by Terry Pratchett, 1987' })).toBeOnTheScreen();
     expect(screen.getByRole('button', { name: 'Dune, by Terry Pratchett, 1987, on loan' })).toBeOnTheScreen();
     expect(screen.getByText('On loan')).toBeOnTheScreen();
+    expect(screen.queryByTestId(Testids.rating.display, { includeHiddenElements: true })).toBeNull();
     // A real cover for Mort, the generated one for Dune.
     expect(screen.getAllByTestId(Testids.cover.image, { includeHiddenElements: true })).toHaveLength(1);
     expect(screen.getAllByTestId(Testids.cover.fallback, { includeHiddenElements: true })).toHaveLength(1);

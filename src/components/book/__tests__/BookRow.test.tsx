@@ -43,9 +43,26 @@ describe('bookRowLabel', () => {
     );
     expect(bookRowLabel({ ...mort, authors: [], publicationYear: null })).toBe('Mort');
   });
+
+  it('says the rating after the year and before a loan', () => {
+    expect(bookRowLabel({ ...mort, rating: 4 })).toBe('Mort, by Terry Pratchett, 1987, rated 4 out of 5');
+    expect(bookRowLabel({ ...mort, rating: null })).toBe('Mort, by Terry Pratchett, 1987');
+    expect(bookRowLabel({ ...mort, rating: 1, onLoan: true, loanBorrower: 'Sam', loanDueOn: '2026-06-26' }, '2026-06-15')).toBe(
+      'Mort, by Terry Pratchett, 1987, rated 1 out of 5, on loan to Sam',
+    );
+  });
 });
 
 describe('BookRow', () => {
+  it('shows small stars for a rated book, and none for an unrated one', async () => {
+    await renderRow({ ...mort, rating: 3 });
+    expect(screen.getByRole('button', { name: 'Mort, by Terry Pratchett, 1987, rated 3 out of 5' })).toBeOnTheScreen();
+    expect(screen.getByTestId(Testids.rating.display, { includeHiddenElements: true })).toBeTruthy();
+    screen.unmount();
+    await renderRow(mort);
+    expect(screen.queryByTestId(Testids.rating.display, { includeHiddenElements: true })).toBeNull();
+  });
+
   it('is one button named by its label that opens the book', async () => {
     const onPress = await renderRow(mort);
     const row = screen.getByRole('button', { name: 'Mort, by Terry Pratchett, 1987' });

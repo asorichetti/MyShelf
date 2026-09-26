@@ -2,7 +2,7 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { memo } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
-import { Text } from '@/components/ui';
+import { StarRatingDisplay, Text } from '@/components/ui';
 import { joinNames, type BookListItem } from '@/domain';
 import { Testids } from '@/testing/testids.gen';
 import { useTheme } from '@/theme';
@@ -40,7 +40,8 @@ export interface CoverGridRowProps extends ShelfItemHandlers {
 
 /**
  * One row of the Shelf's "Covers" view: real cover art front and centre (the
- * generated cover only when there is none), with the title underneath. Each
+ * generated cover only when there is none), with the title and the reader's
+ * stars underneath. Each
  * cell is a button named like a list row ("Mort, by Terry Pratchett, 1987"),
  * or a checkbox while selecting.
  */
@@ -100,6 +101,7 @@ export const CoverGridRow = memo(function CoverGridRow({ items, columns, width, 
             <Text variant="caption" numberOfLines={2} style={{ fontFamily: theme.fonts.heading }}>
               {item.title}
             </Text>
+            <StarRatingDisplay value={item.rating} size={12} />
           </Pressable>
         );
       })}
