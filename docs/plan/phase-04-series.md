@@ -24,12 +24,13 @@ Books know which series they belong to and where they sit in it. The user can se
 
 ## Task cards
 
-### P04-01 Series repository
+### P04-01 Series repository — done
 
 - **Description:** `series` repository: `list()` with counts (`owned`, `maxPosition`, `total_count`), `get(id)` with books ordered by `series_position` (nulls last, then title), `findOrCreate(name)` (case- and article-insensitive match via `normaliseTitle`), `rename`, `setTotalCount`, `merge(sourceId, targetId)` (moves books, deletes source, in a transaction), `delete(id)` (books keep existing, `series_id` → null). `gaps(seriesId)` returns missing integer positions from 1 to `max(total_count, maxPosition)`.
 - **Files:** `src/db/repositories/series.ts`, `src/domain/seriesGaps.ts`.
 - **Acceptance:** merge preserves positions; gaps ignore fractional positions (2.5 is a bonus, not a gap-filler); "The Expanse" and "Expanse" resolve to the same series.
 - **Tests:** `src/db/repositories/__tests__/series.test.ts`, `src/domain/__tests__/seriesGaps.test.ts`.
+- **Delivered:** the repository keeps its `…Series` naming (`seriesRepo.createSeries`, `getSeries`, `listSeries`, `deleteSeries`, `setBookSeries` existed from P00-14). Added: `listSeriesWithStats(db, { sort: 'name' | 'recent' })` returning `SeriesSummary` (`bookCount`, `owned`, `maxPosition`, `total`, `missing`, `lastAddedAt`), `getSeriesWithBooks(id)`, `renameSeries`, `setSeriesTotalCount` (whole number above 0 or null, else `RangeError`), `mergeSeries(sourceId, targetId)` (one transaction; the target keeps its total or takes the source's; returns null for a missing or identical series) and `seriesGapsFor(id)`. `findSeriesByName` / `findOrCreateSeries` now match on `normaliseText` (case, accents, punctuation, leading article), because `normaliseTitle` does not exist; the oldest near-duplicate wins. The pure rules are in `src/domain/seriesGaps.ts`: `seriesGaps`, `seriesLength` and `seriesProgress`. The run is 1…max(`total_count`, highest position rounded down): a 2.5 fills no gap and does not count as owned, but implies a #2. `owned` counts distinct whole positions, so "5 of 9 owned, 2 missing" always adds up; `bookCount` counts every linked book. `complete` needs a user-set total.
 
 ### P04-02 Series picker in the book form
 

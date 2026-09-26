@@ -9,6 +9,7 @@ export * from './isbn';
 export * from './languages';
 export * from './loan';
 export * from './series';
+export * from './seriesGaps';
 export * from './seriesParser';
 export * from './settings';
 export * from './text';

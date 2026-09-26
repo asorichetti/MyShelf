@@ -1,6 +1,6 @@
-import type { Book, BookGroup, Series } from '@/domain';
+import { normaliseText, seriesGaps, seriesProgress, type Book, type BookGroup, type Series } from '@/domain';
 
-import { BOOK_COLUMNS, foldBookGroups, toBook, type BookRow } from './shared';
+import { BOOK_COLUMNS, foldBookGroups, NOW_SQL, toBook, type BookRow } from './shared';
 
 import type { Db } from '../types';
 
@@ -26,11 +26,16 @@ export async function getSeries(db: Db, id: number): Promise<Series | null> {
   return row ? toSeries(row) : null;
 }
 
+/**
+ * Finds a series by name, ignoring case, accents, punctuation and a leading
+ * article, so "The Expanse" and "expanse" are the same series. The oldest
+ * match wins if the table already holds near-duplicates.
+ */
 export async function findSeriesByName(db: Db, name: string): Promise<Series | null> {
-  const row = await db.get<SeriesRow>(
-    'SELECT id, name, total_count FROM series WHERE name = ? COLLATE NOCASE ORDER BY id LIMIT 1',
-    [name.trim()],
-  );
+  const key = normaliseText(name);
+  if (!key) return null;
+  const rows = await db.all<SeriesRow>('SELECT id, name, total_count FROM series ORDER BY id');
+  const row = rows.find((r) => normaliseText(r.name) === key);
   return row ? toSeries(row) : null;
 }
 
@@ -51,14 +56,106 @@ export async function updateSeries(db: Db, id: number, patch: Partial<Pick<Serie
   return next;
 }
 
+/** Renames a series. Returns null when it does not exist. */
+export async function renameSeries(db: Db, id: number, name: string): Promise<Series | null> {
+  if (!name.trim()) throw new RangeError('A series needs a name');
+  return updateSeries(db, id, { name });
+}
+
+/** Sets (or with null, forgets) how many books the series has. */
+export async function setSeriesTotalCount(db: Db, id: number, totalCount: number | null): Promise<Series | null> {
+  if (totalCount != null && !(Number.isInteger(totalCount) && totalCount > 0)) {
+    throw new RangeError(`A series total must be a whole number above 0, got ${totalCount}`);
+  }
+  return updateSeries(db, id, { totalCount });
+}
+
+/**
+ * Moves every book from `sourceId` into `targetId` (positions unchanged) and
+ * deletes the source, atomically. The target keeps its total count, or takes
+ * the source's when it has none. Returns the target, or null when either
+ * series is missing or they are the same.
+ */
+export async function mergeSeries(db: Db, sourceId: number, targetId: number): Promise<Series | null> {
+  if (sourceId === targetId) return null;
+  return db.transaction(async (tx) => {
+    const source = await getSeries(tx, sourceId);
+    const target = await getSeries(tx, targetId);
+    if (!source || !target) return null;
+    await tx.run(`UPDATE books SET series_id = ?, updated_at = ${NOW_SQL} WHERE series_id = ?`, [targetId, sourceId]);
+    const totalCount = target.totalCount ?? source.totalCount;
+    if (totalCount !== target.totalCount) await tx.run('UPDATE series SET total_count = ? WHERE id = ?', [totalCount, targetId]);
+    await tx.run('DELETE FROM series WHERE id = ?', [sourceId]);
+    return { ...target, totalCount };
+  });
+}
+
 /** Deletes a series; its books stay in the catalogue as standalones. */
 export async function deleteSeries(db: Db, id: number): Promise<boolean> {
   return (await db.run('DELETE FROM series WHERE id = ?', [id])).changes > 0;
 }
 
+export interface SeriesSummary extends Series {
+  /** Every book linked to the series, numbered or not. */
+  bookCount: number;
+  /** Distinct whole positions owned (see `seriesProgress`). */
+  owned: number;
+  /** Highest position owned, fractional ones included. */
+  maxPosition: number | null;
+  /** Known length of the series: max(total count, highest whole position). */
+  total: number | null;
+  /** Number of whole positions missing up to `total`. */
+  missing: number;
+  /** When the newest book in the series was added (ISO timestamp). */
+  lastAddedAt: string | null;
+}
+
+export type SeriesSort = 'name' | 'recent';
+
+/** Every series with its counts, A-Z or most recently added to first. */
+export async function listSeriesWithStats(db: Db, { sort = 'name' }: { sort?: SeriesSort } = {}): Promise<SeriesSummary[]> {
+  const rows = await db.all<SeriesRow & { book_count: number; last_added_at: string | null }>(
+    `SELECT s.id, s.name, s.total_count, COUNT(b.id) AS book_count, MAX(b.created_at) AS last_added_at
+     FROM series s LEFT JOIN books b ON b.series_id = s.id
+     GROUP BY s.id
+     ORDER BY ${sort === 'recent' ? 'last_added_at IS NULL, last_added_at DESC,' : ''} s.name COLLATE NOCASE, s.id`,
+  );
+  const positions = await db.all<{ series_id: number; series_position: number }>(
+    'SELECT series_id, series_position FROM books WHERE series_id IS NOT NULL AND series_position IS NOT NULL',
+  );
+  const bySeries = new Map<number, number[]>();
+  for (const p of positions) bySeries.set(p.series_id, [...(bySeries.get(p.series_id) ?? []), p.series_position]);
+  return rows.map((r) => {
+    const progress = seriesProgress({ positions: bySeries.get(r.id) ?? [], totalCount: r.total_count });
+    return {
+      ...toSeries(r),
+      bookCount: r.book_count,
+      owned: progress.owned,
+      maxPosition: progress.maxPosition,
+      total: progress.total,
+      missing: progress.gaps.length,
+      lastAddedAt: r.last_added_at,
+    };
+  });
+}
+
+/** A series with its books in reading order, or null. */
+export async function getSeriesWithBooks(db: Db, id: number): Promise<{ series: Series; books: Book[] } | null> {
+  const series = await getSeries(db, id);
+  return series ? { series, books: await listBooksInSeries(db, id) } : null;
+}
+
+/** Missing whole positions in a series (see `seriesGaps`); empty when it does not exist. */
+export async function seriesGapsFor(db: Db, id: number): Promise<number[]> {
+  const series = await getSeries(db, id);
+  if (!series) return [];
+  const rows = await db.all<{ series_position: number | null }>('SELECT series_position FROM books WHERE series_id = ?', [id]);
+  return seriesGaps({ positions: rows.map((r) => r.series_position), totalCount: series.totalCount });
+}
+
 /** Puts a book in a series at a position (or takes it out with seriesId null). */
 export async function setBookSeries(db: Db, bookId: number, seriesId: number | null, position: number | null = null): Promise<void> {
-  await db.run("UPDATE books SET series_id = ?, series_position = ?, updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now') WHERE id = ?", [
+  await db.run(`UPDATE books SET series_id = ?, series_position = ?, updated_at = ${NOW_SQL} WHERE id = ?`, [
     seriesId,
     seriesId == null ? null : position,
     bookId,
