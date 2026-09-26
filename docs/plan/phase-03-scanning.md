@@ -176,6 +176,17 @@ The headline feature: point the phone at a book and get it onto the shelf with t
 | Camera cannot be automated in CI | web stub + E2E deep link injection; manual-assisted Maestro flows before phase close |
 | Edition lists are long for popular works | filters, sort by year, show first 20 with "show more" |
 
+## Regression gate
+
+Before any card in this phase is ticked, and before the phase is closed, both must be green locally and in CI:
+
+```bash
+npm run check                    # selectors:check + typecheck + Jest (+ lint once P00-20 lands)
+auto-test-suite smoke --ux-gates fail     # via `npm run ui -- smoke --ux-gates fail` once P00-17 lands
+```
+
+Phase close also requires every journey tagged `p03` to pass (`auto-test-suite journey --tag p03 --ux-gates fail`) and the Maestro flows above to have been run on an emulator or device, with the result noted in the pull request.
+
 ## Exit criteria
 
 - On a physical Android device: scanning an ISBN barcode adds the correct edition in ≤ 3 taps; reading a cover finds the book for most modern titles.

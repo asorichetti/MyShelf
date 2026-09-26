@@ -221,6 +221,17 @@ The existing `home` group is removed when P00-11 replaces the home screen (updat
 | Fonts not loaded before first render → layout shift in screenshots | keep splash until fonts load; `pagestate` gate waits for `page-content` |
 | axe-core false positives on react-native-web markup | reviewed allowlist in the auto-test-suite, each entry with a reason |
 
+## Regression gate
+
+Before any card in this phase is ticked, and before the phase is closed, both must be green locally and in CI:
+
+```bash
+npm run check                    # selectors:check + typecheck + Jest (+ lint once P00-20 lands)
+auto-test-suite smoke --ux-gates fail     # via `npm run ui -- smoke --ux-gates fail` once P00-17 lands
+```
+
+Phase close also requires every journey tagged `p00` to pass (`auto-test-suite journey --tag p00 --ux-gates fail`) and the Maestro flows above to have been run on an emulator or device, with the result noted in the pull request.
+
 ## Exit criteria
 
 - App launches on Android emulator and web into the five themed tabs with Booky in each empty state.

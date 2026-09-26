@@ -145,6 +145,17 @@ Never lose a book to a friend again. The user records who borrowed a book and wh
 | Notification permission fatigue | off by default; ask only when the user enables it |
 | Personal data about borrowers | stays local; never sent anywhere; excluded from CSV export unless the user ticks "include loans" (P08-04) |
 
+## Regression gate
+
+Before any card in this phase is ticked, and before the phase is closed, both must be green locally and in CI:
+
+```bash
+npm run check                    # selectors:check + typecheck + Jest (+ lint once P00-20 lands)
+auto-test-suite smoke --ux-gates fail     # via `npm run ui -- smoke --ux-gates fail` once P00-17 lands
+```
+
+Phase close also requires every journey tagged `p05` to pass (`auto-test-suite journey --tag p05 --ux-gates fail`) and the Maestro flows above to have been run on an emulator or device, with the result noted in the pull request.
+
 ## Exit criteria
 
 - Lend, return, history, borrower views and overdue detection work on Android and web.

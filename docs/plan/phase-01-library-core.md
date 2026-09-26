@@ -174,6 +174,17 @@ Repeated elements (rows, chips) share one id; tests pick by index or by containe
 | Slow list with thousands of books | `large` fixture + `getItemLayout`, memoised rows; FTS in P09-03 if needed |
 | Form complexity on small screens | sections with sticky save button; tested at phone viewport and 200 % font scale |
 
+## Regression gate
+
+Before any card in this phase is ticked, and before the phase is closed, both must be green locally and in CI:
+
+```bash
+npm run check                    # selectors:check + typecheck + Jest (+ lint once P00-20 lands)
+auto-test-suite smoke --ux-gates fail     # via `npm run ui -- smoke --ux-gates fail` once P00-17 lands
+```
+
+Phase close also requires every journey tagged `p01` to pass (`auto-test-suite journey --tag p01 --ux-gates fail`) and the Maestro flows above to have been run on an emulator or device, with the result noted in the pull request.
+
 ## Exit criteria
 
 - A user can add, view, edit, search, sort and delete books entirely offline on Android and web.

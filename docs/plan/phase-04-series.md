@@ -125,6 +125,17 @@ Books know which series they belong to and where they sit in it. The user can se
 | Unknown total counts | infer from max position; user can set total; gaps only up to known max |
 | Omnibus editions covering several positions | out of scope for v1; note field; revisit with ADR if users need ranges |
 
+## Regression gate
+
+Before any card in this phase is ticked, and before the phase is closed, both must be green locally and in CI:
+
+```bash
+npm run check                    # selectors:check + typecheck + Jest (+ lint once P00-20 lands)
+auto-test-suite smoke --ux-gates fail     # via `npm run ui -- smoke --ux-gates fail` once P00-17 lands
+```
+
+Phase close also requires every journey tagged `p04` to pass (`auto-test-suite journey --tag p04 --ux-gates fail`) and the Maestro flows above to have been run on an emulator or device, with the result noted in the pull request.
+
 ## Exit criteria
 
 - Series can be assigned, detected, confirmed, browsed, merged and completed on Android and web.

@@ -157,6 +157,17 @@ Let the user browse the collection the way they think about it: by genre, series
 | Drag-to-reorder accessibility | buttons are the primary mechanism; drag is optional |
 | Spine text illegible | min font size, AA contrast on spine colours tested, full title in label |
 
+## Regression gate
+
+Before any card in this phase is ticked, and before the phase is closed, both must be green locally and in CI:
+
+```bash
+npm run check                    # selectors:check + typecheck + Jest (+ lint once P00-20 lands)
+auto-test-suite smoke --ux-gates fail     # via `npm run ui -- smoke --ux-gates fail` once P00-17 lands
+```
+
+Phase close also requires every journey tagged `p06` to pass (`auto-test-suite journey --tag p06 --ux-gates fail`) and the Maestro flows above to have been run on an emulator or device, with the result noted in the pull request.
+
 ## Exit criteria
 
 - All grouping modes, user groups, view modes and filters work on Android and web.

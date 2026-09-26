@@ -165,6 +165,17 @@ Given an ISBN or a title/author query, fetch book metadata from Open Library and
 | Summaries contain HTML or are very long | strip + `briefSummary()` with tests |
 | Web CORS | both APIs allow browser CORS for GET; covers loaded as images; fixtures in tests anyway |
 
+## Regression gate
+
+Before any card in this phase is ticked, and before the phase is closed, both must be green locally and in CI:
+
+```bash
+npm run check                    # selectors:check + typecheck + Jest (+ lint once P00-20 lands)
+auto-test-suite smoke --ux-gates fail     # via `npm run ui -- smoke --ux-gates fail` once P00-17 lands
+```
+
+Phase close also requires every journey tagged `p02` to pass (`auto-test-suite journey --tag p02 --ux-gates fail`) and the Maestro flows above to have been run on an emulator or device, with the result noted in the pull request.
+
 ## Exit criteria
 
 - ISBN lookup and online search prefill the add form on Android and web.
