@@ -116,7 +116,8 @@ export function ShelfScreen() {
   const chips = filterChips(filters, (id) => genreNames.get(id), languageName);
   const sortDescription = describeSort(shelf.sort.levels, sortKeyRegistry, groupBy);
   const preset = matchingPreset(shelf.sort.levels, shelf.presets);
-  const sortLabel = preset ? presetName(preset) : shelf.sort.levels.length === 1 ? sortDescription : t('sort.summary.custom');
+  // The button names the sort itself; whether it also orders the sections is for the summary line to say.
+  const sortLabel = preset ? presetName(preset) : shelf.sort.levels.length === 1 ? describeSort(shelf.sort.levels, sortKeyRegistry) : t('sort.summary.custom');
 
   // Width the rows can use (the list pads 2 px each side).
   const width = (listWidth || Math.min(window.width, sizes.contentMaxWidth) - spacing.lg * 2) - spacing.xxs * 2;
