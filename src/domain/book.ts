@@ -2,7 +2,7 @@ export const bookFormats = ['hardcover', 'paperback', 'ebook', 'audiobook', 'oth
 export type BookFormat = (typeof bookFormats)[number];
 
 /** Where a book's metadata came from. */
-export type BookSource = 'manual' | 'barcode' | 'cover' | 'openlibrary' | 'googlebooks' | (string & {});
+export type BookSource = 'openlibrary' | 'googlebooks' | 'manual' | 'import';
 
 export interface Book {
   id: number;
@@ -39,11 +39,4 @@ export type BookPatch = Partial<Editable>;
 export interface BookGroup<K> {
   key: K | null;
   books: Book[];
-}
-
-/** Strips spaces and hyphens and upper-cases a trailing X. Returns null when empty. */
-export function normalizeIsbn(raw: string | null | undefined): string | null {
-  if (raw == null) return null;
-  const cleaned = raw.replace(/[^0-9Xx]/g, '').toUpperCase();
-  return cleaned.length ? cleaned : null;
 }

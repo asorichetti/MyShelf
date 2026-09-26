@@ -1,4 +1,4 @@
-export type AuthorRole = 'author' | 'editor' | 'illustrator' | 'translator' | 'narrator' | (string & {});
+export type AuthorRole = 'author' | 'illustrator' | 'translator' | 'editor';
 
 export interface Author {
   id: number;
@@ -17,10 +17,21 @@ export interface BookAuthorLink {
   role?: AuthorRole;
 }
 
-/** "J. R. R. Tolkien" -> "Tolkien, J. R. R."; single names are returned unchanged. */
+const PARTICLES = new Set(['da', 'de', 'del', 'della', 'der', 'di', 'du', 'la', 'le', 'van', 'von']);
+const SUFFIX = /^(jr|sr|ii|iii|iv)\.?$/i;
+
+/**
+ * Library-style sort key: "Terry Pratchett" -> "Pratchett, Terry",
+ * "Ursula K. Le Guin" -> "Le Guin, Ursula K.", "Martin Luther King Jr." ->
+ * "King, Martin Luther, Jr.". Single names are returned unchanged.
+ */
 export function toSortName(name: string): string {
   const parts = name.trim().split(/\s+/).filter(Boolean);
-  if (parts.length < 2) return parts.join(' ');
-  const last = parts[parts.length - 1];
-  return `${last}, ${parts.slice(0, -1).join(' ')}`;
+  const suffix = parts.length > 2 && SUFFIX.test(parts[parts.length - 1]) ? parts.pop()! : null;
+  if (parts.length < 2) return [...parts, ...(suffix ? [suffix] : [])].join(' ');
+  let start = parts.length - 1;
+  while (start > 1 && PARTICLES.has(parts[start - 1].toLowerCase())) start--;
+  const surname = parts.slice(start).join(' ');
+  const given = parts.slice(0, start).join(' ');
+  return suffix ? `${surname}, ${given}, ${suffix}` : `${surname}, ${given}`;
 }

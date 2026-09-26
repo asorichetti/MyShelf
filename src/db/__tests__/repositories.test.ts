@@ -1,3 +1,6 @@
+/**
+ * @jest-environment node
+ */
 import {
   authorsRepo,
   BookAlreadyOnLoanError,
@@ -10,12 +13,12 @@ import {
   settingsRepo,
   type Db,
 } from '@/db';
-import type { Book } from '@/domain';
-import { openTestDatabase } from '@/testing/db';
+import { settingDefaults, type Book } from '@/domain';
+import { createTestDb } from '@/testing/createTestDb';
 
 let db: Db;
 beforeEach(async () => {
-  db = await openTestDatabase();
+  db = await createTestDb();
 });
 afterEach(() => db.close());
 
@@ -56,7 +59,7 @@ describe('books repository', () => {
       format: 'paperback' as const,
       seriesId: s.id,
       seriesPosition: 8,
-      source: 'openlibrary',
+      source: 'openlibrary' as const,
       sourceId: 'OL123M',
       notes: 'Signed',
     };
@@ -526,14 +529,29 @@ describe('borrowers and loans repository', () => {
 });
 
 describe('settings repository', () => {
-  it('gets, sets, overwrites, lists and deletes', async () => {
-    expect(await settingsRepo.getSetting(db, 'theme')).toBeNull();
-    await settingsRepo.setSetting(db, 'theme', 'light');
-    await settingsRepo.setSetting(db, 'theme', 'dark');
-    await settingsRepo.setSetting(db, 'booky.tips', 'on');
-    expect(await settingsRepo.getSetting(db, 'theme')).toBe('dark');
-    expect(await settingsRepo.listSettings(db)).toEqual({ 'booky.tips': 'on', theme: 'dark' });
-    expect(await settingsRepo.deleteSetting(db, 'theme')).toBe(true);
-    expect(await settingsRepo.deleteSetting(db, 'theme')).toBe(false);
+  it('returns defaults when unset', async () => {
+    expect(await settingsRepo.getSetting(db, 'bookyMode')).toBe(settingDefaults.bookyMode);
+    expect(await settingsRepo.getAllSettings(db)).toEqual(settingDefaults);
+  });
+
+  it('round-trips JSON-encoded values and overwrites', async () => {
+    await settingsRepo.setSetting(db, 'bookyMode', 'quiet');
+    await settingsRepo.setSetting(db, 'bookyMode', 'off');
+    await settingsRepo.setSetting(db, 'mutedTips', ['empty-shelf', 'first-scan']);
+    expect(await settingsRepo.getSetting(db, 'bookyMode')).toBe('off');
+    expect(await settingsRepo.getSetting(db, 'mutedTips')).toEqual(['empty-shelf', 'first-scan']);
+    expect(await db.get('SELECT value FROM settings WHERE key = ?', ['mutedTips'])).toEqual({
+      value: '["empty-shelf","first-scan"]',
+    });
+    expect(await settingsRepo.getAllSettings(db)).toEqual({ bookyMode: 'off', mutedTips: ['empty-shelf', 'first-scan'] });
+  });
+
+  it('resets to the default and ignores unreadable or unknown rows', async () => {
+    await settingsRepo.setSetting(db, 'bookyMode', 'quiet');
+    expect(await settingsRepo.resetSetting(db, 'bookyMode')).toBe(true);
+    expect(await settingsRepo.resetSetting(db, 'bookyMode')).toBe(false);
+    expect(await settingsRepo.getSetting(db, 'bookyMode')).toBe('helpful');
+    await db.run("INSERT INTO settings (key, value) VALUES ('bookyMode', 'not json'), ('retired', '1')");
+    expect(await settingsRepo.getAllSettings(db)).toEqual(settingDefaults);
   });
 });

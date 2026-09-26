@@ -2,9 +2,9 @@ import type { Migration } from './types';
 
 const NOW = "(strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))";
 
-export const initial: Migration = {
+export const init: Migration = {
   version: 1,
-  name: 'initial_catalogue',
+  name: '0001_init',
   up: `
 CREATE TABLE series (
   id          INTEGER PRIMARY KEY,
@@ -29,7 +29,7 @@ CREATE TABLE books (
   format           TEXT CHECK (format IS NULL OR format IN ('hardcover', 'paperback', 'ebook', 'audiobook', 'other')),
   series_id        INTEGER REFERENCES series (id) ON DELETE SET NULL,
   series_position  REAL,
-  source           TEXT,
+  source           TEXT CHECK (source IS NULL OR source IN ('openlibrary', 'googlebooks', 'manual', 'import')),
   source_id        TEXT,
   notes            TEXT,
   created_at       TEXT NOT NULL DEFAULT ${NOW},
@@ -52,7 +52,7 @@ CREATE INDEX authors_sort_name_idx ON authors (sort_name COLLATE NOCASE);
 CREATE TABLE book_authors (
   book_id   INTEGER NOT NULL REFERENCES books (id) ON DELETE CASCADE,
   author_id INTEGER NOT NULL REFERENCES authors (id) ON DELETE CASCADE,
-  role      TEXT NOT NULL DEFAULT 'author',
+  role      TEXT NOT NULL DEFAULT 'author' CHECK (role IN ('author', 'illustrator', 'translator', 'editor')),
   position  INTEGER NOT NULL DEFAULT 0,
   PRIMARY KEY (book_id, author_id)
 );
@@ -110,6 +110,7 @@ CREATE INDEX loans_book_idx ON loans (book_id, lent_on);
 CREATE INDEX loans_borrower_idx ON loans (borrower_id);
 CREATE INDEX loans_open_due_idx ON loans (due_on) WHERE returned_on IS NULL;
 
+-- Values are JSON-encoded; typed access and defaults live in the settings repository.
 CREATE TABLE settings (
   key   TEXT PRIMARY KEY,
   value TEXT

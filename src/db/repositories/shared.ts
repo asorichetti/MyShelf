@@ -51,7 +51,7 @@ export function toBook(r: BookRow): Book {
     format: r.format as Book['format'],
     seriesId: r.series_id,
     seriesPosition: r.series_position,
-    source: r.source,
+    source: r.source as Book['source'],
     sourceId: r.source_id,
     notes: r.notes,
     createdAt: r.created_at,

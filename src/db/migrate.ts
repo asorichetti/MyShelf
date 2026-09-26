@@ -30,8 +30,9 @@ export async function getSchemaVersion(db: Db): Promise<number> {
 
 /**
  * Brings the database up to the latest schema. Each migration runs in its own
- * transaction together with its schema_migrations row, so a failure leaves the
- * database at the last good version. Safe to call on every start.
+ * transaction together with its schema_migrations row (and PRAGMA
+ * user_version), so a failure leaves the database at the last good version.
+ * Safe to call on every start.
  */
 export async function migrate(db: Db, migrations: readonly Migration[] = allMigrations): Promise<MigrationResult> {
   validate(migrations);
@@ -53,6 +54,8 @@ export async function migrate(db: Db, migrations: readonly Migration[] = allMigr
     await db.transaction(async (tx) => {
       await tx.exec(m.up);
       await tx.run('INSERT INTO schema_migrations (version, name) VALUES (?, ?)', [m.version, m.name]);
+      // Mirror the version in the file header too, so tools (and backups) can read it without a query.
+      await tx.exec(`PRAGMA user_version = ${m.version}`);
     });
     applied.push(m.version);
   }

@@ -1,11 +1,12 @@
 import { useEffect, useRef } from 'react';
-import { Animated, Easing, Platform, type StyleProp, type ViewStyle } from 'react-native';
+import { Animated, Easing, type StyleProp, type ViewStyle } from 'react-native';
 import Svg, { Circle, Ellipse, G, Path } from 'react-native-svg';
 
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { useTheme, type ColorTokens } from '@/theme';
 
 import { expressionDescriptions, type BookyExpression } from './expressions';
+import { USE_NATIVE_DRIVER as useNativeDriver } from './nativeDriver';
 
 export interface BookyProps {
   expression?: BookyExpression;
@@ -36,7 +37,6 @@ export function Booky({ expression = 'happy', size = 120, animated = true, acces
       bob.setValue(0);
       return;
     }
-    const useNativeDriver = Platform.OS !== 'web';
     const loop = Animated.loop(
       Animated.sequence([
         Animated.timing(bob, { toValue: 1, duration: 1400, easing: Easing.inOut(Easing.sin), useNativeDriver }),

@@ -1,7 +1,7 @@
 import { openDatabaseAsync, type SQLiteBindParams } from 'expo-sqlite';
-import { Platform } from 'react-native';
 
 import { createDb } from './createDb';
+import { CONNECTION_PRAGMAS } from './pragmas';
 import type { Db, SqlParams } from './types';
 
 export const APP_DATABASE_NAME = 'myshelf.db';
@@ -11,9 +11,7 @@ const bind = (params: SqlParams) => params as unknown as SQLiteBindParams;
 /** Opens an expo-sqlite database with foreign keys enforced. */
 export async function openExpoDatabase(name: string = APP_DATABASE_NAME): Promise<Db> {
   const sqlite = await openDatabaseAsync(name);
-  await sqlite.execAsync(
-    Platform.OS === 'web' ? 'PRAGMA foreign_keys = ON;' : 'PRAGMA journal_mode = WAL; PRAGMA foreign_keys = ON;',
-  );
+  await sqlite.execAsync(CONNECTION_PRAGMAS);
   return createDb({
     exec: (sql) => sqlite.execAsync(sql),
     run: async (sql, params) => {

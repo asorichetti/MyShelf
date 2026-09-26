@@ -9,13 +9,13 @@ import { NotFoundScreen } from '@/features/navigation/NotFoundScreen';
 import { ScanScreen } from '@/features/scan/ScanScreen';
 import { SettingsScreen } from '@/features/settings/SettingsScreen';
 import { ShelfScreen } from '@/features/shelf/ShelfScreen';
-import { openTestDatabase } from '@/testing/db';
+import { createTestDb } from '@/testing/createTestDb';
 import { renderWithTheme } from '@/testing/render';
 import { Testids } from '@/testing/testids.gen';
 
 let db: Db;
 beforeEach(async () => {
-  db = await openTestDatabase();
+  db = await createTestDb();
 });
 afterEach(() => db.close());
 

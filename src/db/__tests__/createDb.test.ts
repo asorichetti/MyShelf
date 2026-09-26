@@ -1,3 +1,6 @@
+/**
+ * @jest-environment node
+ */
 import type { Db } from '@/db';
 import { openNodeDatabase } from '@/db/node';
 

@@ -1,4 +1,4 @@
-import { toSortName, type Author, type Book, type BookAuthor, type BookAuthorLink, type BookGroup } from '@/domain';
+import { toSortName, type Author, type AuthorRole, type Book, type BookAuthor, type BookAuthorLink, type BookGroup } from '@/domain';
 
 import type { Db } from '../types';
 import { BOOK_COLUMNS, foldBookGroups, toBook, type BookRow } from './shared';
@@ -77,7 +77,7 @@ export async function listAuthorsForBook(db: Db, bookId: number): Promise<BookAu
      WHERE ba.book_id = ? ORDER BY ba.position, a.id`,
     [bookId],
   );
-  return rows.map((r) => ({ ...toAuthor(r), role: r.role, position: r.position }));
+  return rows.map((r) => ({ ...toAuthor(r), role: r.role as AuthorRole, position: r.position }));
 }
 
 export async function listBooksByAuthor(db: Db, authorId: number): Promise<Book[]> {

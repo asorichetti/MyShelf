@@ -1,3 +1,6 @@
+/**
+ * @jest-environment node
+ */
 /// <reference types="node" />
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -43,6 +46,7 @@ describe('migrate', () => {
     const rows = await db.all<{ version: number; name: string; applied_at: string }>('SELECT * FROM schema_migrations');
     expect(rows.map((r) => [r.version, r.name])).toEqual(migrations.map((m) => [m.version, m.name]));
     expect(rows[0].applied_at).toMatch(/^\d{4}-\d{2}-\d{2}T/);
+    expect(await db.get('PRAGMA user_version')).toEqual({ user_version: LATEST_VERSION });
   });
 
   it('is idempotent: a second run applies nothing and keeps data', async () => {
@@ -85,6 +89,7 @@ describe('migrate', () => {
     };
     await expect(migrate(db, [...migrations, bad])).rejects.toThrow();
     expect(await getSchemaVersion(db)).toBe(LATEST_VERSION);
+    expect(await db.get('PRAGMA user_version')).toEqual({ user_version: LATEST_VERSION });
     expect(await tables(db)).not.toContain('half_done');
   });
 
@@ -125,9 +130,13 @@ describe('schema 001', () => {
     }
   });
 
-  it('rejects blank titles and bad formats', async () => {
+  it('rejects blank titles and unknown formats, sources and roles', async () => {
     await expect(db.run("INSERT INTO books (title) VALUES ('  ')")).rejects.toThrow(/CHECK/);
     await expect(db.run("INSERT INTO books (title, format) VALUES ('x', 'scroll')")).rejects.toThrow(/CHECK/);
+    await expect(db.run("INSERT INTO books (title, source) VALUES ('x', 'somewhere')")).rejects.toThrow(/CHECK/);
+    await db.run("INSERT INTO books (id, title) VALUES (1, 'x')");
+    await db.run("INSERT INTO authors (id, name) VALUES (1, 'a')");
+    await expect(db.run("INSERT INTO book_authors (book_id, author_id, role) VALUES (1, 1, 'ghost')")).rejects.toThrow(/CHECK/);
   });
 
   it('rejects dangling foreign keys', async () => {
