@@ -10,6 +10,7 @@ import { useTheme } from '@/theme';
 import { AuthorsInput } from './AuthorsInput';
 import { CoverImage } from './CoverImage';
 import { GenresInput } from './GenresInput';
+import { SeriesInput, type SeriesOption, type SeriesSuggestion } from './SeriesInput';
 
 export const formatLabels: Record<BookFormat, string> = {
   hardcover: 'Hardback',
@@ -37,6 +38,8 @@ const fieldLabels: Record<BookDraftField, string> = {
   notes: 'Notes',
   coverUri: 'Cover',
 };
+
+const NO_SERIES: readonly SeriesOption[] = [];
 
 const languageOptions = languages.map((l) => ({ value: l.code, label: l.name }));
 
@@ -74,6 +77,10 @@ export interface BookFormProps {
    * "Find a cover online"; until then the section offers photos only.
    */
   onFindCoverOnline?: () => void;
+  /** Series already in the library, for the series picker. */
+  existingSeries?: readonly SeriesOption[];
+  /** A series hint from the lookup the draft came from (P02-08): shown as "Suggested: Discworld #5". */
+  seriesSuggestion?: SeriesSuggestion | null;
   ref?: Ref<BookFormHandle>;
 }
 
@@ -111,6 +118,8 @@ export function BookForm({
   onCancel,
   onPickCover,
   onFindCoverOnline,
+  existingSeries = NO_SERIES,
+  seriesSuggestion = null,
   ref,
 }: BookFormProps) {
   const theme = useTheme();
@@ -297,22 +306,18 @@ export function BookForm({
         </Section>
 
         <Section title="Series">
-          <View style={[styles.pair, { gap: spacing.md }]}>
-            <View style={styles.wide}>
-              <TextField label="Series name" ref={seriesNameRef} value={draft.seriesName} onChangeText={(v) => onChange('seriesName', v)} errorText={errors.seriesName} testID={Testids.bookForm.seriesName} autoCapitalize="words" placeholder="e.g. Discworld" />
-            </View>
-            <View style={styles.narrow}>
-              <TextField
-                label="Number"
-                ref={seriesPositionRef} value={draft.seriesPosition} onChangeText={(v) => onChange('seriesPosition', v)} errorText={errors.seriesPosition}
-                testID={Testids.bookForm.seriesPosition}
-                keyboardType="decimal-pad"
-                inputMode="decimal"
-                placeholder="e.g. 5"
-                maxLength={6}
-              />
-            </View>
-          </View>
+          <SeriesInput
+            name={draft.seriesName}
+            position={draft.seriesPosition}
+            onNameChange={(v) => onChange('seriesName', v)}
+            onPositionChange={(v) => onChange('seriesPosition', v)}
+            existing={existingSeries}
+            suggestion={seriesSuggestion}
+            nameError={errors.seriesName}
+            positionError={errors.seriesPosition}
+            nameRef={seriesNameRef}
+            positionRef={seriesPositionRef}
+          />
         </Section>
 
         <Section title="Summary and notes">

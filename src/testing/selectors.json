@@ -83,8 +83,6 @@
     "coverPick": "book-form-cover-pick",
     "coverCamera": "book-form-cover-camera",
     "coverRemove": "book-form-cover-remove",
-    "seriesName": "book-form-series-name",
-    "seriesPosition": "book-form-series-position",
     "summary": "book-form-summary",
     "notes": "book-form-notes",
     "save": "book-form-save",
@@ -95,5 +93,58 @@
   "menu": { "root": "menu-root" },
   "cover": { "image": "cover-image", "placeholder": "cover-placeholder", "fallback": "cover-fallback" },
   "dialog": { "root": "dialog-root", "confirm": "dialog-confirm", "cancel": "dialog-cancel" },
-  "snackbar": { "root": "snackbar-root", "action": "snackbar-action" }
+  "snackbar": { "root": "snackbar-root", "action": "snackbar-action" },
+  "seriesInput": {
+    "search": "series-input-search",
+    "option": "series-input-option",
+    "create": "series-input-create",
+    "status": "series-input-status",
+    "position": "series-input-position",
+    "clear": "series-input-clear",
+    "suggestion": "series-input-suggestion"
+  },
+  "seriesConfirm": {
+    "root": "series-confirm-root",
+    "yes": "series-confirm-yes",
+    "change": "series-confirm-change",
+    "no": "series-confirm-no",
+    "save": "series-confirm-save",
+    "cancel": "series-confirm-cancel"
+  },
+  "seriesList": {
+    "root": "series-list-root",
+    "title": "series-list-title",
+    "row": "series-list-row",
+    "sortName": "series-list-sort-name",
+    "sortRecent": "series-list-sort-recent",
+    "empty": "series-list-empty"
+  },
+  "seriesDetail": {
+    "root": "series-detail-root",
+    "title": "series-detail-title",
+    "back": "series-detail-back",
+    "allSeries": "series-detail-all-series",
+    "progress": "series-detail-progress",
+    "shelf": "series-detail-shelf",
+    "spine": "series-detail-spine",
+    "gap": "series-detail-gap",
+    "book": "series-detail-book",
+    "addGap": "series-detail-add-gap",
+    "totalCount": "series-detail-total-count",
+    "totalSave": "series-detail-total-save",
+    "more": "series-detail-more",
+    "rename": "series-detail-rename",
+    "renameInput": "series-detail-rename-input",
+    "merge": "series-detail-merge",
+    "mergeOption": "series-detail-merge-option",
+    "delete": "series-detail-delete"
+  },
+  "bookSeries": {
+    "link": "book-series-link",
+    "place": "book-series-place",
+    "previous": "book-series-previous",
+    "next": "book-series-next"
+  },
+  "seriesTip": { "root": "series-tip-root", "text": "series-tip-text", "open": "series-tip-open", "dismiss": "series-tip-dismiss" },
+  "seriesCelebration": { "root": "series-celebration-root", "text": "series-celebration-text", "confetti": "series-celebration-confetti", "dismiss": "series-celebration-dismiss" }
 }

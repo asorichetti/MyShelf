@@ -4,6 +4,8 @@ import { useRef } from 'react';
 import { BookForm, type BookFormHandle } from '@/components/book/BookForm';
 import { Booky } from '@/components/booky';
 import { ConfirmDialog, Screen, Text, useSnackbar } from '@/components/ui';
+import type { BookDraft } from '@/domain';
+import { useSeriesOptions } from '@/features/series/useSeriesOptions';
 
 import { BookMissing, goBackOrShelf } from './BookDetailScreen';
 import { pickCover, type CoverSource } from './pickCover';
@@ -13,9 +15,10 @@ import { useUnsavedChangesGuard } from './useUnsavedChangesGuard';
 
 const EDGES = ['top', 'bottom', 'left', 'right'] as const;
 
-function BookFormScreen({ bookId }: { bookId: number | null }) {
+function BookFormScreen({ bookId, prefill }: { bookId: number | null; prefill?: Partial<BookDraft> }) {
   const mode = bookId == null ? 'add' : 'edit';
-  const form = useBookForm(bookId);
+  const form = useBookForm(bookId, prefill);
+  const existingSeries = useSeriesOptions();
   const formRef = useRef<BookFormHandle>(null);
   const { show } = useSnackbar();
   const guard = useUnsavedChangesGuard(form.dirty && !form.saving);
@@ -81,6 +84,7 @@ function BookFormScreen({ bookId }: { bookId: number | null }) {
         onSave={save}
         onCancel={goBackOrShelf}
         onPickCover={chooseCover}
+        existingSeries={existingSeries}
         // onFindCoverOnline arrives with online cover search (P02-11).
       />
       <ConfirmDialog
@@ -98,9 +102,11 @@ function BookFormScreen({ bookId }: { bookId: number | null }) {
   );
 }
 
-/** `/book/new`: type up a new book. */
+/** `/book/new`: type up a new book. `?series=Discworld&position=2` starts it in a series ("Add #2", P04-05). */
 export function AddBookScreen() {
-  return <BookFormScreen bookId={null} />;
+  const { series, position } = useLocalSearchParams<{ series?: string; position?: string }>();
+  const prefill = series ? { seriesName: String(series), seriesPosition: position ? String(position) : '' } : undefined;
+  return <BookFormScreen bookId={null} prefill={prefill} />;
 }
 
 /** `/book/[id]/edit`: edit every field of a book. */

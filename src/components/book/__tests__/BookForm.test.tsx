@@ -52,8 +52,8 @@ describe('BookForm', () => {
       Testids.bookForm.pages,
       Testids.bookForm.language,
       Testids.bookForm.genreInput,
-      Testids.bookForm.seriesName,
-      Testids.bookForm.seriesPosition,
+      Testids.seriesInput.search,
+      Testids.seriesInput.position,
       Testids.bookForm.summary,
       Testids.bookForm.notes,
     ]) {

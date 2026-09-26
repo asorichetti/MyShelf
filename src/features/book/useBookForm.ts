@@ -14,6 +14,7 @@ import {
   type BookDraftField,
 } from '@/domain';
 import { emit } from '@/features/events';
+import { beginSeriesSave } from '@/features/series/seriesEvents';
 import { isStoredCover, storeCoverFile } from '@/services/covers';
 
 export type SubmitResult = { ok: true; id: number; title: string } | { ok: false; firstInvalid: BookDraftField | null };
@@ -41,12 +42,13 @@ export interface BookFormState {
  * its errors, and saves it in one repository transaction, then emits
  * `library-changed`.
  */
-export function useBookForm(id: number | null): BookFormState {
+export function useBookForm(id: number | null, prefill?: Partial<BookDraft>): BookFormState {
   const db = useDatabase();
   const editing = id != null;
   const [status, setStatus] = useState<BookFormState['status']>(editing ? 'loading' : 'ready');
-  const [initial, setInitial] = useState<BookDraft>(emptyDraft);
-  const [draft, setDraft] = useState<BookDraft>(emptyDraft);
+  // A new book can start with fields filled in (e.g. "Add #2" on a series).
+  const [initial, setInitial] = useState<BookDraft>(() => ({ ...emptyDraft(), ...prefill }));
+  const [draft, setDraft] = useState<BookDraft>(() => ({ ...emptyDraft(), ...prefill }));
   const [errors, setErrors] = useState<BookDraftErrors>({});
   const [authorText, setAuthorText] = useState('');
   const [genreText, setGenreText] = useState('');
@@ -113,6 +115,7 @@ export function useBookForm(id: number | null): BookFormState {
     setErrors({});
     setSaving(true);
     try {
+      const seriesProbe = await beginSeriesSave(db, { bookId: id, seriesNames: [full.seriesName] });
       const savedId = await booksRepo.saveBookDraft(db, result.value, id ?? undefined);
       // A picked or photographed cover is a temporary file: keep a copy with the book.
       const cover = result.value.coverUri;
@@ -122,6 +125,8 @@ export function useBookForm(id: number | null): BookFormState {
       }
       setInitial(full);
       emit('library-changed');
+      // Booky's series gap tip and the completion celebration (P04-07, P04-08).
+      void seriesProbe.finish(savedId);
       return { ok: true, id: savedId, title: result.value.title };
     } finally {
       setSaving(false);
