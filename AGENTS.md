@@ -31,6 +31,7 @@ Use `npx`, not `bunx` (this project uses npm; there is no `bun.lock`).
 | `npm run selectors:check` | fail if the generated test id file is stale | available |
 | `npm run licences:gen` | regenerate `src/generated/licences.json` (every production package and its licence, for the About screen) from `package-lock.json`; run after adding a dependency | available |
 | `npm run licences:check` | fail if `licences.json` is stale | available |
+| `npm run icons:render` | render the icon, adaptive icon layers, splash, favicon and store graphics from `assets/source/*.svg` (`-- --preview <dir>` for mask review sheets); see [`docs/release.md`](docs/release.md) | available |
 | `npm run check` | `selectors:check` + `licences:check` + `lint` + `typecheck` + `test --ci` | available |
 | `npm run lint` | ESLint (Expo config + import order + hooks rules) | available |
 | `npm run autotest:install-browser` | one time: Chromium for the auto test suite | available |
