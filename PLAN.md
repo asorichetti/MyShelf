@@ -97,7 +97,7 @@ flowchart TB
 
 ### Web target
 
-The app also runs in a browser via `react-native-web` (`npm run web`, `npm run export:web`). The web build is **not a product**: it exists so the Go + Playwright **auto test suite** (`tools/auto-test-suite`) can drive, assert on and screenshot every screen quickly and deterministically in CI ([ADR 0002](docs/adr/0002-web-target-for-automated-ui-testing.md)). Features that need native modules (camera, ML Kit) have web stubs that accept typed input instead, and are exercised on device by Maestro.
+The app also runs in a browser via `react-native-web` (`npm run web`, `npm run export:web`). The web build is **not a product**: it exists so the TypeScript + Playwright **auto test suite** (`tools/auto-test-suite`) can drive, assert on and screenshot every screen quickly and deterministically in CI ([ADR 0002](docs/adr/0002-web-target-for-automated-ui-testing.md)). Features that need native modules (camera, ML Kit) have web stubs that accept typed input instead, and are exercised on device by Maestro.
 
 ---
 
@@ -124,7 +124,7 @@ Versions below are what is installed on `main` today (from `package-lock.json`).
 | Dev builds | expo-dev-client | *planned* (P03-01) | |
 | Files / sharing | expo-file-system, expo-sharing, expo-document-picker | *planned* (P02-09, P08-02) | covers cache, backups |
 | Notifications | expo-notifications | *planned* (P05-08) | local due-date reminders only |
-| UI test driver | auto test suite: Go + Cobra + playwright-go (Chromium) | Go 1.26.3, Cobra 1.10.2, playwright-go 0.6201.1 (`go.mod`) | `tools/auto-test-suite` (P00-15..P00-17); accessibility checks are its own `a11y` gate, no third-party engine |
+| UI test driver | auto test suite: TypeScript, Playwright (library) + Commander, run with tsx | see `package.json` | `tools/auto-test-suite` (P00-15..P00-17, [ADR 0013](docs/adr/0013-typescript-auto-test-suite.md)); accessibility checks are its own `a11y` gate, no third-party engine |
 | Device tests | Maestro CLI | *planned* (P00-18) | YAML flows in `.maestro/` |
 | CI | GitHub Actions | — | free for public repos; `.github/workflows/ci.yml` (P00-19) |
 | Node | Node.js | 22 LTS or newer (developed on 23.11.0) | `node:sqlite` is used by the Jest Db adapter |
@@ -144,7 +144,7 @@ MyShelf/
 ├── LICENSE                     [main] MIT
 ├── app.json                    [main] Expo config (package dev.asorichetti.myshelf, scheme myshelf)
 ├── eas.json                    P03-01 build profiles (development, preview, e2e, production)
-├── package.json                [main] scripts incl. autotest:* for the auto test suite
+├── package.json                [main] scripts incl. autotest / autotest:* for the auto test suite
 ├── tsconfig.json               [main]
 ├── .githooks/commit-msg        [main] rejects AI/tool attribution in commit messages
 ├── .github/workflows/          [main] ci.yml (P00-19) · P09-07 release.yml
@@ -155,7 +155,7 @@ MyShelf/
 │   ├── plan/                   [main] one document per phase
 │   └── privacy.md              P09-09
 ├── scripts/
-│   └── gen-selectors.mjs       [main] selectors.json → TS + Go
+│   └── gen-selectors.mjs       [main] selectors.json → testids.gen.ts
 ├── src/
 │   ├── app/                    [main] Expo Router routes (screens only)
 │   │   ├── _layout.tsx         [main] root stack
@@ -179,16 +179,14 @@ MyShelf/
 │   ├── testing/                [main] selectors.json, testids.gen.ts (generated), test helpers
 │   └── __tests__/              [main] app-level tests (feature tests live next to code)
 └── tools/
-    └── auto-test-suite/        [main] Go + Playwright UI driver (P00-15..P00-17), see its README.md
-        ├── main.go
-        ├── go.mod              module github.com/asorichetti/MyShelf/tools/auto-test-suite
+    └── auto-test-suite/        [main] TypeScript + Playwright UI driver (P00-15..P00-17), see its README.md
         ├── README.md           usage, flags, gates, journeys (the tool's reference)
-        └── internal/
-            ├── cmd/            root flags · navigate · journey · smoke · screenshot · interact
+        └── src/
+            ├── cli.ts          Commander entry point, global flags
+            ├── commands/       navigate · journey · smoke · screenshot · interact
             ├── browser/        Chromium lifecycle, console/network listeners, run bundle
             ├── uxgates/        pagestate · render · console · network · a11y; gates.config.json, console_allowlist.json
-            ├── journeys/       self-registering journeys, one file per area
-            └── selectors/      selectors.gen.go (generated from selectors.json)
+            └── journeys/       self-registering journeys, one file per area (test ids from src/testing/testids.gen.ts)
 ```
 
 Test files live next to the code they test as `*.test.ts(x)` (or in a sibling `__tests__/` folder). `src/__tests__/` holds tests of route screens.
@@ -458,7 +456,7 @@ Implemented in `src/components/booky` (P00-10) as one SVG component with an `exp
 
 ## 9. Theme and design tokens
 
-Tokens live in `src/theme` (P00-08) and are mirrored on web as CSS custom properties prefixed `--ms-` (e.g. `--ms-color-primary`) so the auto test suite's render gate can require them (`render.requiredTokens`, P00-25). Components never hard-code colours, sizes or fonts. **Once `src/theme` exists it is the source of truth** for exact values; this table is the design intent.
+Tokens live in `src/theme` (P00-08) and are mirrored on web as CSS custom properties prefixed `--ms-` (e.g. `--ms-color-primary`) so the auto test suite's render gate can require them (`render.requiredTokens`, P00-24). Components never hard-code colours, sizes or fonts. **Once `src/theme` exists it is the source of truth** for exact values; this table is the design intent.
 
 ### Colour (light theme)
 
@@ -526,21 +524,21 @@ Decided in [ADR 0008](docs/adr/0008-three-level-testing-strategy.md). Three leve
 - **Components and screens** use `@testing-library/react-native`, querying by `Testids` from `@/testing/testids.gen` or by accessible role/label.
 - **Coverage target:** 80 % lines for `src/domain`, `src/db`, `src/services`; screens are covered by behaviour, not a number.
 
-### 10.2 Auto test suite (web, Go + Playwright)
+### 10.2 Auto test suite (web, TypeScript + Playwright)
 
-A Go command-line tool in `tools/auto-test-suite` (Cobra + playwright-go) that drives the **web build** in Chromium. It is the fast, deterministic end-to-end check for every screen and flow that does not need native hardware. Its [README](tools/auto-test-suite/README.md) is the reference for flags, gates and writing journeys; this section is the summary.
+A command-line tool in `tools/auto-test-suite/src/` written in TypeScript with the Playwright library and Commander, run with `tsx` (no build step; [ADR 0013](docs/adr/0013-typescript-auto-test-suite.md)). It drives the **web build** in Chromium and is the fast, deterministic end-to-end check for every screen and flow that does not need native hardware. Its [README](tools/auto-test-suite/README.md) is the reference for flags, gates and writing journeys; this section is the summary.
 
-In the docs, `auto-test-suite <command>` means the binary built by `npm run autotest:build` at `tools/auto-test-suite/bin/auto-test-suite`, run from the repository root against a running web server (`CI=1 npx expo start --web --port 8081`; restart it after adding a route).
+Every command runs from the repository root as `npm run -s autotest -- <command> [flags]` against a running web server (`CI=1 npx expo start --web --port 8081`; restart it after adding a route). `-s` keeps npm's banner off stdout so the JSON result can be parsed.
 
-- **Setup:** `npm run autotest:install-browser` once (Playwright driver + Chromium), then `npm run autotest:build`. `npm run autotest:check` runs gofmt, `go vet` and `go test`.
+- **Setup:** `npm run autotest:install-browser` once (Chromium for Playwright). `npm run autotest:check` typechecks the tool and runs its unit tests with Node's built-in test runner.
 - **Commands**
   - `navigate --url <path> [--wait <ms>] [--marker <selector>]` — open one page, run all gates, capture a bundle.
   - `journey <name…> | --all | --suite <suite> | --grep <regexp>` — run registered journeys; `--list` prints the (selected) registry instead.
   - `smoke` — `journey --suite core` with `--ux-gates fail` and headless, unless those flags are passed explicitly. This is what CI and the regression gate run.
   - `screenshot --url <path> --viewports mobile,tablet,desktop --schemes light,dark` — a viewport × colour-scheme matrix, one fresh browser and bundle per combination.
   - `interact click|fill|press|focus --url <path> (--testid <id> | --selector <sel>) [--value <text>] [--key <key>]` — one action for poking at a page; anything worth checking twice becomes a journey.
-- **Global flags:** `--env local` (= `http://localhost:8081`) or `--base-url <url>`; `--ux-gates off|warn|fail` (default `warn`); `--viewport mobile|tablet|desktop` (390×844, 820×1180, 1280×900; default `mobile`, height overridable with `AUTOTEST_VIEWPORT_HEIGHT`); `--color-scheme light|dark|no-preference`; `--headless` (default true in CI or without a display); `--screenshot-dir` (default `./screenshots`); `--gates-config` and `--console-allowlist` to replace the embedded config files.
-- **Package scripts:** `npm run -s autotest:smoke` (build + `smoke`), `npm run -s autotest:journeys` (build + `journey --all`; add flags after `--`, e.g. `npm run -s autotest:journeys -- --ux-gates fail`). Use `-s` when parsing stdout.
+- **Global flags:** `--env local` (= `http://localhost:8081`) or `--base-url <url>`; `--ux-gates off|warn|fail` (default `warn`); `--viewport mobile|tablet|desktop` (390×844, 820×1180, 1280×900; default `mobile`); `--color-scheme light|dark|no-preference`; `--headless` (default true in CI or without a display); `--screenshot-dir` (default `./screenshots`); `--gates-config` and `--console-allowlist` to replace the bundled config files.
+- **Package scripts:** `npm run -s autotest -- <command>` (any command), `npm run -s autotest:smoke` (`smoke`), `npm run -s autotest:journeys` (`journey --all`; add flags after `--`, e.g. `npm run -s autotest:journeys -- --ux-gates fail`).
 - **Output contract.** stdout is exactly one JSON document per invocation, also on usage errors (`{"command":…,"ok":false,"error":…}`); journey runs report `total`/`passed`/`failed` and per journey `name`, `suite`, `ok`, `error`, `gates` (summary), `gateFailures` and `artifacts` (paths into the bundle). Human progress goes to stderr. Exit code 1 on any assertion failure, gate failure in `fail` mode, or usage error.
 - **Evidence bundle.** Every browser command and every journey writes `<screenshot-dir>/<command>-<unixMillis>/` (journeys: `journey-<name>-<unixMillis>`) containing `screenshot.png` (full page), `page.html` (rendered DOM), `console.json`, `network.json` (failed traffic only) and `uxgates.json` (mode, waivers, every gate result with evidence); journeys may add named screenshots. The bundle is written even when the run fails or the browser never starts. `screenshots/` is git-ignored and CI uploads it as an artifact when a job fails.
 - **UX gates** run alongside assertions. Per page load: `pagestate`, then `render` (at the selected viewport and the other end of the width range), then `a11y`; `console` and `network` run once at the end of the command or journey. If `pagestate` fails, `render` and `a11y` are skipped for that page.
@@ -553,9 +551,9 @@ In the docs, `auto-test-suite <command>` means the binary built by `npm run auto
   | `network` | any response ≥ 400 or any request that got no response |
   | `a11y` | structural regressions: not exactly one `h1`, a skipped heading level, `<img>` without `alt`, an unnamed button/link/tab/menuitem/switch/checkbox, not exactly one visible `main`, unlabelled or duplicate-labelled `nav`, `<html>` without `lang` (plus `skip-link`, disabled for this app) |
 
-  Configuration lives in `tools/auto-test-suite/internal/uxgates/gates.config.json` (embedded): `render.requiredTokens`, `render.landmarks` (`main`) and per-gate `disabled` maps where every disabled rule needs a reason. Today `a11y/skip-link` is off by design, and `render/body-background`, `render/body-font` and `render/fonts-loaded` are off **temporarily** until the theme and app shell land (re-enabled in P00-25). A journey can downgrade one rule for itself only with `c.Gates.Waive(gate, rule, reason)`; the finding stays in `uxgates.json` as a warning. URLs that are missing on purpose carry `uxgates.ExpectedMissingMarker` (`__expected-404`) instead of an allowlist entry. Contrast is not checked by the gates; it is enforced by the token contrast tests in Jest (P00-08). A touch-target rule is added in P00-28.
+  Configuration lives in `gates.config.json` next to the gates: `render.requiredTokens`, `render.landmarks` (`main`) and per-gate `disabled` maps where every disabled rule needs a reason. Today `a11y/skip-link` is off by design, and `render/body-background`, `render/body-font` and `render/fonts-loaded` are off **temporarily** until the theme and app shell land (re-enabled in P00-24). A journey can downgrade one rule for itself only, with a written reason; the finding stays in `uxgates.json` as a warning. URLs that are missing on purpose carry the expected-missing marker `__expected-404` instead of an allowlist entry. Contrast is not checked by the gates; it is enforced by the token contrast tests in Jest (P00-08). A touch-target rule is added in P00-27.
 
-- **Journeys self-register.** Each journey is registered from an `init()` in a file under `tools/auto-test-suite/internal/journeys/` (one file per area) with `register(Journey{Name, Suite, Desc, Run})`; names are unique (a duplicate panics). `Run` gets a `*Context` with `Goto(path)` (navigate + pagestate/render/a11y gates), `GotoMarker(path, marker)`, `Snap(name)` for extra screenshots, the Playwright `Page`, and `Gates` for waivers; assertions use `expect(cond, "…expected X, found Y…")`. Each journey runs in a **fresh browser, page and run directory**, and uses only selectors from the generated `selectors` package. Suites: `core` (fast, essential; run by `smoke` and CI) and any other name for the rest (today `responsive`); phase documents put non-core journeys in a suite named after the phase (`p01`, `p02`, …). From P01-01, journeys start from a known fixture via `/e2e?fixture=<name>&next=<route>`.
+- **Journeys self-register.** Each journey lives in a file under `tools/auto-test-suite/src/journeys/` (one file per area) and registers itself with a unique name, a suite, a one-line description and a `run` function. `run` gets the Playwright page plus helpers to navigate with the gates, use a different content marker for screens the app does not own, save extra named screenshots and waive a rule with a reason; assertion messages say what was expected and what was found. Each journey runs in a **fresh browser, page and run directory**. Selectors are built from `Testids` imported from `src/testing/testids.gen.ts`, never from typed id strings. Suites: `core` (fast, essential; run by `smoke` and CI) and any other name for the rest (today `responsive`); phase documents put non-core journeys in a suite named after the phase (`p01`, `p02`, …). From P01-01, journeys start from a known fixture via `/e2e?fixture=<name>&next=<route>`.
 - **Journeys today:** `home-loads` (core), `not-found` (core), `home-responsive` (responsive).
 - **API mocking** is not built yet: P02-13 adds `--mock-api <dir>`, which serves recorded Open Library / Google Books responses through Playwright routing so journeys are deterministic and the network gate can reject real external calls.
 
@@ -570,7 +568,7 @@ YAML flows in `.maestro/` for what only a real Android build can prove: camera p
 
 ### 10.4 Selector contract
 
-`src/testing/selectors.json` is the single list of test ids ([ADR 0009](docs/adr/0009-generated-selector-contract.md)). `npm run selectors:gen` generates `src/testing/testids.gen.ts` (bare ids for `testID` props) and `tools/auto-test-suite/internal/selectors/selectors.gen.go` (CSS selectors for the auto test suite). `npm run selectors:check` fails CI when the generated files are stale. Groups and keys are camelCase; ids are kebab-case and globally unique. **Never hand-write a test id string** in app code, tests or journeys.
+`src/testing/selectors.json` is the single list of test ids ([ADR 0009](docs/adr/0009-generated-selector-contract.md)). `npm run selectors:gen` generates `src/testing/testids.gen.ts` (`Testids.group.key` → id), used by app code, Jest and the auto test suite's journeys alike. `npm run selectors:check` fails CI when the generated file is stale. Groups and keys are camelCase; ids are kebab-case and globally unique. **Never hand-write a test id string** in app code, tests or journeys.
 
 ### 10.5 The regression gate
 
@@ -578,7 +576,7 @@ A task or phase is not done until both of these are green locally and in CI:
 
 ```bash
 npm run check                       # selectors:check + typecheck + Jest (+ lint from P00-20)
-npm run -s autotest:smoke           # build the auto test suite, run `auto-test-suite smoke` (core suite, gates fail)
+npm run -s autotest:smoke           # the auto test suite's `smoke`: core journeys, gates set to fail
 ```
 
 `autotest:smoke` needs the web server running (`CI=1 npx expo start --web --port 8081`) and Chromium installed once (`npm run autotest:install-browser`). Closing a phase also requires every journey to pass with gates enforced: `npm run -s autotest:journeys -- --ux-gates fail`.
@@ -591,7 +589,7 @@ Each phase has a document in `docs/plan/` with task cards (`PNN-MM`). Phases are
 
 | Phase | Name | Goal | Depends on | Cards |
 |---|---|---|---|---|
-| [00](docs/plan/phase-00-foundation.md) | Foundation | Scaffold, theme, Booky, tabs, database, auto test suite, Maestro, CI | — | 29 |
+| [00](docs/plan/phase-00-foundation.md) | Foundation | Scaffold, theme, Booky, tabs, database, auto test suite, Maestro, CI | — | 28 |
 | [01](docs/plan/phase-01-library-core.md) | Library core | Shelf list, add/edit/delete books manually, book detail | 00 | 12 |
 | [02](docs/plan/phase-02-metadata-providers.md) | Metadata providers | Open Library + Google Books lookup/search, merge, cache, offline queue | 01 | 13 |
 | [03](docs/plan/phase-03-scanning.md) | Scanning | Barcode + OCR recognition, edition picker, save from candidate | 02 | 13 |
@@ -602,7 +600,7 @@ Each phase has a document in `docs/plan/` with task cards (`PNN-MM`). Phases are
 | [08](docs/plan/phase-08-settings-backup.md) | Settings, backup & import | Preferences, JSON backup/restore, CSV export/import, About | 01–06 | 10 |
 | [09](docs/plan/phase-09-polish-a11y-release.md) | Polish, a11y & release | Accessibility audit, dark theme, performance, release pipeline | all | 12 |
 
-Total: **127 task cards**. Progress is tracked in [`STATUS.md`](STATUS.md).
+Total: **126 task cards**. Progress is tracked in [`STATUS.md`](STATUS.md).
 
 ---
 
@@ -633,14 +631,15 @@ Total: **127 task cards**. Progress is tracked in [`STATUS.md`](STATUS.md).
 | # | Decision |
 |---|---|
 | [0001](docs/adr/0001-expo-react-native-typescript.md) | Expo React Native with TypeScript |
-| [0002](docs/adr/0002-web-target-for-automated-ui-testing.md) | Web build as a test target driven by a Go + Playwright auto test suite; Maestro for device-only flows |
+| [0002](docs/adr/0002-web-target-for-automated-ui-testing.md) | Web build as a test target driven by a browser auto test suite; Maestro for device-only flows |
 | [0003](docs/adr/0003-isbn-first-ocr-fallback-recognition.md) | ISBN barcode first, on-device OCR fallback, free metadata APIs, no server |
 | [0004](docs/adr/0004-public-plans-in-repo.md) | Plans and status tracked publicly in the repo |
 | [0005](docs/adr/0005-sqlite-with-migrations-and-db-interface.md) | SQLite via expo-sqlite, versioned migrations, `Db` interface |
 | [0006](docs/adr/0006-data-model.md) | v1 data model |
 | [0007](docs/adr/0007-purple-library-theme-and-booky.md) | Purple library theme, design tokens and the Booky helper |
 | [0008](docs/adr/0008-three-level-testing-strategy.md) | Jest + auto test suite + Maestro, with a single regression gate |
-| [0009](docs/adr/0009-generated-selector-contract.md) | Test ids generated from one `selectors.json` into TS and Go |
+| [0009](docs/adr/0009-generated-selector-contract.md) | Test ids generated from one `selectors.json` |
 | [0010](docs/adr/0010-commit-conventions-no-ai-attribution.md) | Small commits; no AI/tool attribution, enforced by a hook |
 | [0011](docs/adr/0011-free-android-release-pipeline.md) | Free Android release pipeline: local/EAS free builds + GitHub Actions |
 | [0012](docs/adr/0012-local-only-data.md) | Local-only data, no accounts; backup via export/import |
+| [0013](docs/adr/0013-typescript-auto-test-suite.md) | Auto test suite in TypeScript with the Playwright library (replaces the Go version) |
