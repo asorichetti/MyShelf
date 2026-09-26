@@ -19,6 +19,7 @@ import { Button, Chip, ConfirmDialog, EmptyState, Heading, Screen, Text, useSnac
 import type { ShelfSection } from '@/db';
 import { activeFilterCount, filterChips, languages, noFilters, today, type BookListItem, type ShelfGroupBy } from '@/domain';
 import { useGroups } from '@/features/groups/useGroups';
+import { ShelfPendingBanner } from '@/features/lookup/PendingLookupsProvider';
 import { goBackOr } from '@/features/navigation/goBack';
 import { parseId } from '@/features/navigation/parseId';
 import { Testids } from '@/testing/testids.gen';
@@ -193,6 +194,7 @@ export function ShelfScreen() {
           </Text>
         ) : null}
       </View>
+      <ShelfPendingBanner />
       {total != null && !isEmpty ? (
         <>
           {shelf.query ? null : <BrowseChips onBrowse={(target) => router.navigate(browseHref[target])} />}

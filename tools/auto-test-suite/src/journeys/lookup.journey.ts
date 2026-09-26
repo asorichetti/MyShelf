@@ -161,3 +161,25 @@ register({
     await c.snap('lookup-partial-failure');
   },
 });
+
+register({
+  name: 'cover-backfill-mocked',
+  suite: 'p02',
+  desc: 'Fixture "demo": the tab shell starts the cover backfill; it looks up The Farthest Shore (no cover) through the mocked APIs, finds no cover in the fixture world, and the Shelf keeps its generated cover',
+  async run(c) {
+    const lookedUp = c.page.waitForRequest((r) => r.url() === 'https://openlibrary.org/isbn/9780140306941.json', { timeout: 20_000 });
+    const lastCover = c.page.waitForRequest((r) => r.url().startsWith('https://covers.openlibrary.org/b/isbn/0140306943-L.jpg'), { timeout: 30_000 });
+    await openFixture(c, 'demo', '/');
+    await waitForCount(c, tid(Testids.home.row), 12, '/');
+    try {
+      await lookedUp;
+      await lastCover;
+    } catch {
+      expect(false, '/: expected the cover backfill to look up The Farthest Shore (ISBN, then its cover URLs) through the mock');
+    }
+    const row = `${tid(Testids.home.row)}[aria-label^="The Farthest Shore,"]`;
+    await c.page.waitForTimeout(500);
+    const state = await coverState(c, row);
+    expect(state.images === 0 && state.fallbacks === 1, `/: expected The Farthest Shore to keep its generated cover, found ${q(state)}`);
+  },
+});

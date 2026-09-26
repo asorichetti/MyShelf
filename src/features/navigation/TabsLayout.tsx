@@ -5,6 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { BookyTipHost } from '@/components/booky';
 import { useOverdueCount } from '@/features/loans/useLoans';
+import { PendingLookupsProvider } from '@/features/lookup/PendingLookupsProvider';
 import { Testids } from '@/testing/testids.gen';
 import { useTheme } from '@/theme';
 
@@ -30,7 +31,16 @@ function FocusedTabScene({ children }: { children: ReactNode }) {
   return useIsFocused() ? <>{children}</> : null;
 }
 
+/** The tab shell, with the offline lookup queue and the cover backfill running under it. */
 export function TabsLayout() {
+  return (
+    <PendingLookupsProvider>
+      <TabsShell />
+    </PendingLookupsProvider>
+  );
+}
+
+function TabsShell() {
   const theme = useTheme();
   const { colors, spacing, sizes, typography } = theme;
   const insets = useSafeAreaInsets();

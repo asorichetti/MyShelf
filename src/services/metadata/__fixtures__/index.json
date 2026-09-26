@@ -216,6 +216,34 @@
       "url": "https://www.googleapis.com/books/v1/volumes?q=the%20colour%20of%20magic%20terry%20pratchett&maxResults=10&printType=books&fields=totalItems%2Citems(id%2CvolumeInfo(title%2Csubtitle%2Cauthors%2Cpublisher%2CpublishedDate%2Cdescription%2CindustryIdentifiers%2CpageCount%2Ccategories%2CimageLinks%2Clanguage%2CseriesInfo))",
       "body": "googlebooks/synthetic-search-colour-of-magic.json",
       "note": "the synthetic title/author search, reused for the free-text query"
+    },
+    {
+      "url": "https://covers.openlibrary.org/b/olid/OL17852114M-L.jpg?default=false",
+      "status": 404,
+      "body": "covers/not-found.txt",
+      "expected": true,
+      "note": "The Farthest Shore (demo fixture) proves the generated fallback cover, so in the mock world no cover exists for it and the cover backfill finds none"
+    },
+    {
+      "url": "https://covers.openlibrary.org/b/id/6498990-L.jpg",
+      "status": 404,
+      "body": "covers/not-found.txt",
+      "expected": true,
+      "note": "The Farthest Shore (demo fixture) proves the generated fallback cover, so in the mock world no cover exists for it and the cover backfill finds none"
+    },
+    {
+      "url": "https://covers.openlibrary.org/b/isbn/9780140306941-L.jpg?default=false",
+      "status": 404,
+      "body": "covers/not-found.txt",
+      "expected": true,
+      "note": "The Farthest Shore (demo fixture) proves the generated fallback cover, so in the mock world no cover exists for it and the cover backfill finds none"
+    },
+    {
+      "url": "https://covers.openlibrary.org/b/isbn/0140306943-L.jpg?default=false",
+      "status": 404,
+      "body": "covers/not-found.txt",
+      "expected": true,
+      "note": "The Farthest Shore (demo fixture) proves the generated fallback cover, so in the mock world no cover exists for it and the cover backfill finds none"
     }
   ]
 }

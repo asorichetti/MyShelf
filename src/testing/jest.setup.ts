@@ -10,3 +10,9 @@ jest.mock('@expo/vector-icons/MaterialCommunityIcons', () => {
 
 // expo-notifications needs a native module; tests get an in-memory fake they can inspect.
 jest.mock('expo-notifications', () => jest.requireActual('./mocks/expoNotifications'));
+
+// Tests never reach the network: code that fetches without an injected
+// `fetch` (e.g. the cover backfill the tab shell starts) sees it offline.
+global.fetch = jest.fn(async (input: unknown) => {
+  throw new TypeError(`Network request failed: tests do not use the network (${String(input)})`);
+}) as unknown as typeof fetch;
