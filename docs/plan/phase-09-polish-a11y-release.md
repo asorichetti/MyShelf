@@ -103,12 +103,13 @@ Ship v1.0: an accessible, fast, robust app with a dark theme, a free and repeata
 - **Acceptance:** checklist completed and linked in the release PR.
 - **Tests:** the checklist.
 
-### P09-11 Localisation readiness
+### P09-11 Localisation readiness — done
 
 - **Description:** Move all user-facing strings (including Booky tips) into `src/i18n/en.ts` with a tiny `t()` helper; dates/numbers via `Intl`. English only for v1, but no hard-coded strings in components.
 - **Files:** `src/i18n/*`, components.
 - **Acceptance:** lint rule or test fails on string literals in JSX text outside `src/i18n` (with an allowlist for test ids and symbols).
 - **Tests:** `src/i18n/__tests__/strings.test.ts`.
+- **Delivered:** `src/i18n/en.ts`, one typed catalogue of 1517 messages (92 plurals) grouped by feature, and `src/i18n/index.ts`: `t(key, params)` with type-checked keys and `{placeholders}` (a missing key, placeholder or plural `count` does not compile), plurals through `Intl.PluralRules` (English rule where it is missing), numbers through `Intl.NumberFormat` without grouping ("2000 books catalogued", as designed), `translate` for keys held in data, `setCatalogue` and a `[[ ]]` pseudo-locale. Dates: `formatDay` takes order and digits from `Intl.DateTimeFormat` and the month's name from the catalogue, so the day-month-year preference and the loan stamps keep "Sep" (ICU says "Sept" in `en-GB`); the phone's-style option is still `Intl` in the phone's locale. Every user-facing string moved: screens, sheets, dialogs, snackbars, announcements, accessibility labels and hints, placeholders, validation and restore/import errors, Booky's tips and help, onboarding, notification title and body and the Android channel. Hand-built plurals became plural messages; a few counts that read "1 days", "1 pages", "1 more editions" or "1 columns" at exactly one now say "1 day" and so on. Not moved, by design (`docs/localisation.md`): CSV export headers and the Goodreads column names (a file format), data (titles, names, curated genres, "Untitled"), log and developer errors, test ids. Enforcement: `no-hardcoded-strings.test.ts` (in `npm run check`) fails on JSX text and on literal values of label, hint, placeholder, title, message and similar props and properties, their defaults and `announce()`, outside `src/i18n`, with a reasoned allowlist in `src/testing/hardcodedStrings.ts` (also a CLI). `strings.test.ts`: every key used, no empty message, call sites pass exactly their placeholders, plurals, dates and numbers, switching catalogue, and 23 key screens rendered under the pseudo-locale with nothing untranslated. How to add a language: `docs/localisation.md`. No journey changed. **Not verified:** a device; `a11y-large-text` fails on this machine at `main` too (covers below the fold never load within the image gate's 5 s at 200 % text), unrelated to this card.
 
 ### P09-12 v1.0 release
 

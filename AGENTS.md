@@ -57,6 +57,7 @@ Use `npx`, not `bunx` (this project uses npm; there is no `bun.lock`).
 - `src/domain` — pure TypeScript models and helpers (no React, no Expo imports).
 - `src/db` — `Db` interface, adapters (`expo.ts`, `node.ts`), migrations, repositories, and `DatabaseProvider.tsx` (opens and migrates the database, then provides it through `useDatabase()`). **No SQL anywhere else.**
 - `src/theme` — design tokens. **No colour, font or spacing literals anywhere else** (a Jest test fails on colour literals outside `src/theme`).
+- `src/i18n` — every user-facing word, in the catalogue `en.ts`, looked up with `t('group.key', params)`. **No user-facing text in components** (a Jest test fails on JSX text and literal labels, placeholders and titles outside it); see [`docs/localisation.md`](docs/localisation.md).
 - `src/testing` — `selectors.json`, the generated `testids.gen.ts`, `createTestDb()` and render helpers for Jest.
 - Platform differences go in `*.web.ts` (or `*.native.ts`) files next to the default module, not scattered `Platform.OS` checks (e.g. `src/theme/cssVars.web.ts`, `src/db/pragmas.web.ts`).
 - The web page template is `public/index.html`: with `web.output: "single"` Expo Router ignores `src/app/+html.tsx`. The dev server sends the cross-origin isolation headers `expo-sqlite` needs on web from `metro.config.js`.
@@ -67,7 +68,7 @@ Use `npx`, not `bunx` (this project uses npm; there is no `bun.lock`).
 - Components `PascalCase.tsx`; hooks `useThing.ts`; other modules `camelCase.ts`; tests `*.test.ts(x)` next to the code or in a sibling `__tests__/`.
 - Database tables and columns `snake_case`; domain types `camelCase` fields; mapping happens in the repository.
 - Migrations are numbered `NNNN_description` and are **never edited once merged** — add a new one.
-- British English in user-facing copy (colour, catalogue), matching the design.
+- British English in user-facing copy (colour, catalogue), matching the design. The copy lives in `src/i18n/en.ts` as whole sentences with `{placeholders}`, and counts are plural messages.
 
 ### Test ids
 
