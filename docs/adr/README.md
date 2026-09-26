@@ -18,6 +18,7 @@ Short records of the decisions that shape MyShelf. Each has **Context**, **Decis
 | [0012](0012-local-only-data.md) | Local-only data, no accounts | Accepted |
 | [0013](0013-typescript-auto-test-suite.md) | Auto test suite in TypeScript with the Playwright library | Accepted |
 | [0014](0014-warm-paper-palette-and-labelled-booky.md) | Warm paper palette with role-named tokens, and a labelled Booky | Accepted |
+| [0015](0015-e2e-fixture-loader-per-platform.md) | E2E fixture loader: on for the web test target, opt-in on Android | Accepted |
 
 Template for new records:
 

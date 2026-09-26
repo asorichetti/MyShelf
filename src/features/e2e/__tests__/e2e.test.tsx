@@ -78,6 +78,15 @@ describe('/e2e fixture loader', () => {
     expect(await booksRepo.countBooks(db)).toBe(1);
   });
 
+  it('on web the loader is on unless a build opts out with EXPO_PUBLIC_E2E=0', () => {
+    // The web build is a test target only (ADR 0002 and 0015).
+    const web = jest.requireActual<typeof import('@/features/e2e/e2eFlag.web')>('@/features/e2e/e2eFlag.web');
+    delete process.env.EXPO_PUBLIC_E2E;
+    expect(web.isE2eEnabled()).toBe(true);
+    process.env.EXPO_PUBLIC_E2E = '0';
+    expect(web.isE2eEnabled()).toBe(false);
+  });
+
   it('only redirects inside the app', () => {
     expect(safeNextPath('/book/1')).toBe('/book/1');
     expect(safeNextPath(undefined)).toBe('/');
