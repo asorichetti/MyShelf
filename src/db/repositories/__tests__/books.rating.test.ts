@@ -178,6 +178,14 @@ describe('the Shelf with ratings', () => {
     expect(await titles({ filters: { ...noFilters, minRating: 1 } })).toEqual(['Beloved', 'Dune', 'The Hobbit', 'Mort']);
   });
 
+  it('tells the filter sheet whether any book is rated', async () => {
+    expect((await booksRepo.listFilterOptions(db)).hasRatings).toBe(true);
+    const empty = await createTestDb();
+    await booksRepo.createBook(empty, { title: 'Unrated' });
+    expect((await booksRepo.listFilterOptions(empty)).hasRatings).toBe(false);
+    await empty.close();
+  });
+
   it('groups by rating, best first, with the unrated books last', async () => {
     const { sections, count } = await shelfSectionsRepo.listShelfSections(db, { groupBy: 'rating', sort: 'title', direction: 'asc' });
     expect(count).toBe(6);

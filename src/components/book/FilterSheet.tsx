@@ -6,7 +6,9 @@ import {
   activeFilterCount,
   formatLabels,
   loanFilterLabels,
+  minRatingLabel,
   noFilters,
+  ratingValues,
   RECENTLY_ADDED_DAYS,
   seriesFilterLabels,
   toggleIn,
@@ -27,6 +29,8 @@ export interface FilterSheetOptions {
   languages: string[];
   minYear: number | null;
   maxYear: number | null;
+  /** Whether any book has a rating (the rating filter is offered only then, or while it is on). */
+  hasRatings?: boolean;
 }
 
 export interface FilterSheetProps {
@@ -69,8 +73,8 @@ function parseYear(text: string): number | null | undefined {
 
 /**
  * The Shelf's filter sheet: genres (any of), format, language, on loan or at
- * home, in a series or standalone, a year range and "added in the last 30
- * days". Changes apply at once; the chips under the toolbar show what is on.
+ * home, in a series or standalone, a year range, a minimum rating ("4 stars
+ * and up", once some book is rated) and "added in the last 30 days". Changes apply at once; the chips under the toolbar show what is on.
  */
 export function FilterSheet(props: FilterSheetProps) {
   // Mounted only while open, so the year fields start from the current filters each time.
@@ -191,6 +195,22 @@ function OpenFilterSheet({ visible, filters, options, onChange, onClose, languag
           </View>
         </View>
       </View>
+      {options.hasRatings || filters.minRating != null ? (
+        <Group title="Your rating" role="radiogroup">
+          <Chip role="radio" label="Any" selected={filters.minRating == null} onPress={() => set({ minRating: null })} testID={Testids.shelfView.filterRatingAny} />
+          {[...ratingValues].reverse().map((n) => (
+            <Chip
+              key={n}
+              role="radio"
+              icon="star"
+              label={minRatingLabel(n)}
+              selected={filters.minRating === n}
+              onPress={() => set({ minRating: n })}
+              testID={Testids.shelfView.filterRating}
+            />
+          ))}
+        </Group>
+      ) : null}
       <Group title="Added">
         <Chip
           role="checkbox"

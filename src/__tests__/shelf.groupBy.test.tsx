@@ -70,6 +70,41 @@ describe('Shelf group by', () => {
     await waitFor(() => expect(headers()).toEqual(['Holiday reads, 3 books', 'Not in a group, 9 books']));
   });
 
+  it('groups by rating, best first, unrated last, with no page to open', async () => {
+    await openShelf();
+    await groupBy(Testids.shelfView.groupByRating);
+    await waitFor(() => expect(headers()).toEqual(['5 stars, 3 books', '4 stars, 2 books', '3 stars, 2 books', 'Not rated, 5 books']));
+    expect(screen.queryByRole('button', { name: /^Open / })).toBeNull();
+  });
+
+  it('sorts by rating and filters by a minimum rating, and remembers both', async () => {
+    const first = await openShelf();
+    await act(async () => fireEvent.press(screen.getByTestId(Testids.home.sortButton)));
+    await act(async () => fireEvent.press(screen.getByTestId(Testids.home.sortRating)));
+    const names = () => screen.getAllByTestId(Testids.home.row).map((r) => r.props.accessibilityLabel as string);
+    await waitFor(() => expect(names()[0]).toBe('Good Omens, by Terry Pratchett and Neil Gaiman, 1990, rated 5 out of 5'));
+    expect(screen.getByTestId(Testids.home.sortButton)).toHaveTextContent(/Sort: Rating, Highest first$/);
+    expect(names().slice(0, 7).map((n) => /rated (\d)/.exec(n)?.[1])).toEqual(['5', '5', '5', '4', '4', '3', '3']);
+    expect(names().slice(7).every((n) => !n.includes('rated'))).toBe(true);
+    await act(async () => fireEvent.press(screen.getByTestId(Testids.home.sortDirection)));
+    await waitFor(() => expect(names()[0]).toMatch(/rated 3 out of 5/));
+    expect(names()[names().length - 1]).not.toMatch(/rated/);
+
+    await act(async () => fireEvent.press(screen.getByTestId(Testids.shelfView.filterButton)));
+    await act(async () => fireEvent.press(screen.getByRole('radio', { name: '4 stars and up' })));
+    await act(async () => fireEvent.press(screen.getByTestId(Testids.shelfView.filterDone)));
+    await waitFor(() => expect(screen.getAllByTestId(Testids.home.row)).toHaveLength(5));
+    expect(screen.getByText('4 stars and up')).toBeOnTheScreen();
+    expect(screen.getByTestId(Testids.home.resultCount)).toHaveTextContent('5 of 12 books match your filters');
+    await advance(PREFS_DEBOUNCE_MS);
+    await waitFor(async () => expect(await settingsRepo.getSetting(db, 'shelfFilters')).toMatchObject({ minRating: 4 }));
+    expect(await settingsRepo.getSetting(db, 'shelfSort')).toEqual({ sort: 'rating', direction: 'asc' });
+    first.unmount();
+    renderApp(db, '/', routes);
+    await waitFor(() => expect(screen.getAllByTestId(Testids.home.row)).toHaveLength(5));
+    expect(names()[0]).toMatch(/rated 4 out of 5/);
+  });
+
   it('remembers the grouping and display mode', async () => {
     const first = await openShelf();
     await groupBy(Testids.shelfView.groupBySeries);

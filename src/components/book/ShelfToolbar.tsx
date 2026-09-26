@@ -12,6 +12,7 @@ export const sortOptions: { key: ShelfSortKey; label: string; testID: string }[]
   { key: 'author', label: 'Author', testID: Testids.home.sortAuthor },
   { key: 'year', label: 'Year', testID: Testids.home.sortYear },
   { key: 'added', label: 'Recently added', testID: Testids.home.sortAdded },
+  { key: 'rating', label: 'Rating', testID: Testids.home.sortRating },
 ];
 
 /** The natural first direction for each sort: A-Z, oldest year first, newest addition first, best rated first. */
@@ -20,6 +21,8 @@ export const defaultDirection: Record<ShelfSortKey, SortDirection> = { title: 'a
 export function directionLabel(sort: ShelfSort): string {
   if (sort.sort === 'title' || sort.sort === 'author') return sort.direction === 'asc' ? 'A to Z' : 'Z to A';
   if (sort.sort === 'year') return sort.direction === 'asc' ? 'Oldest first' : 'Newest first';
+  // Unrated books come last either way.
+  if (sort.sort === 'rating') return sort.direction === 'desc' ? 'Highest first' : 'Lowest first';
   return sort.direction === 'desc' ? 'Newest first' : 'Oldest first';
 }
 
@@ -33,6 +36,7 @@ export const groupByOptions: { key: ShelfGroupBy; testID: string }[] = [
   { key: 'series', testID: Testids.shelfView.groupBySeries },
   { key: 'author', testID: Testids.shelfView.groupByAuthor },
   { key: 'group', testID: Testids.shelfView.groupByGroup },
+  { key: 'rating', testID: Testids.shelfView.groupByRating },
 ];
 
 export const viewModeOptions: { key: ShelfViewMode; icon: IconName; testID: string }[] = [

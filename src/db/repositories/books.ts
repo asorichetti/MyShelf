@@ -462,6 +462,8 @@ export interface FilterOptions {
   languages: string[];
   minYear: number | null;
   maxYear: number | null;
+  /** Whether any book is rated. */
+  hasRatings: boolean;
 }
 
 export async function listFilterOptions(db: Db): Promise<FilterOptions> {
@@ -474,6 +476,7 @@ export async function listFilterOptions(db: Db): Promise<FilterOptions> {
   const years = await db.get<{ min: number | null; max: number | null }>(
     'SELECT MIN(publication_year) AS min, MAX(publication_year) AS max FROM books',
   );
+  const rated = await db.get<{ n: number }>('SELECT EXISTS (SELECT 1 FROM books WHERE rating IS NOT NULL) AS n');
   const present = new Set(formats.map((f) => f.format));
   return {
     genres,
@@ -481,6 +484,7 @@ export async function listFilterOptions(db: Db): Promise<FilterOptions> {
     languages: languages.map((l) => l.language),
     minYear: years?.min ?? null,
     maxYear: years?.max ?? null,
+    hasRatings: rated?.n === 1,
   };
 }
 

@@ -362,7 +362,7 @@ export function ShelfScreen() {
       <FilterSheet
         visible={filtersOpen}
         filters={filters}
-        options={shelf.filterOptions ?? { genres: [], formats: [], languages: [], minYear: null, maxYear: null }}
+        options={shelf.filterOptions ?? { genres: [], formats: [], languages: [], minYear: null, maxYear: null, hasRatings: false }}
         onChange={shelf.setFilters}
         onClose={() => setFiltersOpen(false)}
         languageName={languageName}
