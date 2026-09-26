@@ -12,6 +12,7 @@ import { openAppDatabase } from '@/db/expo';
 import { AppSnackbarHost } from '@/features/navigation/AppSnackbarHost';
 import { DatabaseErrorScreen } from '@/features/navigation/DatabaseErrorScreen';
 import { LoadingScreen } from '@/features/navigation/LoadingScreen';
+import { SeriesEventHost } from '@/features/series/SeriesEventHost';
 import { ThemeProvider, useTheme } from '@/theme';
 import { appFonts } from '@/theme/fonts';
 
@@ -31,6 +32,8 @@ function RootStack() {
           </Stack>
           {/* Above every screen, so an Undo survives leaving the screen that offered it. */}
           <AppSnackbarHost />
+          {/* Booky's series gap tip and completion celebration, wherever a save lands. */}
+          <SeriesEventHost />
         </View>
       </SnackbarProvider>
     </BookyProvider>
