@@ -6,6 +6,8 @@ export interface AppSettings {
   bookyMode: BookyMode;
   /** Tip ids the user asked Booky not to show again. */
   mutedTips: string[];
+  /** Ask Google Books as well as Open Library for book details (PLAN §6). Settings → Lookups (P08-05). */
+  googleBooksEnabled: boolean;
 }
 
 export type SettingKey = keyof AppSettings;
@@ -14,4 +16,5 @@ export type SettingKey = keyof AppSettings;
 export const settingDefaults: Readonly<AppSettings> = Object.freeze({
   bookyMode: 'helpful',
   mutedTips: [],
+  googleBooksEnabled: true,
 });

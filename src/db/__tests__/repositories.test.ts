@@ -543,7 +543,7 @@ describe('settings repository', () => {
     expect(await db.get('SELECT value FROM settings WHERE key = ?', ['mutedTips'])).toEqual({
       value: '["empty-shelf","first-scan"]',
     });
-    expect(await settingsRepo.getAllSettings(db)).toEqual({ bookyMode: 'off', mutedTips: ['empty-shelf', 'first-scan'] });
+    expect(await settingsRepo.getAllSettings(db)).toEqual({ ...settingDefaults, bookyMode: 'off', mutedTips: ['empty-shelf', 'first-scan'] });
   });
 
   it('resets to the default and ignores unreadable or unknown rows', async () => {
