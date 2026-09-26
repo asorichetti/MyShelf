@@ -10,7 +10,6 @@ import { Testids } from '@/testing/testids.gen';
 /** findBy* with the fake timers renderRouter installs: poll through waitFor, which advances them. */
 const findRole = (role: string, options: { name: string | RegExp }) => waitFor(() => screen.getByRole(role, options));
 const findTestId = (id: string) => waitFor(() => screen.getByTestId(id));
-const findAllTestId = (id: string) => waitFor(() => screen.getAllByTestId(id));
 const findText = (text: string) => waitFor(() => screen.getByText(text));
 
 let db: Db;

@@ -12,7 +12,6 @@ import { Testids } from '@/testing/testids.gen';
 const findRole = (role: string, options: { name: string | RegExp }) => waitFor(() => screen.getByRole(role, options));
 const findTestId = (id: string) => waitFor(() => screen.getByTestId(id));
 const findAllTestId = (id: string) => waitFor(() => screen.getAllByTestId(id));
-const findText = (text: string) => waitFor(() => screen.getByText(text));
 
 let db: Db;
 beforeEach(async () => {
