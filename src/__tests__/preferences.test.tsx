@@ -9,6 +9,7 @@ import { SettingsWatchers } from '@/features/settings/SettingsWatchers';
 import { loadShelfPrefs } from '@/features/shelf/useShelfPrefs';
 import { createTestDb } from '@/testing/createTestDb';
 import { renderApp } from '@/testing/renderApp';
+import { oneKey } from '@/testing/sorts';
 import { Testids } from '@/testing/testids.gen';
 import { darkTheme, lightTheme, useTheme, type Theme } from '@/theme';
 
@@ -40,11 +41,28 @@ describe('Preferences screen', () => {
   it('has one h1 and a labelled field for each preference', async () => {
     await openPreferences();
     expect(screen.getAllByRole('heading').filter((h) => h.props['aria-level'] === 1).map((h) => h.props.children)).toEqual(['Shelf and lending']);
-    expect(screen.getByTestId(S.sort).props.accessibilityLabel).toBe('Sort the shelf by: Title, A to Z');
+    expect(screen.getByTestId(S.sort).props.accessibilityLabel).toBe('Sort the shelf by: A–Z by title');
     expect(screen.getByTestId(S.groupBy).props.accessibilityLabel).toBe('Split the shelf into sections by: No sections');
     expect(screen.getByTestId(S.viewMode).props.accessibilityLabel).toBe('Show books as: List');
     expect(screen.getByTestId(S.loanLength).props.accessibilityLabel).toBe('Lend books for: 28 days (4 weeks)');
     expect(screen.getByTestId(S.dateFormat).props.accessibilityLabel).toBe('Write dates as: Day month year (12 Oct 2026)');
+  });
+
+  it('shows a sort saved before Phase 11 as the same choice', async () => {
+    await settingsRepo.setSetting(db, 'shelfSort', { sort: 'year', direction: 'desc' } as never);
+    await openPreferences();
+    expect(screen.getByTestId(S.sort).props.accessibilityLabel).toBe('Sort the shelf by: Year, newest first');
+  });
+
+  it('offers the presets, saved presets and a custom sort', async () => {
+    await settingsRepo.setSetting(db, 'shelfSortPresets', [{ id: 'p1', name: 'Reading pile', levels: [{ key: 'pages', direction: 'asc' }] }]);
+    await settingsRepo.setSetting(db, 'shelfSort', { levels: [{ key: 'publisher', direction: 'asc' }, { key: 'year', direction: 'desc' }] });
+    await openPreferences();
+    expect(screen.getByTestId(S.sort).props.accessibilityLabel).toBe('Sort the shelf by: Custom: Publisher, then Year published (Newest first)');
+    await choose(S.sort, 'Reading pile');
+    await waitFor(async () => expect((await loadShelfPrefs(db)).sort).toEqual({ levels: [{ key: 'pages', direction: 'asc' }] }));
+    await choose(S.sort, 'Library order');
+    await waitFor(async () => expect((await loadShelfPrefs(db)).sort.levels.map((l) => l.key)).toEqual(['genre', 'author', 'series', 'seriesPosition']));
   });
 
   it('saves the Shelf defaults the Shelf then opens with', async () => {
@@ -52,7 +70,7 @@ describe('Preferences screen', () => {
     await choose(S.sort, 'Year, newest first');
     await choose(S.groupBy, 'Series');
     await choose(S.viewMode, 'Covers');
-    await waitFor(async () => expect(await loadShelfPrefs(db)).toMatchObject({ sort: { sort: 'year', direction: 'desc' }, groupBy: 'series', viewMode: 'covers' }));
+    await waitFor(async () => expect(await loadShelfPrefs(db)).toMatchObject({ sort: oneKey('year', 'desc'), groupBy: 'series', viewMode: 'covers' }));
   });
 
   it('saves a loan length the lend sheet then offers', async () => {

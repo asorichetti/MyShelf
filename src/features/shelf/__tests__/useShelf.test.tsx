@@ -5,6 +5,7 @@ import { emit } from '@/features/events';
 import { SEARCH_DEBOUNCE_MS, useShelf } from '@/features/shelf/useShelf';
 import { createTestDb } from '@/testing/createTestDb';
 import { loadFixture } from '@/testing/loadFixture';
+import { oneKey } from '@/testing/sorts';
 
 let db: Db;
 beforeEach(async () => {
@@ -25,7 +26,7 @@ describe('useShelf', () => {
   it('loads every book and the catalogue size, sorted by title', async () => {
     const { result } = await renderShelf();
     expect(result.current.total).toBe(12);
-    expect(result.current.sort).toEqual({ sort: 'title', direction: 'asc' });
+    expect(result.current.sort).toEqual(oneKey('title', 'asc'));
     expect(result.current.items![0].title).toBe('The Colour of Magic');
   });
 
@@ -41,15 +42,15 @@ describe('useShelf', () => {
 
   it('changes the sort and remembers it in settings', async () => {
     const { result } = await renderShelf();
-    act(() => result.current.setSort({ sort: 'year', direction: 'desc' }));
+    act(() => result.current.setSort(oneKey('year', 'desc')));
     await waitFor(() => expect(result.current.items![0].title).toBe('Good Omens'));
-    await waitFor(async () => expect(await settingsRepo.getSetting(db, 'shelfSort')).toEqual({ sort: 'year', direction: 'desc' }));
+    await waitFor(async () => expect(await settingsRepo.getSetting(db, 'shelfSort')).toEqual(oneKey('year', 'desc')));
   });
 
   it('starts from the saved sort', async () => {
-    await settingsRepo.setSetting(db, 'shelfSort', { sort: 'author', direction: 'asc' });
+    await settingsRepo.setSetting(db, 'shelfSort', { sort: 'author', direction: 'asc' } as never);
     const { result } = await renderShelf();
-    expect(result.current.sort).toEqual({ sort: 'author', direction: 'asc' });
+    expect(result.current.sort).toEqual(oneKey('author', 'asc'));
     expect(result.current.items![0].authors[0]).toBe('Jane Austen');
   });
 
@@ -95,9 +96,9 @@ describe('useShelf', () => {
       return new Promise((resolve) => held.push(() => resolve(answer)));
     });
     try {
-      act(() => result.current.setSort({ sort: 'year', direction: 'desc' }));
+      act(() => result.current.setSort(oneKey('year', 'desc')));
       await waitFor(() => expect(held).toHaveLength(1));
-      act(() => result.current.setSort({ sort: 'title', direction: 'desc' }));
+      act(() => result.current.setSort(oneKey('title', 'desc')));
       await waitFor(() => expect(held).toHaveLength(2));
       await act(async () => held[1]());
       await waitFor(() => expect(result.current.items![0].title).not.toBe('The Colour of Magic'));

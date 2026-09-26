@@ -55,7 +55,7 @@ describe('Settings tab', () => {
     for (const id of [S.googleBooksToggle, S.coversOnDataToggle, Testids.reminders.toggle]) {
       expect(screen.getByTestId(id).props.role).toBe('switch');
     }
-    expect(screen.getByTestId(S.preferences).props.accessibilityLabel).toBe('Shelf and lending, Title, A to Z · lend for 28 days (4 weeks)');
+    expect(screen.getByTestId(S.preferences).props.accessibilityLabel).toBe('Shelf and lending, A–Z by title · lend for 28 days (4 weeks)');
     expect(screen.getByTestId(S.exportBackup).props.accessibilityLabel).toBe('Back up your library, Last: Never, Save a file you can restore on any phone');
     expect(screen.getByTestId(S.pending).props.accessibilityLabel).toBe('Pending lookups, None, ISBNs waiting for the internet');
   });

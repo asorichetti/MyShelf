@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { booksRepo, shelfSectionsRepo, useDatabase, type FilterOptions, type ShelfSection } from '@/db';
-import { type BookListItem, type ShelfFilters, type ShelfGroupBy, type ShelfSort, type ShelfViewMode } from '@/domain';
+import { type BookListItem, type SavedSortPreset, type ShelfFilters, type ShelfGroupBy, type ShelfSort, type ShelfViewMode, type SortLevel } from '@/domain';
 import { useLibraryEvent } from '@/features/events';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 
@@ -26,6 +26,11 @@ export interface ShelfState {
   sort: ShelfSort;
   /** Changes the order and remembers it in settings. */
   setSort: (sort: ShelfSort) => void;
+  /** The sort's first level when grouping by that same key: it orders the sections and is skipped inside them. */
+  skipped: SortLevel | null;
+  /** Sort presets the user saved. */
+  presets: SavedSortPreset[];
+  setPresets: (presets: SavedSortPreset[]) => void;
   groupBy: ShelfGroupBy;
   setGroupBy: (groupBy: ShelfGroupBy) => void;
   viewMode: ShelfViewMode;
@@ -48,10 +53,11 @@ export interface ShelfState {
  */
 export function useShelf(): ShelfState {
   const db = useDatabase();
-  const { prefs, setSort, setGroupBy, setViewMode, setFilters } = useShelfPrefs();
+  const { prefs, setSort, setGroupBy, setViewMode, setFilters, setPresets } = useShelfPrefs();
   const [query, setQuery] = useState('');
   const activeQuery = useDebouncedValue(query.trim(), SEARCH_DEBOUNCE_MS);
   const [sections, setSections] = useState<ShelfSection[] | null>(null);
+  const [skipped, setSkipped] = useState<SortLevel | null>(null);
   const [total, setTotal] = useState<number | null>(null);
   const [filterOptions, setFilterOptions] = useState<FilterOptions | null>(null);
   const [version, setVersion] = useState(0);
@@ -70,7 +76,7 @@ export function useShelf(): ShelfState {
     const key = JSON.stringify([activeQuery, sort, groupBy, filters]);
     asked.current = key;
     const started = timingStart();
-    Promise.all([shelfSectionsRepo.listShelfSections(db, { groupBy, query: activeQuery, filters, ...sort }), booksRepo.countBooks(db)])
+    Promise.all([shelfSectionsRepo.listShelfSections(db, { groupBy, query: activeQuery, filters, sort }), booksRepo.countBooks(db)])
       .then(([result, count]) => {
         // An answer for an older search, sort or filter is dropped. For the same one, any answer newer than
         // the one shown is shown: while writes keep coming (covers arriving after an import), each reload
@@ -79,6 +85,7 @@ export function useShelf(): ShelfState {
         applied.current = id;
         recordTiming(SHELF_QUERY_MEASURE, started, { query: activeQuery, count: result.count });
         setSections(result.sections);
+        setSkipped(result.skipped);
         setTotal(count);
       })
       .catch((e) => console.error('Could not load the shelf', e));
@@ -131,6 +138,9 @@ export function useShelf(): ShelfState {
     activeQuery,
     sort: current.sort,
     setSort,
+    skipped,
+    presets: current.presets,
+    setPresets,
     groupBy: current.groupBy,
     setGroupBy,
     viewMode: current.viewMode,

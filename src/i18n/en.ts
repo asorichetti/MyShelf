@@ -1478,6 +1478,9 @@ export const en = {
       addedAsc: 'Oldest additions first',
       ratingDesc: 'Rating, highest first',
       ratingAsc: 'Rating, lowest first',
+      /** The Shelf's sort when it is none of the choices; {summary} is e.g. "Publisher, then Year published". */
+      custom: 'Custom: {summary}',
+      helper: 'Presets and your saved sorts. Build your own from the Shelf’s Sort button.',
     },
     groupBy: {
       label: 'Split the shelf into sections by',

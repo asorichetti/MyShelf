@@ -18,7 +18,7 @@ import { useTheme } from '@/theme';
 
 import { appVersion, GOOGLE_BOOKS_KEYED } from './appInfo';
 import { lastBackupLabel } from './lastBackup';
-import { loanLengthLabel, sortLabel } from './preferenceOptions';
+import { loanLengthLabel, sortLabel, storedPresets, storedSort } from './preferenceOptions';
 import { useSettings } from './useSettings';
 
 import type { ReactNode } from 'react';
@@ -96,7 +96,10 @@ export function SettingsScreen() {
         <SettingsLinkRow
           icon="bookshelf"
           label={t('settings.library.preferencesLabel')}
-          description={t('settings.library.preferencesDescription', { sort: sortLabel(settings.shelfSort), loanLength: loanLengthLabel(settings.loanDays) })}
+          description={t('settings.library.preferencesDescription', {
+            sort: sortLabel(storedSort(settings.shelfSort), storedPresets(settings.shelfSortPresets)),
+            loanLength: loanLengthLabel(settings.loanDays),
+          })}
           onPress={go('/settings/preferences')}
           testID={T.preferences}
         />

@@ -18,6 +18,8 @@ import {
   parseSortValue,
   sortOptions,
   sortValue,
+  storedPresets,
+  storedSort,
   viewModeOptions,
 } from './preferenceOptions';
 import { SettingsPage } from './SettingsPage';
@@ -45,6 +47,8 @@ export function PreferencesScreen() {
   const isPreset = (LOAN_LENGTHS as readonly number[]).includes(settings.loanDays);
   const loanChoice = custom != null || !isPreset ? 'custom' : String(settings.loanDays);
   const example = formatDateAs(today(), settings.dateFormat);
+  const shelfSort = storedSort(settings.shelfSort);
+  const savedPresets = storedPresets(settings.shelfSortPresets);
 
   const saveCustom = () => {
     const days = Number((custom ?? '').trim());
@@ -67,11 +71,12 @@ export function PreferencesScreen() {
       <View style={{ gap: spacing.lg }}>
         <SelectField
           label={t('preferences.sort.label')}
-          value={sortValue(settings.shelfSort)}
-          options={sortOptions()}
+          value={sortValue(shelfSort, savedPresets)}
+          options={sortOptions(shelfSort, savedPresets)}
           allowNone={false}
+          helperText={t('preferences.sort.helper')}
           onChange={(v) => {
-            const sort = parseSortValue(v);
+            const sort = parseSortValue(v, savedPresets);
             if (sort) void set('shelfSort', sort);
           }}
           testID={T.sort}
