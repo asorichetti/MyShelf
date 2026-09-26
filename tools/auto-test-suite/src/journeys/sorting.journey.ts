@@ -165,7 +165,10 @@ register({
     await c.page.keyboard.press('Enter');
     await tabTo(c, { name: 'Year published' }, '/ (level 3 keys)');
     await c.page.keyboard.press(' ');
+    // As for level 2: let focus come back to the level before moving on from it.
+    await expectFocusName(c, 'Then by: Year published. Change', '/ (level 3 chosen)');
     await c.page.keyboard.press('Tab');
+    await expectFocusName(c, 'Year published order: Oldest first. Reverse', '/ (level 3 direction)');
     await c.page.keyboard.press('Enter');
     await expectFocusName(c, 'Year published order: Newest first. Reverse', '/ (level 3 reversed)');
 
