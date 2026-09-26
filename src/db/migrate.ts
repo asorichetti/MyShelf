@@ -53,7 +53,8 @@ export async function migrate(db: Db, migrations: readonly Migration[] = allMigr
   for (const m of migrations) {
     if (done.has(m.version)) continue;
     await db.transaction(async (tx) => {
-      await tx.exec(m.up);
+      if (typeof m.up === 'string') await tx.exec(m.up);
+      else await m.up(tx);
       await tx.run('INSERT INTO schema_migrations (version, name) VALUES (?, ?)', [m.version, m.name]);
       // Mirror the version in the file header too, so tools (and backups) can read it without a query.
       await tx.exec(`PRAGMA user_version = ${m.version}`);
