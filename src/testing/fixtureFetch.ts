@@ -1,10 +1,12 @@
 import type { FetchLike } from '@/services/http';
 
-/** A canned response: JSON `body`, raw `text`, or a status alone. */
+/** A canned response: JSON `body`, raw `text`, binary `bytes` (an image), or a status alone. */
 export interface FixtureResponse {
   status?: number;
   body?: unknown;
   text?: string;
+  /** Sent as `image/jpeg` unless `headers` says otherwise. */
+  bytes?: Uint8Array;
   headers?: Record<string, string>;
 }
 
@@ -36,6 +38,9 @@ export function createFixtureFetch(...tables: FixtureRoutes[]): FixtureFetch {
       return new Response(`unmocked: ${url}`, { status: 501 });
     }
     const r = typeof route === 'function' ? route() : route;
+    if (r.bytes) {
+      return new Response(r.bytes as BodyInit, { status: r.status ?? 200, headers: { 'Content-Type': 'image/jpeg', ...r.headers } });
+    }
     const text = r.text ?? (r.body === undefined ? '' : JSON.stringify(r.body));
     const type = r.body === undefined ? 'text/html' : 'application/json';
     return new Response(r.status === 204 ? null : text, { status: r.status ?? 200, headers: { 'Content-Type': type, ...r.headers } });
