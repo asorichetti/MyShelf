@@ -86,7 +86,7 @@ describe('Book detail', () => {
     await openBook(await idOf('9780441172719'));
     const headings = screen.getAllByRole('heading');
     expect(headings.filter((h) => h.props['aria-level'] === 1).map((h) => h.props.children)).toEqual(['Dune']);
-    expect(headings.filter((h) => h.props['aria-level'] === 2).map((h) => h.props.children)).toEqual(['Summary', 'Genres', 'Notes', 'Loan']);
+    expect(headings.filter((h) => h.props['aria-level'] === 2).map((h) => h.props.children)).toEqual(['Summary', 'Genres', 'Notes', 'Groups', 'Loan']);
   });
 
   it('collapses a long summary to five lines with Read more', async () => {
