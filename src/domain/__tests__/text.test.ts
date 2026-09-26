@@ -1,4 +1,4 @@
-import { authorKey, bookMatchKey, normaliseText, sameAuthor, stripDiacritics, titleKey } from '../text';
+import { authorKey, bookMatchKey, normaliseText, sameAuthor, stripDiacritics, stripHtml, titleKey } from '../text';
 
 describe('normaliseText', () => {
   it.each([
@@ -87,5 +87,22 @@ describe('bookMatchKey', () => {
     expect(bookMatchKey('Dune', 'Frank Herbert')).not.toBe(bookMatchKey('Dune Messiah', 'Frank Herbert'));
     expect(bookMatchKey('Dune', 'Frank Herbert')).not.toBe(bookMatchKey('Dune', 'Kevin J. Anderson'));
     expect(bookMatchKey('Dune', null)).toBe('dune|');
+  });
+});
+
+describe('stripHtml', () => {
+  it.each<[string | null, string | null]>([
+    ['<p>A <b>bold</b> start.</p><p>Second&nbsp;paragraph.</p>', 'A bold start.\n\nSecond paragraph.'],
+    ['Line one<br>Line two<br/>Line three', 'Line one\nLine two\nLine three'],
+    ['Rincewind &amp; Twoflower &mdash; &quot;tourists&quot;', 'Rincewind & Twoflower — "tourists"'],
+    ['It&#39;s &#x2018;magic&#x2019;', 'It\'s ‘magic’'],
+    ['<i>Pride and Prejudice</i>, 1813', 'Pride and Prejudice, 1813'],
+    ['Unknown &bogus; entity', 'Unknown &bogus; entity'],
+    ['<ul><li>One</li><li>Two</li></ul>', 'One\n\nTwo'],
+    ['   <p> </p>  ', null],
+    ['Plain text stays.', 'Plain text stays.'],
+    [null, null],
+  ])('%p → %p', (html, text) => {
+    expect(stripHtml(html)).toBe(text);
   });
 });

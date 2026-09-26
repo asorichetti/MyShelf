@@ -65,3 +65,30 @@ export function sameAuthor(a: string, b: string): boolean {
 export function bookMatchKey(title: string, firstAuthor: string | null | undefined): string {
   return `${titleKey(title)}|${firstAuthor ? authorKey(firstAuthor).split(' ').pop() : ''}`;
 }
+
+const ENTITIES: Record<string, string> = { amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: ' ', ndash: '–', mdash: '—', hellip: '…', rsquo: '’', lsquo: '‘', rdquo: '”', ldquo: '“' };
+
+/**
+ * Plain text from provider HTML (Google Books descriptions): block tags and
+ * `<br>` become line breaks, other tags vanish, entities are decoded, and
+ * whitespace is collapsed with paragraphs kept as blank lines.
+ */
+export function stripHtml(html: string | null | undefined): string | null {
+  if (!html) return null;
+  const text = html
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/(?:p|div|li|h[1-6]|blockquote)>/gi, '\n\n')
+    .replace(/<[^>]*>/g, '')
+    .replace(/&(#x[0-9a-f]+|#\d+|[a-z]+);/gi, (whole, code: string) => {
+      if (code[0] === '#') {
+        const n = code[1].toLowerCase() === 'x' ? parseInt(code.slice(2), 16) : Number(code.slice(1));
+        return Number.isFinite(n) && n > 0 && n < 0x110000 ? String.fromCodePoint(n) : whole;
+      }
+      return ENTITIES[code.toLowerCase()] ?? whole;
+    })
+    .replace(/[ \t\u00a0]+/g, ' ')
+    .replace(/ *\n */g, '\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+  return text || null;
+}

@@ -59,12 +59,13 @@ Given an ISBN or a title/author query, fetch book metadata from Open Library and
 - **Tests:** `src/services/metadata/__tests__/openLibrary.search.test.ts`, `openLibrary.editions.test.ts`.
 - **Delivered:** search results are work candidates (`kind: 'work'`, no ISBN, with `editionCount`); the title search sends `title=` and `author=`, free text sends `q=`. `editions(workKey, { signal, authors, limit })` takes the work's authors because edition entries rarely have resolvable ones. Fixtures: the real title/author search for "the colour of magic" + "pratchett", a free-text search for "dune frank herbert", and 13 of the 50 recorded editions of `OL453657W` chosen for variety (French, German, Portuguese, Polish, Czech, audio, ebook, mass-market, a computer game with no ISBN). Ranking across providers is P02-06; Open Library already returns the work first.
 
-### P02-05 Google Books provider
+### P02-05 Google Books provider — done
 
 - **Description:** `googleBooks.lookupIsbn` (`/volumes?q=isbn:{isbn}`) and `googleBooks.search` (`intitle:`/`inauthor:`), always with the `fields=` filter from `PLAN.md` §6, `printType=books`. Map `publishedDate` → year, `industryIdentifiers` → ISBNs, `categories` → subjects, strip HTML from `description`, rewrite thumbnail to `https` and drop `&edge=curl`, `seriesInfo.bookDisplayNumber` → series position hint. No API key.
 - **Files:** `src/services/metadata/googleBooks.ts`, `src/services/metadata/googleBooksMap.ts`, fixtures under `__fixtures__/googlebooks/`.
 - **Acceptance:** fixtures (with/without description, with categories, with `seriesInfo`, empty result) map correctly; `totalItems: 0` → `[]`.
 - **Tests:** `src/services/metadata/__tests__/googleBooks.test.ts`.
+- **Delivered:** **the fixtures are synthetic, except one.** Keyless Google Books refused every request while this card was built (September 2026, two networks): `429 RESOURCE_EXHAUSTED`, "Queries per day", quota limit `0` on the shared keyless project, no `Retry-After`. That real body is `__fixtures__/googlebooks/quota-exceeded-429.json`; the `synthetic-*.json` files are hand-written to the documented v1 Volume schema with facts from the matching Open Library records and invented volume ids (`synth…`), and `googleBooksRoutes.ts` says so. Re-record them when keyless access works. Because of this, a daily-quota 429 fails at once (`isDailyQuotaError` passed as the client's `giveUp`) instead of retrying for 7 s. Other details: the `fields=` filter also asks for `totalItems`; an ISBN lookup keeps only volumes carrying that ISBN (Google adds other editions); search sends `intitle:"…" inauthor:"…"` (quoted phrases) or the free text; a parenthesised subtitle such as `(Discworld Novel 1)` becomes a series hint, not a subtitle. `stripHtml` lives in `src/domain/text.ts` for reuse by `briefSummary()`. PLAN §6 now records the keyless quota behaviour.
 
 ### P02-06 Merge and rank candidates
 

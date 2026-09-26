@@ -1,0 +1,36 @@
+{
+  "totalItems": 1,
+  "items": [
+    {
+      "id": "synthPetitP1",
+      "volumeInfo": {
+        "title": "Le petit prince",
+        "authors": [
+          "Antoine de Saint-Exupéry"
+        ],
+        "publisher": "Gallimard Jeunesse",
+        "publishedDate": "2007-03",
+        "description": "Le premier soir, je me suis donc endormi sur le sable à mille milles de toute terre habitée.",
+        "industryIdentifiers": [
+          {
+            "type": "ISBN_10",
+            "identifier": "2070612759"
+          },
+          {
+            "type": "ISBN_13",
+            "identifier": "9782070612758"
+          }
+        ],
+        "pageCount": 104,
+        "categories": [
+          "Juvenile Fiction"
+        ],
+        "imageLinks": {
+          "smallThumbnail": "http://books.google.com/books/content?id=synthPetitP1&printsec=frontcover&img=1&zoom=5&edge=curl&source=gbs_api",
+          "thumbnail": "http://books.google.com/books/content?id=synthPetitP1&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api"
+        },
+        "language": "fr"
+      }
+    }
+  ]
+}

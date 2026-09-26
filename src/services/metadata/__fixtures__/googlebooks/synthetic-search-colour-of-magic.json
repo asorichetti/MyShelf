@@ -1,0 +1,96 @@
+{
+  "totalItems": 3,
+  "items": [
+    {
+      "id": "synthCoM02",
+      "volumeInfo": {
+        "title": "The Colour of Magic",
+        "authors": [
+          "Terry Pratchett"
+        ],
+        "publisher": "HarperCollins",
+        "publishedDate": "2009-10-13",
+        "description": "In a distant and second-hand set of dimensions, in an astral plane that was never meant to fly...",
+        "industryIdentifiers": [
+          {
+            "type": "ISBN_13",
+            "identifier": "9780061020711"
+          },
+          {
+            "type": "ISBN_10",
+            "identifier": "0061020710"
+          }
+        ],
+        "pageCount": 240,
+        "categories": [
+          "Fiction"
+        ],
+        "imageLinks": {
+          "smallThumbnail": "http://books.google.com/books/content?id=synthCoM02&printsec=frontcover&img=1&zoom=5&edge=curl&source=gbs_api",
+          "thumbnail": "http://books.google.com/books/content?id=synthCoM02&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api"
+        },
+        "language": "en",
+        "seriesInfo": {
+          "kind": "books#volume_series_info",
+          "bookDisplayNumber": "1"
+        }
+      }
+    },
+    {
+      "id": "synthCoM01",
+      "volumeInfo": {
+        "title": "The Colour Of Magic",
+        "subtitle": "(Discworld Novel 1)",
+        "authors": [
+          "Terry Pratchett"
+        ],
+        "publisher": "Corgi",
+        "publishedDate": "2012-05-10",
+        "industryIdentifiers": [
+          {
+            "type": "ISBN_10",
+            "identifier": "0552166596"
+          },
+          {
+            "type": "ISBN_13",
+            "identifier": "9780552166591"
+          }
+        ],
+        "pageCount": 288,
+        "categories": [
+          "Fiction / Fantasy / Humorous"
+        ],
+        "imageLinks": {
+          "smallThumbnail": "http://books.google.com/books/content?id=synthCoM01&printsec=frontcover&img=1&zoom=5&edge=curl&source=gbs_api",
+          "thumbnail": "http://books.google.com/books/content?id=synthCoM01&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api"
+        },
+        "language": "en"
+      }
+    },
+    {
+      "id": "synthLightF1",
+      "volumeInfo": {
+        "title": "The Light Fantastic",
+        "authors": [
+          "Terry Pratchett"
+        ],
+        "publisher": "Corgi",
+        "publishedDate": "2012",
+        "industryIdentifiers": [
+          {
+            "type": "ISBN_13",
+            "identifier": "9780552166607"
+          }
+        ],
+        "categories": [
+          "Fiction / Fantasy / Humorous"
+        ],
+        "language": "en",
+        "seriesInfo": {
+          "kind": "books#volume_series_info",
+          "bookDisplayNumber": "2"
+        }
+      }
+    }
+  ]
+}

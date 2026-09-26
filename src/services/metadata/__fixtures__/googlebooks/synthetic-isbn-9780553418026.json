@@ -1,0 +1,35 @@
+{
+  "totalItems": 1,
+  "items": [
+    {
+      "id": "synthMartian1",
+      "volumeInfo": {
+        "title": "The Martian",
+        "authors": [
+          "Andy Weir"
+        ],
+        "publisher": "Broadway Books",
+        "publishedDate": "2014-10-28",
+        "industryIdentifiers": [
+          {
+            "type": "ISBN_13",
+            "identifier": "9780553418026"
+          },
+          {
+            "type": "ISBN_10",
+            "identifier": "0553418025"
+          }
+        ],
+        "pageCount": 387,
+        "categories": [
+          "Fiction"
+        ],
+        "imageLinks": {
+          "smallThumbnail": "http://books.google.com/books/content?id=synthMartian1&printsec=frontcover&img=1&zoom=5&edge=curl&source=gbs_api",
+          "thumbnail": "http://books.google.com/books/content?id=synthMartian1&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api"
+        },
+        "language": "en"
+      }
+    }
+  ]
+}

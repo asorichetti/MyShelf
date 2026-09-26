@@ -1,0 +1,48 @@
+{
+  "totalItems": 1,
+  "items": [
+    {
+      "id": "synthCoM01",
+      "volumeInfo": {
+        "title": "The Colour Of Magic",
+        "subtitle": "(Discworld Novel 1)",
+        "authors": [
+          "Terry Pratchett"
+        ],
+        "publisher": "Corgi",
+        "publishedDate": "2012-05-10",
+        "description": "<p><b>The Colour of Magic</b> is Terry Pratchett&#39;s maiden voyage through the bizarre land of Discworld.</p><p>Here is where it all begins &ndash; with the tourist Twoflower and his wizard guide, Rincewind.</p>",
+        "industryIdentifiers": [
+          {
+            "type": "ISBN_10",
+            "identifier": "0552166596"
+          },
+          {
+            "type": "ISBN_13",
+            "identifier": "9780552166591"
+          }
+        ],
+        "pageCount": 288,
+        "categories": [
+          "Fiction / Fantasy / Humorous"
+        ],
+        "imageLinks": {
+          "smallThumbnail": "http://books.google.com/books/content?id=synthCoM01&printsec=frontcover&img=1&zoom=5&edge=curl&source=gbs_api",
+          "thumbnail": "http://books.google.com/books/content?id=synthCoM01&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api"
+        },
+        "language": "en",
+        "seriesInfo": {
+          "kind": "books#volume_series_info",
+          "bookDisplayNumber": "1",
+          "volumeSeries": [
+            {
+              "seriesId": "synthDiscworld",
+              "seriesBookType": "BOOK",
+              "orderNumber": 1
+            }
+          ]
+        }
+      }
+    }
+  ]
+}
