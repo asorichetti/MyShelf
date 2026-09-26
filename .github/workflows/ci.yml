@@ -1,0 +1,90 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  app:
+    name: App checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 23
+          cache: npm
+      - run: npm ci
+      # selectors:check (generated testids in sync), typecheck, jest
+      - run: npm run check
+
+  auto-test-suite:
+    name: auto-test-suite smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      GOWORK: "off"
+    defaults:
+      run:
+        working-directory: tools/auto-test-suite
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 23
+          cache: npm
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: tools/auto-test-suite/go.mod
+          cache-dependency-path: tools/auto-test-suite/go.sum
+      - name: gofmt
+        run: |
+          unformatted="$(gofmt -l .)"
+          if [ -n "$unformatted" ]; then
+            echo "gofmt needed on:"; echo "$unformatted"; exit 1
+          fi
+      - name: go vet
+        run: go vet ./...
+      - name: go test
+        run: go test ./...
+      - name: go build
+        run: go build -o bin/auto-test-suite .
+      - name: Install Chromium
+        run: go run github.com/mxschmitt/playwright-go/cmd/playwright install --with-deps chromium
+      - name: npm ci
+        working-directory: .
+        run: npm ci
+      - name: Start Expo web server
+        working-directory: .
+        run: |
+          CI=1 npx expo start --web --port 8081 > expo-web.log 2>&1 &
+          for _ in $(seq 1 120); do
+            if curl -sf http://localhost:8081/ > /dev/null; then echo "Expo web is up"; exit 0; fi
+            sleep 1
+          done
+          echo "Expo web did not start"; cat expo-web.log; exit 1
+      - name: Smoke (core suite, gates fail)
+        working-directory: .
+        run: tools/auto-test-suite/bin/auto-test-suite smoke --env local --ux-gates fail --headless=true
+      - name: Remaining journeys (gates fail)
+        working-directory: .
+        run: tools/auto-test-suite/bin/auto-test-suite journey --suite responsive --ux-gates fail --headless=true
+      - name: Upload evidence bundles
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: auto-test-suite-screenshots
+          path: |
+            screenshots/
+            expo-web.log
+          if-no-files-found: warn
+          retention-days: 14
