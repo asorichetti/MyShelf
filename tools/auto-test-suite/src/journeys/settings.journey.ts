@@ -400,6 +400,24 @@ register({
     await google.click();
     expect((await google.getAttribute('aria-checked')) === 'false', '/settings: expected Google Books to switch off');
 
+    // The switch updates at once and saves in the background. Re-open Settings
+    // from the Shelf so it reads everything back from the database (the read
+    // queues behind the save), proving the save landed before the reload.
+    await c.page.locator(tid(Testids.tabs.shelf)).click();
+    await waitForPath(c, '/', '/settings -> Shelf');
+    await c.page.locator(tid(Testids.tabs.settings)).click();
+    await waitForPath(c, '/settings', '/ -> Settings');
+    await waitVisible(c, tid(S.googleBooksToggle), '/settings (reopened)');
+    await c.page.waitForFunction(
+      (sel) => document.querySelector(sel)?.getAttribute('aria-checked') === 'false',
+      tid(S.googleBooksToggle),
+      { timeout: 10_000 },
+    ).catch(() => {});
+    expect(
+      (await c.page.locator(tid(S.googleBooksToggle)).getAttribute('aria-checked')) === 'false',
+      '/settings (reopened): expected Google Books still off after reading settings back',
+    );
+
     // A reload is a fresh start of the app: everything must come back from the database.
     await c.page.reload();
     await waitVisible(c, tid(S.googleBooksToggle), '/settings after reload');
