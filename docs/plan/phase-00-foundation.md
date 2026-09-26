@@ -27,7 +27,7 @@ Everything later phases build on: the Expo app skeleton with routing and a web t
 
 ## Notes for implementers
 
-The auto test suite (P00-15, P00-16, P00-17) and CI (P00-19) are on `main`; their cards below describe what was delivered, and [`tools/auto-test-suite/README.md`](../../tools/auto-test-suite/README.md) is the reference for its flags, gates and journeys. Cards P00-08…P00-14, P00-18 and P00-20 are being built in parallel. When they land, the code is the source of truth for exact file names and APIs; if it differs from a path named here or in later phases, update the docs in the same pull request.
+The auto test suite (P00-15, P00-16, P00-17) and CI (P00-19) are on `main`; their cards below describe what was delivered, and [`tools/auto-test-suite/README.md`](../../tools/auto-test-suite/README.md) is the reference for its flags, gates and journeys. Cards P00-08…P00-14, P00-18 and P00-20 are being built in parallel. P00-21…P00-29 are follow-ups found while building the auto test suite; P00-25, P00-26 and P00-27 depend on the theme, tabs and UI primitives cards. When they land, the code is the source of truth for exact file names and APIs; if it differs from a path named here or in later phases, update the docs in the same pull request.
 
 ---
 
@@ -183,6 +183,69 @@ Removing the `home` selector group also removes `selectors.Home` from the genera
 - **Files:** `eslint.config.js`, `package.json`.
 - **Acceptance:** `npm run lint` clean; `npm run check` runs lint.
 - **Tests:** CI.
+
+### P00-21 `autotest` passthrough script
+
+- **Description:** Add `"autotest": "npm run -s autotest:build && tools/auto-test-suite/bin/auto-test-suite"` to `package.json`, so any command runs as `npm run -s autotest -- <command> [flags]` with a freshly built binary (today only `smoke` and `journey --all` have scripts; everything else needs the binary path). Update the tool README and `AGENTS.md` to use it.
+- **Files:** `package.json`, `tools/auto-test-suite/README.md`, `AGENTS.md`.
+- **Acceptance:** `npm run -s autotest -- journey --list` prints only the JSON document on stdout; `npm run -s autotest -- navigate --url /` writes a bundle; a flag error still exits 1.
+- **Tests:** the commands above, run in the pull request.
+
+### P00-22 `--serve <dir>` for the exported web build
+
+- **Description:** Global flag `--serve <dir>`: start an in-process static file server on a free local port for a static export (e.g. `dist` from `npm run export:web`), use it as the base URL, and stop it when the command ends. Unknown paths without a file extension fall back to `index.html` (SPA routing); missing assets return a real 404 (unlike the dev server, which answers every path with the HTML shell). Every response carries `Cross-Origin-Opener-Policy: same-origin` and `Cross-Origin-Embedder-Policy: require-corp` (or `credentialless`, whichever P00-12 settles on) so the `expo-sqlite` web build has `SharedArrayBuffer`. `--serve` and `--base-url` are mutually exclusive. Then switch the CI smoke job to `npm run export:web` + `--serve dist`, which is faster and closer to the shipped bundle than the dev server.
+- **Files:** `tools/auto-test-suite/internal/server/*.go` (new), `internal/cmd/root.go`, `README.md`; `.github/workflows/ci.yml`.
+- **Acceptance:** `auto-test-suite smoke --serve dist` passes after `npm run export:web`; the page reports `crossOriginIsolated === true`; a missing asset shows up in `network.json` as a 404.
+- **Tests:** Go unit tests with `httptest`: SPA fallback, real 404 for missing assets, isolation headers, path traversal rejected.
+
+### P00-23 CI check of commit messages
+
+- **Description:** A CI step (in the App checks job, or a small job of its own) that runs `.githooks/commit-msg` against every commit message in the pushed range or pull request (`git log --format=%B` per commit from the base to `HEAD`, each written to a temp file and passed to the hook), so a commit made without the hook enabled is still caught. Needs a checkout with enough history (`fetch-depth: 0`).
+- **Files:** `.github/workflows/ci.yml`.
+- **Acceptance:** a pull request containing a commit whose message the hook rejects fails CI and names the commit; normal pull requests pass.
+- **Tests:** CI itself, proven once on a throwaway branch.
+
+### P00-24 CI runs every journey
+
+- **Description:** Replace the CI step that runs `journey --suite responsive` with `auto-test-suite journey --all --ux-gates fail --headless=true` (or `smoke` followed by every non-core suite discovered from `journey --list`), so journeys in new suites (`p00`, `p01`, …) are covered without editing the workflow each time. Keep `smoke` as its own step so a core failure is reported first.
+- **Files:** `.github/workflows/ci.yml`.
+- **Acceptance:** a journey registered in a new suite runs in CI without a workflow change; the evidence artifact still uploads on failure.
+- **Tests:** CI itself.
+
+### P00-25 Re-enable the temporary render rules and require the design tokens
+
+- **Description:** After P00-08 (tokens on `:root`) and the app shell styling of `<html>`/`<body>` on web: list every `--ms-*` custom property the app relies on in `render.requiredTokens`, and delete the three **temporary** `disabled` entries (`body-background`, `body-font`, `fonts-loaded`) in `gates.config.json`, fixing whatever they then report. `fonts-loaded` applies once Lora, Nunito and Courier Prime load through `expo-font`. Add the `theme-tokens` journey.
+- **Files:** `tools/auto-test-suite/internal/uxgates/gates.config.json`, `tools/auto-test-suite/README.md` (decisions table), `tools/auto-test-suite/internal/journeys/theme.go`; app shell files as needed (`src/app/_layout.tsx`, `src/theme/cssVars.web.ts`).
+- **Acceptance:** `gates.config.json` disables only `a11y/skip-link`; `npm run -s autotest:journeys -- --ux-gates fail` passes; removing one token from `:root` makes the `render/tokens` rule fail.
+- **Tests:** the `theme-tokens` journey; the existing journeys under the stricter config.
+
+### P00-26 Tab journeys
+
+- **Description:** Once P00-10 and P00-11 land, add the `tabs-navigate` and `booky-empty-shelf` journeys (see the table below) in the `core` suite, using `selectors.Tabs.*`, the per-tab `Root` selectors and `selectors.Booky.*`. `tabs-navigate` also checks that the active tab exposes its selected state (`aria-selected="true"` or `aria-current`) and that each tab's URL matches the plan (`/`, `/scan`, `/loans`, `/groups`, `/settings`).
+- **Files:** `tools/auto-test-suite/internal/journeys/tabs.go`, `booky.go`.
+- **Acceptance:** `auto-test-suite journey --list` shows both in `core`; `npm run -s autotest:smoke` runs and passes them.
+- **Tests:** the journeys themselves.
+
+### P00-27 App-owned not-found screen
+
+- **Description:** Replace Expo Router's built-in unmatched-route screen with `src/app/+not-found.tsx` built from the UI primitives: a `Screen` with a `main` landmark, one `h1`, a friendly Booky (*concerned*) message and a link back to the Shelf. Add its test ids to `selectors.json`, switch the `not-found` journey to them, and remove the journey's two waivers (`a11y/one-main`, `render/landmarks`).
+- **Files:** `src/app/+not-found.tsx`, `src/testing/selectors.json` (+ generated files), `tools/auto-test-suite/internal/journeys/notfound.go`, `src/__tests__/not-found.test.tsx`.
+- **Acceptance:** `not-found` passes with `--ux-gates fail` and no waivers in its `uxgates.json`; the link returns to `/`.
+- **Tests:** `src/__tests__/not-found.test.tsx`; the `not-found` journey.
+
+### P00-28 Touch-target rule in the a11y gate
+
+- **Description:** Add an a11y rule `target-size`: every visible, enabled interactive element (button, link, tab, menuitem, switch, checkbox, and elements with those roles) must have a hit area of at least 48 × 48 CSS px (the plan's 48 dp minimum), measured from its bounding box; inline links inside running text are exempt. Findings name the element and its size. Register the rule id in `A11yRules` so it can be disabled only with a reason.
+- **Files:** `tools/auto-test-suite/internal/uxgates/a11y.go`, `config.go`, `README.md`.
+- **Acceptance:** a temporary 30 × 30 px button is reported; all journeys still pass with `--ux-gates fail` (fix the app where they do not).
+- **Tests:** covered by the gate self-tests in P00-29; until then, proven with a temporary route as in the tool README.
+
+### P00-29 Automated gate self-tests
+
+- **Description:** Automate the README procedure "Proving the gates fire": a Go test that serves small HTML fixtures from `httptest` (one clean page, and one page per rule that breaks exactly that rule), loads each in Chromium and asserts which gate and rule report a finding. Skipped with a clear message when Chromium is not installed, and run in the CI auto-test-suite job after the browser install.
+- **Files:** `tools/auto-test-suite/internal/uxgates/selftest_test.go`, `internal/uxgates/testdata/*.html`; `.github/workflows/ci.yml`.
+- **Acceptance:** every rule in `RenderRules` and `A11yRules`, plus the pagestate, console and network checks, has a fixture that makes it fire; the clean fixture passes every gate; removing a rule's check makes the test fail.
+- **Tests:** the test itself.
 
 ---
 
