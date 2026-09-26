@@ -69,8 +69,9 @@ describe.each(cases)('%s screen', (_name, Component, rootId, titleId, titleText)
 
 });
 
-// The Scan tab is no longer a placeholder: it opens on the scanner (see src/__tests__/scan.*.test.tsx).
-describe.each(cases.filter(([name]) => name !== 'Scan'))('%s screen', (_name, Component) => {
+// The Scan tab is no longer a placeholder: it opens on the scanner (see src/__tests__/scan.*.test.tsx);
+// Settings is a list of sections (see src/__tests__/settingsTab.test.tsx).
+describe.each(cases.filter(([name]) => name !== 'Scan' && name !== 'Settings'))('%s screen', (_name, Component) => {
   it('shows Booky in an empty state', async () => {
     renderScreen(Component);
     // The Shelf decides it is empty only once the database has answered.

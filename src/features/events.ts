@@ -1,7 +1,15 @@
 import { useEffect, useRef } from 'react';
 
 /** Things that changed in the database, so screens showing them can reload. */
-export type LibraryEvent = 'library-changed' | 'loans-changed' | 'groups-changed' | 'settings-changed';
+export type LibraryEvent =
+  | 'library-changed'
+  | 'loans-changed'
+  | 'groups-changed'
+  | 'settings-changed'
+  /** The offline lookup queue changed outside the tab shell (Settings → Pending lookups). */
+  | 'pending-changed'
+  /** Settings → Pending lookups asked the queue to try again now. */
+  | 'pending-retry';
 
 type Listener = (event: LibraryEvent) => void;
 

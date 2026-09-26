@@ -5,6 +5,17 @@ import type { ShelfGroupBy, ShelfViewMode } from './shelfView';
 /** Booky's chattiness (PLAN §8): all tips, only essential ones, or hidden. */
 export type BookyMode = 'helpful' | 'quiet' | 'off';
 
+/** How full dates are shown (P08-07): the phone's own style, "12 Oct 2026" or "2026-10-12". */
+export const dateFormats = ['locale', 'medium', 'iso'] as const;
+export type DateFormat = (typeof dateFormats)[number];
+
+/**
+ * Settings that describe this phone rather than the library (when it was
+ * last backed up, Booky's backup reminder). Backups leave them out and a
+ * restore keeps this phone's values.
+ */
+export const deviceSettingKeys = ['backup.lastAt', 'backup.reminderShownAt', 'backup.snoozedUntil'] as const;
+
 /** Every setting, with its type. Values are stored JSON-encoded in the settings table. */
 export interface AppSettings {
   bookyMode: BookyMode;
@@ -32,6 +43,16 @@ export interface AppSettings {
   shelfViewMode: ShelfViewMode;
   /** The Shelf's filters (P06-10). */
   shelfFilters: ShelfFilters;
+  /** How full dates are shown (P08-07). */
+  dateFormat: DateFormat;
+  /** Let the cover backfill download covers over mobile data (P08-07). Off means Wi-Fi only. */
+  coversOnMobileData: boolean;
+  /** When a backup was last exported (ISO-8601 UTC), or null for never (P08-02). */
+  'backup.lastAt': string | null;
+  /** When Booky last suggested a backup (ISO-8601 UTC), so the reminder is at most weekly (P08-06). */
+  'backup.reminderShownAt': string | null;
+  /** "Remind me later": no backup reminder before this time (ISO-8601 UTC) (P08-06). */
+  'backup.snoozedUntil': string | null;
 }
 
 export type SettingKey = keyof AppSettings;
@@ -51,4 +72,14 @@ export const settingDefaults: Readonly<AppSettings> = Object.freeze<AppSettings>
   shelfGroupBy: 'none',
   shelfViewMode: 'list',
   shelfFilters: { genreIds: [], formats: [], languages: [], loan: 'any', series: 'any', yearFrom: null, yearTo: null, recentlyAdded: false },
+  dateFormat: 'medium',
+  coversOnMobileData: true,
+  'backup.lastAt': null,
+  'backup.reminderShownAt': null,
+  'backup.snoozedUntil': null,
 });
+
+/** Whether `key` is a setting this app knows. */
+export function isSettingKey(key: string): key is SettingKey {
+  return Object.prototype.hasOwnProperty.call(settingDefaults, key);
+}

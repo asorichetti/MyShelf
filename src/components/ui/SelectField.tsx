@@ -23,6 +23,10 @@ export interface SelectFieldProps {
   errorText?: string;
   testID?: string;
   ref?: Ref<View>;
+  /** Offer the "none" choice (the placeholder) at the top of the list. Default true; turn off when a value is required. */
+  allowNone?: boolean;
+  /** A line under the field explaining it. */
+  helperText?: string;
 }
 
 /**
@@ -30,7 +34,7 @@ export interface SelectFieldProps {
  * trigger is a 48 dp button naming the field and its value; the list is a
  * modal of radio options with a "none" choice at the top.
  */
-export function SelectField({ label, value, options, onChange, placeholder = 'Not set', errorText, testID, ref }: SelectFieldProps) {
+export function SelectField({ label, value, options, onChange, placeholder = 'Not set', errorText, testID, ref, allowNone = true, helperText }: SelectFieldProps) {
   const theme = useTheme();
   const { colors, spacing, radii, sizes } = theme;
   const [open, setOpen] = useState(false);
@@ -40,7 +44,7 @@ export function SelectField({ label, value, options, onChange, placeholder = 'No
     setOpen(false);
     onChange(v);
   };
-  const choices: SelectOption[] = [{ value: '', label: placeholder }, ...options];
+  const choices: SelectOption[] = allowNone ? [{ value: '', label: placeholder }, ...options] : [...options];
 
   return (
     <View style={{ gap: spacing.xs }}>
@@ -76,6 +80,10 @@ export function SelectField({ label, value, options, onChange, placeholder = 'No
       {errorText ? (
         <Text variant="caption" color="danger" role="alert">
           {errorText}
+        </Text>
+      ) : helperText ? (
+        <Text variant="caption" color="inkMuted">
+          {helperText}
         </Text>
       ) : null}
       <Modal visible={open} transparent animationType="none" onRequestClose={() => setOpen(false)}>
