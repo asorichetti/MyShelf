@@ -32,6 +32,13 @@ export interface CatalogueCardProps {
   /** Punched hole at the bottom, as on a drawer card (default: header only). */
   hole?: boolean;
   onPress?: () => void;
+  /** Long press (e.g. to start selecting books). */
+  onLongPress?: () => void;
+  /**
+   * When set, the card is a checkbox (selection mode) instead of a button,
+   * checked or not, and a checked card is highlighted.
+   */
+  checked?: boolean;
   /** Accessible name when pressable (defaults to the title). */
   accessibilityLabel?: string;
   testID?: string;
@@ -75,6 +82,8 @@ export function CatalogueCard({
   titleLevel,
   hole = size === 'header',
   onPress,
+  onLongPress,
+  checked,
   accessibilityLabel,
   testID,
   titleTestID,
@@ -155,15 +164,22 @@ export function CatalogueCard({
   const onLayout = (e: { nativeEvent: { layout: { height: number } } }) => setHeight(e.nativeEvent.layout.height);
 
   if (onPress) {
+    const selectable = checked !== undefined;
     return (
       <Pressable
-        role="button"
+        role={selectable ? 'checkbox' : 'button'}
         accessibilityLabel={accessibilityLabel ?? title}
         aria-label={accessibilityLabel ?? title}
+        {...(selectable ? { 'aria-checked': checked, accessibilityState: { checked } } : {})}
         onPress={onPress}
+        onLongPress={onLongPress}
         onLayout={onLayout}
         testID={testID}
-        style={({ pressed }) => [cardStyle, pressed && { backgroundColor: colors.surfaceTint }]}
+        style={({ pressed }) => [
+          cardStyle,
+          checked && { backgroundColor: colors.surfaceTint, borderColor: colors.primary, borderWidth: 2 },
+          pressed && { backgroundColor: colors.surfaceTint },
+        ]}
       >
         {body}
       </Pressable>

@@ -5,9 +5,11 @@ export { Chip, type ChipProps } from './Chip';
 export { ConfirmDialog, type ConfirmDialogProps } from './ConfirmDialog';
 export { EmptyState, type EmptyStateAction, type EmptyStateProps } from './EmptyState';
 export { Heading, type HeadingLevel, type HeadingProps } from './Heading';
+export { LetterIndex, type LetterIndexProps } from './LetterIndex';
 export { IconButton, type IconButtonProps, type IconButtonVariant, type IconName } from './IconButton';
 export { Menu, type MenuItem, type MenuProps } from './Menu';
 export { Screen, type ScreenProps } from './Screen';
+export { Sheet, type SheetProps } from './Sheet';
 export { SelectField, type SelectFieldProps, type SelectOption } from './SelectField';
 export {
   Snackbar,
@@ -24,3 +26,4 @@ export {
 export { Stamp, type StampProps, type StampTone } from './Stamp';
 export { Text, type TextProps } from './Text';
 export { TextField, type TextFieldProps } from './TextField';
+export { TopBar, type TopBarProps } from './TopBar';

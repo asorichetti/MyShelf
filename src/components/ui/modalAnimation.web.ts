@@ -4,3 +4,6 @@
  * dialogs open without one (the web build is a test target, ADR 0002).
  */
 export const MODAL_ANIMATION = 'none' as const;
+
+/** Sheets too, for the same reason. */
+export const SHEET_ANIMATION = 'none' as const;
