@@ -5,6 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@/theme';
 
 import { useBlockingLayer } from './layers';
+import { menuKeyProps, modalProps, useReturnFocus } from './modalA11y';
 import { Text } from './Text';
 
 import type { IconName } from './IconButton';
@@ -41,11 +42,13 @@ export function Menu({ visible, onClose, items, accessibilityLabel, top = 56, te
   const { colors, spacing, radii, sizes } = theme;
   const insets = useSafeAreaInsets();
   useBlockingLayer(visible);
+  useReturnFocus(visible);
   return (
-    <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>
+    <Modal {...modalProps(accessibilityLabel)} visible={visible} transparent animationType="none" onRequestClose={onClose}>
       <View
         role="menu"
         aria-label={accessibilityLabel}
+        {...menuKeyProps()}
         testID={testID}
         style={[
           styles.menu,
@@ -91,6 +94,8 @@ export function Menu({ visible, onClose, items, accessibilityLabel, top = 56, te
         importantForAccessibility="no-hide-descendants"
         aria-hidden
         focusable={false}
+        // Not a Tab stop on web either (react-native-web gives every Pressable tabIndex 0).
+        tabIndex={-1}
         style={[StyleSheet.absoluteFill, { backgroundColor: colors.scrim, opacity: 0.4 }]}
         onPress={onClose}
       />

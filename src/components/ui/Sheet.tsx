@@ -6,6 +6,7 @@ import { useTheme } from '@/theme';
 
 import { Heading } from './Heading';
 import { useBlockingLayer } from './layers';
+import { modalProps, useReturnFocus } from './modalA11y';
 import { SHEET_ANIMATION } from './modalAnimation';
 import { Text } from './Text';
 
@@ -37,8 +38,9 @@ export function Sheet({ visible, title, subtitle, onClose, children, footer, bus
   const reduceMotion = useReducedMotion();
   const close = busy ? () => {} : onClose;
   useBlockingLayer(visible);
+  useReturnFocus(visible);
   return (
-    <Modal visible={visible} transparent animationType={reduceMotion ? 'none' : SHEET_ANIMATION} onRequestClose={close} statusBarTranslucent>
+    <Modal {...modalProps(title)} visible={visible} transparent animationType={reduceMotion ? 'none' : SHEET_ANIMATION} onRequestClose={close} statusBarTranslucent>
       <View style={[styles.backdrop, { backgroundColor: colors.scrim }]}>
         <View
           role="dialog"
@@ -76,6 +78,8 @@ export function Sheet({ visible, title, subtitle, onClose, children, footer, bus
           importantForAccessibility="no-hide-descendants"
           aria-hidden
           focusable={false}
+          // Not a Tab stop on web either (react-native-web gives every Pressable tabIndex 0).
+          tabIndex={-1}
           style={StyleSheet.absoluteFill}
           onPress={close}
         />

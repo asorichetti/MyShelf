@@ -8,6 +8,7 @@ import { useTheme } from '@/theme';
 import { Button } from './Button';
 import { Heading } from './Heading';
 import { useBlockingLayer } from './layers';
+import { modalProps, useReturnFocus } from './modalA11y';
 import { MODAL_ANIMATION } from './modalAnimation';
 import { Text } from './Text';
 
@@ -59,9 +60,11 @@ export function ConfirmDialog({
   const titleId = `dialog-title-${id}`;
   const messageId = `dialog-message-${id}`;
   useBlockingLayer(visible);
+  useReturnFocus(visible);
 
   return (
     <Modal
+      {...modalProps(title)}
       visible={visible}
       transparent
       animationType={reduceMotion ? 'none' : MODAL_ANIMATION}
@@ -115,6 +118,8 @@ export function ConfirmDialog({
           importantForAccessibility="no-hide-descendants"
           aria-hidden
           focusable={false}
+          // Not a Tab stop on web either (react-native-web gives every Pressable tabIndex 0).
+          tabIndex={-1}
           style={StyleSheet.absoluteFill}
           onPress={busy ? undefined : onCancel}
         />

@@ -7,6 +7,7 @@ import { useTheme } from '@/theme';
 import { Button } from './Button';
 import { Heading } from './Heading';
 import { useBlockingLayer } from './layers';
+import { modalProps, useReturnFocus } from './modalA11y';
 import { Text } from './Text';
 
 export interface SelectOption {
@@ -40,6 +41,7 @@ export function SelectField({ label, value, options, onChange, placeholder = 'No
   const { colors, spacing, radii, sizes } = theme;
   const [open, setOpen] = useState(false);
   useBlockingLayer(open);
+  useReturnFocus(open);
   const labelId = `select-label-${useId().replace(/:/g, '')}`;
   const current = options.find((o) => o.value === value);
   const choose = (v: string) => {
@@ -88,7 +90,7 @@ export function SelectField({ label, value, options, onChange, placeholder = 'No
           {helperText}
         </Text>
       ) : null}
-      <Modal visible={open} transparent animationType="none" onRequestClose={() => setOpen(false)}>
+      <Modal {...modalProps(label)} visible={open} transparent animationType="none" onRequestClose={() => setOpen(false)}>
         <View style={[styles.backdrop, { backgroundColor: colors.scrim, padding: spacing.lg }]}>
           <View
             role="dialog"
