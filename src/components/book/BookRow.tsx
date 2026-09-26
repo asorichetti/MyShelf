@@ -2,7 +2,7 @@ import { memo } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { CatalogueCard, Stamp, Text } from '@/components/ui';
-import { joinNames, seriesLabel, type BookListItem } from '@/domain';
+import { formatSeriesLabel, joinNames, type BookListItem } from '@/domain';
 import { Testids } from '@/testing/testids.gen';
 import { useTheme } from '@/theme';
 
@@ -30,7 +30,7 @@ export interface BookRowProps {
 export const BookRow = memo(function BookRow({ item, onPress }: BookRowProps) {
   const { colors, spacing, radii } = useTheme();
   const author = joinNames(item.authors);
-  const series = item.seriesName ? seriesLabel(item.seriesName, item.seriesPosition) : null;
+  const series = item.seriesName ? formatSeriesLabel(item.seriesName, item.seriesPosition) : null;
   return (
     <CatalogueCard
       testID={Testids.home.row}

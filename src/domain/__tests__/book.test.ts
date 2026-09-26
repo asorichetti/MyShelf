@@ -1,4 +1,4 @@
-import { formatSeriesPosition, joinNames, seriesLabel, sortableTitle } from '@/domain';
+import { joinNames, sortableTitle } from '@/domain';
 
 describe('sortableTitle', () => {
   it.each([
@@ -14,19 +14,6 @@ describe('sortableTitle', () => {
     ['Dune', 'Dune'],
   ])('%j files under %j', (title, expected) => {
     expect(sortableTitle(title)).toBe(expected);
-  });
-});
-
-describe('series display', () => {
-  it('drops a trailing .0 and keeps halves', () => {
-    expect(formatSeriesPosition(5)).toBe('5');
-    expect(formatSeriesPosition(2.5)).toBe('2.5');
-    expect(formatSeriesPosition(0)).toBe('0');
-  });
-
-  it('labels a series with or without a position', () => {
-    expect(seriesLabel('Discworld', 5)).toBe('Discworld #5');
-    expect(seriesLabel('Discworld', null)).toBe('Discworld');
   });
 });
 

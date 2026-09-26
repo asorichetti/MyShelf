@@ -85,16 +85,6 @@ export function sortableTitle(title: string): string {
   return t.replace(LEADING_ARTICLE, '');
 }
 
-/** Series position for display: whole numbers without ".0" (5), halves kept (2.5). */
-export function formatSeriesPosition(position: number): string {
-  return Number.isInteger(position) ? String(position) : String(Math.round(position * 10) / 10);
-}
-
-/** "Discworld #5", or just the name when the position is unknown. */
-export function seriesLabel(name: string, position: number | null): string {
-  return position == null ? name : `${name} #${formatSeriesPosition(position)}`;
-}
-
 /** "Terry Pratchett", "Terry Pratchett and Neil Gaiman", "A, B and C". */
 export function joinNames(names: readonly string[]): string {
   if (names.length <= 1) return names[0] ?? '';

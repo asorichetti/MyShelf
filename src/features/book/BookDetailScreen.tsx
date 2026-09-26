@@ -7,7 +7,7 @@ import { GenreChips } from '@/components/book/GenreChips';
 import { SummaryText } from '@/components/book/SummaryText';
 import { Booky } from '@/components/booky';
 import { ConfirmDialog, EmptyState, Heading, IconButton, Menu, Screen, Stamp, Text, useSnackbar } from '@/components/ui';
-import { daysBetween, formatDate, formatSeriesPosition, isOverdue, today, type BookDetail } from '@/domain';
+import { daysOverdue, formatDate, formatSeriesPosition, loanStatus, today, type BookDetail } from '@/domain';
 import { Testids } from '@/testing/testids.gen';
 import { useTheme } from '@/theme';
 
@@ -35,17 +35,18 @@ function Section({ title, children, testID }: { title: string; children: React.R
 function LoanStatus({ loan }: { loan: NonNullable<BookDetail['openLoan']> }) {
   const { spacing } = useTheme();
   const now = today();
-  const overdue = isOverdue(loan, now);
-  const stamp = overdue
-    ? { label: 'Overdue', tone: 'danger' as const }
-    : loan.dueOn
-      ? { label: `Due ${formatDate(loan.dueOn).replace(/ \d{4}$/, '')}`, tone: 'warn' as const }
-      : { label: 'On loan', tone: 'accent' as const };
-  const due = loan.dueOn
-    ? overdue
-      ? ` It was due back on ${formatDate(loan.dueOn)} (${daysBetween(loan.dueOn, now)} days ago).`
-      : ` Due back on ${formatDate(loan.dueOn)}.`
-    : '';
+  const status = loanStatus(loan, now);
+  const dueShort = loan.dueOn ? `Due ${formatDate(loan.dueOn).replace(/ \d{4}$/, '')}` : null;
+  const stamp =
+    status === 'overdue'
+      ? { label: 'Overdue', tone: 'danger' as const }
+      : { label: dueShort ?? 'On loan', tone: status === 'due-soon' ? ('warn' as const) : ('accent' as const) };
+  const overdueDays = daysOverdue(loan, now);
+  const due = !loan.dueOn
+    ? ''
+    : status === 'overdue'
+      ? ` It was due back on ${formatDate(loan.dueOn)} (${overdueDays === 1 ? '1 day' : `${overdueDays} days`} ago).`
+      : ` Due back on ${formatDate(loan.dueOn)}.`;
   return (
     <View style={[styles.loan, { gap: spacing.md }]}>
       <Stamp label={stamp.label} tone={stamp.tone} />

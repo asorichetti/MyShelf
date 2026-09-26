@@ -2,6 +2,7 @@ import { type AuthorRole } from './author';
 import { bookFormats, type BookDetail, type BookFormat } from './book';
 import { isbn10To13, isbn13To10, isValidIsbn10, isValidIsbn13, normalizeIsbn } from './isbn';
 import { isLanguageCode } from './languages';
+import { formatSeriesPosition, isValidSeriesPosition, parseSeriesPosition } from './seriesPosition';
 
 /** An author as typed in the form. `sortName` null means "derive it from the name". */
 export interface DraftAuthor {
@@ -116,7 +117,7 @@ export function draftFromDetail(book: BookDetail): BookDraft {
     language: book.language ?? '',
     genres: book.genres.map((g) => g.name),
     seriesName: book.series?.name ?? '',
-    seriesPosition: book.seriesPosition != null ? String(book.seriesPosition) : '',
+    seriesPosition: formatSeriesPosition(book.seriesPosition),
     summary: book.summary ?? '',
     notes: book.notes ?? '',
     coverUri: book.coverUri,
@@ -193,9 +194,10 @@ export function validateBookDraft(draft: BookDraft, { currentYear = new Date().g
   let seriesPosition: number | null = null;
   const position = draft.seriesPosition.trim();
   if (position) {
-    if (!/^\d+(\.\d)?$/.test(position)) errors.seriesPosition = 'Use a number like 3, or 2.5 for a novella between books.';
+    const parsed = parseSeriesPosition(position);
+    if (!isValidSeriesPosition(parsed)) errors.seriesPosition = 'Use a number like 3, or 2.5 for a novella between books.';
     else if (!seriesName) errors.seriesName = 'Add the series name to go with its number.';
-    else seriesPosition = Number(position);
+    else seriesPosition = parsed;
   }
 
   const authors = uniqueNames(

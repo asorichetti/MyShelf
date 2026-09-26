@@ -107,13 +107,18 @@ describe('language and format', () => {
 });
 
 describe('series', () => {
-  it('takes a position of 0 or more with at most one decimal', () => {
+  it('reads positions the way people write them', () => {
     expect(valueOf({ seriesName: 'Discworld', seriesPosition: '5' }).series).toEqual({ name: 'Discworld', position: 5 });
     expect(valueOf({ seriesName: 'Discworld', seriesPosition: '2.5' }).series).toEqual({ name: 'Discworld', position: 2.5 });
-    expect(valueOf({ seriesName: 'Discworld', seriesPosition: '0' }).series).toEqual({ name: 'Discworld', position: 0 });
+    expect(valueOf({ seriesName: 'Discworld', seriesPosition: 'Book 3' }).series).toEqual({ name: 'Discworld', position: 3 });
+    expect(valueOf({ seriesName: 'Discworld', seriesPosition: 'III' }).series).toEqual({ name: 'Discworld', position: 3 });
     expect(valueOf({ seriesName: 'Discworld' }).series).toEqual({ name: 'Discworld', position: null });
-    expect(errorOf({ seriesName: 'Discworld', seriesPosition: '2.25' }, 'seriesPosition')).toMatch(/like 3, or 2.5/);
-    expect(errorOf({ seriesName: 'Discworld', seriesPosition: '-1' }, 'seriesPosition')).toMatch(/like 3/);
+  });
+
+  it('rejects positions that are not a positive number', () => {
+    for (const bad of ['0', '-1', 'soon']) {
+      expect(errorOf({ seriesName: 'Discworld', seriesPosition: bad }, 'seriesPosition')).toMatch(/like 3, or 2.5/);
+    }
   });
 
   it('needs a name when a position is given', () => {
