@@ -6,7 +6,7 @@ MyShelf is a free, open-source Android app for cataloguing the books you own. Sc
 
 No accounts, no ads, no subscriptions, no server: your library lives on your phone.
 
-> **Status:** early development. The app scaffold, routing, web test target, Jest and the test-id contract are in place; the foundation phase (theme, Booky, tabs, database, UI test tooling, CI) is in progress. See [`STATUS.md`](STATUS.md) for the live checklist.
+> **Status:** early development. The app scaffold, routing, web test target, Jest, the test-id contract, the auto test suite and CI are in place; the rest of the foundation phase (theme, Booky, tabs, database, Maestro, linting) is in progress. See [`STATUS.md`](STATUS.md) for the live checklist.
 
 ---
 
@@ -44,14 +44,14 @@ Recognition runs on the device; the only network traffic is ISBN or title lookup
 | Data | SQLite via `expo-sqlite`, versioned migrations, repository layer |
 | Recognition | `expo-camera` barcode scanning, Google ML Kit on-device text recognition |
 | Metadata | Open Library and Google Books APIs |
-| Testing | Jest + Testing Library; a Go + Playwright UI driver against the web build; Maestro on device |
+| Testing | Jest + Testing Library; the auto test suite (Go + Playwright) against the web build; Maestro on device |
 | CI / release | GitHub Actions; local or EAS free-tier Android builds |
 
 Design decisions are recorded as ADRs in [`docs/adr/`](docs/adr/).
 
 ## Getting started
 
-Prerequisites: Node.js 22 or newer and npm. For the Android app: Android Studio with an emulator, or an Android phone with USB debugging. Go (1.22+) is needed for the UI test tool once it lands.
+Prerequisites: Node.js 22 or newer and npm. For the Android app: Android Studio with an emulator, or an Android phone with USB debugging. Go (the version in `tools/auto-test-suite/go.mod`) is needed for the auto test suite, the browser-driven UI test tool.
 
 ```bash
 git clone https://github.com/asorichetti/MyShelf.git
@@ -77,13 +77,17 @@ From Phase 03 onward the app uses a native text-recognition module, so it needs 
 | `npm run selectors:gen` | regenerate test ids (TypeScript and Go) from `src/testing/selectors.json` |
 | `npm run selectors:check` | fail if the generated test id files are stale |
 | `npm run check` | everything CI runs for the app: selectors check, typecheck and tests |
+| `npm run autotest:install-browser` | one time: install Chromium for the auto test suite |
+| `npm run autotest:check` | format check, vet and unit tests for the auto test suite |
+| `npm run -s autotest:smoke` | build the auto test suite and run the core journeys with UX gates enforced (needs the web server: `CI=1 npx expo start --web --port 8081`) |
+| `npm run -s autotest:journeys` | build and run every journey |
 
 ## Testing
 
 MyShelf is tested at three levels:
 
 1. **Jest** — every module, from pure domain helpers to screens. Database repositories run against a real in-memory SQLite database; network calls use recorded API fixtures.
-2. **auto-test-suite** — a Go + Playwright command-line tool (`tools/auto-test-suite`) that drives the web build through scripted journeys. Every run prints JSON and saves an evidence bundle (screenshot, DOM, console and network logs), and applies UX gates for page state, rendering, console errors, network failures and accessibility.
+2. **Auto test suite** — a Go + Playwright command-line tool ([`tools/auto-test-suite`](tools/auto-test-suite/README.md)) that drives the web build through scripted journeys. Every run prints JSON and saves an evidence bundle (screenshot, rendered DOM, console and network logs, gate results), and applies UX gates for page state, rendering, console errors, network failures and accessibility.
 3. **Maestro** — YAML flows on an Android emulator or device for the camera, text recognition and other native features.
 
 Test ids come from a single [`src/testing/selectors.json`](src/testing/selectors.json), generated into TypeScript for the app and Go for the UI tool, so all three levels agree. No change is done until `npm run check` and the UI smoke run with gates enforced are green. The full strategy is in [`PLAN.md`](PLAN.md#10-testing-strategy).
