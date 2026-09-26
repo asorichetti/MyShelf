@@ -32,6 +32,12 @@ export interface HttpRequestOptions {
    */
   cacheTtl?: number;
   /**
+   * `getJson` only: the key the response is cached under, when it should
+   * differ from the URL (e.g. to keep an API key out of the stored entries).
+   * Defaults to the URL.
+   */
+  cacheKey?: string;
+  /**
    * Return true to fail a 429/5xx at once instead of retrying, e.g. for a
    * daily quota that backing off for seconds cannot fix. Gets the status and
    * the response body text.
@@ -150,7 +156,7 @@ export function createHttpClient(options: HttpClientOptions = {}): HttpClient {
     async getJson<T>(url: string, opts: HttpRequestOptions = {}): Promise<T> {
       const cache = opts.cacheTtl && opts.cacheTtl > 0 ? options.cache : undefined;
       if (cache) {
-        const cached = await cache.read(url, opts.cacheTtl!);
+        const cached = await cache.read(opts.cacheKey ?? url, opts.cacheTtl!);
         if (cached !== null) {
           try {
             return JSON.parse(cached) as T;
@@ -167,7 +173,7 @@ export function createHttpClient(options: HttpClientOptions = {}): HttpClient {
       } catch {
         throw new HttpError(response.status, url, `Invalid JSON from ${url}`);
       }
-      if (cache) await cache.write(url, text);
+      if (cache) await cache.write(opts.cacheKey ?? url, text);
       return parsed;
     },
     async getBinary(url: string, opts: HttpRequestOptions = {}): Promise<BinaryResponse> {

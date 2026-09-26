@@ -323,7 +323,7 @@ erDiagram
 
 ## 6. External APIs
 
-Both providers are free and used **keyless**, from the device, at low volume. Neither requires an account. All calls go through one HTTP wrapper (`src/services/http`, task P02-01) which applies the etiquette below.
+Both providers are free and called from the device at low volume. Open Library needs no key or account. Google Books works keyless but, in practice, needs a free API key (below). All calls go through one HTTP wrapper (`src/services/http`, task P02-01) which applies the etiquette below.
 
 ### Etiquette (applies to every request)
 
@@ -355,7 +355,7 @@ Base `https://openlibrary.org`. Covers from `https://covers.openlibrary.org`.
 
 ### Google Books
 
-Base `https://www.googleapis.com/books/v1`. Used keyless; a key is never required or shipped. Keyless requests are counted against one project shared by every keyless caller, not per IP: in September 2026 every keyless request (from two networks) was refused with `429 RESOURCE_EXHAUSTED`, "Queries per day", quota limit `0`, with no `Retry-After`. Google Books is therefore an optional extra: a daily-quota 429 fails at once without retries, the lookup carries on with Open Library alone and reports a warning, and Google Books is skipped for a while before being tried again (P02-06).
+Base `https://www.googleapis.com/books/v1`. An optional free API key (Google Cloud → enable the Books API → create an API key restricted to it) is read from `EXPO_PUBLIC_GOOGLE_BOOKS_API_KEY` in the git-ignored `.env.local` (template: `.env.example`) and added to each request as `key=`. Responses are cached under the URL without the key, so the key is never written to `api_cache`. A key in a shipped app is extractable, so restrict it to the Books API (and, for release builds, to the app's package name and signing certificate). Without a key, requests are keyless. Keyless requests are counted against one project shared by every keyless caller, not per IP: in September 2026 every keyless request (from two networks) was refused with `429 RESOURCE_EXHAUSTED`, "Queries per day", quota limit `0`, with no `Retry-After`. Google Books is therefore an optional extra: a daily-quota 429 fails at once without retries, the lookup carries on with Open Library alone and reports a warning, and Google Books is skipped for a while before being tried again (P02-06).
 
 | Endpoint | Use | Key fields |
 |---|---|---|

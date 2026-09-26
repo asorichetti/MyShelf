@@ -22,3 +22,4 @@ A hybrid, fully on-device pipeline:
 - OCR requires a development build and is Android-tested with Maestro and by hand; the web target uses typed input instead.
 - Coverage depends on Open Library and Google Books data quality; merging both, plus easy editing, mitigates gaps. Series data in particular is patchy and is parsed heuristically and confirmed by the user.
 - Keyless quotas are per IP and generous for personal use; the app must still back off on `429` and cache aggressively.
+  *Update (September 2026):* Google Books' keyless quota proved to be shared and exhausted (a limit of 0), so Google Books became optional and accepts a free API key from `.env.local`; Open Library alone is enough for every lookup. See PLAN.md §6.

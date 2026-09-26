@@ -17,6 +17,12 @@ export interface GoogleBooksOptions {
   baseUrl?: string;
   /** How long cached responses stay fresh (when the client has a cache). Default 30 days. */
   cacheTtlMs?: number;
+  /**
+   * Optional API key (free, from Google Cloud). Keyless requests share a
+   * project quota that can be zero; a key gives the app its own daily quota.
+   * The key is sent with each request but never stored in the response cache.
+   */
+  apiKey?: string;
 }
 
 /**
@@ -34,11 +40,19 @@ function term(operator: string, value: string | undefined): string | null {
   return v ? `${operator}:"${v}"` : null;
 }
 
-/** Google Books, keyless (PLAN §6): ISBN lookup and title/author search. */
-export function createGoogleBooks({ http, baseUrl = GOOGLE_BOOKS_BASE, cacheTtlMs = DEFAULT_CACHE_TTL_MS }: GoogleBooksOptions): MetadataProvider {
+/** Google Books (PLAN §6): ISBN lookup and title/author search, keyless or with an optional API key. */
+export function createGoogleBooks({
+  http,
+  baseUrl = GOOGLE_BOOKS_BASE,
+  cacheTtlMs = DEFAULT_CACHE_TTL_MS,
+  apiKey,
+}: GoogleBooksOptions): MetadataProvider {
+  const key = apiKey?.trim() || undefined;
+
   async function volumes(q: string, maxResults: number, signal?: AbortSignal): Promise<GbVolumesResponse> {
-    const url = withQuery(`${baseUrl}/volumes`, { q, maxResults, printType: 'books', fields: VOLUME_FIELDS });
-    return http.getJson<GbVolumesResponse>(url, { signal, giveUp: isDailyQuotaError, cacheTtl: cacheTtlMs });
+    const cacheKey = withQuery(`${baseUrl}/volumes`, { q, maxResults, printType: 'books', fields: VOLUME_FIELDS });
+    const url = key ? withQuery(cacheKey, { key }) : cacheKey;
+    return http.getJson<GbVolumesResponse>(url, { signal, giveUp: isDailyQuotaError, cacheTtl: cacheTtlMs, cacheKey });
   }
 
   return {

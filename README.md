@@ -33,7 +33,7 @@ flowchart LR
   Pick --> DB[(SQLite on your phone)]
 ```
 
-Recognition runs on the device; the only network traffic is ISBN or title lookups to [Open Library](https://openlibrary.org/developers/api) and [Google Books](https://developers.google.com/books), both free and used without API keys. Everything else stays on your phone.
+Recognition runs on the device; the only network traffic is ISBN or title lookups to [Open Library](https://openlibrary.org/developers/api) and [Google Books](https://developers.google.com/books), both free. Open Library needs no key; Google Books is optional and works best with a free API key (see below). Everything else stays on your phone.
 
 ## Tech stack
 
@@ -62,6 +62,8 @@ git config core.hooksPath .githooks   # enable the commit-message hook
 npm run web        # run in the browser (the web build is used for automated UI tests)
 npm run android    # run on an emulator or device
 ```
+
+Optional: to use Google Books as a second lookup source, copy `.env.example` to `.env.local` and set `EXPO_PUBLIC_GOOGLE_BOOKS_API_KEY` to a free API key (Google Cloud → enable the Books API → create an API key and restrict it to that API). `.env.local` is git-ignored; never commit a key. Without it, lookups use Open Library alone.
 
 From Phase 03 onward the app uses a native text-recognition module, so it needs a development build (`npx expo run:android`) rather than Expo Go.
 

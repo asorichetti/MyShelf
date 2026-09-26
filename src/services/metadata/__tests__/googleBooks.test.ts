@@ -107,6 +107,43 @@ describe('googleBooks.lookupIsbn', () => {
   });
 });
 
+describe('googleBooks with an API key', () => {
+  const isbn = '9780552166591';
+  const keyedUrl = `${gbIsbnUrl(isbn)}&key=test-key`;
+
+  function keyedSetup(apiKey: string) {
+    const fixtures = createFixtureFetch({ [keyedUrl]: { body: gbFixtures.colourOfMagic } });
+    const stored = new Map<string, string>();
+    const cache = {
+      read: async (key: string) => stored.get(key) ?? null,
+      write: async (key: string, body: string) => void stored.set(key, body),
+    };
+    const http = createHttpClient({ fetch: fixtures.fetch, limiter: createRateLimiter({ minIntervalMs: 0 }), retryDelaysMs: [], cache });
+    return { gb: createGoogleBooks({ http, apiKey }), fixtures, stored };
+  }
+
+  it('sends the key with the request', async () => {
+    const { gb, fixtures } = keyedSetup('test-key');
+    await expect(gb.lookupIsbn(isbn)).resolves.toHaveLength(1);
+    expect(fixtures.calls).toEqual([keyedUrl]);
+  });
+
+  it('caches the response under the keyless URL, so the key is never stored', async () => {
+    const { gb, fixtures, stored } = keyedSetup('test-key');
+    await gb.lookupIsbn(isbn);
+    await gb.lookupIsbn(isbn);
+    expect([...stored.keys()]).toEqual([gbIsbnUrl(isbn)]);
+    expect([...stored.keys()].join()).not.toMatch(/test-key/);
+    expect(fixtures.calls).toHaveLength(1);
+  });
+
+  it('treats a blank key as no key', async () => {
+    const { gb, fixtures } = keyedSetup('   ');
+    await gb.lookupIsbn(isbn).catch(() => undefined);
+    expect(fixtures.calls[0]).not.toMatch(/key=/);
+  });
+});
+
 describe('googleBooks.search', () => {
   it('searches with intitle: and inauthor:', async () => {
     const { gb, fixtures } = setup();

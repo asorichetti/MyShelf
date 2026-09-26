@@ -137,9 +137,15 @@ export function createMetadataService(options: MetadataServiceOptions): Metadata
 
 export interface DefaultServiceOptions extends Omit<MetadataServiceOptions, 'openLibrary' | 'googleBooks'> {
   http: HttpClient;
+  /** Optional Google Books API key; see `GoogleBooksOptions.apiKey`. */
+  googleBooksApiKey?: string;
 }
 
 /** The service with both real providers on one HTTP client. */
-export function createDefaultMetadataService({ http, ...rest }: DefaultServiceOptions): MetadataService {
-  return createMetadataService({ ...rest, openLibrary: createOpenLibrary({ http }), googleBooks: createGoogleBooks({ http }) });
+export function createDefaultMetadataService({ http, googleBooksApiKey, ...rest }: DefaultServiceOptions): MetadataService {
+  return createMetadataService({
+    ...rest,
+    openLibrary: createOpenLibrary({ http }),
+    googleBooks: createGoogleBooks({ http, apiKey: googleBooksApiKey }),
+  });
 }
