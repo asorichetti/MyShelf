@@ -106,7 +106,7 @@ Verify behaviour by running it — tests, the web app, a device — rather than 
 
 - **Enable the hook once per clone:** `git config core.hooksPath .githooks`.
 - Commit small, logically grouped changes, often. Subject in the imperative mood, ≤ 72 characters ("Add loans repository with open-loan guard"); add a body when the reason is not obvious.
-- **No attribution to any AI tool, assistant or language model — anywhere.** No `Co-Authored-By` trailers naming one, no "generated with/by" footers, and no such mentions in pull request descriptions, code comments or docs. The `commit-msg` hook rejects offending commit messages; if it rejects a legitimate message, reword it rather than bypassing the hook.
+- **No attribution to any AI tool, assistant or language model — anywhere.** No `Co-Authored-By` trailers naming one, no "generated with/by" footers, and no such mentions in pull request descriptions, code comments or docs. The `commit-msg` hook rejects offending commit messages, and CI runs the same hook on every commit of a push or pull request (`scripts/check-commit-messages.sh`), so a clone without the hook enabled is still caught; if it rejects a legitimate message, reword it rather than bypassing the hook.
 - Never commit secrets, keystores or local tool configuration (see `.gitignore`).
 - Pull requests: link the card ID(s), summarise what changed, list how it was verified (commands run, journeys, Maestro flows, screenshots), and include the `STATUS.md` tick.
 

@@ -205,8 +205,9 @@ Decisions made while building the foundation, all described in `PLAN.md`:
 - **Acceptance:** `npm run -s autotest -- smoke --serve dist` passes after `npm run export:web`; the page reports `crossOriginIsolated === true`; a missing asset shows up in `network.json` as a 404.
 - **Tests:** unit tests against the server on an ephemeral port: SPA fallback, real 404 for missing assets, isolation headers, path traversal rejected.
 
-### P00-22 CI check of commit messages
+### P00-22 CI check of commit messages — done
 
+- **Delivered:** CI job **Commit messages** (full-history checkout) runs `scripts/check-commit-messages.sh <base> <head>`, which passes every commit message in the range to `.githooks/commit-msg` and reports each rejected commit by short hash and subject as a GitHub error annotation. Pull requests check base..head of the PR (not GitHub's merge commit); pushes check `before`..`after`. When `before` is all zeros (first push of a branch) it checks the commits since the default branch, or the whole history when the branch is the default branch; on a force push it tries to fetch the old tip and checks the commits since the merge base, falling back the same way. Every scenario (clean range, rejected commit, first push, force push with known and unknown old tip) was run locally in a throwaway clone; the whole existing history passes the hook. Not yet proven on GitHub itself.
 - **Description:** A CI step (in the App checks job, or a small job of its own) that runs `.githooks/commit-msg` against every commit message in the pushed range or pull request (`git log --format=%B` per commit from the base to `HEAD`, each written to a temp file and passed to the hook), so a commit made without the hook enabled is still caught. Needs a checkout with enough history (`fetch-depth: 0`).
 - **Files:** `.github/workflows/ci.yml`.
 - **Acceptance:** a pull request containing a commit whose message the hook rejects fails CI and names the commit; normal pull requests pass.

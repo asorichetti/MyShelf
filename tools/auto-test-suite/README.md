@@ -444,10 +444,12 @@ Re-export after changing app code: `--serve` tests whatever is in `dist/`.
 
 ## CI
 
-`.github/workflows/ci.yml` has two jobs:
+`.github/workflows/ci.yml` has three jobs:
 
-- **App checks**: `npm ci`, `npm run check` (selector drift check, typecheck,
-  Jest).
+- **App checks**: `npm ci`, `npm run check` (selector drift check, lint,
+  typecheck, Jest).
+- **Commit messages**: runs `.githooks/commit-msg` on every commit in the pull
+  request or pushed range (`scripts/check-commit-messages.sh`).
 - **auto-test-suite smoke**: `npm ci`, install Chromium with its system
   dependencies (the browser download is cached per Playwright version),
   `npm run autotest:check`, start the Expo dev server just long enough to
