@@ -18,8 +18,8 @@ afterEach(async () => {
 });
 
 describe('loadFixture', () => {
-  it('knows the empty, first-run, demo, large and series fixtures', () => {
-    expect(fixtureNames).toEqual(['empty', 'first-run', 'demo', 'large', 'series']);
+  it('knows the empty, first-run, demo, large, huge and series fixtures', () => {
+    expect(fixtureNames).toEqual(['empty', 'first-run', 'demo', 'large', 'huge', 'series']);
     expect(isFixtureName('demo')).toBe(true);
     expect(isFixtureName('toString')).toBe(false);
     expect(isFixtureName('nope')).toBe(false);
@@ -90,6 +90,16 @@ describe('loadFixture', () => {
     expect(counts.authors).toBe(200);
     expect(counts.series).toBe(40);
   }, 30_000);
+
+  it('huge: 10,000 books, the large pattern with notes', async () => {
+    await loadFixture(db, 'huge');
+    const counts = await libraryRepo.countRows(db);
+    expect(counts.books).toBe(10_000);
+    expect(counts.authors).toBe(200);
+    expect(counts.series).toBe(40);
+    expect(fixtures.huge.books.slice(0, 2000).map((b) => b.title)).toEqual(fixtures.large.books.map((b) => b.title));
+    expect(fixtures.huge.books.filter((b) => b.notes).length).toBe(Math.ceil(10_000 / 7));
+  }, 60_000);
 
   it('replaces the previous library but keeps settings', async () => {
     await settingsRepo.setSetting(db, 'bookyMode', 'quiet');
