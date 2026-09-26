@@ -72,7 +72,7 @@ The headline feature: point the phone at a book and get it onto the shelf with t
 
 - **Description:** On web the Scan tab shows "Type an ISBN" and "Type the cover text" fields (clearly labelled as the web test harness equivalent) that feed `useScanSession` exactly where the camera and OCR would. In E2E builds, route `src/app/e2e/scan.tsx` accepts `myshelf://e2e/scan?isbn=…` or `?text=…` and injects the result into the active scan session. Both are unavailable in production Android builds.
 - **Files:** `src/components/scan/WebScanInput.tsx`, `src/components/scan/ScannerHost.{native,web}.tsx`, `src/app/e2e/scan.tsx`.
-- **Acceptance:** the full scan → pick → save flow is runnable in the auto-test-suite and via Maestro deep link.
+- **Acceptance:** the full scan → pick → save flow is runnable in the auto test suite and via Maestro deep link.
 - **Tests:** `src/__tests__/scan.web.test.tsx`, `src/app/e2e/__tests__/scan.test.tsx`.
 
 ### P03-08 Edition picker
@@ -147,11 +147,13 @@ The headline feature: point the phone at a book and get it onto the shelf with t
 
 (`scan.root` and `scan.title` already exist from P00-11 — keep them, add the rest.)
 
-## auto-test-suite journeys
+## Auto test suite journeys
 
-| Journey | Tags | Steps |
+Each journey is added by the card that builds its screen. Suite `core` journeys run in `smoke` (CI and the regression gate); the rest use suite `p03` (`auto-test-suite journey --suite p03`).
+
+| Journey | Suite | Steps |
 |---|---|---|
-| `scan-web-isbn-single` | `smoke`, `p03` | fixture `empty`, mocks; `/scan`; type ISBN → picker with one edition → confirm → detail; Booky excited bubble |
+| `scan-web-isbn-single` | `core` | fixture `empty`, mocks; `/scan`; type ISBN → picker with one edition → confirm → detail; Booky excited bubble |
 | `scan-web-cover-text` | `p03` | type cover text "THE COLOUR OF MAGIC TERRY PRATCHETT" → picker groups → expand work → choose edition → saved with series Discworld #1 |
 | `scan-not-found-manual` | `p03` | ISBN with no results → "Add manually" → form prefilled with ISBN |
 | `scan-duplicate` | `p03` | fixture `demo`; type ISBN of an existing book → duplicate sheet → add another copy → 13 rows |
@@ -182,10 +184,10 @@ Before any card in this phase is ticked, and before the phase is closed, both mu
 
 ```bash
 npm run check                    # selectors:check + typecheck + Jest (+ lint once P00-20 lands)
-auto-test-suite smoke --ux-gates fail     # via `npm run ui -- smoke --ux-gates fail` once P00-17 lands
+npm run -s autotest:smoke        # builds the auto test suite and runs `smoke` (core suite, gates fail)
 ```
 
-Phase close also requires every journey tagged `p03` to pass (`auto-test-suite journey --tag p03 --ux-gates fail`) and the Maestro flows above to have been run on an emulator or device, with the result noted in the pull request.
+`autotest:smoke` needs the web server running (`CI=1 npx expo start --web --port 8081`). Phase close also requires every journey, including this phase's, to pass with gates enforced (`npm run -s autotest:journeys -- --ux-gates fail`) and the Maestro flows above to have been run on an emulator or device, with the result noted in the pull request.
 
 ## Exit criteria
 

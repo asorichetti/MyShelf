@@ -119,12 +119,14 @@ Give the user control and peace of mind: sensible preferences, a full backup the
 
 (`settings.root`/`settings.title` exist from P00-11 — extend the group.)
 
-## auto-test-suite journeys
+## Auto test suite journeys
 
-| Journey | Tags | Steps |
+Each journey is added by the card that builds its screen. Suite `core` journeys run in `smoke` (CI and the regression gate); the rest use suite `p08` (`auto-test-suite journey --suite p08`).
+
+| Journey | Suite | Steps |
 |---|---|---|
-| `settings-overview` | `smoke`, `p08` | Settings tab → every section row visible; a11y gate |
-| `backup-roundtrip` | `smoke`, `p08` | fixture `demo`; export (web download captured by Playwright) → erase → restore replace with the downloaded file → 12 books, loans intact |
+| `settings-overview` | `core` | Settings tab → every section row visible; a11y gate |
+| `backup-roundtrip` | `core` | fixture `demo`; export (web download captured by Playwright) → erase → restore replace with the downloaded file → 12 books, loans intact |
 | `restore-corrupt-file` | `p08` | upload corrupt JSON → `restore.error`, library unchanged |
 | `csv-import-goodreads` | `p08` | fixture `empty`; upload Goodreads fixture CSV → preset auto-selected → preview → import → report 20 imported |
 | `csv-export` | `p08` | export CSV → downloaded file has header and 12 rows (checked by the journey) |
@@ -153,10 +155,10 @@ Before any card in this phase is ticked, and before the phase is closed, both mu
 
 ```bash
 npm run check                    # selectors:check + typecheck + Jest (+ lint once P00-20 lands)
-auto-test-suite smoke --ux-gates fail     # via `npm run ui -- smoke --ux-gates fail` once P00-17 lands
+npm run -s autotest:smoke        # builds the auto test suite and runs `smoke` (core suite, gates fail)
 ```
 
-Phase close also requires every journey tagged `p08` to pass (`auto-test-suite journey --tag p08 --ux-gates fail`) and the Maestro flows above to have been run on an emulator or device, with the result noted in the pull request.
+`autotest:smoke` needs the web server running (`CI=1 npx expo start --web --port 8081`). Phase close also requires every journey, including this phase's, to pass with gates enforced (`npm run -s autotest:journeys -- --ux-gates fail`) and the Maestro flows above to have been run on an emulator or device, with the result noted in the pull request.
 
 ## Exit criteria
 

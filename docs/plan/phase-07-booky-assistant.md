@@ -50,7 +50,7 @@ Turn Booky from a component (P00-10) into a genuinely helpful, never-annoying as
 
 - **Description:** Every list or screen that can be empty uses `EmptyState` with an appropriate Booky expression and a single clear action: Shelf, search no-matches, Loans (out / history), Groups, group detail, Series list, Genres, Authors, Scan review tray, Pending lookups. Add a `first-run` fixture.
 - **Files:** screens listed; `src/testing/fixtures/firstRun.ts`.
-- **Acceptance:** checklist in the PR with a auto-test-suite screenshot of each empty state.
+- **Acceptance:** checklist in the PR with an auto test suite screenshot of each empty state (the `empty-states-gallery` journey).
 - **Tests:** one component test per empty state (`src/__tests__/emptyStates.test.tsx`).
 
 ### P07-05 Contextual help
@@ -71,7 +71,7 @@ Turn Booky from a component (P00-10) into a genuinely helpful, never-annoying as
 
 - **Description:** Booky docks bottom-right above the tab bar; the bubble never covers the focused input or a primary button (measure and flip above/left when needed); keyboard-aware; hidden in full-screen camera view except for scan tips which appear at the top.
 - **Files:** `src/components/booky/BookyOverlay.tsx`, `src/components/booky/placement.ts`.
-- **Acceptance:** pure `placement()` tested for edge cases; auto-test-suite screenshot review on phone and tablet viewports.
+- **Acceptance:** pure `placement()` tested for edge cases; screenshot review at the `mobile` and `tablet` viewports (`auto-test-suite screenshot --viewports mobile,tablet`).
 - **Tests:** `src/components/booky/__tests__/placement.test.ts`.
 
 ### P07-08 Motion and reduce-motion
@@ -85,7 +85,7 @@ Turn Booky from a component (P00-10) into a genuinely helpful, never-annoying as
 
 - **Description:** Verify and fix: avatar hidden from accessibility tree; bubble text announced politely (Android `announceForAccessibility`, web `aria-live="polite"` region); no focus steal; dismiss labelled, 48 dp; bubble text contrast AA; every error Booky mentions also appears inline on the screen.
 - **Files:** `src/components/booky/*`.
-- **Acceptance:** auto-test-suite `a11y` gate clean on screens with a bubble open; TalkBack manual check noted in PR.
+- **Acceptance:** the auto test suite's `a11y` gate clean on screens with a bubble open; TalkBack manual check noted in PR.
 - **Tests:** `src/components/booky/__tests__/a11y.test.tsx`.
 
 ---
@@ -106,13 +106,15 @@ Turn Booky from a component (P00-10) into a genuinely helpful, never-annoying as
 
 (`booky.avatar`…`booky.action` exist from P00 — extend the group.)
 
-## auto-test-suite journeys
+## Auto test suite journeys
 
-| Journey | Tags | Steps |
+Each journey is added by the card that builds its screen. Suite `core` journeys run in `smoke` (CI and the regression gate); the rest use suite `p07` (`auto-test-suite journey --suite p07`).
+
+| Journey | Suite | Steps |
 |---|---|---|
-| `onboarding-first-run` | `smoke`, `p07` | fixture `first-run`; 4 cards via next → start → lands on Scan; reload → no onboarding |
+| `onboarding-first-run` | `core` | fixture `first-run`; 4 cards via next → start → lands on Scan; reload → no onboarding |
 | `onboarding-skip` | `p07` | skip on card 1 → Shelf |
-| `booky-help-each-tab` | `smoke`, `p07` | for each tab: help button → bubble text non-empty → dismiss; a11y gate enforced with bubble open |
+| `booky-help-each-tab` | `core` | for each tab: help button → bubble text non-empty → dismiss; a11y gate enforced with bubble open |
 | `booky-mute-tip` | `p07` | trigger empty-shelf tip → mute → reload → tip not shown |
 | `booky-modes` | `p07` | set Off → avatar hidden, help still works; set Quiet → book-added tip not shown |
 | `empty-states-gallery` | `p07` | fixture `empty`; visit every empty state; screenshot each for review |
@@ -138,10 +140,10 @@ Before any card in this phase is ticked, and before the phase is closed, both mu
 
 ```bash
 npm run check                    # selectors:check + typecheck + Jest (+ lint once P00-20 lands)
-auto-test-suite smoke --ux-gates fail     # via `npm run ui -- smoke --ux-gates fail` once P00-17 lands
+npm run -s autotest:smoke        # builds the auto test suite and runs `smoke` (core suite, gates fail)
 ```
 
-Phase close also requires every journey tagged `p07` to pass (`auto-test-suite journey --tag p07 --ux-gates fail`) and the Maestro flows above to have been run on an emulator or device, with the result noted in the pull request.
+`autotest:smoke` needs the web server running (`CI=1 npx expo start --web --port 8081`). Phase close also requires every journey, including this phase's, to pass with gates enforced (`npm run -s autotest:journeys -- --ux-gates fail`) and the Maestro flows above to have been run on an emulator or device, with the result noted in the pull request.
 
 ## Exit criteria
 

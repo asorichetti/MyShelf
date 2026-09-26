@@ -120,12 +120,14 @@ Never lose a book to a friend again. The user records who borrowed a book and wh
 
 (`loans.root` and `loans.title` exist from P00-11 — extend the group.)
 
-## auto-test-suite journeys
+## Auto test suite journeys
 
-| Journey | Tags | Steps |
+Each journey is added by the card that builds its screen. Suite `core` journeys run in `smoke` (CI and the regression gate); the rest use suite `p05` (`auto-test-suite journey --suite p05`).
+
+| Journey | Suite | Steps |
 |---|---|---|
-| `loans-overview` | `smoke`, `p05` | fixture `demo` with `today` fixed; Loans tab → 2 rows, overdue first with "OVERDUE" stamp |
-| `loan-lend-return` | `smoke`, `p05` | fixture `demo`; open a home book → lend to new borrower "Sam" due in 14 days → stamp on detail → Loans tab shows it → mark returned → History contains it |
+| `loans-overview` | `core` | fixture `demo` with `today` fixed; Loans tab → 2 rows, overdue first with "OVERDUE" stamp |
+| `loan-lend-return` | `core` | fixture `demo`; open a home book → lend to new borrower "Sam" due in 14 days → stamp on detail → Loans tab shows it → mark returned → History contains it |
 | `loan-double-lend-blocked` | `p05` | open a book already on loan → no Lend button, "Mark returned" visible |
 | `borrower-detail` | `p05` | open loan row borrower → current and past lists |
 | `loans-empty` | `p05` | fixture `empty` → Booky sleepy empty state |
@@ -151,10 +153,10 @@ Before any card in this phase is ticked, and before the phase is closed, both mu
 
 ```bash
 npm run check                    # selectors:check + typecheck + Jest (+ lint once P00-20 lands)
-auto-test-suite smoke --ux-gates fail     # via `npm run ui -- smoke --ux-gates fail` once P00-17 lands
+npm run -s autotest:smoke        # builds the auto test suite and runs `smoke` (core suite, gates fail)
 ```
 
-Phase close also requires every journey tagged `p05` to pass (`auto-test-suite journey --tag p05 --ux-gates fail`) and the Maestro flows above to have been run on an emulator or device, with the result noted in the pull request.
+`autotest:smoke` needs the web server running (`CI=1 npx expo start --web --port 8081`). Phase close also requires every journey, including this phase's, to pass with gates enforced (`npm run -s autotest:journeys -- --ux-gates fail`) and the Maestro flows above to have been run on an emulator or device, with the result noted in the pull request.
 
 ## Exit criteria
 

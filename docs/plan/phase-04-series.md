@@ -101,11 +101,13 @@ Books know which series they belong to and where they sit in it. The user can se
 }
 ```
 
-## auto-test-suite journeys
+## Auto test suite journeys
 
-| Journey | Tags | Steps |
+Each journey is added by the card that builds its screen. Suite `core` journeys run in `smoke` (CI and the regression gate); the rest use suite `p04` (`auto-test-suite journey --suite p04`).
+
+| Journey | Suite | Steps |
 |---|---|---|
-| `series-list` | `smoke`, `p04` | fixture `demo`; `/series` → 2 rows with progress text |
+| `series-list` | `core` | fixture `demo`; `/series` → 2 rows with progress text |
 | `series-detail-gaps` | `p04` | open Discworld → spines in order, one `seriesDetail.gap` "#2 missing" |
 | `series-assign-in-form` | `p04` | edit a book → pick series "Discworld", position 2 → save → series detail has no gap |
 | `series-merge` | `p04` | create duplicate series "Disc World" on a book → merge into Discworld → one series |
@@ -131,10 +133,10 @@ Before any card in this phase is ticked, and before the phase is closed, both mu
 
 ```bash
 npm run check                    # selectors:check + typecheck + Jest (+ lint once P00-20 lands)
-auto-test-suite smoke --ux-gates fail     # via `npm run ui -- smoke --ux-gates fail` once P00-17 lands
+npm run -s autotest:smoke        # builds the auto test suite and runs `smoke` (core suite, gates fail)
 ```
 
-Phase close also requires every journey tagged `p04` to pass (`auto-test-suite journey --tag p04 --ux-gates fail`) and the Maestro flows above to have been run on an emulator or device, with the result noted in the pull request.
+`autotest:smoke` needs the web server running (`CI=1 npx expo start --web --port 8081`). Phase close also requires every journey, including this phase's, to pass with gates enforced (`npm run -s autotest:journeys -- --ux-gates fail`) and the Maestro flows above to have been run on an emulator or device, with the result noted in the pull request.
 
 ## Exit criteria
 

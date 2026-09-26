@@ -2,7 +2,7 @@
 
 ## Goal
 
-A usable, offline catalogue: the user can add a book by hand, see it on the Shelf as a catalogue card, open its detail page, edit every field (including authors and genres), and delete it. Test fixtures make every screen reachable in a known state for the auto-test-suite and Maestro.
+A usable, offline catalogue: the user can add a book by hand, see it on the Shelf as a catalogue card, open its detail page, edit every field (including authors and genres), and delete it. Test fixtures make every screen reachable in a known state for the auto test suite and Maestro.
 
 ## Scope
 
@@ -21,7 +21,7 @@ A usable, offline catalogue: the user can add a book by hand, see it on the Shel
 
 ## Prerequisites
 
-- Phase 00 complete: theme, UI primitives, Booky, tabs, `Db` + repositories + `0001_init`, auto-test-suite, CI.
+- Phase 00 complete: theme, UI primitives, Booky, tabs, `Db` + repositories + `0001_init`, the auto test suite, CI.
 
 ---
 
@@ -146,18 +146,20 @@ A usable, offline catalogue: the user can add a book by hand, see it on the Shel
 
 Repeated elements (rows, chips) share one id; tests pick by index or by contained text.
 
-## auto-test-suite journeys
+## Auto test suite journeys
 
-| Journey | Tags | Steps |
+Each journey is added by the card that builds its screen. Suite `core` journeys run in `smoke` (CI and the regression gate); the rest use suite `p01` (`auto-test-suite journey --suite p01`).
+
+| Journey | Suite | Steps |
 |---|---|---|
-| `shelf-empty` | `smoke`, `p01` | fixture `empty`; expect `emptyState.root`, Booky bubble text |
-| `shelf-demo-list` | `smoke`, `p01` | fixture `demo`; expect 12 `shelf.row`; screenshot |
+| `shelf-empty` | `core` | fixture `empty`; expect `emptyState.root`, Booky bubble text |
+| `shelf-demo-list` | `core` | fixture `demo`; expect 12 `shelf.row`; screenshot |
 | `shelf-search-sort` | `p01` | fixture `demo`; search "prat" → rows contain Pratchett; sort by year; clear → 12 rows |
-| `book-add-manual` | `smoke`, `p01` | fixture `empty`; add button → fill title, author, year, genre → save → detail shows values → back → 1 row |
+| `book-add-manual` | `core` | fixture `empty`; add button → fill title, author, year, genre → save → detail shows values → back → 1 row |
 | `book-add-invalid-isbn` | `p01` | fill ISBN `9780000000000` → save → `bookForm.error` visible, still on form |
 | `book-edit` | `p01` | fixture `demo`; open first row → edit → change year → save → detail updated |
 | `book-delete-undo` | `p01` | fixture `demo`; delete → confirm → 11 rows → undo → 12 rows |
-| `book-detail-missing` | `p01` | open `/book/99999`; expect `pageState.error` (gate configured to expect error) |
+| `book-detail-missing` | `p01` | open `/book/99999`; expect `pageState.error`; the journey waives `pagestate`/`error-marker` with a reason (`c.Gates.Waive`), so render and a11y are skipped for that page |
 
 ## Maestro flows
 
@@ -172,7 +174,7 @@ Repeated elements (rows, chips) share one id; tests pick by index or by containe
 |---|---|
 | E2E route shipped active in production | guarded by `EXPO_PUBLIC_E2E` (inlined at build time); Jest test asserts inert behaviour; release checklist verifies |
 | Slow list with thousands of books | `large` fixture + `getItemLayout`, memoised rows; FTS in P09-03 if needed |
-| Form complexity on small screens | sections with sticky save button; tested at phone viewport and 200 % font scale |
+| Form complexity on small screens | sections with sticky save button; tested at the `mobile` viewport and 200 % font scale |
 
 ## Regression gate
 
@@ -180,10 +182,10 @@ Before any card in this phase is ticked, and before the phase is closed, both mu
 
 ```bash
 npm run check                    # selectors:check + typecheck + Jest (+ lint once P00-20 lands)
-auto-test-suite smoke --ux-gates fail     # via `npm run ui -- smoke --ux-gates fail` once P00-17 lands
+npm run -s autotest:smoke        # builds the auto test suite and runs `smoke` (core suite, gates fail)
 ```
 
-Phase close also requires every journey tagged `p01` to pass (`auto-test-suite journey --tag p01 --ux-gates fail`) and the Maestro flows above to have been run on an emulator or device, with the result noted in the pull request.
+`autotest:smoke` needs the web server running (`CI=1 npx expo start --web --port 8081`). Phase close also requires every journey, including this phase's, to pass with gates enforced (`npm run -s autotest:journeys -- --ux-gates fail`) and the Maestro flows above to have been run on an emulator or device, with the result noted in the pull request.
 
 ## Exit criteria
 
