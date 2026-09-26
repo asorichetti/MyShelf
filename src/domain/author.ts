@@ -35,3 +35,12 @@ export function toSortName(name: string): string {
   const given = parts.slice(0, start).join(' ');
   return suffix ? `${surname}, ${given}, ${suffix}` : `${surname}, ${given}`;
 }
+
+/**
+ * The index letter an author is filed under: the first letter of the sort
+ * name ("Pratchett, Terry" -> "P"), accents removed; "#" for anything else.
+ */
+export function authorLetter(author: Pick<Author, 'name' | 'sortName'>): string {
+  const first = (author.sortName || author.name).trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '').charAt(0).toUpperCase();
+  return /^[A-Z]$/.test(first) ? first : '#';
+}

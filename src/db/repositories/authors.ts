@@ -56,6 +56,44 @@ export async function deleteAuthor(db: Db, id: number): Promise<boolean> {
   return (await db.run('DELETE FROM authors WHERE id = ?', [id])).changes > 0;
 }
 
+export interface AuthorWithCount extends Author {
+  /** Books that credit the author. */
+  count: number;
+}
+
+/** Every author A-Z by sort name, with how many books credit them. */
+export async function listAuthorsWithCounts(db: Db): Promise<AuthorWithCount[]> {
+  const rows = await db.all<AuthorRow & { count: number }>(
+    `SELECT a.id, a.name, a.sort_name, COUNT(ba.book_id) AS count
+     FROM authors a LEFT JOIN book_authors ba ON ba.author_id = a.id
+     GROUP BY a.id ORDER BY COALESCE(a.sort_name, a.name) COLLATE NOCASE, a.id`,
+  );
+  return rows.map((r) => ({ ...toAuthor(r), count: r.count }));
+}
+
+/**
+ * Merges a duplicate author (`sourceId`, e.g. "J. R. R. Tolkien") into
+ * `targetId` ("J.R.R. Tolkien") in one transaction: the source's books are
+ * credited to the target (keeping role and credit order; a book that already
+ * credits the target is not credited twice) and the source is deleted.
+ * Returns the target, or null when either is missing or they are the same.
+ */
+export async function mergeAuthors(db: Db, sourceId: number, targetId: number): Promise<Author | null> {
+  if (sourceId === targetId) return null;
+  return db.transaction(async (tx) => {
+    const [source, target] = [await getAuthor(tx, sourceId), await getAuthor(tx, targetId)];
+    if (!source || !target) return null;
+    await tx.run(
+      `INSERT INTO book_authors (book_id, author_id, role, position)
+       SELECT book_id, ?, role, position FROM book_authors WHERE author_id = ?
+       ON CONFLICT (book_id, author_id) DO NOTHING`,
+      [targetId, sourceId],
+    );
+    await tx.run('DELETE FROM authors WHERE id = ?', [sourceId]);
+    return target;
+  });
+}
+
 /** Replaces a book's authors; list order becomes their credited order. */
 export async function setBookAuthors(db: Db, bookId: number, links: BookAuthorLink[]): Promise<void> {
   await db.transaction(async (tx) => {
