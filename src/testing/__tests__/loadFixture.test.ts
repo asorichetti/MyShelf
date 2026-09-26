@@ -18,8 +18,8 @@ afterEach(async () => {
 });
 
 describe('loadFixture', () => {
-  it('knows the empty, demo and large fixtures', () => {
-    expect(fixtureNames).toEqual(['empty', 'demo', 'large']);
+  it('knows the empty, demo, large and series fixtures', () => {
+    expect(fixtureNames).toEqual(['empty', 'demo', 'large', 'series']);
     expect(isFixtureName('demo')).toBe(true);
     expect(isFixtureName('toString')).toBe(false);
     expect(isFixtureName('nope')).toBe(false);

@@ -1,10 +1,11 @@
 import { demo } from './demo';
 import { empty } from './empty';
 import { large } from './large';
+import { series } from './series';
 
 import type { Fixture } from './types';
 
-export const fixtures = { empty, demo, large } satisfies Record<string, Fixture>;
+export const fixtures = { empty, demo, large, series } satisfies Record<string, Fixture>;
 
 export type FixtureName = keyof typeof fixtures;
 

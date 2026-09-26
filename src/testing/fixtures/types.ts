@@ -1,10 +1,11 @@
-import type { AuthorRole, NewBook } from '@/domain';
+import type { AuthorRole, NewBook, SeriesConfidence } from '@/domain';
 
 /** A book in a fixture: book fields plus its authors, genres and series by name. */
 export interface FixtureBook extends Omit<NewBook, 'seriesId' | 'seriesPosition'> {
   authors?: (string | { name: string; role: AuthorRole })[];
   genres?: string[];
-  series?: { name: string; position: number | null };
+  /** `detected` marks a series that came from a metadata guess of that confidence, so the book asks "Is this …?". */
+  series?: { name: string; position: number | null; detected?: Exclude<SeriesConfidence, 'high'> };
 }
 
 /** A loan, with dates relative to "today" so overdue stays overdue. */

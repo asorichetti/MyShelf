@@ -1,4 +1,4 @@
-import { authorsRepo, booksRepo, genresRepo, groupsRepo, libraryRepo, loansRepo, seriesRepo, type Db } from '@/db';
+import { authorsRepo, booksRepo, genresRepo, groupsRepo, libraryRepo, loansRepo, seriesRepo, settingsRepo, type Db } from '@/db';
 import { addDays, isbn13To10, today } from '@/domain';
 
 import { fixtures, type FixtureName } from './fixtures';
@@ -18,6 +18,7 @@ export async function loadFixture(db: Db, name: FixtureName): Promise<void> {
     const authorIds = new Map<string, number>();
     const genreIds = new Map<string, number>();
     const seriesIds = new Map<string, number>();
+    const pendingSeries: number[] = [];
     const cached = async (cache: Map<string, number>, key: string, make: () => Promise<{ id: number }>) => {
       const hit = cache.get(key);
       if (hit != null) return hit;
@@ -36,6 +37,7 @@ export async function loadFixture(db: Db, name: FixtureName): Promise<void> {
         seriesPosition: series?.position ?? null,
       });
       bookIds.set(book.title, book.id);
+      if (series?.detected) pendingSeries.push(book.id);
       const links = [];
       for (const a of authors) {
         const { name, role } = typeof a === 'string' ? { name: a, role: 'author' as const } : a;
@@ -66,6 +68,11 @@ export async function loadFixture(db: Db, name: FixtureName): Promise<void> {
       });
       if (loan.returnedDaysAgo != null) await loansRepo.returnLoan(tx, created.id, addDays(now, -loan.returnedDaysAgo));
     }
+
+    // Settings survive the wipe, but these name books and series by id: start them afresh.
+    await settingsRepo.setSetting(tx, 'series.pendingConfirmBookIds', pendingSeries);
+    await settingsRepo.setSetting(tx, 'series.dismissedBookIds', []);
+    await settingsRepo.setSetting(tx, 'series.gapTipSeriesIds', []);
 
     for (const group of fixture.groups ?? []) {
       const { id } = await groupsRepo.createGroup(tx, { name: group.name, colour: group.colour, icon: group.icon });
