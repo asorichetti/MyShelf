@@ -11,7 +11,7 @@ import { SectionHeader } from '@/components/book/SectionHeader';
 import { SelectionBar } from '@/components/book/SelectionBar';
 import { ShelfToolbar } from '@/components/book/ShelfToolbar';
 import { SpineShelf, spinesPerShelf } from '@/components/book/SpineShelf';
-import { Booky, useBooky } from '@/components/booky';
+import { Booky, HelpButton, useBooky } from '@/components/booky';
 import { GroupEditorSheet, type GroupDraft } from '@/components/groups/GroupEditorSheet';
 import { GroupPickerSheet } from '@/components/groups/GroupPickerSheet';
 import { ShelfLoanStamp } from '@/components/loans/ShelfLoanStamp';
@@ -189,9 +189,12 @@ export function ShelfScreen() {
   const header = (
     <View style={{ gap: spacing.md, paddingBottom: spacing.sm }}>
       <View style={{ gap: spacing.xs }}>
-        <Heading level={1} testID={Testids.home.title}>
-          MyShelf
-        </Heading>
+        <View style={[styles.titleRow, { gap: spacing.sm }]}>
+          <Heading level={1} testID={Testids.home.title} style={styles.fill}>
+            MyShelf
+          </Heading>
+          <HelpButton screen="shelf" />
+        </View>
         <Text color="inkMuted">Your personal library, one shelf at a time.</Text>
         {total != null ? (
           <Text variant="stamp" color="accent" testID={Testids.home.bookCount}>
@@ -396,4 +399,5 @@ const styles = StyleSheet.create({
   fab: { position: 'absolute' },
   bar: { position: 'absolute' },
   chips: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center' },
+  titleRow: { flexDirection: 'row', alignItems: 'center' },
 });

@@ -54,10 +54,13 @@ describe('Scan modes and help (P03-13)', () => {
     expect(checked(Testids.scan.modeBarcode)).toBe(false);
   });
 
-  it('the help sheet explains where the barcode is, as a dialog, and closes', async () => {
+  it('help: Booky explains the screen, and "More help" opens the barcode sheet, a dialog that closes', async () => {
     renderApp(db, '/scan');
     await advance(0);
-    await press(Testids.scan.help);
+    await press(Testids.booky.helpButton);
+    expect(screen.getByTestId(Testids.booky.bubbleText)).toHaveTextContent(/Scan the barcode on the back cover/);
+    await press(Testids.booky.helpMore);
+    expect(screen.queryByTestId(Testids.booky.bubble)).toBeNull();
     const sheet = screen.getByTestId(Testids.scan.helpSheet);
     expect(sheet.props.role).toBe('dialog');
     expect(sheet).toHaveTextContent(/bottom of the back cover, starting 978 or 979/);

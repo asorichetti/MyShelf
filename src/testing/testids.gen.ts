@@ -65,7 +65,6 @@ export const Testids = {
     trayCount: 'scan-tray-count',
     reviewOpen: 'scan-review-open',
     lastScanned: 'scan-last-scanned',
-    help: 'scan-help',
     helpSheet: 'scan-help-sheet',
     helpClose: 'scan-help-close',
   },

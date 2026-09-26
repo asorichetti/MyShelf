@@ -2,6 +2,7 @@ import { router, type Href } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { View } from 'react-native';
 
+import { HelpButton } from '@/components/booky';
 import { ReminderSwitch } from '@/components/loans/ReminderSwitch';
 import { SettingsDivider, SettingsLinkRow, SettingsSection, SettingsSwitchRow } from '@/components/settings/SettingsRow';
 import { Heading, Screen, Text } from '@/components/ui';
@@ -81,9 +82,12 @@ export function SettingsScreen() {
   return (
     <Screen testID={T.root}>
       <View style={{ gap: spacing.xs }}>
-        <Heading level={1} testID={T.title}>
-          Settings
-        </Heading>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <Heading level={1} testID={T.title} style={{ flex: 1 }}>
+            Settings
+          </Heading>
+          <HelpButton screen="settings" />
+        </View>
         <Text color="inkMuted">Everything here stays on this phone. There are no accounts and nothing to sign in to.</Text>
       </View>
 

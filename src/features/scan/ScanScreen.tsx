@@ -3,12 +3,12 @@ import { useCallback, useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { CoverImage } from '@/components/book/CoverImage';
-import { BookyBubble, tipById, useOptionalBooky } from '@/components/booky';
+import { BookyBubble, HelpButton, tipById, useOptionalBooky } from '@/components/booky';
 import { ScanHelp } from '@/components/scan/ScanHelp';
 import { ScanModeSwitch, type ScanMode } from '@/components/scan/ScanModeSwitch';
 import { ScannerHost } from '@/components/scan/ScannerHost';
 import { ScanTray } from '@/components/scan/ScanTray';
-import { CatalogueCard, Chip, Heading, IconButton, Screen, Text } from '@/components/ui';
+import { CatalogueCard, Chip, Heading, Screen, Text } from '@/components/ui';
 import { joinNames, type OcrQuery } from '@/domain';
 import { ocrAvailable, recognizeText } from '@/services/recognition';
 import { Testids } from '@/testing/testids.gen';
@@ -96,7 +96,7 @@ export function ScanScreen() {
         <Heading level={1} testID={Testids.scan.title} style={styles.fill}>
           Scan a book
         </Heading>
-        <IconButton icon="help-circle-outline" accessibilityLabel="How to scan a book" onPress={() => setHelp(true)} testID={Testids.scan.help} />
+        <HelpButton screen="scan" onMore={() => setHelp(true)} />
       </View>
       <ScanModeSwitch mode={mode} onChange={setMode} />
 

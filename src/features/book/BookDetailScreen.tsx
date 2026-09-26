@@ -5,7 +5,7 @@ import { StyleSheet, View } from 'react-native';
 import { BookHeader } from '@/components/book/BookHeader';
 import { GenreChips } from '@/components/book/GenreChips';
 import { SummaryText } from '@/components/book/SummaryText';
-import { Booky } from '@/components/booky';
+import { Booky, HelpButton } from '@/components/booky';
 import { ConfirmDialog, EmptyState, Heading, IconButton, Menu, Screen, Stamp, Text, useSnackbar } from '@/components/ui';
 import type { BookDetail } from '@/domain';
 import { BookGroupsSection } from '@/features/groups/BookGroupsSection';
@@ -62,6 +62,7 @@ function BookDetailContent({ book }: { book: BookDetail }) {
       <View style={[styles.bar, { gap: spacing.xs, marginTop: -spacing.sm, marginHorizontal: -spacing.sm }]}>
         <IconButton icon="arrow-left" accessibilityLabel="Back" onPress={goBackOrShelf} testID={Testids.bookDetail.back} />
         <View style={styles.flex} />
+        <HelpButton screen="book" />
         <IconButton
           icon="pencil-outline"
           variant="tonal"

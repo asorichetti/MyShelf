@@ -2,7 +2,7 @@ import { router } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
-import { Booky } from '@/components/booky';
+import { Booky, HelpButton } from '@/components/booky';
 import { LoanRow } from '@/components/loans/LoanRow';
 import { EmptyState, Heading, Screen, SelectField, Text } from '@/components/ui';
 import type { LoanWithDetails } from '@/domain';
@@ -111,9 +111,12 @@ export function LoansScreen() {
   return (
     <Screen testID={Testids.loans.root}>
       <View style={{ gap: spacing.xs }}>
-        <Heading level={1} testID={Testids.loans.title}>
-          Loans
-        </Heading>
+        <View style={[styles.titleRow, { gap: spacing.sm }]}>
+          <Heading level={1} testID={Testids.loans.title} style={styles.fill}>
+            Loans
+          </Heading>
+          <HelpButton screen="loans" />
+        </View>
         <Text color="inkMuted">Who has your books, and when they’re due back.</Text>
         {overdueCount ? (
           <Text variant="stamp" color="danger">
@@ -147,4 +150,6 @@ export function LoansScreen() {
 const styles = StyleSheet.create({
   segments: { flexDirection: 'row', alignSelf: 'flex-start', borderWidth: 1.5, flexWrap: 'wrap' },
   segment: { alignItems: 'center', justifyContent: 'center' },
+  titleRow: { flexDirection: 'row', alignItems: 'center' },
+  fill: { flex: 1 },
 });

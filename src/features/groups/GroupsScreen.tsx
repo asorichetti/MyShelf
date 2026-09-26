@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { chunk } from '@/components/book/CoverGrid';
-import { Booky } from '@/components/booky';
+import { Booky, HelpButton } from '@/components/booky';
 import { GroupCard } from '@/components/groups/GroupCard';
 import { GroupEditorSheet, type GroupDraft } from '@/components/groups/GroupEditorSheet';
 import { Button, EmptyState, Heading, Screen, Text, useSnackbar } from '@/components/ui';
@@ -35,9 +35,12 @@ export function GroupsScreen() {
     <Screen testID={Testids.groups.root} pageState={groups ? 'content' : 'loading'}>
       <View style={[styles.header, { gap: spacing.md }]}>
         <View style={[styles.flex, { gap: spacing.xs }]}>
-          <Heading level={1} testID={Testids.groups.title}>
-            Groups
-          </Heading>
+          <View style={[styles.titleRow, { gap: spacing.sm }]}>
+            <Heading level={1} testID={Testids.groups.title} style={styles.grow}>
+              Groups
+            </Heading>
+            <HelpButton screen="groups" />
+          </View>
           <Text color="inkMuted">Your own little shelves, in any order you like.</Text>
         </View>
         {groups?.length ? (
@@ -81,5 +84,7 @@ const styles = StyleSheet.create({
   header: { flexDirection: 'row', alignItems: 'flex-start', flexWrap: 'wrap' },
   flex: { flex: 1, minWidth: 180 },
   row: { flexDirection: 'row' },
+  titleRow: { flexDirection: 'row', alignItems: 'center' },
+  grow: { flex: 1 },
   cell: { flex: 1, minWidth: 0 },
 });

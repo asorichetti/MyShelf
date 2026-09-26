@@ -3,7 +3,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
-import { Booky } from '@/components/booky';
+import { Booky, HelpButton } from '@/components/booky';
 import { SeriesBookList } from '@/components/series/SeriesBookList';
 import { SeriesShelf, seriesSlots } from '@/components/series/SeriesShelf';
 import { booksText, progressSentence } from '@/components/series/seriesText';
@@ -218,6 +218,7 @@ function SeriesContent({ series, books, progress, actions }: { series: Series; b
         <IconButton icon="arrow-left" accessibilityLabel="Back" onPress={goBackOrSeries} testID={Testids.seriesDetail.back} />
         <View style={styles.flex} />
         <Button variant="ghost" label="All series" onPress={() => router.navigate('/series')} testID={Testids.seriesDetail.allSeries} style={{ paddingHorizontal: spacing.md }} />
+        <HelpButton screen="series" />
         <IconButton icon="dots-vertical" accessibilityLabel="More actions" expanded={menuOpen} onPress={() => setMenuOpen(true)} testID={Testids.seriesDetail.more} />
       </View>
       <Menu

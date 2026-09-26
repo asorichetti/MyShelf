@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 
 import { formatLabels } from '@/components/book/BookForm';
-import { Booky } from '@/components/booky';
+import { Booky, HelpButton } from '@/components/booky';
 import { DuplicateSheet } from '@/components/scan/DuplicateSheet';
 import { EditionRow } from '@/components/scan/EditionRow';
 import { WorkGroup } from '@/components/scan/WorkGroup';
@@ -115,7 +115,9 @@ export function EditionPickerScreen() {
     <Screen testID={Testids.picker.root} scroll={false} edges={[...EDGES]} contentStyle={{ padding: 0, gap: 0, flex: 1 }}>
       <ScrollView style={styles.fill} contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xxl }}>
         <View style={{ gap: spacing.xs }}>
-          <TopBar onBack={backToScan} backLabel="Back to scanning" />
+          <TopBar onBack={backToScan} backLabel="Back to scanning">
+            <HelpButton screen="editions" />
+          </TopBar>
           <Heading level={1}>{single ? 'Is this your book?' : 'Which edition is yours?'}</Heading>
           <Text color="inkMuted">{intro}</Text>
         </View>

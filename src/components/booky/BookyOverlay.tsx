@@ -11,6 +11,7 @@ import { useTheme } from '@/theme';
 import { BookyBubble, type BookyAction } from './BookyBubble';
 import { useBooky, type ShownTip } from './BookyProvider';
 import { Celebration } from './Celebration';
+import { HelpSheet } from './HelpSheet';
 import { placement } from './placement';
 
 import type { TipTestGroup } from './tips';
@@ -45,9 +46,14 @@ const testIds: Record<TipTestGroup | 'booky', TipTestIds> = {
   },
 };
 
-/** Whether the overlay stays out of the way on this route. */
-export function isQuietRoute(segments: readonly string[]): boolean {
-  return QUIET_ROUTES.has(segments[0] ?? '') || BOTTOM_BARS.has(segments.join('/'));
+/**
+ * Whether a tip waits on this route: every tip on the fixture loader and the
+ * onboarding; all but help (asked for, and placed above the bar) on screens
+ * whose bottom bar holds the primary action.
+ */
+export function tipWaits(segments: readonly string[], tip: Pick<ShownTip, 'tip'>): boolean {
+  if (QUIET_ROUTES.has(segments[0] ?? '')) return true;
+  return BOTTOM_BARS.has(segments.join('/')) && tip.tip.kind !== 'help';
 }
 
 /**
@@ -60,7 +66,7 @@ export function isQuietRoute(segments: readonly string[]): boolean {
  * when the user moves to another screen.
  */
 export function BookyOverlay() {
-  const { tip, dismissTip } = useBooky();
+  const { tip, dismissTip, help, closeHelp } = useBooky();
   const segments = useSegments() as string[];
   const pathname = usePathname();
   const bound = useRef<{ showId: number; path: string } | null>(null);
@@ -74,8 +80,12 @@ export function BookyOverlay() {
     else if (bound.current.path !== pathname) dismissTip();
   }, [tip, pathname, dismissTip]);
 
-  if (!tip || isQuietRoute(segments)) return null;
-  return <PlacedTip tip={tip} onTabs={segments[0] === '(tabs)' || segments.length === 0} />;
+  return (
+    <>
+      {tip && !tipWaits(segments, tip) ? <PlacedTip tip={tip} onTabs={segments[0] === '(tabs)' || segments.length === 0} /> : null}
+      <HelpSheet screen={help?.screen ?? null} onClose={closeHelp} />
+    </>
+  );
 }
 
 function PlacedTip({ tip, onTabs }: { tip: ShownTip; onTabs: boolean }) {
@@ -107,7 +117,7 @@ function PlacedTip({ tip, onTabs }: { tip: ShownTip; onTabs: boolean }) {
     ? [
         {
           label: action.label,
-          testID: ids.action,
+          testID: action.id === 'help-more' ? Testids.booky.helpMore : ids.action,
           onPress: () => {
             if (action.href) {
               dismissTip();

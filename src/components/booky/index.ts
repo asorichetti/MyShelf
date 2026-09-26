@@ -14,6 +14,9 @@ export {
 } from './BookyProvider';
 export { emitBooky, onBookyEvent, subscribeBooky, type BookyEmission } from './bus';
 export { Celebration, type CelebrationProps } from './Celebration';
+export { HelpButton, type HelpButtonProps } from './HelpButton';
+export { helpContent, type HelpContent, type HelpSection } from './helpContent';
+export { HelpSheet } from './HelpSheet';
 export { NUDGE_COOLDOWN_MS, selectTip, type BookyEvent, type EngineState, type SelectedTip } from './engine';
 export { bookyExpressions, expressionDescriptions, type BookyExpression } from './expressions';
 export { bookCount, formatTip } from './format';

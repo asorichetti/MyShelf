@@ -57,12 +57,13 @@ Turn Booky from a component (P00-10) into a genuinely helpful, never-annoying as
 - **Tests:** one component test per empty state (`src/__tests__/emptyStates.test.tsx`).
 - **Delivered:** checklist (the `empty-states-gallery` journey screenshots each as `empty-<name>.png`): Shelf (*happy*, Scan a book, with Add manually as the quieter second), search with no matches (*thinking*, Clear search; filters: Clear filters), Loans out (*sleepy*, now "Go to your shelf"; one borrower: "Show everyone"), Loans history (*sleepy*, now "See what’s out"), Groups (*happy*, New group), a group with no books (*happy*, Add books), Series (*sleepy*, now "Add a book"), Genres and Authors (*sleepy*, now "Add a book"), the scan review tray (*sleepy*, Back to scanning). Pending lookups have no screen of their own: the Shelf's banner only appears while something is queued, so there is nothing to show empty. Genres, Authors, a group and the tray now carry `emptyState.root`. The `first-run` fixture came with P07-03.
 
-### P07-05 Contextual help
+### P07-05 Contextual help — done
 
 - **Description:** Every tab screen and major screen gets a `?` `IconButton` in the header ("Help with this screen") that emits `help-requested` with a screen id; Booky (*thinking*) shows the screen's help tip with an optional "More" that opens a help sheet (short sections, e.g. "Where is the ISBN?", "What is an edition?", "How do series gaps work?").
 - **Files:** `src/components/booky/HelpButton.tsx`, `src/components/booky/HelpSheet.tsx`, `src/components/booky/helpContent.ts`, screen headers.
 - **Acceptance:** help available on Shelf, Scan, Loans, Groups, Settings, book detail, edition picker, series detail; works in all Booky modes (including Off).
 - **Tests:** `src/components/booky/__tests__/HelpButton.test.tsx`, `helpContent.test.ts` (every screen id has content).
+- **Delivered:** `HelpButton` ("Help with this screen", `booky.helpButton`, 48 dp) emits `help-requested` with the screen id; the engine picks that screen's `help-<screen>` tip (*thinking*, "More help", `booky.helpMore`), which opens `HelpSheet` (a `Sheet`, `booky.helpSheet`, "Got it" `booky.helpClose`) with the screen's sections from `helpContent.ts` ("Where is the ISBN?", "What is an edition?", "How do series gaps work?" among them). Pressing the button again puts the tip away (`aria-expanded` follows it). A screen may pass its own "More help": Scan keeps its barcode diagram sheet (`scan.helpSheet`); its old help icon (`scan.help`) is replaced by the help button. Help is on the Shelf, Scan, Loans, Groups and Settings headers, book detail, the edition picker and series detail. Help tips are never muted or cooled down; in Off mode the button opens the help sheet directly, without the character. On screens whose bottom bar holds the primary action (the edition picker) help tips still show, placed above the bar (P07-07); other tips wait there.
 
 ### P07-06 Dismissal, muting and Booky modes
 
