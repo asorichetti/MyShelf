@@ -258,8 +258,9 @@ Decisions made while building the foundation, all described in `PLAN.md`:
 - **Acceptance:** every render and a11y rule id, plus the pagestate, console and network checks, has a fixture that makes it fire; the clean fixture passes every gate; removing a rule's check makes the test fail.
 - **Tests:** the test itself.
 
-### P00-29 Booky and theme journeys
+### P00-29 Booky and theme journeys — done
 
+- **Delivered:** the empty-shelf Booky in `ShelfScreen` carries `Testids.booky.avatar` (no new ids). `booky-empty-shelf` (`core`, `journeys/booky.journey.ts`) checks Booky inside `emptyState.root` (role img, "Booky…" label), opens the tip with `home.askBooky`, expects non-empty `booky.bubbleText`, runs the page gates with the bubble open (this is where `target-size` caught the 32 px dismiss button fixed in P00-27), saves `booky-tip-open.png`, and closes it with `booky.dismiss`. `theme-tokens` (`p00`, `journeys/theme.journey.ts`) checks `--ms-color-primary` is `#6B3FA8`, the computed body background equals `--ms-color-paper` (resolved through a probe element) and the body font starts with `--ms-font-body`. Both pass with `--ux-gates fail` against the dev server and `--serve dist`; CI runs `theme-tokens` through P00-23.
 - **Description:** The two journeys split out of P00-24 and P00-25. Give the empty-shelf Booky the `booky.avatar` test id. `booky-empty-shelf` (`core`): open `/`; expect `booky.avatar` inside `emptyState.root`; tap `home.askBooky`; expect `booky.bubble` with non-empty `booky.bubbleText`, the page gates clean with the bubble open; tap `booky.dismiss` and expect the bubble gone. `theme-tokens` (`p00`): open `/`; `--ms-color-primary` on `:root` is `#6B3FA8`; the computed body background equals `--ms-color-paper` and the body font starts with `--ms-font-body`.
 - **Files:** `src/features/shelf/ShelfScreen.tsx`; new journey files in `tools/auto-test-suite/src/journeys/`.
 - **Acceptance:** `npm run -s autotest -- journey --list` shows `booky-empty-shelf` in `core` and `theme-tokens` in `p00`; both pass with `--ux-gates fail`; CI runs `theme-tokens` (via P00-23, or an extra step until then).
@@ -325,8 +326,8 @@ Run one with `npm run -s autotest -- journey <name>`, or all at once with `npm r
 | `not-found` | `core` | `/missing-shelf__expected-404` renders the app's not-found screen: `notFound.title` is the `h1` "Page not found" inside `main`, and the URL does not change; no waivers | P00-17, P00-26 (done) |
 | `home-responsive` | `responsive` | viewport meta `width=device-width, initial-scale=1`; at mobile, tablet and desktop the title is fully on screen and nothing scrolls sideways; one screenshot per width | P00-17 (done) |
 | `tabs-navigate` | `core` | open `/`; Booky visible in the empty Shelf; for each tab: click `tabs.<tab>`, expect its `root`, its URL, exactly one visible `h1` and `aria-selected="true"` on that tab only; page gates; a screenshot per tab | P00-25 (done) |
-| `booky-empty-shelf` | `core` | open `/`; `booky.avatar` in `emptyState.root`; `home.askBooky` opens `booky.bubble`; `booky.dismiss` closes it | P00-29 |
-| `theme-tokens` | `p00` | open `/`; `--ms-color-primary` resolves to `#6B3FA8` on `:root`; body background and font come from the tokens | P00-29 |
+| `booky-empty-shelf` | `core` | open `/`; `booky.avatar` in `emptyState.root`; `home.askBooky` opens `booky.bubble`; page gates with it open; `booky.dismiss` closes it | P00-29 (done) |
+| `theme-tokens` | `p00` | open `/`; `--ms-color-primary` resolves to `#6B3FA8` on `:root`; body background and font come from the tokens | P00-29 (done) |
 
 ## Maestro flows
 

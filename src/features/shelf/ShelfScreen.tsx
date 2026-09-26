@@ -27,7 +27,7 @@ export function ShelfScreen() {
       </View>
       <EmptyState
         testID={Testids.emptyState.root}
-        illustration={<Booky expression="happy" size={120} />}
+        illustration={<Booky expression="happy" size={120} testID={Testids.booky.avatar} />}
         title="Your shelf is empty"
         message="Scan a book's barcode or cover and I'll fill in the title, author, genre and series for you."
         action={{ label: 'Scan a book', onPress: () => router.navigate('/scan'), testID: Testids.home.scanAction }}

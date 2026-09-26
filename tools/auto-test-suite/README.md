@@ -406,6 +406,8 @@ Re-export after changing app code: `--serve` tests whatever is in `dist/`.
 | `home-loads` | core | `home-title` is an `<h1>` "MyShelf" inside the single main landmark, computed `font-weight: 700`, not the default serif; document title |
 | `not-found` | core | `/missing-shelf__expected-404` renders the app's not-found screen: its title is the `<h1>` "Page not found" inside `main`, and the URL does not change |
 | `tabs-navigate` | core | Clicking each tab (`Testids.tabs.*`) lands on its route with exactly one visible h1 naming the screen; `aria-selected="true"` on the active tab only (the web tab bar sets no `aria-current`); the page gates run on every tab screen; Booky is visible in the empty Shelf; one screenshot per tab |
+| `booky-empty-shelf` | core | Booky (`booky-avatar`, role img, "Booky..." label) is in the empty Shelf's `empty-state`; "What can Booky do?" opens `booky-bubble` with non-empty `booky-bubble-text`; the page gates run again with the bubble open (dismiss button included); `booky-dismiss` closes it; screenshot `booky-tip-open.png` |
+| `theme-tokens` | p00 | `--ms-color-primary` on `:root` is `#6B3FA8`; the computed body background equals `--ms-color-paper` and the body font starts with `--ms-font-body` |
 | `home-responsive` | responsive | Viewport meta has `width=device-width, initial-scale=1`; at mobile, tablet and desktop the title is fully on screen and the page does not scroll sideways; one screenshot per width |
 
 ### Adding a journey
