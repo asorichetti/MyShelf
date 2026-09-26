@@ -1,0 +1,53 @@
+{
+  "publishers": [
+    "Corgi Books"
+  ],
+  "title": "The Colour of Magic",
+  "number_of_pages": 287,
+  "languages": [
+    {
+      "key": "/languages/eng"
+    }
+  ],
+  "full_title": "Colour of Magic",
+  "publish_date": "1985",
+  "key": "/books/OL28477029M",
+  "authors": [
+    {
+      "key": "/authors/OL25712A"
+    }
+  ],
+  "works": [
+    {
+      "key": "/works/OL453657W"
+    }
+  ],
+  "type": {
+    "key": "/type/edition"
+  },
+  "subjects": [
+    "Discworld (imaginary place), fiction",
+    "Fiction, fantasy, general",
+    "Fiction, humorous"
+  ],
+  "series": [
+    "Discworld, Book 1"
+  ],
+  "physical_format": "Paperback",
+  "covers": [
+    14647238
+  ],
+  "isbn_13": [
+    "9780552166591"
+  ],
+  "latest_revision": 11,
+  "revision": 11,
+  "created": {
+    "type": "/type/datetime",
+    "value": "2020-08-02T23:17:34.561986"
+  },
+  "last_modified": {
+    "type": "/type/datetime",
+    "value": "2024-07-19T14:00:04.727472"
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "works": [
+    {
+      "key": "/works/OL27513W"
+    }
+  ],
+  "title": "The Fellowship of the Ring",
+  "publishers": [
+    "Ballantine Books"
+  ],
+  "publish_date": "2001",
+  "key": "/books/OL45506127M",
+  "type": {
+    "key": "/type/edition"
+  },
+  "covers": [
+    13133784
+  ],
+  "isbn_10": [
+    "0345339703"
+  ],
+  "copyright_date": "1954, 1865, 1966",
+  "languages": [
+    {
+      "key": "/languages/eng"
+    }
+  ],
+  "physical_format": "Paperback",
+  "number_of_pages": 458,
+  "edition_name": "97. edition",
+  "latest_revision": 5,
+  "revision": 5,
+  "created": {
+    "type": "/type/datetime",
+    "value": "2023-01-08T11:11:22.030070"
+  },
+  "last_modified": {
+    "type": "/type/datetime",
+    "value": "2024-05-20T14:26:00.554315"
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "key": "/authors/OL23919A",
+  "name": "J. K. Rowling",
+  "personal_name": "J. K. Rowling",
+  "birth_date": "31 July 1965",
+  "type": {
+    "key": "/type/author"
+  },
+  "latest_revision": 130,
+  "revision": 130,
+  "bio": {
+    "type": "/type/text",
+    "value": "Joanne \"Jo\" Murray, OBE (née Rowling), better known under the pen name J. K. Rowling, is a British author best known as the creator of the Harry Potter fantasy series, the idea for which was conceived"
+  }
+}

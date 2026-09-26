@@ -1,0 +1,102 @@
+{
+  "description": "One Ring to rule them all, One Ring to find them, One Ring to bring them all and in the darkness bind them.\r\n\r\n“A unique, wholly realized other world, evoked from deep in the well of Time, massively detailed, absorbingly entertaining, profound in meaning.”—The New York Times\r\n\r\nIn ancient times the Rings of Power were crafted by the Elven-smiths, and Sauron, the Dark Lord, forged the One Ring, filling it with his own power so that he could rule all others. But the One Ring was taken from him, and though he sought it throughout Middle-earth, it remained lost to him. After many ages it fell into the hands of Bilbo Baggins, as told in The Hobbit. In a sleepy village in the Shire, young Frodo Baggins finds himself faced with an immense task, as his elderly cousin Bilbo entrusts the Ring to his care. Frodo must leave his home and make a perilous journey across Middle-earth to the Cracks of Doom, there to destroy the Ring and foil the Dark Lord in his evil purpose.",
+  "title": "The Fellowship of the Ring",
+  "key": "/works/OL27513W",
+  "authors": [
+    {
+      "author": {
+        "key": "/authors/OL26320A"
+      },
+      "type": {
+        "key": "/type/author_role"
+      }
+    }
+  ],
+  "type": {
+    "key": "/type/work"
+  },
+  "covers": [
+    14627060,
+    13915448,
+    14921825
+  ],
+  "first_publish_date": "November 12, 1972",
+  "dewey_number": [
+    "823"
+  ],
+  "subjects": [
+    "Elves",
+    "Dwarves",
+    "evil",
+    "fear",
+    "hope",
+    "young adult fiction",
+    "Ficción",
+    "Ficción fantástica inglesa",
+    "Fantastic fiction",
+    "The Lord of the Rings",
+    "English Fantasy fiction",
+    "Open Library Staff Picks",
+    "Fiction",
+    "Fantasy",
+    "Fairy tales",
+    "Adventure stories",
+    "Fantasy fiction",
+    "Middle Earth (Imaginary place)",
+    "History and criticism",
+    "FICTION / Fantasy / Epic",
+    "Adventure fiction",
+    "English fiction",
+    "Translations in Chinese",
+    "Fiction, fantasy, epic",
+    "Middle earth (imaginary place), fiction",
+    "Baggins, frodo (fictitious character), fiction",
+    "Gandalf (fictitious character), fiction",
+    "British and irish fiction (fictional works by one author)",
+    "Baggins, bilbo (fictitious character), fiction",
+    "Fiction, media tie-in",
+    "Children's fiction",
+    "English literature",
+    "Roman",
+    "Français (langue)",
+    "Lectures et morceaux choisis",
+    "Vol. 1.",
+    "Lord of the rings (Tolkien, J.R.R.)",
+    "Gandolf (Fictitious character)",
+    "Terre du Milieu (Lieu imaginaire)",
+    "Romans, nouvelles"
+  ],
+  "identifiers": {
+    "wikidata": [
+      "Q208002"
+    ],
+    "bookbrainz": [
+      "057822f7-d7a9-400e-a90c-767ecab4e588"
+    ],
+    "musicbrainz": [
+      "30922499-9825-4ffa-a102-fb711f553c04"
+    ]
+  },
+  "series": [
+    {
+      "series": {
+        "key": "/series/OL330052L"
+      },
+      "position": "1"
+    }
+  ],
+  "genres": [
+    "/tags/OL169T",
+    "/tags/OL164T"
+  ],
+  "latest_revision": 24,
+  "revision": 24,
+  "created": {
+    "type": "/type/datetime",
+    "value": "2009-10-13T02:46:28.838662"
+  },
+  "last_modified": {
+    "type": "/type/datetime",
+    "value": "2026-09-20T22:17:30.942003"
+  }
+}

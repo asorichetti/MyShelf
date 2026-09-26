@@ -1,0 +1,50 @@
+{
+  "publishers": [
+    "Broadway Books"
+  ],
+  "title": "The Martian",
+  "publish_date": "2014",
+  "key": "/books/OL26420821M",
+  "works": [
+    {
+      "key": "/works/OL17091839W"
+    }
+  ],
+  "type": {
+    "key": "/type/edition"
+  },
+  "publish_places": [
+    "New York"
+  ],
+  "description": "Six days ago, astronaut Mark Watney became one of the first people to walk on Mars.\r\n\r\nNow, he's sure he'll be the first person to die there.\r\n\r\nAfter a dust storm forces his crew to evacuate the planet while thinking him dead, Mark finds himself stranded on Mars's surface, with no way to signal Earth that he's alive. And even if he could get word out, his supplies would be gone years before a rescue could arrive.\r\n\r\nChances are, though, Mark won't have time to starve to death. The damaged machinery, unforgiving environment or plain-old \"human error\" are much more likely to kill him first.\r\n\r\nArmed with nothing but his ingenuity, his engineering skills--and a gallows sense of humor that proves to be his greatest source of strength--Mark embarks on a dogged quest to stay alive. But will his resourcefulness be enough to overcome the impossible odds against him?\r\n\r\n--back cover",
+  "copyright_date": "2014",
+  "edition_name": "First Paperback Edition (19); Extra Libris",
+  "pagination": "387p.",
+  "number_of_pages": 388,
+  "languages": [
+    {
+      "key": "/languages/eng"
+    }
+  ],
+  "notes": "US/CAN",
+  "physical_format": "Paperback",
+  "covers": [
+    12065533
+  ],
+  "isbn_10": [
+    "0553418025"
+  ],
+  "isbn_13": [
+    "9780553418026"
+  ],
+  "latest_revision": 7,
+  "revision": 7,
+  "created": {
+    "type": "/type/datetime",
+    "value": "2018-01-26T12:03:16.319127"
+  },
+  "last_modified": {
+    "type": "/type/datetime",
+    "value": "2021-10-10T15:27:46.458828"
+  }
+}

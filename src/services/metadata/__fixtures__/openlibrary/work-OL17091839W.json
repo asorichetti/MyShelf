@@ -1,0 +1,94 @@
+{
+  "description": "The Martian is a 2011 science fiction novel written by Andy Weir. It was his debut novel under his own name. It was originally self-published in 2011; Crown Publishing purchased the rights and re-released it in 2014. The story follows an American astronaut, Mark Watney, as he becomes stranded alone on Mars in 2035 and must improvise in order to survive.",
+  "title": "The Martian",
+  "covers": [
+    11447888,
+    10860735,
+    8223196,
+    8217493,
+    8069657,
+    8137214,
+    10306579,
+    8575355,
+    10191568,
+    10720131,
+    10805615,
+    10848983,
+    8999404,
+    10362442,
+    10331621,
+    11950614,
+    13832054,
+    13212741,
+    14149828,
+    14149827
+  ],
+  "subjects": [
+    "Science-Fiction",
+    "Science Fiction & Fantasy",
+    "Suspense & Thriller",
+    "Science fiction",
+    "Amerikanisches Englisch",
+    "Astronauts",
+    "Survival",
+    "Fiction",
+    "Survival skills",
+    "Supervivencia",
+    "Novela",
+    "Astronautas",
+    "Reading Level-Grade 7",
+    "Reading Level-Grade 9",
+    "Reading Level-Grade 8",
+    "Reading Level-Grade 11",
+    "Reading Level-Grade 10",
+    "Reading Level-Grade 12",
+    "Fiction, science fiction, action & adventure",
+    "Fiction, science fiction, general",
+    "Large type books",
+    "Arabic language materials",
+    "Romans, nouvelles",
+    "nyt:hardcover-fiction=2014-03-02",
+    "New York Times bestseller",
+    "Chang pian xiao shuo",
+    "Children's fiction",
+    "Adventure and adventurers, fiction",
+    "Fantasy fiction"
+  ],
+  "key": "/works/OL17091839W",
+  "authors": [
+    {
+      "author": {
+        "key": "/authors/OL7234434A"
+      },
+      "type": {
+        "key": "/type/author_role"
+      }
+    }
+  ],
+  "type": {
+    "key": "/type/work"
+  },
+  "identifiers": {
+    "bookbrainz": [
+      "7b5e4cad-2cb1-4d9c-9853-dc1e0172af93"
+    ],
+    "wikidata": [
+      "Q17111624"
+    ]
+  },
+  "genres": [
+    "/tags/OL179T",
+    "/tags/OL164T",
+    "/tags/OL169T"
+  ],
+  "latest_revision": 60,
+  "revision": 60,
+  "created": {
+    "type": "/type/datetime",
+    "value": "2015-03-09T15:32:32.077510"
+  },
+  "last_modified": {
+    "type": "/type/datetime",
+    "value": "2026-08-18T06:19:34.294689"
+  }
+}

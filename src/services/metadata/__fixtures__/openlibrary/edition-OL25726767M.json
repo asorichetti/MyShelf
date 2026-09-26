@@ -1,0 +1,215 @@
+{
+  "publishers": [
+    "Bloomsbury Publishing"
+  ],
+  "number_of_pages": 223,
+  "table_of_contents": [
+    {
+      "level": 0,
+      "label": "Chapter 1",
+      "title": "The boy who lived",
+      "pagenum": "",
+      "type": {
+        "key": "/type/toc_item"
+      }
+    },
+    {
+      "level": 0,
+      "label": "Chapter 2",
+      "title": "The vanishing glass",
+      "pagenum": "",
+      "type": {
+        "key": "/type/toc_item"
+      }
+    },
+    {
+      "level": 0,
+      "label": "Chapter 3",
+      "title": "The letters from no one",
+      "pagenum": "",
+      "type": {
+        "key": "/type/toc_item"
+      }
+    },
+    {
+      "level": 0,
+      "label": "Chapter 4",
+      "title": "The keeper of the keys",
+      "pagenum": "",
+      "type": {
+        "key": "/type/toc_item"
+      }
+    },
+    {
+      "level": 0,
+      "label": "Chapter 5",
+      "title": "Diagon Alley",
+      "pagenum": "",
+      "type": {
+        "key": "/type/toc_item"
+      }
+    },
+    {
+      "level": 0,
+      "label": "Chapter 6",
+      "title": "The journey from Platform Nine and Three-quarters",
+      "pagenum": "",
+      "type": {
+        "key": "/type/toc_item"
+      }
+    },
+    {
+      "level": 0,
+      "label": "Chapter 7",
+      "title": "The Sorting Hat",
+      "pagenum": "",
+      "type": {
+        "key": "/type/toc_item"
+      }
+    },
+    {
+      "level": 0,
+      "label": "Chapter 8",
+      "title": "The potions master",
+      "pagenum": "",
+      "type": {
+        "key": "/type/toc_item"
+      }
+    },
+    {
+      "level": 0,
+      "label": "Chapter 9",
+      "title": "The midnight duel",
+      "pagenum": "",
+      "type": {
+        "key": "/type/toc_item"
+      }
+    },
+    {
+      "level": 0,
+      "label": "Chapter 10",
+      "title": "Halloween",
+      "pagenum": "",
+      "type": {
+        "key": "/type/toc_item"
+      }
+    },
+    {
+      "level": 0,
+      "label": "Chapter 11",
+      "title": "Quidditch",
+      "pagenum": "",
+      "type": {
+        "key": "/type/toc_item"
+      }
+    },
+    {
+      "level": 0,
+      "label": "Chapter 12",
+      "title": "The mirror of Erised",
+      "pagenum": "",
+      "type": {
+        "key": "/type/toc_item"
+      }
+    },
+    {
+      "level": 0,
+      "label": "Chapter 13",
+      "title": "Nicolas Flamel",
+      "pagenum": "",
+      "type": {
+        "key": "/type/toc_item"
+      }
+    },
+    {
+      "level": 0,
+      "label": "Chapter 14",
+      "title": "Nobert the Norwegian ridgeback",
+      "pagenum": "",
+      "type": {
+        "key": "/type/toc_item"
+      }
+    },
+    {
+      "level": 0,
+      "label": "Chapter 15",
+      "title": "The Forbidden Forest",
+      "pagenum": "",
+      "type": {
+        "key": "/type/toc_item"
+      }
+    },
+    {
+      "level": 0,
+      "label": "Chapter 16",
+      "title": "Through the trapdoor",
+      "pagenum": "",
+      "type": {
+        "key": "/type/toc_item"
+      }
+    },
+    {
+      "level": 0,
+      "label": "Chapter 17",
+      "title": "The man with two faces",
+      "pagenum": "",
+      "type": {
+        "key": "/type/toc_item"
+      }
+    }
+  ],
+  "description": {
+    "type": "/type/text",
+    "value": "[back cover] \r\nHarry Potter thinks he is an ordinary boy - until he is rescued by an owl, taken to Hogwarts School of Witchecraft and Wizardry, learns to play Quidditch and does battle in a deadly duel. The reason... HARRY POTTER IS A WIZARD!"
+  },
+  "contributors": [
+    {
+      "role": "Cover Art",
+      "name": "Thomas Taylor"
+    }
+  ],
+  "series": [
+    "Harry Potter, #1"
+  ],
+  "covers": [
+    7355968,
+    -1
+  ],
+  "physical_format": "Hardcover",
+  "key": "/books/OL25726767M",
+  "publish_places": [
+    "London, England"
+  ],
+  "isbn_13": [
+    "9780747532699"
+  ],
+  "title": "Harry Potter and the Philosopher's Stone",
+  "languages": [
+    {
+      "key": "/languages/eng"
+    }
+  ],
+  "isbn_10": [
+    "0747532699"
+  ],
+  "publish_date": "1997",
+  "copyright_date": "1997",
+  "works": [
+    {
+      "key": "/works/OL82563W"
+    }
+  ],
+  "type": {
+    "key": "/type/edition"
+  },
+  "latest_revision": 12,
+  "revision": 12,
+  "created": {
+    "type": "/type/datetime",
+    "value": "2015-07-12T03:41:59.968654"
+  },
+  "last_modified": {
+    "type": "/type/datetime",
+    "value": "2026-05-21T04:23:12.119922"
+  }
+}

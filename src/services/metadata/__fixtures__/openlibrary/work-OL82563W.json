@@ -1,0 +1,99 @@
+{
+  "description": {
+    "type": "/type/text",
+    "value": "Turning the envelope over, his hand trembling, Harry saw a purple wax seal bearing a coat of arms; a lion, an eagle, a badger and a snake surrounding a large letter 'H'.\r\n\r\nHARRY POTTER has never even heard of Hogwarts when the LETTERS start dropping on the doormat at number four, Privet Drive. Addressed in GREEN INK on yellowish parchment with a PURPLE SEAL, they are swiftly confiscated by his GRISLY aunt and uncle. Then, on Harry's eleventh birthday, a great beetle-eyed giant of a man called RUBEUS HAGRID bursts in with some ASTONISHING news: Harry Potter is a wizard, and he has a place at Hogwarts School of Witchcraft and Wizardry. An incredible adventure is about to begin!"
+  },
+  "title": "Harry Potter and the Philosopher's Stone",
+  "covers": [
+    15155833,
+    10521270,
+    13188354,
+    13174593,
+    13297866,
+    13741661,
+    14171594,
+    14171595,
+    13523564,
+    15091493,
+    15091534,
+    8477955,
+    13952106,
+    12870284,
+    15139093,
+    14473682
+  ],
+  "key": "/works/OL82563W",
+  "authors": [
+    {
+      "author": {
+        "key": "/authors/OL23919A"
+      },
+      "type": {
+        "key": "/type/author_role"
+      }
+    }
+  ],
+  "type": {
+    "key": "/type/work"
+  },
+  "subjects": [
+    "series:Harry_Potter",
+    "Ghosts",
+    "Monsters",
+    "Vampires",
+    "Witches",
+    "Challenges and Overcoming Obstacles",
+    "Magic and Supernatural",
+    "Cleverness",
+    "School Life",
+    "school stories",
+    "Wizards",
+    "Magic",
+    "MAGIA",
+    "MAGOS",
+    "Juvenile fiction",
+    "Fiction",
+    "NOVELAS INGLESAS",
+    "Schools",
+    "orphans",
+    "fantasy fiction",
+    "England in fiction",
+    "Witches in fiction",
+    "Wizards in fiction",
+    "Alchemy",
+    "New York Times bestseller",
+    "Juvenile literature",
+    "Magic in fiction",
+    "Open Library Staff Picks",
+    "Juvenile audience",
+    "Children's stories",
+    "Juvenile works",
+    "Schools in fiction",
+    "Fantasy",
+    "Hogwarts School of Witchcraft and Wizardry (Imaginary place)",
+    "Harry Potter (Fictitious character)",
+    "Ficción juvenil",
+    "Escuelas",
+    "Hogwarts School of Witchcraft and Wizardry (Imaginary organization)",
+    "Translations from English",
+    "Chinese fiction"
+  ],
+  "series": [
+    {
+      "series": {
+        "key": "/series/OL326110L"
+      },
+      "position": "1"
+    }
+  ],
+  "latest_revision": 192,
+  "revision": 192,
+  "created": {
+    "type": "/type/datetime",
+    "value": "2009-10-17T07:07:29.461716"
+  },
+  "last_modified": {
+    "type": "/type/datetime",
+    "value": "2026-09-13T07:28:32.133520"
+  }
+}

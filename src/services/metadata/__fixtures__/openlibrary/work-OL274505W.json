@@ -1,0 +1,110 @@
+{
+  "description": "*Cien años de soledad* es una novela del escritor colombiano Gabriel García Márquez, ganador del Premio Nobel de Literatura en 1982. Es considerada una obra maestra de la literatura hispanoamericana y universal, cumbre del denominado \"realismo mágico\". Es asimismo una de las obras más traducidas y leídas en español. Narra la historia de la familia Buendía a lo largo de siete generaciones en el pueblo ficticio de Macondo.\r\n\r\n\r\n----------\r\n\r\n\r\n*Cien años de soledad* is considered the best work of García Márquez. A novel that narrates the vicisitudes of Aureliano Buendía in the mythic Macondo, a town in some unknown region of Colombia. This novel was written in the magic realism (\"realismo mágico\"), a style that mix together amazing elements taken by fiction and reality.",
+  "title": "Cien años de soledad",
+  "covers": [
+    12627383,
+    8314483,
+    2292915,
+    1055707,
+    34451,
+    45605,
+    1316083,
+    8533997,
+    8355843,
+    9103448,
+    1010962,
+    10030121,
+    10090936,
+    5899436,
+    8574539,
+    963821,
+    7974908,
+    8029566,
+    8765721,
+    8745295,
+    10114038,
+    10230556,
+    10549196,
+    10549197,
+    10838415,
+    12384973,
+    12808734,
+    10830542,
+    10886020,
+    12177907,
+    11689779,
+    12369684,
+    15215132
+  ],
+  "first_publish_date": "March 1999",
+  "key": "/works/OL274505W",
+  "authors": [
+    {
+      "author": {
+        "key": "/authors/OL27363A"
+      },
+      "type": {
+        "key": "/type/author_role"
+      }
+    }
+  ],
+  "type": {
+    "key": "/type/work"
+  },
+  "subjects": [
+    "Spanish language books",
+    "Fiction",
+    "Social conditions",
+    "Macondo (Imaginary place)",
+    "novel",
+    "magic realism",
+    "Latinamerican literature",
+    "Condiciones sociales",
+    "Novela",
+    "Literatura épica",
+    "Epic literature",
+    "Macondo (Lugar imaginario)",
+    "Ficción",
+    "Spanish language materials",
+    "Ficcion",
+    "Translations into Arabic",
+    "Latin American fiction",
+    "Spanish fiction",
+    "Translations into Gujarati",
+    "Chang pian xiao shuo",
+    "Translations into Russian",
+    "Colombian fiction",
+    "Cliffs Notes",
+    "Magic realism (Literature)",
+    "Large type books",
+    "Dorf",
+    "Familie",
+    "Unabhängigkeitsbewegung",
+    "Romans, nouvelles",
+    "Conditions sociales",
+    "Macondo (imaginary place), fiction",
+    "Fiction (fictional works by one author)",
+    "Latin america, fiction",
+    "Fiction, general",
+    "Garcia marquez, gabriel, 1928-2014",
+    "Criticism and interpretation",
+    "Cien años de soledad (García Márquez, Gabriel)",
+    "Spanish American fiction",
+    "In English",
+    "Texts"
+  ],
+  "genres": [
+    "/tags/OL169T",
+    "/tags/OL174T"
+  ],
+  "latest_revision": 61,
+  "revision": 61,
+  "created": {
+    "type": "/type/datetime",
+    "value": "2009-10-25T05:16:15.536205"
+  },
+  "last_modified": {
+    "type": "/type/datetime",
+    "value": "2026-08-29T11:09:45.621646"
+  }
+}

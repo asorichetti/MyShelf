@@ -1,0 +1,637 @@
+{
+  "links": {
+    "self": "/works/OL453657W/editions.json?limit=50",
+    "work": "/works/OL453657W",
+    "next": "/works/OL453657W/editions.json?limit=50&offset=50"
+  },
+  "size": 93,
+  "entries": [
+    {
+      "type": {
+        "key": "/type/edition"
+      },
+      "authors": [
+        {
+          "key": "/authors/OL25712A"
+        }
+      ],
+      "isbn_13": [
+        "9782266071567"
+      ],
+      "languages": [
+        {
+          "key": "/languages/fre"
+        }
+      ],
+      "publish_date": "1999",
+      "publishers": [
+        "Presses Pocket"
+      ],
+      "subjects": [
+        "Fiction, fantasy, general"
+      ],
+      "title": "Colour of Magic",
+      "full_title": "Colour of Magic",
+      "works": [
+        {
+          "key": "/works/OL453657W"
+        }
+      ],
+      "key": "/books/OL53229561M",
+      "latest_revision": 3,
+      "revision": 3,
+      "created": {
+        "type": "/type/datetime",
+        "value": "2024-08-17T03:46:54.024346"
+      },
+      "last_modified": {
+        "type": "/type/datetime",
+        "value": "2026-06-24T04:53:49.517145"
+      }
+    },
+    {
+      "type": {
+        "key": "/type/edition"
+      },
+      "authors": [
+        {
+          "key": "/authors/OL25712A"
+        }
+      ],
+      "isbn_13": [
+        "9780063373662"
+      ],
+      "languages": [
+        {
+          "key": "/languages/eng"
+        }
+      ],
+      "pagination": "288",
+      "publish_date": "2024",
+      "publishers": [
+        "HarperCollins Publishers"
+      ],
+      "title": "Color of Magic",
+      "weight": "0.455",
+      "subtitle": "A Discworld Novel",
+      "full_title": "Color of Magic A Discworld Novel",
+      "works": [
+        {
+          "key": "/works/OL453657W"
+        }
+      ],
+      "key": "/books/OL50706453M",
+      "covers": [
+        15223765
+      ],
+      "latest_revision": 4,
+      "revision": 4,
+      "created": {
+        "type": "/type/datetime",
+        "value": "2024-01-31T05:52:34.739417"
+      },
+      "last_modified": {
+        "type": "/type/datetime",
+        "value": "2026-05-25T03:33:03.426960"
+      }
+    },
+    {
+      "publishers": [
+        "St. Martin's Press"
+      ],
+      "full_title": "The colour of magic",
+      "key": "/books/OL24937823M",
+      "authors": [
+        {
+          "key": "/authors/OL25712A"
+        }
+      ],
+      "publish_places": [
+        "New York"
+      ],
+      "subjects": [
+        "Protected DAISY",
+        "Accessible book"
+      ],
+      "title": "The colour of magic",
+      "languages": [
+        {
+          "key": "/languages/eng"
+        }
+      ],
+      "isbn_10": [
+        "0312150849"
+      ],
+      "publish_date": "1983",
+      "publish_country": "xxu",
+      "works": [
+        {
+          "key": "/works/OL453657W"
+        }
+      ],
+      "type": {
+        "key": "/type/edition"
+      },
+      "latest_revision": 19,
+      "revision": 19,
+      "created": {
+        "type": "/type/datetime",
+        "value": "2011-08-08T05:45:53.820094"
+      },
+      "last_modified": {
+        "type": "/type/datetime",
+        "value": "2024-07-24T10:20:34.442253"
+      }
+    },
+    {
+      "title": "The Color of Magic",
+      "authors": [
+        {
+          "key": "/authors/OL25712A"
+        }
+      ],
+      "publish_date": "2000",
+      "publishers": [
+        "HarperPaperbacks"
+      ],
+      "weight": "5 ounces",
+      "series": [
+        "Discworld (1)"
+      ],
+      "covers": [
+        15090421,
+        14645784
+      ],
+      "physical_format": "Mass Market Paperback",
+      "subjects": [
+        "Fiction",
+        "Fiction - Fantasy",
+        "Fantasy",
+        "Fantasy - Series",
+        "Fiction / General",
+        "Fantasy - General"
+      ],
+      "languages": [
+        {
+          "key": "/languages/eng"
+        }
+      ],
+      "type": {
+        "key": "/type/edition"
+      },
+      "physical_dimensions": "6.7 x 4.2 x 0.7 inches",
+      "isbn_10": [
+        "0061020710"
+      ],
+      "isbn_13": [
+        "9780061020711"
+      ],
+      "key": "/books/OL9241413M",
+      "number_of_pages": 210,
+      "works": [
+        {
+          "key": "/works/OL453657W"
+        }
+      ],
+      "latest_revision": 18,
+      "revision": 18,
+      "created": {
+        "type": "/type/datetime",
+        "value": "2008-04-30T09:38:13.731961"
+      },
+      "last_modified": {
+        "type": "/type/datetime",
+        "value": "2026-02-02T05:51:01.692900"
+      }
+    },
+    {
+      "publishers": [
+        "HarperPaperbacks"
+      ],
+      "number_of_pages": 210,
+      "subtitle": "a Discworld novel",
+      "isbn_10": [
+        "0061020710"
+      ],
+      "series": [
+        "Discworld series"
+      ],
+      "pagination": "210 p. ;",
+      "key": "/books/OL23000228M",
+      "authors": [
+        {
+          "key": "/authors/OL25712A"
+        }
+      ],
+      "publish_places": [
+        "New York"
+      ],
+      "genres": [
+        "Fiction."
+      ],
+      "title": "The color of magic",
+      "work_titles": [
+        "Colour of magic"
+      ],
+      "languages": [
+        {
+          "key": "/languages/eng"
+        }
+      ],
+      "subjects": [
+        "Discworld (Imaginary place) -- Fiction"
+      ],
+      "publish_date": "2000",
+      "publish_country": "nyu",
+      "by_statement": "Terry Pratchett.",
+      "works": [
+        {
+          "key": "/works/OL453657W"
+        }
+      ],
+      "type": {
+        "key": "/type/edition"
+      },
+      "latest_revision": 8,
+      "revision": 8,
+      "created": {
+        "type": "/type/datetime",
+        "value": "2009-02-17T22:59:22.472581"
+      },
+      "last_modified": {
+        "type": "/type/datetime",
+        "value": "2024-07-24T10:20:34.442253"
+      }
+    },
+    {
+      "works": [
+        {
+          "key": "/works/OL453657W"
+        }
+      ],
+      "title": "The Colour of Magic",
+      "publishers": [
+        "Bild"
+      ],
+      "publish_date": "January 1, 1983",
+      "key": "/books/OL50567228M",
+      "type": {
+        "key": "/type/edition"
+      },
+      "covers": [
+        14573098
+      ],
+      "isbn_13": [
+        "9783898975292"
+      ],
+      "isbn_10": [
+        "3898975290"
+      ],
+      "languages": [
+        {
+          "key": "/languages/ger"
+        }
+      ],
+      "physical_format": "gebundene Ausgabe",
+      "number_of_pages": 246,
+      "latest_revision": 3,
+      "revision": 3,
+      "created": {
+        "type": "/type/datetime",
+        "value": "2024-01-30T12:14:44.231988"
+      },
+      "last_modified": {
+        "type": "/type/datetime",
+        "value": "2024-01-30T12:15:39.530020"
+      }
+    },
+    {
+      "type": {
+        "key": "/type/edition"
+      },
+      "authors": [
+        {
+          "key": "/authors/OL25712A"
+        }
+      ],
+      "physical_format": "audio cd",
+      "publish_date": "Oct 08, 2013",
+      "publishers": [
+        "Random House Audio"
+      ],
+      "title": "DIE FARBEN DER MAGIE - PRATCHE",
+      "covers": [
+        13790392
+      ],
+      "works": [
+        {
+          "key": "/works/OL453657W"
+        }
+      ],
+      "key": "/books/OL47314621M",
+      "isbn_10": [
+        "3837120694"
+      ],
+      "isbn_13": [
+        "9783837120691"
+      ],
+      "latest_revision": 5,
+      "revision": 5,
+      "created": {
+        "type": "/type/datetime",
+        "value": "2023-04-01T14:55:51.857063"
+      },
+      "last_modified": {
+        "type": "/type/datetime",
+        "value": "2024-07-24T08:59:25.013707"
+      }
+    },
+    {
+      "publishers": [
+        "Conrad"
+      ],
+      "languages": [
+        {
+          "key": "/languages/por"
+        }
+      ],
+      "title": "A Cor da Magia",
+      "edition_name": "2 edition",
+      "physical_format": "Brochura",
+      "publish_date": "2004",
+      "key": "/books/OL9165518M",
+      "type": {
+        "key": "/type/edition"
+      },
+      "works": [
+        {
+          "key": "/works/OL453657W"
+        }
+      ],
+      "covers": [
+        13642933
+      ],
+      "number_of_pages": 356,
+      "isbn_10": [
+        "8587193392"
+      ],
+      "isbn_13": [
+        "9788587193391"
+      ],
+      "series": [
+        "Discworld Vol. 1"
+      ],
+      "translation_of": "The Colour of Magic",
+      "translated_from": [
+        {
+          "key": "/languages/eng"
+        }
+      ],
+      "latest_revision": 6,
+      "revision": 6,
+      "created": {
+        "type": "/type/datetime",
+        "value": "2008-04-30T09:38:13.731961"
+      },
+      "last_modified": {
+        "type": "/type/datetime",
+        "value": "2025-05-12T14:12:02.045655"
+      }
+    },
+    {
+      "title": "Discworld",
+      "publish_date": "1995",
+      "publishers": [
+        "Psygnosis"
+      ],
+      "pagination": "1 CD-ROM",
+      "languages": [
+        {
+          "key": "/languages/eng"
+        }
+      ],
+      "physical_format": "Computer file",
+      "publish_country": "xxk",
+      "type": {
+        "key": "/type/edition"
+      },
+      "key": "/books/OL16736669M",
+      "works": [
+        {
+          "key": "/works/OL453657W"
+        }
+      ],
+      "latest_revision": 7,
+      "revision": 7,
+      "created": {
+        "type": "/type/datetime",
+        "value": "2008-09-25T20:08:34.289119"
+      },
+      "last_modified": {
+        "type": "/type/datetime",
+        "value": "2026-03-06T03:48:39.405927"
+      }
+    },
+    {
+      "title": "The Color of Magic",
+      "authors": [
+        {
+          "key": "/authors/OL25712A"
+        }
+      ],
+      "publish_date": "2000",
+      "publishers": [
+        "HarperTorch"
+      ],
+      "series": [
+        "Discworld (1)"
+      ],
+      "covers": [
+        14645714
+      ],
+      "languages": [
+        {
+          "key": "/languages/eng"
+        }
+      ],
+      "type": {
+        "key": "/type/edition"
+      },
+      "isbn_10": [
+        "0061020710"
+      ],
+      "isbn_13": [
+        "9780061020711"
+      ],
+      "key": "/books/OL7286706M",
+      "number_of_pages": 210,
+      "works": [
+        {
+          "key": "/works/OL453657W"
+        }
+      ],
+      "latest_revision": 12,
+      "revision": 12,
+      "created": {
+        "type": "/type/datetime",
+        "value": "2008-04-29T13:35:46.876380"
+      },
+      "last_modified": {
+        "type": "/type/datetime",
+        "value": "2025-12-16T00:51:30.958072"
+      }
+    },
+    {
+      "publishers": [
+        "HarperCollins"
+      ],
+      "physical_format": "Electronic resource",
+      "title": "The Color of Magic",
+      "isbn_13": [
+        "9780061367458",
+        "9780061796845",
+        "9780061367465"
+      ],
+      "covers": [
+        6404363
+      ],
+      "languages": [
+        {
+          "key": "/languages/eng"
+        }
+      ],
+      "publish_date": "2007",
+      "publish_country": "nyu",
+      "key": "/books/OL24276348M",
+      "authors": [
+        {
+          "key": "/authors/OL25712A"
+        }
+      ],
+      "publish_places": [
+        "New York"
+      ],
+      "works": [
+        {
+          "key": "/works/OL453657W"
+        }
+      ],
+      "type": {
+        "key": "/type/edition"
+      },
+      "latest_revision": 6,
+      "revision": 6,
+      "created": {
+        "type": "/type/datetime",
+        "value": "2010-06-18T09:00:08.679274"
+      },
+      "last_modified": {
+        "type": "/type/datetime",
+        "value": "2022-07-12T01:37:35.430813"
+      }
+    },
+    {
+      "title": "The Colour of Magic",
+      "publish_date": "1990",
+      "publishers": [
+        "Corgi"
+      ],
+      "series": [
+        "Discworld #1"
+      ],
+      "isbn_13": [
+        "9780552124751"
+      ],
+      "covers": [
+        7892565
+      ],
+      "languages": [
+        {
+          "key": "/languages/eng"
+        }
+      ],
+      "isbn_10": [
+        "0552124753"
+      ],
+      "type": {
+        "key": "/type/edition"
+      },
+      "physical_format": "Paperback",
+      "key": "/books/OL26211572M",
+      "number_of_pages": 288,
+      "works": [
+        {
+          "key": "/works/OL453657W"
+        }
+      ],
+      "latest_revision": 9,
+      "revision": 9,
+      "created": {
+        "type": "/type/datetime",
+        "value": "2017-01-07T23:58:13.779199"
+      },
+      "last_modified": {
+        "type": "/type/datetime",
+        "value": "2022-07-12T01:37:35.430813"
+      }
+    },
+    {
+      "title": "The Colour of Magic",
+      "authors": [
+        {
+          "key": "/authors/OL25712A"
+        }
+      ],
+      "publish_date": "January 2006",
+      "publishers": [
+        "ISIS Audio Books"
+      ],
+      "weight": "3.2 ounces",
+      "covers": [
+        499987
+      ],
+      "physical_format": "Audio CD",
+      "contributions": [
+        "Nigel Planer (Narrator)"
+      ],
+      "subjects": [
+        "Science fiction",
+        "Fantasy - General",
+        "Humorous",
+        "Unabridged Audio - Fiction/General"
+      ],
+      "edition_name": "Unabridged edition",
+      "languages": [
+        {
+          "key": "/languages/eng"
+        }
+      ],
+      "isbn_13": [
+        "9780753107089"
+      ],
+      "isbn_10": [
+        "0753107082"
+      ],
+      "type": {
+        "key": "/type/edition"
+      },
+      "physical_dimensions": "7.8 x 7.4 x 1.7 inches",
+      "key": "/books/OL7985559M",
+      "works": [
+        {
+          "key": "/works/OL453657W"
+        }
+      ],
+      "latest_revision": 10,
+      "revision": 10,
+      "created": {
+        "type": "/type/datetime",
+        "value": "2008-04-29T15:03:11.581851"
+      },
+      "last_modified": {
+        "type": "/type/datetime",
+        "value": "2026-01-13T07:20:53.702621"
+      }
+    }
+  ]
+}

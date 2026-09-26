@@ -1,0 +1,89 @@
+{
+  "authors": [
+    {
+      "author": {
+        "key": "/authors/OL21594A"
+      },
+      "type": {
+        "key": "/type/author_role"
+      }
+    }
+  ],
+  "covers": [
+    14348537,
+    8748572,
+    10538086,
+    11303419,
+    12342982,
+    13979933,
+    13893906
+  ],
+  "description": "Pride and Prejudice is an 1813 novel of manners written by Jane Austen. The novel follows the character development of Elizabeth Bennet, the dynamic protagonist of the book who learns about the repercussions of hasty judgments and comes to appreciate the difference between superficial goodness and actual goodness.\r\n\r\nMr. Bennet, owner of the Longbourn estate in Hertfordshire, has five daughters, but his property is entailed and can only be passed to a male heir. His wife also lacks an inheritance, so his family faces becoming very poor upon his death. Thus, it is imperative that at least one of the girls marry well to support the others, which is a motivation that drives the plot.",
+  "first_publish_date": "1853",
+  "key": "/works/OL66554W",
+  "subjects": [
+    "Fiction, Romance, Historical, Regency",
+    "British and Irish fiction (fictional works by one author)",
+    "Brothers and sisters",
+    "Courtship",
+    "Drama",
+    "English fiction",
+    "English literature",
+    "Families",
+    "Family",
+    "Family life",
+    "Family relations",
+    "Fiction Classics",
+    "History",
+    "Interpersonal relations",
+    "Literary Fiction",
+    "Love stories",
+    "manners",
+    "Manners and customs",
+    "marriage",
+    "Sisters",
+    "Social classes",
+    "Social life and customs",
+    "Upper class",
+    "wealth",
+    "Women in England",
+    "young ladies",
+    "Young women",
+    "entail",
+    "Young women, fiction",
+    "Sisters, fiction",
+    "Fiction, family life, general",
+    "England, fiction",
+    "Man-woman relationships, fiction",
+    "Roman anglais",
+    "Classes sociales",
+    "Romans, nouvelles",
+    "Sœurs",
+    "Amours",
+    "Jeunes femmes",
+    "Familles"
+  ],
+  "title": "Pride and Prejudice",
+  "type": {
+    "key": "/type/work"
+  },
+  "works": [
+    "Love stories, English"
+  ],
+  "genres": [
+    "/tags/OL167T",
+    "/tags/OL174T",
+    "/tags/OL177T",
+    "/tags/OL170T"
+  ],
+  "latest_revision": 120,
+  "revision": 120,
+  "created": {
+    "type": "/type/datetime",
+    "value": "2009-10-16T02:23:26.818127"
+  },
+  "last_modified": {
+    "type": "/type/datetime",
+    "value": "2026-09-18T13:25:31.962669"
+  }
+}

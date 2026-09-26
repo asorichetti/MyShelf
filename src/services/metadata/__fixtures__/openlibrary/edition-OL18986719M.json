@@ -1,0 +1,47 @@
+{
+  "title": "Cien años de soledad",
+  "authors": [
+    {
+      "key": "/authors/OL27363A"
+    }
+  ],
+  "publish_date": "2003",
+  "publishers": [
+    "Debolsillo"
+  ],
+  "publish_places": [
+    "Barcelona"
+  ],
+  "edition_name": "2nd ed.",
+  "pagination": "495p. ;",
+  "languages": [
+    {
+      "key": "/languages/spa"
+    }
+  ],
+  "isbn_10": [
+    "8497592204"
+  ],
+  "publish_country": "sp ",
+  "by_statement": "Gabriel García Márquez.",
+  "type": {
+    "key": "/type/edition"
+  },
+  "key": "/books/OL18986719M",
+  "number_of_pages": 495,
+  "works": [
+    {
+      "key": "/works/OL274505W"
+    }
+  ],
+  "latest_revision": 8,
+  "revision": 8,
+  "created": {
+    "type": "/type/datetime",
+    "value": "2008-10-20T16:59:33.731472"
+  },
+  "last_modified": {
+    "type": "/type/datetime",
+    "value": "2025-12-07T21:57:26.096647"
+  }
+}

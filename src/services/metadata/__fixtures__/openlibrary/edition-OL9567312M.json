@@ -1,0 +1,57 @@
+{
+  "publishers": [
+    "Editions Gallimard"
+  ],
+  "number_of_pages": 120,
+  "weight": "5.6 ounces",
+  "isbn_10": [
+    "2070612759"
+  ],
+  "covers": [
+    2137711
+  ],
+  "physical_format": "Paperback",
+  "key": "/books/OL9567312M",
+  "authors": [
+    {
+      "key": "/authors/OL31901A"
+    }
+  ],
+  "subjects": [
+    "Classic fiction",
+    "Fiction",
+    "Children's Books/All Ages",
+    "Literature: Classics",
+    "Fairy Tales & Folklore - Anthologies",
+    "Classics"
+  ],
+  "isbn_13": [
+    "9782070612758"
+  ],
+  "title": "Le Petit Prince",
+  "languages": [
+    {
+      "key": "/languages/fre"
+    }
+  ],
+  "publish_date": "March 2007",
+  "works": [
+    {
+      "key": "/works/OL10263W"
+    }
+  ],
+  "type": {
+    "key": "/type/edition"
+  },
+  "physical_dimensions": "6.9 x 4.9 x 0.3 inches",
+  "latest_revision": 8,
+  "revision": 8,
+  "created": {
+    "type": "/type/datetime",
+    "value": "2008-04-30T09:38:13.731961"
+  },
+  "last_modified": {
+    "type": "/type/datetime",
+    "value": "2023-01-18T09:47:14.521060"
+  }
+}

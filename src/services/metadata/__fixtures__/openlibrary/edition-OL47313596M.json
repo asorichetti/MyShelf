@@ -1,0 +1,29 @@
+{
+  "works": [
+    {
+      "key": "/works/OL34952014W"
+    }
+  ],
+  "title": "Kitab Jurumiyyah",
+  "publishers": [
+    "kitab"
+  ],
+  "publish_date": "2023",
+  "key": "/books/OL47313596M",
+  "type": {
+    "key": "/type/edition"
+  },
+  "isbn_10": [
+    "0000000000"
+  ],
+  "latest_revision": 1,
+  "revision": 1,
+  "created": {
+    "type": "/type/datetime",
+    "value": "2023-03-31T17:19:55.491462"
+  },
+  "last_modified": {
+    "type": "/type/datetime",
+    "value": "2023-03-31T17:19:55.491462"
+  }
+}

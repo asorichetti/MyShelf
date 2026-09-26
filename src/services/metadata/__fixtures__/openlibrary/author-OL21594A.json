@@ -1,0 +1,16 @@
+{
+  "key": "/authors/OL21594A",
+  "name": "Jane Austen",
+  "personal_name": "Austen, Jane",
+  "birth_date": "December 16, 1775",
+  "death_date": "July 18, 1817",
+  "type": {
+    "key": "/type/author"
+  },
+  "latest_revision": 77,
+  "revision": 77,
+  "bio": {
+    "type": "/type/text",
+    "value": "Jane Austen was an English writer. Although Austen was widely read in her lifetime, she published her works anonymously. The most urgent preoccupations of her bright, young heroines are courtship and "
+  }
+}

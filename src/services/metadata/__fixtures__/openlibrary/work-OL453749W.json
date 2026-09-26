@@ -1,0 +1,74 @@
+{
+  "title": "Moving Pictures",
+  "key": "/works/OL453749W",
+  "authors": [
+    {
+      "author": {
+        "key": "/authors/OL25712A"
+      },
+      "type": {
+        "key": "/type/author_role"
+      }
+    }
+  ],
+  "type": {
+    "key": "/type/work"
+  },
+  "covers": [
+    14647546
+  ],
+  "subjects": [
+    "Fiction",
+    "Discworld (Imaginary place)",
+    "Motion picture industry",
+    "Fantasy",
+    "discworld",
+    "Fiction, fantasy, general",
+    "Discworld (imaginary place), fiction",
+    "Fiction, humorous",
+    "Science fiction, fantasy, horror",
+    "English literature",
+    "Fiction, humorous, general",
+    "Disque-monde (Lieu imaginaire)",
+    "Romans, nouvelles"
+  ],
+  "description": "Discworld's pesky alchemists are up to their old tricks again. This time, they've discovered how to get gold from silver -- the silver screen that is. Hearing the siren call of Holy Wood is one Victor Tugelbend, a would-be wizard turned extra. He can't sing, he can't dance, but he can handle a sword (sort of), and now he wants to be a star. So does Theda Withel, an ambitious ingenue from a little town (where else?) you've probably never heard of.But the click click of moving pictures isn't just stirring up dreams inside Discworld. Holy Wood's magic is drifting out into the boundaries of the universes, where raw realities, the could-have-beens, the might-bes, the never-weres, the wild ideas are beginning to ferment into a really stinky brew. It's up to Victor and Gaspode the Wonder Dog (a star if ever one was born!) to rein in the chaos and bring order back to a starstruck Discworld. And they're definitely not ready for their close-up!",
+  "first_publish_date": "2002",
+  "dewey_number": [
+    "823/.914"
+  ],
+  "location": "/works/OL453944W",
+  "identifiers": {
+    "bookbrainz": [
+      "29687c88-deee-40d8-b797-66dde45d5fa7"
+    ],
+    "musicbrainz": [
+      "425ac0e9-6886-4688-8bc4-e8e892b83d66"
+    ],
+    "wikidata": [
+      "Q1996856"
+    ]
+  },
+  "series": [
+    {
+      "series": {
+        "key": "/series/OL339711L"
+      },
+      "position": "10"
+    }
+  ],
+  "genres": [
+    "/tags/OL169T",
+    "/tags/OL172T"
+  ],
+  "latest_revision": 14,
+  "revision": 14,
+  "created": {
+    "type": "/type/datetime",
+    "value": "2009-12-08T02:21:44.262684"
+  },
+  "last_modified": {
+    "type": "/type/datetime",
+    "value": "2026-08-30T11:44:29.083277"
+  }
+}

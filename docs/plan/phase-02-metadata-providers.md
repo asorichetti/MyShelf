@@ -43,19 +43,21 @@ Given an ISBN or a title/author query, fetch book metadata from Open Library and
 - **Tests:** type-level only (covered by provider tests).
 - **Delivered:** besides the listed fields, `BookCandidate` has `kind` (`edition` or `work`: Open Library search returns works), `edition` (edition statement, for `books.edition`) and `editionCount` (used in ranking). A `SeriesHint` name may be null because Google Books gives only a position. `ProviderWarning` and `MetadataResult` (candidates + warnings) are the service's return types; `candidate.ts` has `makeCandidate()` for mappers and tests.
 
-### P02-03 Open Library: ISBN lookup
+### P02-03 Open Library: ISBN lookup — done
 
 - **Description:** `openLibrary.lookupIsbn`: `GET /isbn/{isbn}.json` (follows redirect) → edition; then `GET /works/{id}.json` for `description` and `subjects`; then `GET /authors/{id}.json` for each author key (cached). Map fields per `PLAN.md` §6 (year from free-text `publish_date`, description string or `{value}`, language key → ISO 639-1, `physical_format` → format enum, `series[]` → series hints, cover from `covers[0]` → `https://covers.openlibrary.org/b/id/{id}-L.jpg`). `404` → `[]`.
 - **Files:** `src/services/metadata/openLibrary.ts`, `src/services/metadata/openLibraryMap.ts`, `src/services/metadata/__fixtures__/openlibrary/*.json`.
 - **Acceptance:** fixtures for a modern hardback, an old paperback with ISBN-10 only, an edition with `series`, an edition with no work description, and a 404 all map correctly.
 - **Tests:** `src/services/metadata/__tests__/openLibrary.isbn.test.ts`, `openLibraryMap.test.ts`.
+- **Delivered:** `createOpenLibrary({ http })` returns the provider. Fixtures are real responses recorded in September 2026 (`__fixtures__/openlibrary/*.json`, trimmed of bulky fields), wired to their URLs in `__fixtures__/openLibraryRoutes.ts` and served by `createFixtureFetch()` (`src/testing/fixtureFetch.ts`), which answers 501 to any unrecorded URL. They cover a modern hardback (Harry Potter, Bloomsbury), an old paperback with only an ISBN-10 (Fellowship, Ballantine), editions with `series` (Colour of Magic, Moving Pictures, Dune), a record with no work description, authors or subjects, non-English editions (French, Spanish) and a 404. What the real API taught us: many modern editions have no `authors`, so names come from the work's `authors[].author.key`; the 404 body is HTML, not JSON; some records store decomposed accents (`n` + U+0303), so text is NFC-normalised; `covers[]` can contain `-1`; `pagination` ("xlii, 435 p.") stands in for a missing `number_of_pages`; descriptions carry Markdown and "back cover" markers, which are removed. The work description wins; the edition's `description` is the fallback. Language keys map through `src/domain/languages.ts` (`toIso6391`). A 404 on the work or an author still returns the edition.
 
-### P02-04 Open Library: search and work editions
+### P02-04 Open Library: search and work editions — done
 
 - **Description:** `openLibrary.search`: `GET /search.json?title=&author=` (or `q=` for free text) with `fields=key,title,author_name,first_publish_year,edition_count,isbn,cover_i,subject,language&limit=10`; returns work-level candidates. `openLibrary.editions(workKey)`: `GET /works/{id}/editions.json?limit=50` → edition candidates (used by the edition picker in P03-08).
 - **Files:** `src/services/metadata/openLibrary.ts`, fixtures.
 - **Acceptance:** search for "the colour of magic" + "pratchett" returns the work first; editions list maps ISBNs, publishers, years, formats.
 - **Tests:** `src/services/metadata/__tests__/openLibrary.search.test.ts`, `openLibrary.editions.test.ts`.
+- **Delivered:** search results are work candidates (`kind: 'work'`, no ISBN, with `editionCount`); the title search sends `title=` and `author=`, free text sends `q=`. `editions(workKey, { signal, authors, limit })` takes the work's authors because edition entries rarely have resolvable ones. Fixtures: the real title/author search for "the colour of magic" + "pratchett", a free-text search for "dune frank herbert", and 13 of the 50 recorded editions of `OL453657W` chosen for variety (French, German, Portuguese, Polish, Czech, audio, ebook, mass-market, a computer game with no ISBN). Ranking across providers is P02-06; Open Library already returns the work first.
 
 ### P02-05 Google Books provider
 

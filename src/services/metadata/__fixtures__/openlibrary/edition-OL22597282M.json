@@ -1,0 +1,58 @@
+{
+  "notes": {
+    "type": "/type/text",
+    "value": "\"An Ace book\"--T.p. verso."
+  },
+  "title": "Dune",
+  "authors": [
+    {
+      "key": "/authors/OL79034A"
+    }
+  ],
+  "publish_date": "1987",
+  "publishers": [
+    "Ace Books"
+  ],
+  "series": [
+    "Dune chronicles -- bk. 1"
+  ],
+  "publish_places": [
+    "New York"
+  ],
+  "languages": [
+    {
+      "key": "/languages/eng"
+    }
+  ],
+  "pagination": "535 p. :",
+  "edition_name": "Ace ed.",
+  "isbn_10": [
+    "0441172660",
+    "0441172717"
+  ],
+  "publish_country": "nyu",
+  "by_statement": "Frank Herbert.",
+  "type": {
+    "key": "/type/edition"
+  },
+  "covers": [
+    15166231
+  ],
+  "key": "/books/OL22597282M",
+  "number_of_pages": 535,
+  "works": [
+    {
+      "key": "/works/OL893414W"
+    }
+  ],
+  "latest_revision": 8,
+  "revision": 8,
+  "created": {
+    "type": "/type/datetime",
+    "value": "2008-11-16T23:11:26.300516"
+  },
+  "last_modified": {
+    "type": "/type/datetime",
+    "value": "2026-07-25T12:46:42.414666"
+  }
+}

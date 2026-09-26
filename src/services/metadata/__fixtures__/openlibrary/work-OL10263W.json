@@ -1,0 +1,159 @@
+{
+  "description": {
+    "type": "/type/text",
+    "value": "*Le Petit Prince* est une œuvre de langue française, la plus connue d'Antoine de Saint-Exupéry. Publié en 1943 à New York simultanément à sa traduction anglaise, c'est une œuvre poétique et philosophique sous l'apparence d'un conte pour enfants.\r\n\r\nTraduit en quatre cent cinquante-sept langues et dialectes, *Le Petit Prince* est le deuxième ouvrage le plus traduit au monde après la Bible.\r\n\r\nLe langage, simple et dépouillé, parce qu'il est destiné à être compris par des enfants, est en réalité pour le narrateur le véhicule privilégié d'une conception symbolique de la vie. Chaque chapitre relate une rencontre du petit prince qui laisse celui-ci perplexe, par rapport aux comportements absurdes des « grandes personnes ». Ces différentes rencontres peuvent être lues comme une allégorie.\r\n\r\nLes aquarelles font partie du texte et participent à cette pureté du langage : dépouillement et profondeur sont les qualités maîtresses de l'œuvre.\r\n\r\nOn peut y lire une invitation de l'auteur à retrouver l'enfant en soi, car « toutes les grandes personnes ont d'abord été des enfants. (Mais peu d'entre elles s'en souviennent.) ». L'ouvrage est dédié à Léon Werth, mais « quand il était petit garçon ».\r\n\r\n(Wikipedia)"
+  },
+  "title": "Le petit prince",
+  "key": "/works/OL10263W",
+  "authors": [
+    {
+      "author": {
+        "key": "/authors/OL31901A"
+      },
+      "type": {
+        "key": "/type/author_role"
+      }
+    }
+  ],
+  "type": {
+    "key": "/type/work"
+  },
+  "covers": [
+    10708272,
+    1053881,
+    969238,
+    969589,
+    5266095,
+    10232006,
+    9323692,
+    8068060,
+    8381327,
+    10581233,
+    8571078,
+    8575349,
+    8575350,
+    8676440,
+    2137711,
+    8754070,
+    9387337,
+    10377349,
+    1027413,
+    8947356,
+    7903377,
+    -1,
+    7348947,
+    7268667,
+    6453774,
+    12635099,
+    12307870,
+    12719561,
+    7275560,
+    12527383,
+    11663215,
+    11229657,
+    12220058,
+    12550353,
+    13298781,
+    8570014,
+    8754716,
+    12369738,
+    12372681,
+    10660443,
+    12525191,
+    3259739,
+    10309195,
+    10532285,
+    10532286,
+    11279613,
+    12113845,
+    12125918,
+    12211412,
+    12239451,
+    12240007,
+    12250937,
+    12251233,
+    12294571,
+    12320355,
+    12388939,
+    13626646,
+    13627177,
+    11310040,
+    13233690,
+    14171431,
+    13890892,
+    13847025
+  ],
+  "first_publish_date": "1971",
+  "subjects": [
+    "adventure",
+    "fantasy",
+    "friendship",
+    "love",
+    "childhood",
+    "loss",
+    "loneliness",
+    "Children's fiction",
+    "Friendship, fiction",
+    "Fantasy fiction",
+    "Princes, fiction",
+    "Fairy tales",
+    "Adventure and adventurers, fiction",
+    "Princes",
+    "Fiction",
+    "Toy and movable books",
+    "Continental european fiction (fictional works by one author)",
+    "French language, readers",
+    "Romans, nouvelles",
+    "Travel, fiction",
+    "Juvenile fiction",
+    "Children's stories, French",
+    "Pride and vanity",
+    "Asteroids",
+    "Conduct of life",
+    "Fantasmes",
+    "Romans, nouvelles, etc. pour la jeunesse",
+    "Príncipes",
+    "Novela juvenil",
+    "Fiction, general",
+    "Philosophy",
+    "Princes -- Juvenile fiction",
+    "Air pilots -- Juvenile fiction",
+    "Friendship -- Juvenile fiction",
+    "Princes -- Romans, nouvelles, etc. pour la jeunesse",
+    "Pilotes d'aéronef -- Romans, nouvelles, etc. pour la jeunesse",
+    "Pilotos aéreos -- Novela juvenil",
+    "Príncipes -- Novela juvenil",
+    "Cuentos de hadas",
+    "Air pilots"
+  ],
+  "dewey_number": [
+    "843/.9/1"
+  ],
+  "identifiers": {
+    "isfdb": [
+      "1014956"
+    ],
+    "wikidata": [
+      "Q25338"
+    ],
+    "goodreads": [
+      "2180358"
+    ],
+    "librarything": [
+      "11883"
+    ],
+    "musicbrainz": [
+      "9b9d0249-928f-375e-bdd0-8fb0a27ad79e"
+    ]
+  },
+  "latest_revision": 42,
+  "revision": 42,
+  "created": {
+    "type": "/type/datetime",
+    "value": "2009-10-05T18:44:16.298496"
+  },
+  "last_modified": {
+    "type": "/type/datetime",
+    "value": "2026-09-26T01:06:35.511337"
+  }
+}

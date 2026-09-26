@@ -1,0 +1,96 @@
+{
+  "identifiers": {
+    "bookbrainz": [
+      "746fa5c5-4134-4ee6-91ca-76a728ba47e4"
+    ],
+    "musicbrainz": [
+      "64d680d1-311f-45ac-8adc-d421c8b362c4"
+    ],
+    "wikidata": [
+      "Q32136"
+    ]
+  },
+  "description": {
+    "type": "/type/text",
+    "value": "Terry Pratchett's profoundly irreverent novels are consistent number one bestsellers in England, where they have garnered him a revered position in the halls of parody next to Mark Twain, Kurt Vonnegut, Douglas Adams, and Carl Hiaasen.The Color of Magic is Terry Pratchett's maiden voyage through the now-legendary land of Discworld. This is where it all begins--with the tourist Twoflower and his wizard guide, Rincewind."
+  },
+  "subjects": [
+    "Discworld (Imaginary place)",
+    "Fiction",
+    "Romans",
+    "Merveilleux",
+    "Fantasy",
+    "Samuel Vimes (Fictitious character)",
+    "Rincewind",
+    "Twoflower (fictional characters)",
+    "parody",
+    "humour",
+    "Dollhouses",
+    "Doll furniture",
+    "Miniature objects",
+    "Collectors and collecting",
+    "Miniature dolls",
+    "Fiction, humorous",
+    "Fiction, fantasy, general",
+    "Discworld (imaginary place), fiction",
+    "Fiction, humorous, general",
+    "Rincewind the wizard (fictitious character), fiction",
+    "Fiction, satire",
+    "Geographical myths",
+    "Dollhouses -- Collectors and collecting",
+    "Miniature dolls -- Collectors and collecting",
+    "Doll furniture -- Collectors and collecting",
+    "Miniature objects -- Collectors and collecting",
+    "English literature",
+    "Wizards",
+    "Tourism",
+    "Satire",
+    "Humorous stories",
+    "Fantasy fiction"
+  ],
+  "key": "/works/OL453657W",
+  "title": "The Colour of Magic",
+  "authors": [
+    {
+      "author": {
+        "key": "/authors/OL25712A"
+      },
+      "type": {
+        "key": "/type/author_role"
+      }
+    }
+  ],
+  "type": {
+    "key": "/type/work"
+  },
+  "covers": [
+    14647238,
+    13642933,
+    13946817,
+    13946819
+  ],
+  "location": "/works/OL453676W",
+  "series": [
+    {
+      "series": {
+        "key": "/series/OL339711L"
+      },
+      "position": "1"
+    }
+  ],
+  "genres": [
+    "/tags/OL169T",
+    "/tags/OL172T",
+    "/tags/OL178T"
+  ],
+  "latest_revision": 27,
+  "revision": 27,
+  "created": {
+    "type": "/type/datetime",
+    "value": "2009-12-08T02:21:44.262684"
+  },
+  "last_modified": {
+    "type": "/type/datetime",
+    "value": "2026-08-28T22:20:02.266824"
+  }
+}
