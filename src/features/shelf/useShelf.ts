@@ -1,15 +1,19 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import { booksRepo, settingsRepo, useDatabase } from '@/db';
-import { settingDefaults, type BookListItem, type ShelfSort } from '@/domain';
-import { emit, useLibraryEvent } from '@/features/events';
+import { booksRepo, shelfSectionsRepo, useDatabase, type FilterOptions, type ShelfSection } from '@/db';
+import { type BookListItem, type ShelfFilters, type ShelfGroupBy, type ShelfSort, type ShelfViewMode } from '@/domain';
+import { useLibraryEvent } from '@/features/events';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
+
+import { defaultShelfPrefs, useShelfPrefs } from './useShelfPrefs';
 
 /** How long typing must pause before the Shelf searches. */
 export const SEARCH_DEBOUNCE_MS = 200;
 
 export interface ShelfState {
-  /** Books matching the current search, in the current order; null until first loaded. */
+  /** The books shown, grouped into sections (one untitled section when not grouped); null until loaded. */
+  sections: ShelfSection[] | null;
+  /** Books matching the search and filters, each once, in shelf order; null until first loaded. */
   items: BookListItem[] | null;
   /** Books in the whole catalogue; null until first loaded. */
   total: number | null;
@@ -21,69 +25,102 @@ export interface ShelfState {
   sort: ShelfSort;
   /** Changes the order and remembers it in settings. */
   setSort: (sort: ShelfSort) => void;
-  /** Reloads now (also happens on mount and on `library-changed`). */
+  groupBy: ShelfGroupBy;
+  setGroupBy: (groupBy: ShelfGroupBy) => void;
+  viewMode: ShelfViewMode;
+  setViewMode: (mode: ShelfViewMode) => void;
+  filters: ShelfFilters;
+  setFilters: (filters: ShelfFilters) => void;
+  /** What the filter sheet can offer (genres with counts, formats, languages, years). */
+  filterOptions: FilterOptions | null;
+  /** Reloads now (also happens on mount and when the library, groups or loans change). */
   reload: () => void;
 }
 
 /**
- * The Shelf's data: the book list for the current search and sort, and the
- * catalogue size. Loads on mount (tab screens mount when focused) and again
- * whenever a write emits `library-changed`. The sort is read from and saved
- * to the `shelfSort` setting.
+ * The Shelf's data: the books for the current search, filters and sort, split
+ * into sections by the current grouping, plus the catalogue size and the
+ * filter sheet's options. Loads on mount (tab screens mount when focused) and
+ * again whenever a write emits `library-changed`, `groups-changed` or
+ * `loans-changed`. Sort, grouping, display mode and filters are remembered in
+ * settings (`useShelfPrefs`).
  */
 export function useShelf(): ShelfState {
   const db = useDatabase();
+  const { prefs, setSort, setGroupBy, setViewMode, setFilters } = useShelfPrefs();
   const [query, setQuery] = useState('');
   const activeQuery = useDebouncedValue(query.trim(), SEARCH_DEBOUNCE_MS);
-  const [sort, setSortState] = useState<ShelfSort | null>(null);
-  const [items, setItems] = useState<BookListItem[] | null>(null);
+  const [sections, setSections] = useState<ShelfSection[] | null>(null);
   const [total, setTotal] = useState<number | null>(null);
+  const [filterOptions, setFilterOptions] = useState<FilterOptions | null>(null);
   const [version, setVersion] = useState(0);
   const request = useRef(0);
+  const sort = prefs?.sort;
+  const groupBy = prefs?.groupBy;
+  const filters = prefs?.filters;
 
   useEffect(() => {
-    let active = true;
-    settingsRepo
-      .getSetting(db, 'shelfSort')
-      .then((saved) => active && setSortState((current) => current ?? saved))
-      .catch((e) => {
-        console.warn('Could not read the shelf sort; using the default', e);
-        if (active) setSortState((current) => current ?? settingDefaults.shelfSort);
-      });
-    return () => {
-      active = false;
-    };
-  }, [db]);
-
-  useEffect(() => {
-    if (!sort) return;
+    if (!sort || !groupBy || !filters) return;
     const id = ++request.current;
-    Promise.all([booksRepo.listBookItems(db, { query: activeQuery, ...sort }), booksRepo.countBooks(db)])
-      .then(([list, count]) => {
-        // A newer request (typing, a sort change, another write) wins.
+    Promise.all([shelfSectionsRepo.listShelfSections(db, { groupBy, query: activeQuery, filters, ...sort }), booksRepo.countBooks(db)])
+      .then(([result, count]) => {
+        // A newer request (typing, a preference change, another write) wins.
         if (id !== request.current) return;
-        setItems(list);
+        setSections(result.sections);
         setTotal(count);
       })
       .catch((e) => console.error('Could not load the shelf', e));
-  }, [db, activeQuery, sort, version]);
+  }, [db, activeQuery, sort, groupBy, filters, version]);
+
+  useEffect(() => {
+    let active = true;
+    booksRepo
+      .listFilterOptions(db)
+      .then((options) => active && setFilterOptions(options))
+      .catch((e) => console.error('Could not load the filter options', e));
+    return () => {
+      active = false;
+    };
+  }, [db, version]);
 
   // Stale responses are dropped by the request counter above.
   useEffect(() => () => void request.current++, []);
 
   const reload = useCallback(() => setVersion((v) => v + 1), []);
-  useLibraryEvent('library-changed', reload);
+  useLibraryEvent(['library-changed', 'groups-changed', 'loans-changed'], reload);
 
-  const setSort = useCallback(
-    (next: ShelfSort) => {
-      setSortState(next);
-      settingsRepo
-        .setSetting(db, 'shelfSort', next)
-        .then(() => emit('settings-changed'))
-        .catch((e) => console.error('Could not save the shelf sort', e));
-    },
-    [db],
-  );
+  const items = useMemo(() => {
+    if (!sections) return null;
+    if (sections.length <= 1) return sections[0]?.items ?? [];
+    const seen = new Set<number>();
+    const out: BookListItem[] = [];
+    for (const s of sections) {
+      for (const item of s.items) {
+        if (seen.has(item.id)) continue;
+        seen.add(item.id);
+        out.push(item);
+      }
+    }
+    return out;
+  }, [sections]);
 
-  return { items, total, query, setQuery, activeQuery, sort: sort ?? settingDefaults.shelfSort, setSort, reload };
+  const current = prefs ?? defaultShelfPrefs;
+  return {
+    sections,
+    items,
+    total,
+    query,
+    setQuery,
+    activeQuery,
+    sort: current.sort,
+    setSort,
+    groupBy: current.groupBy,
+    setGroupBy,
+    viewMode: current.viewMode,
+    setViewMode,
+    filters: current.filters,
+    setFilters,
+    filterOptions,
+    reload,
+  };
 }

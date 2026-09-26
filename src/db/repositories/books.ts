@@ -216,6 +216,7 @@ interface ListRow {
   subtitle: string | null;
   cover_uri: string | null;
   publication_year: number | null;
+  series_id: number | null;
   series_name: string | null;
   series_position: number | null;
   on_loan: number;
@@ -275,7 +276,7 @@ export async function listBookItems(db: Db, options: ListBookItemsOptions = {}):
   }
   const order = scope.groupId != null && options.groupOrder ? `gb.position, ${SORT_TITLE}, b.id` : orderBy(sort, direction);
   const rows = await db.all<ListRow & { author_sort: string | null }>(
-    `SELECT b.id, b.title, b.subtitle, b.cover_uri, b.publication_year, s.name AS series_name, b.series_position,
+    `SELECT b.id, b.title, b.subtitle, b.cover_uri, b.publication_year, b.series_id, s.name AS series_name, b.series_position,
        EXISTS (SELECT 1 FROM loans l WHERE l.book_id = b.id AND l.returned_on IS NULL) AS on_loan,
        ${PRIMARY_AUTHOR_SORT} AS author_sort
      FROM books b ${joins.join(' ')} LEFT JOIN series s ON s.id = b.series_id
@@ -293,6 +294,7 @@ export async function listBookItems(db: Db, options: ListBookItemsOptions = {}):
     authors: names.get(r.id) ?? [],
     coverUri: r.cover_uri,
     publicationYear: r.publication_year,
+    seriesId: r.series_id,
     seriesName: r.series_name,
     seriesPosition: r.series_position,
     onLoan: r.on_loan === 1,

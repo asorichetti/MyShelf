@@ -55,6 +55,8 @@ export interface BookListItem {
   authors: string[];
   coverUri: string | null;
   publicationYear: number | null;
+  /** The series' id (always set by the repository; optional so hand-made items can leave it out). */
+  seriesId?: number | null;
   seriesName: string | null;
   seriesPosition: number | null;
   onLoan: boolean;
