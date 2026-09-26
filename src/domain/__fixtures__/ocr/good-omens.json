@@ -1,0 +1,73 @@
+{
+  "synthetic": true,
+  "note": "Hand-written to the ML Kit text recognition output shape (blocks of lines with pixel frames on a 1080x1620 photo). Not a real capture: replace with recordings from a device (P03-06).",
+  "description": "Two authors on one line joined by an ampersand, big title, long subtitle",
+  "expected": {
+    "title": "good omens",
+    "author": "neil gaiman"
+  },
+  "result": {
+    "blocks": [
+      {
+        "text": "NEIL GAIMAN & TERRY PRATCHETT",
+        "frame": {
+          "x": 125,
+          "y": 80,
+          "width": 829,
+          "height": 52
+        },
+        "lines": [
+          {
+            "text": "NEIL GAIMAN & TERRY PRATCHETT",
+            "frame": {
+              "x": 125,
+              "y": 80,
+              "width": 829,
+              "height": 52
+            }
+          }
+        ]
+      },
+      {
+        "text": "GOOD OMENS",
+        "frame": {
+          "x": 127,
+          "y": 300,
+          "width": 825,
+          "height": 150
+        },
+        "lines": [
+          {
+            "text": "GOOD OMENS",
+            "frame": {
+              "x": 127,
+              "y": 300,
+              "width": 825,
+              "height": 150
+            }
+          }
+        ]
+      },
+      {
+        "text": "The Nice and Accurate Prophecies of Agnes Nutter, Witch",
+        "frame": {
+          "x": 86,
+          "y": 480,
+          "width": 907,
+          "height": 30
+        },
+        "lines": [
+          {
+            "text": "The Nice and Accurate Prophecies of Agnes Nutter, Witch",
+            "frame": {
+              "x": 86,
+              "y": 480,
+              "width": 907,
+              "height": 30
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

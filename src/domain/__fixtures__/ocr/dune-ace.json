@@ -1,0 +1,93 @@
+{
+  "synthetic": true,
+  "note": "Hand-written to the ML Kit text recognition output shape (blocks of lines with pixel frames on a 1080x1620 photo). Not a real capture: replace with recordings from a device (P03-06).",
+  "description": "Ace mass-market: author on top, one huge word as the title, taglines below",
+  "expected": {
+    "title": "dune",
+    "author": "frank herbert"
+  },
+  "result": {
+    "blocks": [
+      {
+        "text": "FRANK HERBERT",
+        "frame": {
+          "x": 247,
+          "y": 80,
+          "width": 586,
+          "height": 82
+        },
+        "lines": [
+          {
+            "text": "FRANK HERBERT",
+            "frame": {
+              "x": 247,
+              "y": 80,
+              "width": 586,
+              "height": 82
+            }
+          }
+        ]
+      },
+      {
+        "text": "DUNE",
+        "frame": {
+          "x": 254,
+          "y": 300,
+          "width": 572,
+          "height": 260
+        },
+        "lines": [
+          {
+            "text": "DUNE",
+            "frame": {
+              "x": 254,
+              "y": 300,
+              "width": 572,
+              "height": 260
+            }
+          }
+        ]
+      },
+      {
+        "text": "The bestselling science fiction novel of all time",
+        "frame": {
+          "x": 82,
+          "y": 640,
+          "width": 916,
+          "height": 34
+        },
+        "lines": [
+          {
+            "text": "The bestselling science fiction novel of all time",
+            "frame": {
+              "x": 82,
+              "y": 640,
+              "width": 916,
+              "height": 34
+            }
+          }
+        ]
+      },
+      {
+        "text": "NOW A MAJOR MOTION PICTURE",
+        "frame": {
+          "x": 325,
+          "y": 1500,
+          "width": 429,
+          "height": 30
+        },
+        "lines": [
+          {
+            "text": "NOW A MAJOR MOTION PICTURE",
+            "frame": {
+              "x": 325,
+              "y": 1500,
+              "width": 429,
+              "height": 30
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

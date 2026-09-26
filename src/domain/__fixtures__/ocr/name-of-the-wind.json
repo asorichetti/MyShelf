@@ -1,0 +1,113 @@
+{
+  "synthetic": true,
+  "note": "Hand-written to the ML Kit text recognition output shape (blocks of lines with pixel frames on a 1080x1620 photo). Not a real capture: replace with recordings from a device (P03-06).",
+  "description": "Series strap, author, title over two lines, a quoted endorsement",
+  "expected": {
+    "title": "the name of the wind",
+    "author": "patrick rothfuss"
+  },
+  "result": {
+    "blocks": [
+      {
+        "text": "THE KINGKILLER CHRONICLE: DAY ONE",
+        "frame": {
+          "x": 268,
+          "y": 50,
+          "width": 544,
+          "height": 30
+        },
+        "lines": [
+          {
+            "text": "THE KINGKILLER CHRONICLE: DAY ONE",
+            "frame": {
+              "x": 268,
+              "y": 50,
+              "width": 544,
+              "height": 30
+            }
+          }
+        ]
+      },
+      {
+        "text": "PATRICK ROTHFUSS",
+        "frame": {
+          "x": 267,
+          "y": 120,
+          "width": 545,
+          "height": 62
+        },
+        "lines": [
+          {
+            "text": "PATRICK ROTHFUSS",
+            "frame": {
+              "x": 267,
+              "y": 120,
+              "width": 545,
+              "height": 62
+            }
+          }
+        ]
+      },
+      {
+        "text": "THE NAME",
+        "frame": {
+          "x": 329,
+          "y": 300,
+          "width": 422,
+          "height": 96
+        },
+        "lines": [
+          {
+            "text": "THE NAME",
+            "frame": {
+              "x": 329,
+              "y": 300,
+              "width": 422,
+              "height": 96
+            }
+          }
+        ]
+      },
+      {
+        "text": "OF THE WIND",
+        "frame": {
+          "x": 250,
+          "y": 404,
+          "width": 580,
+          "height": 96
+        },
+        "lines": [
+          {
+            "text": "OF THE WIND",
+            "frame": {
+              "x": 250,
+              "y": 404,
+              "width": 580,
+              "height": 96
+            }
+          }
+        ]
+      },
+      {
+        "text": "\"I was reminded of Ursula K. Le Guin, George R. R. Martin, and J. R. R. Tolkien\"",
+        "frame": {
+          "x": 40,
+          "y": 1450,
+          "width": 1000,
+          "height": 26
+        },
+        "lines": [
+          {
+            "text": "\"I was reminded of Ursula K. Le Guin, George R. R. Martin, and J. R. R. Tolkien\"",
+            "frame": {
+              "x": 40,
+              "y": 1450,
+              "width": 1000,
+              "height": 26
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

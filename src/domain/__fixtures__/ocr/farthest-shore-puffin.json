@@ -1,0 +1,113 @@
+{
+  "synthetic": true,
+  "note": "Hand-written to the ML Kit text recognition output shape (blocks of lines with pixel frames on a 1080x1620 photo). Not a real capture: replace with recordings from a device (P03-06).",
+  "description": "Puffin: author, title, series line, prize line, imprint",
+  "expected": {
+    "title": "the farthest shore",
+    "author": "ursula k. le guin"
+  },
+  "result": {
+    "blocks": [
+      {
+        "text": "Ursula K. Le Guin",
+        "frame": {
+          "x": 297,
+          "y": 80,
+          "width": 486,
+          "height": 52
+        },
+        "lines": [
+          {
+            "text": "Ursula K. Le Guin",
+            "frame": {
+              "x": 297,
+              "y": 80,
+              "width": 486,
+              "height": 52
+            }
+          }
+        ]
+      },
+      {
+        "text": "The Farthest Shore",
+        "frame": {
+          "x": 124,
+          "y": 160,
+          "width": 831,
+          "height": 84
+        },
+        "lines": [
+          {
+            "text": "The Farthest Shore",
+            "frame": {
+              "x": 124,
+              "y": 160,
+              "width": 831,
+              "height": 84
+            }
+          }
+        ]
+      },
+      {
+        "text": "The Third Book of Earthsea",
+        "frame": {
+          "x": 325,
+          "y": 270,
+          "width": 429,
+          "height": 30
+        },
+        "lines": [
+          {
+            "text": "The Third Book of Earthsea",
+            "frame": {
+              "x": 325,
+              "y": 270,
+              "width": 429,
+              "height": 30
+            }
+          }
+        ]
+      },
+      {
+        "text": "Winner of the National Book Award",
+        "frame": {
+          "x": 304,
+          "y": 1470,
+          "width": 471,
+          "height": 26
+        },
+        "lines": [
+          {
+            "text": "Winner of the National Book Award",
+            "frame": {
+              "x": 304,
+              "y": 1470,
+              "width": 471,
+              "height": 26
+            }
+          }
+        ]
+      },
+      {
+        "text": "PUFFIN BOOKS",
+        "frame": {
+          "x": 454,
+          "y": 1540,
+          "width": 171,
+          "height": 26
+        },
+        "lines": [
+          {
+            "text": "PUFFIN BOOKS",
+            "frame": {
+              "x": 454,
+              "y": 1540,
+              "width": 171,
+              "height": 26
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

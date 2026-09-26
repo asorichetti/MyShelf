@@ -1,0 +1,73 @@
+{
+  "synthetic": true,
+  "note": "Hand-written to the ML Kit text recognition output shape (blocks of lines with pixel frames on a 1080x1620 photo). Not a real capture: replace with recordings from a device (P03-06).",
+  "description": "Title on top, author at the bottom in mixed case",
+  "expected": {
+    "title": "moving pictures",
+    "author": "terry pratchett"
+  },
+  "result": {
+    "blocks": [
+      {
+        "text": "MOVING PICTURES",
+        "frame": {
+          "x": 111,
+          "y": 100,
+          "width": 858,
+          "height": 104
+        },
+        "lines": [
+          {
+            "text": "MOVING PICTURES",
+            "frame": {
+              "x": 111,
+              "y": 100,
+              "width": 858,
+              "height": 104
+            }
+          }
+        ]
+      },
+      {
+        "text": "A Discworld Novel",
+        "frame": {
+          "x": 400,
+          "y": 230,
+          "width": 280,
+          "height": 30
+        },
+        "lines": [
+          {
+            "text": "A Discworld Novel",
+            "frame": {
+              "x": 400,
+              "y": 230,
+              "width": 280,
+              "height": 30
+            }
+          }
+        ]
+      },
+      {
+        "text": "Terry Pratchett",
+        "frame": {
+          "x": 276,
+          "y": 1440,
+          "width": 528,
+          "height": 64
+        },
+        "lines": [
+          {
+            "text": "Terry Pratchett",
+            "frame": {
+              "x": 276,
+              "y": 1440,
+              "width": 528,
+              "height": 64
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

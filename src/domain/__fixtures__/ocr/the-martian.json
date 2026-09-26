@@ -1,0 +1,113 @@
+{
+  "synthetic": true,
+  "note": "Hand-written to the ML Kit text recognition output shape (blocks of lines with pixel frames on a 1080x1620 photo). Not a real capture: replace with recordings from a device (P03-06).",
+  "description": "Film tie-in: bestseller banner, title, \"A NOVEL\", author at the bottom",
+  "expected": {
+    "title": "the martian",
+    "author": "andy weir"
+  },
+  "result": {
+    "blocks": [
+      {
+        "text": "#1 NEW YORK TIMES BESTSELLER",
+        "frame": {
+          "x": 309,
+          "y": 60,
+          "width": 462,
+          "height": 30
+        },
+        "lines": [
+          {
+            "text": "#1 NEW YORK TIMES BESTSELLER",
+            "frame": {
+              "x": 309,
+              "y": 60,
+              "width": 462,
+              "height": 30
+            }
+          }
+        ]
+      },
+      {
+        "text": "THE MARTIAN",
+        "frame": {
+          "x": 86,
+          "y": 500,
+          "width": 907,
+          "height": 150
+        },
+        "lines": [
+          {
+            "text": "THE MARTIAN",
+            "frame": {
+              "x": 86,
+              "y": 500,
+              "width": 907,
+              "height": 150
+            }
+          }
+        ]
+      },
+      {
+        "text": "A NOVEL",
+        "frame": {
+          "x": 478,
+          "y": 680,
+          "width": 123,
+          "height": 32
+        },
+        "lines": [
+          {
+            "text": "A NOVEL",
+            "frame": {
+              "x": 478,
+              "y": 680,
+              "width": 123,
+              "height": 32
+            }
+          }
+        ]
+      },
+      {
+        "text": "ANDY WEIR",
+        "frame": {
+          "x": 312,
+          "y": 1380,
+          "width": 455,
+          "height": 92
+        },
+        "lines": [
+          {
+            "text": "ANDY WEIR",
+            "frame": {
+              "x": 312,
+              "y": 1380,
+              "width": 455,
+              "height": 92
+            }
+          }
+        ]
+      },
+      {
+        "text": "NOW A MAJOR MOTION PICTURE",
+        "frame": {
+          "x": 340,
+          "y": 1520,
+          "width": 400,
+          "height": 28
+        },
+        "lines": [
+          {
+            "text": "NOW A MAJOR MOTION PICTURE",
+            "frame": {
+              "x": 340,
+              "y": 1520,
+              "width": 400,
+              "height": 28
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

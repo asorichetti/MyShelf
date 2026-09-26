@@ -1,0 +1,113 @@
+{
+  "synthetic": true,
+  "note": "Hand-written to the ML Kit text recognition output shape (blocks of lines with pixel frames on a 1080x1620 photo). Not a real capture: replace with recordings from a device (P03-06).",
+  "description": "Crime paperback: the author logo is bigger than the title; a detective strap",
+  "expected": {
+    "title": "murder on the orient express",
+    "author": "agatha christie"
+  },
+  "result": {
+    "blocks": [
+      {
+        "text": "Agatha Christie",
+        "frame": {
+          "x": 144,
+          "y": 80,
+          "width": 792,
+          "height": 96
+        },
+        "lines": [
+          {
+            "text": "Agatha Christie",
+            "frame": {
+              "x": 144,
+              "y": 80,
+              "width": 792,
+              "height": 96
+            }
+          }
+        ]
+      },
+      {
+        "text": "MURDER ON THE",
+        "frame": {
+          "x": 318,
+          "y": 260,
+          "width": 443,
+          "height": 62
+        },
+        "lines": [
+          {
+            "text": "MURDER ON THE",
+            "frame": {
+              "x": 318,
+              "y": 260,
+              "width": 443,
+              "height": 62
+            }
+          }
+        ]
+      },
+      {
+        "text": "ORIENT EXPRESS",
+        "frame": {
+          "x": 301,
+          "y": 330,
+          "width": 477,
+          "height": 62
+        },
+        "lines": [
+          {
+            "text": "ORIENT EXPRESS",
+            "frame": {
+              "x": 301,
+              "y": 330,
+              "width": 477,
+              "height": 62
+            }
+          }
+        ]
+      },
+      {
+        "text": "A Hercule Poirot Mystery",
+        "frame": {
+          "x": 355,
+          "y": 420,
+          "width": 369,
+          "height": 28
+        },
+        "lines": [
+          {
+            "text": "A Hercule Poirot Mystery",
+            "frame": {
+              "x": 355,
+              "y": 420,
+              "width": 369,
+              "height": 28
+            }
+          }
+        ]
+      },
+      {
+        "text": "HarperCollins",
+        "frame": {
+          "x": 454,
+          "y": 1550,
+          "width": 171,
+          "height": 24
+        },
+        "lines": [
+          {
+            "text": "HarperCollins",
+            "frame": {
+              "x": 454,
+              "y": 1550,
+              "width": 171,
+              "height": 24
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

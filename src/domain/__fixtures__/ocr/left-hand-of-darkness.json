@@ -1,0 +1,113 @@
+{
+  "synthetic": true,
+  "note": "Hand-written to the ML Kit text recognition output shape (blocks of lines with pixel frames on a 1080x1620 photo). Not a real capture: replace with recordings from a device (P03-06).",
+  "description": "Ace: author, title over two lines, introduction credit, imprint",
+  "expected": {
+    "title": "the left hand of darkness",
+    "author": "ursula k. le guin"
+  },
+  "result": {
+    "blocks": [
+      {
+        "text": "URSULA K. LE GUIN",
+        "frame": {
+          "x": 250,
+          "y": 90,
+          "width": 579,
+          "height": 62
+        },
+        "lines": [
+          {
+            "text": "URSULA K. LE GUIN",
+            "frame": {
+              "x": 250,
+              "y": 90,
+              "width": 579,
+              "height": 62
+            }
+          }
+        ]
+      },
+      {
+        "text": "THE LEFT HAND",
+        "frame": {
+          "x": 247,
+          "y": 260,
+          "width": 586,
+          "height": 82
+        },
+        "lines": [
+          {
+            "text": "THE LEFT HAND",
+            "frame": {
+              "x": 247,
+              "y": 260,
+              "width": 586,
+              "height": 82
+            }
+          }
+        ]
+      },
+      {
+        "text": "OF DARKNESS",
+        "frame": {
+          "x": 292,
+          "y": 350,
+          "width": 496,
+          "height": 82
+        },
+        "lines": [
+          {
+            "text": "OF DARKNESS",
+            "frame": {
+              "x": 292,
+              "y": 350,
+              "width": 496,
+              "height": 82
+            }
+          }
+        ]
+      },
+      {
+        "text": "Introduction by David Mitchell",
+        "frame": {
+          "x": 309,
+          "y": 470,
+          "width": 462,
+          "height": 28
+        },
+        "lines": [
+          {
+            "text": "Introduction by David Mitchell",
+            "frame": {
+              "x": 309,
+              "y": 470,
+              "width": 462,
+              "height": 28
+            }
+          }
+        ]
+      },
+      {
+        "text": "ACE",
+        "frame": {
+          "x": 519,
+          "y": 1550,
+          "width": 42,
+          "height": 26
+        },
+        "lines": [
+          {
+            "text": "ACE",
+            "frame": {
+              "x": 519,
+              "y": 1550,
+              "width": 42,
+              "height": 26
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

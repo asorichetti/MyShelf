@@ -1,0 +1,113 @@
+{
+  "synthetic": true,
+  "note": "Hand-written to the ML Kit text recognition output shape (blocks of lines with pixel frames on a 1080x1620 photo). Not a real capture: replace with recordings from a device (P03-06).",
+  "description": "Ballantine: author with initials, title over two lines, part statement",
+  "expected": {
+    "title": "the fellowship of the ring",
+    "author": "j. r. r. tolkien"
+  },
+  "result": {
+    "blocks": [
+      {
+        "text": "J. R. R. TOLKIEN",
+        "frame": {
+          "x": 311,
+          "y": 60,
+          "width": 457,
+          "height": 52
+        },
+        "lines": [
+          {
+            "text": "J. R. R. TOLKIEN",
+            "frame": {
+              "x": 311,
+              "y": 60,
+              "width": 457,
+              "height": 52
+            }
+          }
+        ]
+      },
+      {
+        "text": "THE FELLOWSHIP",
+        "frame": {
+          "x": 186,
+          "y": 160,
+          "width": 708,
+          "height": 92
+        },
+        "lines": [
+          {
+            "text": "THE FELLOWSHIP",
+            "frame": {
+              "x": 186,
+              "y": 160,
+              "width": 708,
+              "height": 92
+            }
+          }
+        ]
+      },
+      {
+        "text": "OF THE RING",
+        "frame": {
+          "x": 262,
+          "y": 262,
+          "width": 556,
+          "height": 92
+        },
+        "lines": [
+          {
+            "text": "OF THE RING",
+            "frame": {
+              "x": 262,
+              "y": 262,
+              "width": 556,
+              "height": 92
+            }
+          }
+        ]
+      },
+      {
+        "text": "Being the first part of The Lord of the Rings",
+        "frame": {
+          "x": 193,
+          "y": 380,
+          "width": 693,
+          "height": 28
+        },
+        "lines": [
+          {
+            "text": "Being the first part of The Lord of the Rings",
+            "frame": {
+              "x": 193,
+              "y": 380,
+              "width": 693,
+              "height": 28
+            }
+          }
+        ]
+      },
+      {
+        "text": "BALLANTINE",
+        "frame": {
+          "x": 474,
+          "y": 1550,
+          "width": 132,
+          "height": 24
+        },
+        "lines": [
+          {
+            "text": "BALLANTINE",
+            "frame": {
+              "x": 474,
+              "y": 1550,
+              "width": 132,
+              "height": 24
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

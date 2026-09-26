@@ -1,0 +1,93 @@
+{
+  "synthetic": true,
+  "note": "Hand-written to the ML Kit text recognition output shape (blocks of lines with pixel frames on a 1080x1620 photo). Not a real capture: replace with recordings from a device (P03-06).",
+  "description": "French folio junior: author, title, illustration credit, imprint",
+  "expected": {
+    "title": "le petit prince",
+    "author": "antoine de saint-exupéry"
+  },
+  "result": {
+    "blocks": [
+      {
+        "text": "Antoine de Saint-Exupéry",
+        "frame": {
+          "x": 236,
+          "y": 90,
+          "width": 607,
+          "height": 46
+        },
+        "lines": [
+          {
+            "text": "Antoine de Saint-Exupéry",
+            "frame": {
+              "x": 236,
+              "y": 90,
+              "width": 607,
+              "height": 46
+            }
+          }
+        ]
+      },
+      {
+        "text": "Le Petit Prince",
+        "frame": {
+          "x": 144,
+          "y": 170,
+          "width": 792,
+          "height": 96
+        },
+        "lines": [
+          {
+            "text": "Le Petit Prince",
+            "frame": {
+              "x": 144,
+              "y": 170,
+              "width": 792,
+              "height": 96
+            }
+          }
+        ]
+      },
+      {
+        "text": "Avec les aquarelles de l'auteur",
+        "frame": {
+          "x": 301,
+          "y": 300,
+          "width": 477,
+          "height": 28
+        },
+        "lines": [
+          {
+            "text": "Avec les aquarelles de l'auteur",
+            "frame": {
+              "x": 301,
+              "y": 300,
+              "width": 477,
+              "height": 28
+            }
+          }
+        ]
+      },
+      {
+        "text": "folio junior",
+        "frame": {
+          "x": 454,
+          "y": 1540,
+          "width": 171,
+          "height": 26
+        },
+        "lines": [
+          {
+            "text": "folio junior",
+            "frame": {
+              "x": 454,
+              "y": 1540,
+              "width": 171,
+              "height": 26
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

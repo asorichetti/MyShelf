@@ -1,0 +1,153 @@
+{
+  "synthetic": true,
+  "note": "Hand-written to the ML Kit text recognition output shape (blocks of lines with pixel frames on a 1080x1620 photo). Not a real capture: replace with recordings from a device (P03-06).",
+  "description": "Corgi paperback: author across the top, title in two large lines, series strap, imprint and price at the bottom",
+  "expected": {
+    "title": "the colour of magic",
+    "author": "terry pratchett"
+  },
+  "result": {
+    "blocks": [
+      {
+        "text": "TERRY PRATCHETT",
+        "frame": {
+          "x": 251,
+          "y": 90,
+          "width": 577,
+          "height": 70
+        },
+        "lines": [
+          {
+            "text": "TERRY PRATCHETT",
+            "frame": {
+              "x": 251,
+              "y": 90,
+              "width": 577,
+              "height": 70
+            }
+          }
+        ]
+      },
+      {
+        "text": "THE COLOUR",
+        "frame": {
+          "x": 232,
+          "y": 420,
+          "width": 616,
+          "height": 112
+        },
+        "lines": [
+          {
+            "text": "THE COLOUR",
+            "frame": {
+              "x": 232,
+              "y": 420,
+              "width": 616,
+              "height": 112
+            }
+          }
+        ]
+      },
+      {
+        "text": "OF MAGIC",
+        "frame": {
+          "x": 298,
+          "y": 548,
+          "width": 484,
+          "height": 110
+        },
+        "lines": [
+          {
+            "text": "OF MAGIC",
+            "frame": {
+              "x": 298,
+              "y": 548,
+              "width": 484,
+              "height": 110
+            }
+          }
+        ]
+      },
+      {
+        "text": "A Discworld Novel",
+        "frame": {
+          "x": 381,
+          "y": 700,
+          "width": 317,
+          "height": 34
+        },
+        "lines": [
+          {
+            "text": "A Discworld Novel",
+            "frame": {
+              "x": 381,
+              "y": 700,
+              "width": 317,
+              "height": 34
+            }
+          }
+        ]
+      },
+      {
+        "text": "The first Discworld novel",
+        "frame": {
+          "x": 334,
+          "y": 1380,
+          "width": 412,
+          "height": 30
+        },
+        "lines": [
+          {
+            "text": "The first Discworld novel",
+            "frame": {
+              "x": 334,
+              "y": 1380,
+              "width": 412,
+              "height": 30
+            }
+          }
+        ]
+      },
+      {
+        "text": "CORGI",
+        "frame": {
+          "x": 504,
+          "y": 1520,
+          "width": 71,
+          "height": 26
+        },
+        "lines": [
+          {
+            "text": "CORGI",
+            "frame": {
+              "x": 504,
+              "y": 1520,
+              "width": 71,
+              "height": 26
+            }
+          }
+        ]
+      },
+      {
+        "text": "£8.99",
+        "frame": {
+          "x": 507,
+          "y": 1560,
+          "width": 66,
+          "height": 24
+        },
+        "lines": [
+          {
+            "text": "£8.99",
+            "frame": {
+              "x": 507,
+              "y": 1560,
+              "width": 66,
+              "height": 24
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

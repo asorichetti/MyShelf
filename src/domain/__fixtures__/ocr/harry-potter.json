@@ -1,0 +1,93 @@
+{
+  "synthetic": true,
+  "note": "Hand-written to the ML Kit text recognition output shape (blocks of lines with pixel frames on a 1080x1620 photo). Not a real capture: replace with recordings from a device (P03-06).",
+  "description": "Children's hardback: author, series name large, rest of the title smaller",
+  "expected": {
+    "title": "harry potter and the philosopher's stone",
+    "author": "j.k. rowling"
+  },
+  "result": {
+    "blocks": [
+      {
+        "text": "J.K. ROWLING",
+        "frame": {
+          "x": 342,
+          "y": 70,
+          "width": 396,
+          "height": 60
+        },
+        "lines": [
+          {
+            "text": "J.K. ROWLING",
+            "frame": {
+              "x": 342,
+              "y": 70,
+              "width": 396,
+              "height": 60
+            }
+          }
+        ]
+      },
+      {
+        "text": "HARRY POTTER",
+        "frame": {
+          "x": 131,
+          "y": 220,
+          "width": 818,
+          "height": 124
+        },
+        "lines": [
+          {
+            "text": "HARRY POTTER",
+            "frame": {
+              "x": 131,
+              "y": 220,
+              "width": 818,
+              "height": 124
+            }
+          }
+        ]
+      },
+      {
+        "text": "and the Philosopher's Stone",
+        "frame": {
+          "x": 40,
+          "y": 360,
+          "width": 1000,
+          "height": 90
+        },
+        "lines": [
+          {
+            "text": "and the Philosopher's Stone",
+            "frame": {
+              "x": 40,
+              "y": 360,
+              "width": 1000,
+              "height": 90
+            }
+          }
+        ]
+      },
+      {
+        "text": "BLOOMSBURY",
+        "frame": {
+          "x": 468,
+          "y": 1530,
+          "width": 143,
+          "height": 26
+        },
+        "lines": [
+          {
+            "text": "BLOOMSBURY",
+            "frame": {
+              "x": 468,
+              "y": 1530,
+              "width": 143,
+              "height": 26
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

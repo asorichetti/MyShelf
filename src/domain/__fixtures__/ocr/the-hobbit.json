@@ -1,0 +1,93 @@
+{
+  "synthetic": true,
+  "note": "Hand-written to the ML Kit text recognition output shape (blocks of lines with pixel frames on a 1080x1620 photo). Not a real capture: replace with recordings from a device (P03-06).",
+  "description": "Title first, subtitle smaller, author at the bottom, a blurb line",
+  "expected": {
+    "title": "the hobbit",
+    "author": "j.r.r. tolkien"
+  },
+  "result": {
+    "blocks": [
+      {
+        "text": "THE HOBBIT",
+        "frame": {
+          "x": 199,
+          "y": 140,
+          "width": 682,
+          "height": 124
+        },
+        "lines": [
+          {
+            "text": "THE HOBBIT",
+            "frame": {
+              "x": 199,
+              "y": 140,
+              "width": 682,
+              "height": 124
+            }
+          }
+        ]
+      },
+      {
+        "text": "or There and Back Again",
+        "frame": {
+          "x": 274,
+          "y": 290,
+          "width": 531,
+          "height": 42
+        },
+        "lines": [
+          {
+            "text": "or There and Back Again",
+            "frame": {
+              "x": 274,
+              "y": 290,
+              "width": 531,
+              "height": 42
+            }
+          }
+        ]
+      },
+      {
+        "text": "The classic bestseller behind the blockbuster films",
+        "frame": {
+          "x": 175,
+          "y": 1300,
+          "width": 729,
+          "height": 26
+        },
+        "lines": [
+          {
+            "text": "The classic bestseller behind the blockbuster films",
+            "frame": {
+              "x": 175,
+              "y": 1300,
+              "width": 729,
+              "height": 26
+            }
+          }
+        ]
+      },
+      {
+        "text": "J.R.R. TOLKIEN",
+        "frame": {
+          "x": 340,
+          "y": 1420,
+          "width": 400,
+          "height": 52
+        },
+        "lines": [
+          {
+            "text": "J.R.R. TOLKIEN",
+            "frame": {
+              "x": 340,
+              "y": 1420,
+              "width": 400,
+              "height": 52
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,93 @@
+{
+  "synthetic": true,
+  "note": "Hand-written to the ML Kit text recognition output shape (blocks of lines with pixel frames on a 1080x1620 photo). Not a real capture: replace with recordings from a device (P03-06).",
+  "description": "Spanish paperback: accented author, title over two lines, imprint",
+  "expected": {
+    "title": "cien años de soledad",
+    "author": "gabriel garcía márquez"
+  },
+  "result": {
+    "blocks": [
+      {
+        "text": "GABRIEL GARCÍA MÁRQUEZ",
+        "frame": {
+          "x": 201,
+          "y": 120,
+          "width": 677,
+          "height": 56
+        },
+        "lines": [
+          {
+            "text": "GABRIEL GARCÍA MÁRQUEZ",
+            "frame": {
+              "x": 201,
+              "y": 120,
+              "width": 677,
+              "height": 56
+            }
+          }
+        ]
+      },
+      {
+        "text": "Cien años",
+        "frame": {
+          "x": 283,
+          "y": 260,
+          "width": 514,
+          "height": 104
+        },
+        "lines": [
+          {
+            "text": "Cien años",
+            "frame": {
+              "x": 283,
+              "y": 260,
+              "width": 514,
+              "height": 104
+            }
+          }
+        ]
+      },
+      {
+        "text": "de soledad",
+        "frame": {
+          "x": 254,
+          "y": 372,
+          "width": 572,
+          "height": 104
+        },
+        "lines": [
+          {
+            "text": "de soledad",
+            "frame": {
+              "x": 254,
+              "y": 372,
+              "width": 572,
+              "height": 104
+            }
+          }
+        ]
+      },
+      {
+        "text": "DEBOLSILLO",
+        "frame": {
+          "x": 474,
+          "y": 1540,
+          "width": 132,
+          "height": 24
+        },
+        "lines": [
+          {
+            "text": "DEBOLSILLO",
+            "frame": {
+              "x": 474,
+              "y": 1540,
+              "width": 132,
+              "height": 24
+            }
+          }
+        ]
+      }
+    ]
+  }
+}
