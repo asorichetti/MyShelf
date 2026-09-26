@@ -49,11 +49,11 @@
     "selectors:gen": "node scripts/gen-selectors.mjs",
     "selectors:check": "node scripts/gen-selectors.mjs --check",
     "check": "npm run selectors:check && npm run typecheck && npm test -- --ci",
-    "autotest:build": "cd tools/auto-test-suite && GOWORK=off go build -o bin/auto-test-suite .",
-    "autotest:check": "cd tools/auto-test-suite && test -z \"$(gofmt -l .)\" || { gofmt -l . >&2; exit 1; } && GOWORK=off go vet ./... && GOWORK=off go test ./...",
-    "autotest:install-browser": "cd tools/auto-test-suite && GOWORK=off go run github.com/mxschmitt/playwright-go/cmd/playwright install chromium",
-    "autotest:smoke": "npm run -s autotest:build && tools/auto-test-suite/bin/auto-test-suite smoke",
-    "autotest:journeys": "npm run -s autotest:build && tools/auto-test-suite/bin/auto-test-suite journey --all"
+    "autotest": "tsx tools/auto-test-suite/src/cli.ts",
+    "autotest:check": "tsc -p tools/auto-test-suite && node --import tsx --test 'tools/auto-test-suite/src/**/*.test.ts'",
+    "autotest:install-browser": "playwright install chromium",
+    "autotest:smoke": "tsx tools/auto-test-suite/src/cli.ts smoke",
+    "autotest:journeys": "tsx tools/auto-test-suite/src/cli.ts journey --all"
   },
   "private": true,
   "jest": {

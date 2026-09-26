@@ -31,40 +31,27 @@ jobs:
     name: auto-test-suite smoke
     runs-on: ubuntu-latest
     timeout-minutes: 25
-    env:
-      GOWORK: "off"
-    defaults:
-      run:
-        working-directory: tools/auto-test-suite
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 23
           cache: npm
-      - uses: actions/setup-go@v5
+      - run: npm ci
+      - name: Playwright version
+        id: playwright
+        run: echo "version=$(node -p "require('playwright/package.json').version")" >> "$GITHUB_OUTPUT"
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
         with:
-          go-version-file: tools/auto-test-suite/go.mod
-          cache-dependency-path: tools/auto-test-suite/go.sum
-      - name: gofmt
-        run: |
-          unformatted="$(gofmt -l .)"
-          if [ -n "$unformatted" ]; then
-            echo "gofmt needed on:"; echo "$unformatted"; exit 1
-          fi
-      - name: go vet
-        run: go vet ./...
-      - name: go test
-        run: go test ./...
-      - name: go build
-        run: go build -o bin/auto-test-suite .
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.playwright.outputs.version }}
+      # Downloads Chromium only on a cache miss; always installs its system libraries.
       - name: Install Chromium
-        run: go run github.com/mxschmitt/playwright-go/cmd/playwright install --with-deps chromium
-      - name: npm ci
-        working-directory: .
-        run: npm ci
+        run: npx playwright install --with-deps chromium
+      # Typecheck the tool and run its unit tests.
+      - run: npm run autotest:check
       - name: Start Expo web server
-        working-directory: .
         run: |
           CI=1 npx expo start --web --port 8081 > expo-web.log 2>&1 &
           for _ in $(seq 1 120); do
@@ -72,12 +59,14 @@ jobs:
             sleep 1
           done
           echo "Expo web did not start"; cat expo-web.log; exit 1
+      # The dev server writes Expo Router's typed routes (.expo/types), so this
+      # typecheck is strict about route links, unlike the one in the app job.
+      - name: Typecheck with generated route types
+        run: npm run typecheck
       - name: Smoke (core suite, gates fail)
-        working-directory: .
-        run: tools/auto-test-suite/bin/auto-test-suite smoke --env local --ux-gates fail --headless=true
+        run: npm run -s autotest -- smoke --env local --ux-gates fail --headless=true
       - name: Remaining journeys (gates fail)
-        working-directory: .
-        run: tools/auto-test-suite/bin/auto-test-suite journey --suite responsive --ux-gates fail --headless=true
+        run: npm run -s autotest -- journey --suite responsive --ux-gates fail --headless=true
       - name: Upload evidence bundles
         if: failure()
         uses: actions/upload-artifact@v4
