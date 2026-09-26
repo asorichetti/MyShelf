@@ -86,7 +86,35 @@ describe('Book detail', () => {
     await openBook(await idOf('9780441172719'));
     const headings = screen.getAllByRole('heading');
     expect(headings.filter((h) => h.props['aria-level'] === 1).map((h) => h.props.children)).toEqual(['Dune']);
-    expect(headings.filter((h) => h.props['aria-level'] === 2).map((h) => h.props.children)).toEqual(['Summary', 'Genres', 'Notes', 'Groups', 'Loan']);
+    expect(headings.filter((h) => h.props['aria-level'] === 2).map((h) => h.props.children)).toEqual(['Your rating', 'Summary', 'Genres', 'Notes', 'Groups', 'Loan']);
+  });
+
+  it('rates the book inline: saved at once and announced politely', async () => {
+    const id = await idOf('9780441172719');
+    await openBook(id);
+    const slider = screen.getByTestId(Testids.rating.control);
+    expect(slider.props['aria-valuetext']).toBe('4 out of 5 stars');
+    const stars = screen.getAllByTestId(Testids.rating.star, { includeHiddenElements: true });
+    await act(async () => fireEvent.press(stars[1]));
+    expect((await booksRepo.getBook(db, id))!.rating).toBe(2);
+    const status = screen.getByTestId(Testids.rating.status);
+    expect(status).toHaveTextContent('Rated 2 stars');
+    expect(status.props['aria-live']).toBe('polite');
+    expect(screen.getByTestId(Testids.rating.control).props['aria-valuetext']).toBe('2 out of 5 stars');
+    // A second tap on the same star clears it.
+    await act(async () => fireEvent.press(screen.getAllByTestId(Testids.rating.star, { includeHiddenElements: true })[1]));
+    expect((await booksRepo.getBook(db, id))!.rating).toBeNull();
+    expect(screen.getByTestId(Testids.rating.status)).toHaveTextContent('Rating cleared');
+  });
+
+  it('TalkBack can rate a book that has no rating yet, one star at a time', async () => {
+    const id = (await booksRepo.listBooks(db)).find((b) => b.title === 'The Light Fantastic')!.id;
+    await openBook(id);
+    expect(screen.getByTestId(Testids.rating.status)).toHaveTextContent('Tap a star to rate this book.');
+    await act(async () => fireEvent(screen.getByTestId(Testids.rating.control), 'accessibilityAction', { nativeEvent: { actionName: 'increment' } }));
+    await act(async () => fireEvent(screen.getByTestId(Testids.rating.control), 'accessibilityAction', { nativeEvent: { actionName: 'increment' } }));
+    expect((await booksRepo.getBook(db, id))!.rating).toBe(2);
+    expect(screen.getByTestId(Testids.rating.status)).toHaveTextContent('Rated 2 stars');
   });
 
   it('collapses a long summary to five lines with Read more', async () => {

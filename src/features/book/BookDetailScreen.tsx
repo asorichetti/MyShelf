@@ -14,6 +14,7 @@ import { BookSeries } from '@/features/series/BookSeries';
 import { Testids } from '@/testing/testids.gen';
 import { useTheme } from '@/theme';
 
+import { BookRating } from './BookRating';
 import { parseBookId, useBook } from './useBook';
 import { useDeleteBook } from './useDeleteBook';
 
@@ -108,6 +109,9 @@ function BookDetailContent({ book }: { book: BookDetail }) {
         ) : null}
       </ConfirmDialog>
       <BookHeader book={book} />
+      <Section title="Your rating" testID={Testids.bookDetail.rating}>
+        <BookRating bookId={book.id} rating={book.rating} />
+      </Section>
       {book.summary ? (
         <Section title="Summary">
           <SummaryText text={book.summary} testID={Testids.bookDetail.summary} readMoreTestID={Testids.bookDetail.readMore} />
