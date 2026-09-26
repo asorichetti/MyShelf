@@ -1,13 +1,17 @@
 import {
+  bookFormats,
   normalizeIsbn,
+  type BookFormat,
   type Book,
   type BookDetail,
   type BookListItem,
   type BookPatch,
   type NewBook,
+  type ShelfFilters,
   type ShelfSortKey,
   type SortDirection,
   type ValidBookDraft,
+  RECENTLY_ADDED_DAYS,
 } from '@/domain';
 
 import { deleteOrphanAuthors, findOrCreateAuthor, listAuthorsForBook, setBookAuthors, updateAuthor } from './authors';
@@ -148,8 +152,62 @@ export interface ListBookItemsOptions {
   query?: string;
   sort?: ShelfSortKey;
   direction?: SortDirection;
+  /** The Shelf's filters (see `filterClause`). */
+  filters?: ShelfFilters;
+  /** Only books by this author, in this genre or in this user group. */
+  scope?: { authorId?: number; genreId?: number; groupId?: number };
+  /** With `scope.groupId`: the group's own order instead of `sort`. */
+  groupOrder?: boolean;
   limit?: number;
   offset?: number;
+}
+
+/** A SQL condition over `books b` (joined with `series s`) and its parameters. */
+export interface SqlClause {
+  sql: string;
+  params: (string | number)[];
+}
+
+const placeholders = (n: number) => Array.from({ length: n }, () => '?').join(', ');
+
+/**
+ * The Shelf filters as one WHERE condition. Different kinds of filter combine
+ * with AND; the chosen genres, formats and languages are each alternatives
+ * (OR, as `IN (…)`). Every value is a bound parameter: nothing the user typed
+ * or stored is spliced into the SQL text. Returns null when nothing is set.
+ */
+export function filterClause(filters: ShelfFilters): SqlClause | null {
+  const parts: string[] = [];
+  const params: (string | number)[] = [];
+  if (filters.genreIds.length) {
+    parts.push(`EXISTS (SELECT 1 FROM book_genres bg WHERE bg.book_id = b.id AND bg.genre_id IN (${placeholders(filters.genreIds.length)}))`);
+    params.push(...filters.genreIds);
+  }
+  if (filters.formats.length) {
+    parts.push(`b.format IN (${placeholders(filters.formats.length)})`);
+    params.push(...filters.formats);
+  }
+  if (filters.languages.length) {
+    parts.push(`b.language IN (${placeholders(filters.languages.length)})`);
+    params.push(...filters.languages);
+  }
+  if (filters.loan !== 'any') {
+    parts.push(`${filters.loan === 'onLoan' ? '' : 'NOT '}EXISTS (SELECT 1 FROM loans l WHERE l.book_id = b.id AND l.returned_on IS NULL)`);
+  }
+  if (filters.series !== 'any') parts.push(filters.series === 'inSeries' ? 'b.series_id IS NOT NULL' : 'b.series_id IS NULL');
+  if (filters.yearFrom != null) {
+    parts.push('b.publication_year >= ?');
+    params.push(filters.yearFrom);
+  }
+  if (filters.yearTo != null) {
+    parts.push('b.publication_year <= ?');
+    params.push(filters.yearTo);
+  }
+  if (filters.recentlyAdded) {
+    parts.push("b.created_at >= strftime('%Y-%m-%dT%H:%M:%fZ', 'now', ?)");
+    params.push(`-${RECENTLY_ADDED_DAYS} days`);
+  }
+  return parts.length ? { sql: parts.map((p) => `(${p})`).join(' AND '), params } : null;
 }
 
 interface ListRow {
@@ -177,10 +235,28 @@ function isbnFragment(query: string): string | null {
  * one for their authors, whatever the number of books.
  */
 export async function listBookItems(db: Db, options: ListBookItemsOptions = {}): Promise<BookListItem[]> {
-  const { sort = 'title', direction = 'asc', limit, offset = 0 } = options;
+  const { sort = 'title', direction = 'asc', limit, offset = 0, scope = {} } = options;
   const query = options.query?.trim() ?? '';
   const where: string[] = [];
   const params: (string | number)[] = [];
+  const joins: string[] = [];
+  if (scope.groupId != null) {
+    joins.push('JOIN group_books gb ON gb.book_id = b.id AND gb.group_id = ?');
+    params.push(scope.groupId);
+  }
+  if (scope.authorId != null) {
+    where.push('EXISTS (SELECT 1 FROM book_authors sa WHERE sa.book_id = b.id AND sa.author_id = ?)');
+    params.push(scope.authorId);
+  }
+  if (scope.genreId != null) {
+    where.push('EXISTS (SELECT 1 FROM book_genres sg WHERE sg.book_id = b.id AND sg.genre_id = ?)');
+    params.push(scope.genreId);
+  }
+  const filter = options.filters ? filterClause(options.filters) : null;
+  if (filter) {
+    where.push(filter.sql);
+    params.push(...filter.params);
+  }
   if (query) {
     const like = `%${likeEscape(query)}%`;
     const alternatives = [
@@ -197,13 +273,14 @@ export async function listBookItems(db: Db, options: ListBookItemsOptions = {}):
     }
     where.push(`(${alternatives.join(' OR ')})`);
   }
+  const order = scope.groupId != null && options.groupOrder ? `gb.position, ${SORT_TITLE}, b.id` : orderBy(sort, direction);
   const rows = await db.all<ListRow & { author_sort: string | null }>(
     `SELECT b.id, b.title, b.subtitle, b.cover_uri, b.publication_year, s.name AS series_name, b.series_position,
        EXISTS (SELECT 1 FROM loans l WHERE l.book_id = b.id AND l.returned_on IS NULL) AS on_loan,
        ${PRIMARY_AUTHOR_SORT} AS author_sort
-     FROM books b LEFT JOIN series s ON s.id = b.series_id
+     FROM books b ${joins.join(' ')} LEFT JOIN series s ON s.id = b.series_id
      ${where.length ? `WHERE ${where.join(' AND ')}` : ''}
-     ORDER BY ${orderBy(sort, direction)}
+     ORDER BY ${order}
      ${limit != null ? 'LIMIT ? OFFSET ?' : ''}`,
     limit != null ? [...params, limit, offset] : params,
   );
@@ -220,6 +297,35 @@ export async function listBookItems(db: Db, options: ListBookItemsOptions = {}):
     seriesPosition: r.series_position,
     onLoan: r.on_loan === 1,
   }));
+}
+
+/** What the Shelf's filter sheet can offer: only values some book actually has. */
+export interface FilterOptions {
+  genres: { id: number; name: string; count: number }[];
+  formats: BookFormat[];
+  languages: string[];
+  minYear: number | null;
+  maxYear: number | null;
+}
+
+export async function listFilterOptions(db: Db): Promise<FilterOptions> {
+  const genres = await db.all<{ id: number; name: string; count: number }>(
+    `SELECT g.id, g.name, COUNT(bg.book_id) AS count FROM genres g JOIN book_genres bg ON bg.genre_id = g.id
+     GROUP BY g.id ORDER BY g.name COLLATE NOCASE`,
+  );
+  const formats = await db.all<{ format: BookFormat }>('SELECT DISTINCT format FROM books WHERE format IS NOT NULL');
+  const languages = await db.all<{ language: string }>('SELECT DISTINCT language FROM books WHERE language IS NOT NULL ORDER BY language');
+  const years = await db.get<{ min: number | null; max: number | null }>(
+    'SELECT MIN(publication_year) AS min, MAX(publication_year) AS max FROM books',
+  );
+  const present = new Set(formats.map((f) => f.format));
+  return {
+    genres,
+    formats: bookFormats.filter((f) => present.has(f)),
+    languages: languages.map((l) => l.language),
+    minYear: years?.min ?? null,
+    maxYear: years?.max ?? null,
+  };
 }
 
 /** Credited author names per book, in order, in one query (chunked for very long lists). */
