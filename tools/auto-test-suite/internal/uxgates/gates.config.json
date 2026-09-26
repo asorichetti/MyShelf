@@ -1,0 +1,12 @@
+{
+  "render": {
+    "requiredTokens": [],
+    "landmarks": ["main"],
+    "disabled": {}
+  },
+  "a11y": {
+    "disabled": {
+      "skip-link": "React Native Web mobile app: there is no repeated header/nav block before the content to skip past, and a skip link has no native equivalent on iOS/Android."
+    }
+  }
+}
