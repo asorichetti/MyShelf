@@ -53,14 +53,14 @@ MyShelf is a single Expo React Native app. There is no server: the app talks dir
 flowchart TB
   subgraph App["MyShelf app (Expo / React Native / TypeScript)"]
     direction TB
-    UI["Screens — src/app (Expo Router)<br/>Tabs: Shelf · Scan · Loans · Groups · Settings"]
+    UI["Routes — src/app (Expo Router)<br/>Tabs: Shelf · Scan · Loans · Groups · Settings"]
+    FEAT["Screens & feature hooks — src/features/*"]
     COMP["Components — src/components<br/>ui primitives · booky · book cards · spines"]
-    FEAT["Feature hooks & state — src/features/*"]
     SVC["Services — src/services<br/>metadata providers · recognition · backup"]
     DOM["Domain — src/domain<br/>models · ISBN · dates · genre/series parsing"]
-    DB["Data — src/db<br/>Db interface · migrations · repositories"]
-    UI --> COMP
+    DB["Data — src/db<br/>Db interface · migrations · repositories · DatabaseProvider"]
     UI --> FEAT
+    FEAT --> COMP
     FEAT --> SVC
     FEAT --> DB
     SVC --> DOM
@@ -82,22 +82,33 @@ flowchart TB
 
 | Layer | Folder | May import | Must not import |
 |---|---|---|---|
-| Routes / screens | `src/app` | everything below | — |
-| Components | `src/components` | `src/theme`, `src/domain`, `src/testing` | `src/db`, `src/services` (take data via props/hooks) |
-| Feature hooks | `src/features/<feature>` | `src/db`, `src/services`, `src/domain` | `src/app` |
+| Routes | `src/app` | `src/features` (a route file re-exports one screen); the root `_layout.tsx` also wires the providers from `src/theme`, `src/db` and `src/components/booky` | — |
+| Screens and feature hooks | `src/features/<feature>` | `src/components`, `src/db`, `src/services`, `src/domain`, `src/theme`, `src/testing`, `expo-router` | `src/app`; SQL |
+| Components | `src/components` | `src/theme`, `src/domain`, `src/hooks`, `src/testing` (test ids) | `src/db`, `src/services`, `src/features` (take data via props/hooks) |
 | Services | `src/services` | `src/domain` | `src/db`, React components |
 | Domain | `src/domain` | nothing app-specific (pure TS) | React, Expo, `src/db` |
-| Data | `src/db` | `src/domain` | React, Expo modules other than the `expo-sqlite` adapter |
+| Data | `src/db` | `src/domain`; `expo-sqlite` in the adapter `expo.ts` only; React in `DatabaseProvider.tsx` only | `src/components`, `src/features`, `src/app`; other Expo modules |
+
+`DatabaseProvider` (`src/db/DatabaseProvider.tsx`) is the one React module in the data layer. It lives next to the adapters and `migrate()` it calls: it opens the database, runs the migrations and provides the `Db` through `useDatabase()`. It renders no UI of its own; the root layout passes in the loading and error screens (from `src/features/navigation`), so the data layer never imports components.
 
 - **Domain is pure.** Everything in `src/domain` is plain TypeScript with no React/Expo imports, so it is trivially unit-testable.
-- **The database is behind a small `Db` interface** ([ADR 0005](docs/adr/0005-sqlite-with-migrations-and-db-interface.md)). The app uses an `expo-sqlite` adapter; Jest uses a Node SQLite adapter so repositories are tested against a real SQLite engine.
-- **Platform differences are isolated** in files with platform extensions (`ocr.native.ts` / `ocr.web.ts`), never in `if (Platform.OS …)` branches scattered through screens.
-- **Routes are thin.** A route file wires a feature hook to components; business logic lives in `src/features`, `src/services` and `src/domain`.
+- **The database is behind a small `Db` interface** ([ADR 0005](docs/adr/0005-sqlite-with-migrations-and-db-interface.md)). The app uses an `expo-sqlite` adapter (`src/db/expo.ts`); Jest uses a `node:sqlite` adapter (`src/db/node.ts`) so repositories are tested against a real SQLite engine. Both wrap a raw connection with `createDb()`, which queues statements behind open transactions and turns nested transactions into savepoints.
+- **Platform differences are isolated** in files with platform extensions (today `src/theme/cssVars.web.ts`, `src/db/pragmas.web.ts`; later e.g. `ocr.native.ts` / `ocr.web.ts`), never in `if (Platform.OS …)` branches scattered through screens.
+- **Routes are thin.** A route file re-exports a screen from `src/features` (`src/app/(tabs)/index.tsx` → `ShelfScreen`); screens compose components and feature hooks, and business logic lives in `src/features`, `src/services` and `src/domain`.
 - **State.** React state + context, plus small feature hooks that read from repositories and refresh on change events. No global state library in v1; revisit only with an ADR.
+
+### Navigation
+
+The root stack (`src/app/_layout.tsx`) holds the tab group and `+not-found`. It keeps the native splash screen up until the fonts are loaded and the database is open and migrated; meanwhile (and on web, which has no native splash) it shows the loading screen, and if the database cannot be opened, an error screen with a retry button.
+
+Tabs (`src/features/navigation/TabsLayout.tsx`) render **only the focused tab's screen**; inactive tabs are unmounted. React Navigation otherwise keeps visited tabs mounted (on web, stacked in the DOM behind the active one), which would leave several `h1`s and page-state markers in the document at once. The trade-off: a tab loses its local state (scroll position, typed input) when the user switches away. Tab screens hold no such state yet; revisit this when one needs to keep it.
 
 ### Web target
 
 The app also runs in a browser via `react-native-web` (`npm run web`, `npm run export:web`). The web build is **not a product**: it exists so the TypeScript + Playwright **auto test suite** (`tools/auto-test-suite`) can drive, assert on and screenshot every screen quickly and deterministically in CI ([ADR 0002](docs/adr/0002-web-target-for-automated-ui-testing.md)). Features that need native modules (camera, ML Kit) have web stubs that accept typed input instead, and are exercised on device by Maestro.
+
+- **Page template.** With `web.output: "single"`, Expo Router ignores `src/app/+html.tsx`, so the HTML shell is `public/index.html`: `lang="en"`, the viewport meta, and body background, text colour and font taken from the `--ms-*` tokens (with fallbacks for the moment before the bundle runs).
+- **Cross-origin isolation.** `expo-sqlite` on web runs SQLite as WebAssembly and needs `SharedArrayBuffer`, which browsers only enable on cross-origin isolated pages. `metro.config.js` registers `.wasm` as an asset and adds `Cross-Origin-Opener-Policy: same-origin` and `Cross-Origin-Embedder-Policy: credentialless` to every response the dev server writes. (Metro's `server.enhanceMiddleware` hook is not enough: it only wraps Metro's own handler, which runs after the Expo CLI has already served `index.html`.) The `expo-router` plugin in `app.json` declares the same headers for hosted output, and the auto test suite's `--serve` will send them for a static export (P00-21). `credentialless` rather than `require-corp` keeps remote cover images loadable.
 
 ---
 
@@ -111,23 +122,26 @@ Versions below are what is installed on `main` today (from `package-lock.json`).
 | UI framework | React Native | 0.86.3 | New Architecture (Expo default) |
 | | React / React DOM | 19.2.3 | |
 | Language | TypeScript | 6.0.3 | `strict: true`, path alias `@/*` → `src/*` |
-| Navigation | Expo Router | 57.0.23 | file routes in `src/app`, typed routes enabled |
+| Navigation | Expo Router | 57.0.23 | file routes in `src/app`, typed routes enabled (types generated into `.expo/types` by the dev server, see §10.5) |
 | Web | react-native-web | 0.21.3 | Metro bundler, `output: "single"` |
 | Database | expo-sqlite | 57.0.3 | [ADR 0005](docs/adr/0005-sqlite-with-migrations-and-db-interface.md) |
-| Fonts | expo-font | 57.0.4 | + `@expo-google-fonts/*` (*planned*, P00-08) |
-| Unit tests | Jest / jest-expo | 29.7 / 57.0.5 | |
+| Fonts | expo-font, `@expo-google-fonts/lora`, `nunito`, `courier-prime` | 57.0.4 / 0.4.2 / 0.4.2 / 0.4.1 | each weight imported from its own subpath so only the weights in use are bundled |
+| Splash | expo-splash-screen | 57.0.9 | held until fonts and database are ready |
+| Unit tests | Jest / jest-expo | 29.7.0 / 57.0.5 | |
 | Component tests | @testing-library/react-native | 13.3.3 | |
-| Vector graphics | react-native-svg | *planned* (P00-10) | Booky and library motifs |
+| Vector graphics | react-native-svg | 15.15.4 | Booky and library motifs |
+| Icons | @expo/vector-icons | 15.1.1 | `MaterialCommunityIcons` (tab bar, close buttons) |
+| Safe areas | react-native-safe-area-context | 5.7.0 | used by `Screen` and the tab bar |
 | Images | expo-image | *planned* (P01-10) | cached cover images |
 | Camera + barcodes | expo-camera | *planned* (P03-03) | `CameraView` barcode scanning (EAN-13) |
 | OCR | @react-native-ml-kit/text-recognition | *planned* (P03-05) | on-device Google ML Kit; needs a development build |
 | Dev builds | expo-dev-client | *planned* (P03-01) | |
 | Files / sharing | expo-file-system, expo-sharing, expo-document-picker | *planned* (P02-09, P08-02) | covers cache, backups |
 | Notifications | expo-notifications | *planned* (P05-08) | local due-date reminders only |
-| UI test driver | auto test suite: TypeScript, Playwright (library) + Commander, run with tsx | see `package.json` | `tools/auto-test-suite` (P00-15..P00-17, [ADR 0013](docs/adr/0013-typescript-auto-test-suite.md)); accessibility checks are its own `a11y` gate, no third-party engine |
+| UI test driver | auto test suite: TypeScript, Playwright (library) + Commander, run with tsx | 1.63.0 / 15.0.0 / 4.23.15 | `tools/auto-test-suite` (P00-15..P00-17, [ADR 0013](docs/adr/0013-typescript-auto-test-suite.md)); accessibility checks are its own `a11y` gate, no third-party engine |
 | Device tests | Maestro CLI | *planned* (P00-18) | YAML flows in `.maestro/` |
 | CI | GitHub Actions | — | free for public repos; `.github/workflows/ci.yml` (P00-19) |
-| Node | Node.js | 22 LTS or newer (developed on 23.11.0) | `node:sqlite` is used by the Jest Db adapter |
+| Node | Node.js | 22.13+ or 23.4+ (developed on 23.11.0; CI uses 23) | `node:sqlite` is used by the Jest Db adapter |
 
 ---
 
@@ -146,6 +160,8 @@ MyShelf/
 ├── eas.json                    P03-01 build profiles (development, preview, e2e, production)
 ├── package.json                [main] scripts incl. autotest / autotest:* for the auto test suite
 ├── tsconfig.json               [main]
+├── metro.config.js             [main] `.wasm` assets; COOP/COEP headers on the dev server (expo-sqlite on web)
+├── public/index.html           [main] web page template (lang, viewport, token fallbacks)
 ├── .githooks/commit-msg        [main] rejects AI/tool attribution in commit messages
 ├── .github/workflows/          [main] ci.yml (P00-19) · P09-07 release.yml
 ├── .maestro/                   P00-18 on-device flows (*.yaml)
@@ -157,45 +173,47 @@ MyShelf/
 ├── scripts/
 │   └── gen-selectors.mjs       [main] selectors.json → testids.gen.ts
 ├── src/
-│   ├── app/                    [main] Expo Router routes (screens only)
-│   │   ├── _layout.tsx         [main] root stack
-│   │   ├── index.tsx           [main] placeholder home (replaced by tabs in P00-11)
-│   │   ├── (tabs)/             P00-11 shelf · scan · loans · groups · settings
+│   ├── app/                    [main] Expo Router routes (thin re-exports of screens in src/features)
+│   │   ├── _layout.tsx         [main] root stack: fonts, splash, ThemeProvider, DatabaseProvider, BookyProvider
+│   │   ├── +not-found.tsx      [main] unknown routes → NotFoundScreen
+│   │   ├── (tabs)/             [main] _layout · index (Shelf) · scan · loans · groups · settings
 │   │   ├── book/[id].tsx       P01-06
 │   │   └── e2e/                P01-01 fixture loader, P03-07 scan injection (E2E builds only)
 │   ├── components/
-│   │   ├── ui/                 P00-09 Button, Text, Card, TextField, Chip, Stamp …
-│   │   ├── booky/              P00-10 Booky, BookyBubble, useBooky
-│   │   └── book/               P01 CatalogueCard, Spine, CoverImage …
-│   ├── db/                     P00-12/13/14 Db interface, adapters, migrations, repositories
-│   ├── domain/                 P00-14 models + pure helpers (isbn, dates, series parsing …)
-│   ├── features/               P01+ feature hooks (useShelf, useLoans …)
+│   │   ├── ui/                 [main] Screen, Heading, Text, Button, Card, EmptyState, TextField; P00-30 IconButton, CatalogueCard, Chip, Stamp, ConfirmDialog, Snackbar
+│   │   ├── booky/              [main] Booky, BookyBubble, BookyProvider (useBooky, BookyTipHost), expressions
+│   │   └── book/               P01 BookRow, CoverImage, Spine …
+│   ├── db/                     [main] Db interface (types.ts), createDb, adapters expo.ts · node.ts, migrate.ts, migrations/, repositories/, DatabaseProvider.tsx
+│   ├── domain/                 [main] models + pure helpers (isbn, dates, author sort names …)
+│   ├── features/               [main] screens + feature hooks: navigation/ (tabs, loading, database error, not found), shelf/, scan/, loans/, groups/, settings/
+│   ├── hooks/                  [main] shared hooks (useReducedMotion)
 │   ├── services/
 │   │   ├── http/               P02-01 fetch wrapper
 │   │   ├── metadata/           P02 Open Library + Google Books providers
 │   │   ├── recognition/        P03 barcode + OCR
 │   │   └── backup/             P08 export / import
-│   ├── theme/                  P00-08 tokens, fonts, CSS custom properties
-│   ├── testing/                [main] selectors.json, testids.gen.ts (generated), test helpers
-│   └── __tests__/              [main] app-level tests (feature tests live next to code)
+│   ├── theme/                  [main] tokens, themes, ThemeProvider / useTheme, fonts, contrast helper, CSS custom properties
+│   ├── testing/                [main] selectors.json, testids.gen.ts (generated), createTestDb, render helpers, Jest setup
+│   └── __tests__/              [main] app-level tests (screens, tab navigation; feature tests live next to code)
 └── tools/
     └── auto-test-suite/        [main] TypeScript + Playwright UI driver (P00-15..P00-17), see its README.md
         ├── README.md           usage, flags, gates, journeys (the tool's reference)
         └── src/
             ├── cli.ts          Commander entry point, global flags
+            ├── selectors.ts    re-exports Testids from src/testing/testids.gen.ts; tid(id) → [data-testid="id"]
             ├── commands/       navigate · journey · smoke · screenshot · interact
             ├── browser/        Chromium lifecycle, console/network listeners, run bundle
             ├── uxgates/        pagestate · render · console · network · a11y; gates.config.json, console_allowlist.json
             └── journeys/       self-registering journeys, one file per area (test ids from src/testing/testids.gen.ts)
 ```
 
-Test files live next to the code they test as `*.test.ts(x)` (or in a sibling `__tests__/` folder). `src/__tests__/` holds tests of route screens.
+Test files live next to the code they test as `*.test.ts(x)` (or in a sibling `__tests__/` folder). `src/__tests__/` holds app-level tests that render routes through Expo Router (screens, tab navigation).
 
 ---
 
 ## 5. Data model
 
-All data lives in one SQLite database on the device. The schema below is the v1 design. **Once `src/db/migrations` exists (task P00-13), the migrations are the source of truth**; if this section and the migrations disagree, the migrations win and this section must be corrected in the same pull request.
+All data lives in one SQLite database on the device (`myshelf.db`). The schema below is the v1 design, created by `src/db/migrations/0001_init.ts`. **The migrations are the source of truth**; if this section and the migrations disagree, the migrations win and this section must be corrected in the same pull request.
 
 ```mermaid
 erDiagram
@@ -290,7 +308,9 @@ erDiagram
 
 ### Rules and constraints
 
-- **Foreign keys on.** `PRAGMA foreign_keys = ON` for every connection. Deleting a book cascades to `book_authors`, `book_genres`, `group_books` and `loans`; deleting a series sets `books.series_id` to `NULL`; deleting a borrower with loans is blocked (the UI offers to delete their returned-loan history first).
+- **Schema version.** `migrate()` (`src/db/migrate.ts`) runs at every start. Each migration runs in its own transaction together with its row in a `schema_migrations` table (`version`, `name`, `applied_at`), and the version is mirrored in `PRAGMA user_version` so tools and backups can read it without a query. A failed migration leaves the database at the last good version; a database newer than the app is refused.
+- **Foreign keys on.** `PRAGMA foreign_keys = ON` for every connection (plus `journal_mode = WAL` on Android/iOS; the web build has no WAL). Deleting a book cascades to `book_authors`, `book_genres`, `group_books` and `loans`; deleting a series sets `books.series_id` to `NULL`; deleting a borrower with loans is blocked (`ON DELETE RESTRICT`, surfaced as `BorrowerHasLoansError`; the UI offers to delete their returned-loan history first).
+- **Checks in the schema.** Names and titles must not be blank; `isbn13`/`isbn10` must be 13/10 characters; `format`, `source` and `book_authors.role` are limited to the values above; `due_on` and `returned_on` cannot be before `lent_on`.
 - **At most one open loan per book**: `CREATE UNIQUE INDEX loans_one_open_per_book ON loans(book_id) WHERE returned_on IS NULL;`. Repositories surface a violation as a typed `BookAlreadyOnLoanError`.
 - **ISBNs are stored normalised**: digits only (plus a trailing `X` for ISBN-10), validated with checksums in `src/domain/isbn.ts`. `isbn13` is indexed (not unique: a user may own two copies).
 - **`series_position` is `REAL`** so novellas can sit at 2.5; display drops a trailing `.0`.
