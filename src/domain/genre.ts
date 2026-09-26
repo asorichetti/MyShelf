@@ -1,3 +1,5 @@
+import { curatedGenres } from './genres';
+
 export interface Genre {
   id: number;
   name: string;
@@ -8,34 +10,12 @@ export interface BookGenre extends Genre {
   userEdited: boolean;
 }
 
-/** Genres offered before the user has made any of their own. */
-export const starterGenres: readonly string[] = [
-  'Fiction',
-  'Fantasy',
-  'Science Fiction',
-  'Mystery',
-  'Thriller',
-  'Romance',
-  'Historical Fiction',
-  'Horror',
-  'Literary Fiction',
-  'Young Adult',
-  "Children's",
-  'Graphic Novel',
-  'Poetry',
-  'Biography',
-  'Memoir',
-  'History',
-  'Science',
-  'Philosophy',
-  'Self-Help',
-  'Cookery',
-  'Travel',
-  'Art',
-  'Religion',
-  'Business',
-  'Reference',
-];
+/**
+ * Genres offered before the user has made any of their own: the same curated
+ * list metadata lookups map onto (`curatedGenres`), so a looked-up genre is
+ * one the user already sees suggested.
+ */
+export const starterGenres: readonly string[] = curatedGenres;
 
 /**
  * Suggestions for the genre picker: the user's own genres first, then the

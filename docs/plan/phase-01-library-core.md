@@ -98,7 +98,7 @@ A usable, offline catalogue: the user can add a book by hand, see it on the Shel
 - **Files:** `src/components/book/GenresInput.tsx`, `src/domain/genre.ts`, `src/db/repositories/genres.ts`.
 - **Acceptance:** case-insensitive de-duplication; removing a genre from the last book leaves the genre row (genres are managed in P06-02).
 - **Tests:** `src/components/book/__tests__/GenresInput.test.tsx`, `src/db/repositories/__tests__/genres.test.ts`.
-- **Delivered:** chosen genres are removable chips (`bookForm.genreChip`); suggestion chips (`bookForm.genreSuggestion`) come from `genreSuggestions(existing, chosen, query)` in `src/domain/genre.ts`: the library's genres first, then the starter list, matched at the start of any word. A typed genre that already exists keeps the library's spelling (`addDraftGenre`). `saveBookDraft` stores every genre in the form with `user_edited = 1`.
+- **Delivered:** chosen genres are removable chips (`bookForm.genreChip`); suggestion chips (`bookForm.genreSuggestion`) come from `genreSuggestions(existing, chosen, query)` in `src/domain/genre.ts`: the library's genres first, then the starter list, matched at the start of any word. `starterGenres` is `curatedGenres` from `src/domain/genres.ts` (Phase 02's genre normaliser maps onto the same names). A typed genre that already exists keeps the library's spelling (`addDraftGenre`). `saveBookDraft` stores every genre in the form with `user_edited = 1`.
 
 ### P01-10 Cover image and generated fallback — done
 
