@@ -273,6 +273,19 @@ preview APK. Tick each line; anything that fails, note what TalkBack said.
 - [ ] Open the group: its books are read one by one; **Reorder books**
       offers "Move <title> up" / "Move <title> down" buttons per book.
 
+**4. Rate a book (Phase 10)**
+
+- [ ] On a book's page, swipe to "Your rating, heading", then to the stars:
+      TalkBack reads "Rating, Not rated" (or "4 out of 5 stars") as an
+      adjustable control, and the five stars are not separate stops.
+- [ ] Swipe up once: TalkBack reads the new value, and "Rated 1 star" is
+      announced. Swipe up again to 2 stars, down to 1, down again to not
+      rated ("Rating cleared").
+- [ ] **Clear rating** is read as a button (dimmed when there is nothing to
+      clear); double tap clears.
+- [ ] Back on the Shelf, the book's row ends "…, rated N out of 5".
+- [ ] In the edit form, "Your rating" works the same way and Save keeps it.
+
 **Throughout**
 
 - [ ] No button is read only as "button" or "unlabelled".
