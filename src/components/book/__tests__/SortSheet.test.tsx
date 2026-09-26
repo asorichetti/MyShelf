@@ -2,6 +2,7 @@ import { act, fireEvent, screen } from '@testing-library/react-native';
 import { useState } from 'react';
 
 import { SortSheet } from '@/components/book/SortSheet';
+import { describeSort, sortKeyList } from '@/db/sortKeys';
 import type { SavedSortPreset, ShelfGroupBy, ShelfSort } from '@/domain';
 import { renderWithTheme } from '@/testing/render';
 import { levels } from '@/testing/sorts';
@@ -14,7 +15,7 @@ function Harness({ start, groupBy = 'none', saved = [], spy }: { start: ShelfSor
   const [sort, setSort] = useState(start);
   const [presets, setPresets] = useState(saved);
   spy(sort, presets);
-  return <SortSheet visible sort={sort} groupBy={groupBy} presets={presets} onChange={setSort} onPresetsChange={setPresets} onClose={() => {}} />;
+  return <SortSheet visible keys={sortKeyList} describe={describeSort} sort={sort} groupBy={groupBy} presets={presets} onChange={setSort} onPresetsChange={setPresets} onClose={() => {}} />;
 }
 
 async function renderSheet(start: ShelfSort, extra: { groupBy?: ShelfGroupBy; saved?: SavedSortPreset[] } = {}) {

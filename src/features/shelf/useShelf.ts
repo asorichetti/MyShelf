@@ -4,6 +4,7 @@ import { booksRepo, shelfSectionsRepo, useDatabase, type FilterOptions, type She
 import { type BookListItem, type SavedSortPreset, type ShelfFilters, type ShelfGroupBy, type ShelfSort, type ShelfViewMode, type SortLevel } from '@/domain';
 import { useLibraryEvent } from '@/features/events';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
+import { rainbowRanks, useTheme } from '@/theme';
 
 import { recordTiming, SHELF_QUERY_MEASURE, timingStart } from './timing';
 import { defaultShelfPrefs, useShelfPrefs } from './useShelfPrefs';
@@ -53,6 +54,9 @@ export interface ShelfState {
  */
 export function useShelf(): ShelfState {
   const db = useDatabase();
+  const { covers } = useTheme();
+  // "Spine colour" follows the bindings on screen, so it asks the query to use this theme's rainbow.
+  const coverOrder = useMemo(() => rainbowRanks(covers), [covers]);
   const { prefs, setSort, setGroupBy, setViewMode, setFilters, setPresets } = useShelfPrefs();
   const [query, setQuery] = useState('');
   const activeQuery = useDebouncedValue(query.trim(), SEARCH_DEBOUNCE_MS);
@@ -73,10 +77,10 @@ export function useShelf(): ShelfState {
   useEffect(() => {
     if (!sort || !groupBy || !filters) return;
     const id = ++request.current;
-    const key = JSON.stringify([activeQuery, sort, groupBy, filters]);
+    const key = JSON.stringify([activeQuery, sort, groupBy, filters, coverOrder]);
     asked.current = key;
     const started = timingStart();
-    Promise.all([shelfSectionsRepo.listShelfSections(db, { groupBy, query: activeQuery, filters, sort }), booksRepo.countBooks(db)])
+    Promise.all([shelfSectionsRepo.listShelfSections(db, { groupBy, query: activeQuery, filters, sort, coverOrder }), booksRepo.countBooks(db)])
       .then(([result, count]) => {
         // An answer for an older search, sort or filter is dropped. For the same one, any answer newer than
         // the one shown is shown: while writes keep coming (covers arriving after an import), each reload
@@ -89,7 +93,7 @@ export function useShelf(): ShelfState {
         setTotal(count);
       })
       .catch((e) => console.error('Could not load the shelf', e));
-  }, [db, activeQuery, sort, groupBy, filters, version]);
+  }, [db, activeQuery, sort, groupBy, filters, coverOrder, version]);
 
   useEffect(() => {
     let active = true;

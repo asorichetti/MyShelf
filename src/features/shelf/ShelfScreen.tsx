@@ -19,7 +19,7 @@ import { ShelfLoanStamp } from '@/components/loans/ShelfLoanStamp';
 import { Button, Chip, ConfirmDialog, EmptyState, Heading, Screen, Text, useFloatClearance, useSnackbar } from '@/components/ui';
 import { useBottomObstacle } from '@/components/ui/layers';
 import type { ShelfSection } from '@/db';
-import { describeSort } from '@/db/sortKeys';
+import { describeSort, sortKeyList } from '@/db/sortKeys';
 import { activeFilterCount, filterChips, languages, matchingPreset, noFilters, today, type BookListItem, type ShelfGroupBy } from '@/domain';
 import { useGroups } from '@/features/groups/useGroups';
 import { ShelfPendingBanner } from '@/features/lookup/PendingLookupsProvider';
@@ -384,6 +384,8 @@ export function ShelfScreen() {
       />
       <SortSheet
         visible={sortOpen}
+        keys={sortKeyList}
+        describe={describeSort}
         sort={shelf.sort}
         groupBy={groupBy}
         presets={shelf.presets}

@@ -45,6 +45,23 @@ export interface ShelfSort {
 
 export const MAX_SORT_LEVELS = 4;
 
+/**
+ * What the Sort sheet and the Shelf's summary need to know about a key. The
+ * registry (`src/db/sortKeys.ts`) defines one per key, with its SQL.
+ */
+export interface SortKeyInfo {
+  id: SortKeyId;
+  /** "Author": the key's name in the sort sheet and the Shelf's summary. */
+  label: string;
+  /** One line saying exactly what is compared. */
+  hint: string;
+  defaultDirection: SortDirection;
+  /** What each direction is called ("A to Z", "Newest first", "Shortest first"). */
+  directionLabels: Record<SortDirection, string>;
+  /** True when there is no direction to choose (the shuffle). */
+  fixedDirection?: boolean;
+}
+
 export const defaultShelfSort: ShelfSort = { levels: [{ key: 'title', direction: 'asc' }] };
 
 export function isSortKeyId(value: unknown): value is SortKeyId {

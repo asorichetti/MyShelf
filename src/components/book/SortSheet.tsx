@@ -4,7 +4,6 @@ import { StyleSheet, View } from 'react-native';
 
 import { focusWithin } from '@/components/groups/focusWithin';
 import { Button, Chip, Heading, IconButton, Sheet, Text, TextField } from '@/components/ui';
-import { describeSort, directionLabel, sortKeyList, sortKeyRegistry } from '@/db/sortKeys';
 import {
   addSavedPreset,
   applyPreset,
@@ -27,6 +26,7 @@ import {
   type ShelfGroupBy,
   type ShelfSort,
   type SortKeyId,
+  type SortKeyInfo,
   type SortLevel,
 } from '@/domain';
 import { Testids } from '@/testing/testids.gen';
@@ -36,6 +36,10 @@ const T = Testids.sortSheet;
 
 export interface SortSheetProps {
   visible: boolean;
+  /** Every key there is, in the order offered (the registry's `sortKeyList`). */
+  keys: readonly SortKeyInfo[];
+  /** The sort in words ("Genre, then Author"); `groupBy` marks a first level that orders the sections. */
+  describe: (levels: readonly SortLevel[], groupBy?: ShelfGroupBy) => string;
   sort: ShelfSort;
   groupBy: ShelfGroupBy;
   presets: readonly SavedSortPreset[];
@@ -66,8 +70,10 @@ export function SortSheet(props: SortSheetProps) {
   return props.visible ? <OpenSortSheet {...props} /> : null;
 }
 
-function OpenSortSheet({ visible, sort, groupBy, presets, onChange, onPresetsChange, onClose }: SortSheetProps) {
+function OpenSortSheet({ visible, keys, describe, sort, groupBy, presets, onChange, onPresetsChange, onClose }: SortSheetProps) {
   const { spacing, colors, radii, sizes } = useTheme();
+  const byId = Object.fromEntries(keys.map((k) => [k.id, k])) as Record<SortKeyId, SortKeyInfo>;
+  const directionLabel = (level: SortLevel) => byId[level.key].directionLabels[level.direction];
   const { levels } = sort;
   const [picking, setPicking] = useState<number | null>(null);
   const [announcement, setAnnouncement] = useState('');
@@ -88,14 +94,14 @@ function OpenSortSheet({ visible, sort, groupBy, presets, onChange, onPresetsCha
     const level = levels[index];
     const to = index + by;
     setLevels(moveLevel(levels, index, by));
-    setAnnouncement(`${sortKeyRegistry[level.key].label} moved to level ${to + 1} of ${levels.length}`);
+    setAnnouncement(`${byId[level.key].label} moved to level ${to + 1} of ${levels.length}`);
     // Keep focus with the level; at an end the other arrow is the useful one.
     const atEnd = to === 0 || to === levels.length - 1;
     focusRow(level.key, atEnd ? (by < 0 ? 'down' : 'up') : by < 0 ? 'up' : 'down');
   };
 
   const remove = (index: number) => {
-    const label = sortKeyRegistry[levels[index].key].label;
+    const label = byId[levels[index].key].label;
     const next = removeLevel(levels, index);
     setLevels(next);
     setPicking(null);
@@ -106,7 +112,7 @@ function OpenSortSheet({ visible, sort, groupBy, presets, onChange, onPresetsCha
 
   const add = () => {
     const used = new Set(levels.map((l) => l.key));
-    const def = sortKeyList.find((d) => !used.has(d.id) && d.id !== 'shuffle');
+    const def = keys.find((d) => !used.has(d.id) && d.id !== 'shuffle');
     if (!def || levels.length >= MAX_SORT_LEVELS) return;
     setLevels([...levels, { key: def.id, direction: def.defaultDirection }]);
     setPicking(levels.length);
@@ -115,7 +121,7 @@ function OpenSortSheet({ visible, sort, groupBy, presets, onChange, onPresetsCha
   };
 
   const choose = (index: number, key: SortKeyId) => {
-    const def = sortKeyRegistry[key];
+    const def = byId[key];
     setLevels(levels.map((l, i) => (i === index ? { key, direction: def.defaultDirection } : l)));
     setPicking(null);
     setAnnouncement(`${levelName(index)} ${def.label}, ${def.directionLabels[def.defaultDirection]}`);
@@ -125,7 +131,7 @@ function OpenSortSheet({ visible, sort, groupBy, presets, onChange, onPresetsCha
   const flip = (index: number) => {
     const next = flipLevel(levels, index);
     setLevels(next);
-    setAnnouncement(`${sortKeyRegistry[next[index].key].label}: ${directionLabel(next[index])}`);
+    setAnnouncement(`${byId[next[index].key].label}: ${directionLabel(next[index])}`);
   };
 
   const savePreset = () => {
@@ -161,7 +167,7 @@ function OpenSortSheet({ visible, sort, groupBy, presets, onChange, onPresetsCha
     <Sheet
       visible={visible}
       title="Sort your shelf"
-      subtitle={describeSort(levels, groupBy)}
+      subtitle={describe(levels, groupBy)}
       onClose={onClose}
       testID={T.root}
       footer={<Button label="Done" onPress={onClose} testID={T.done} />}
@@ -228,7 +234,7 @@ function OpenSortSheet({ visible, sort, groupBy, presets, onChange, onPresetsCha
                 <View style={styles.fill}>
                   <Chip
                     label={p.name}
-                    accessibilityLabel={`${p.name}: ${describeSort(p.levels)}`}
+                    accessibilityLabel={`${p.name}: ${describe(p.levels)}`}
                     selected={sameLevels(p.levels, levels)}
                     onPress={() => {
                       onChange(applyPreset(p.levels));
@@ -258,12 +264,12 @@ function OpenSortSheet({ visible, sort, groupBy, presets, onChange, onPresetsCha
         <Heading level={3}>Your sort</Heading>
         {skipped ? (
           <Text variant="caption" color="inkMuted" testID={T.groupNote}>
-            {`Grouped by ${groupByLabels[groupBy].toLowerCase()}: ${sortKeyRegistry[skipped.key].label} orders the sections, so inside them the next level decides.`}
+            {`Grouped by ${groupByLabels[groupBy].toLowerCase()}: ${byId[skipped.key].label} orders the sections, so inside them the next level decides.`}
           </Text>
         ) : null}
         <View role="list" aria-label="Sort levels" style={{ gap: spacing.sm }}>
           {levels.map((level, index) => {
-            const def = sortKeyRegistry[level.key];
+            const def = byId[level.key];
             const open = picking === index;
             const used = new Set(levels.filter((_, i) => i !== index).map((l) => l.key));
             return (
@@ -319,7 +325,7 @@ function OpenSortSheet({ visible, sort, groupBy, presets, onChange, onPresetsCha
                 </Text>
                 {open ? (
                   <View role="radiogroup" aria-label={`${levelName(index)}: choose a key`} style={[styles.wrap, { columnGap: spacing.sm }]}>
-                    {sortKeyList
+                    {keys
                       .filter((d) => !used.has(d.id))
                       .map((d) => (
                         <Chip key={d.id} role="radio" label={d.label} selected={d.id === level.key} onPress={() => choose(index, d.id)} testID={T.levelKeyOption} />
@@ -366,7 +372,7 @@ function OpenSortSheet({ visible, sort, groupBy, presets, onChange, onPresetsCha
               maxLength={MAX_PRESET_NAME}
               placeholder="e.g. Reading pile"
               errorText={nameError ?? undefined}
-              helperText={describeSort(levels)}
+              helperText={describe(levels)}
               onSubmitEditing={savePreset}
               autoFocus
               testID={T.presetName}

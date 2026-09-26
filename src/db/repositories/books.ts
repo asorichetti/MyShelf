@@ -157,6 +157,8 @@ export interface ListBookItemsOptions {
   query?: string;
   /** One to four levels (see src/db/sortKeys.ts); title order by default. */
   sort?: ShelfSort;
+  /** The theme's rainbow order of generated bindings, for the "Spine colour" key (`SortOptions.coverOrder`). */
+  coverOrder?: readonly number[];
   /** The Shelf's filters (see `filterClause`). */
   filters?: ShelfFilters;
   /** Only books by this author, in this genre or in this user group. */
@@ -398,7 +400,7 @@ export async function listBookItems(db: Db, options: ListBookItemsOptions = {}):
     params.push(...search.params);
   }
   const groupOrder = scope.groupId != null && options.groupOrder;
-  const order = groupOrder ? { orderBy: `gb.position, ${SORT_TITLE_SQL} COLLATE NOCASE, b.id`, params: [] } : await buildSortSql(db, sort);
+  const order = groupOrder ? { orderBy: `gb.position, ${SORT_TITLE_SQL} COLLATE NOCASE, b.id`, params: [] } : await buildSortSql(db, sort, { coverOrder: options.coverOrder });
   const rows = await db.all<ListRow>(
     `SELECT b.id, b.title, b.subtitle, b.cover_uri, b.publication_year, b.series_id, s.name AS series_name, b.series_position,
        ol.id IS NOT NULL AS on_loan, olp.name AS loan_borrower, ol.due_on AS loan_due_on, b.rating

@@ -9,9 +9,9 @@ import {
   type ShelfSort,
   type SortDirection,
   type SortKeyId,
+  type SortKeyInfo,
   type SortLevel,
 } from '@/domain';
-import { coverCount, rainbowRanks } from '@/theme/coverOrder';
 
 import type { Db, SqlValue } from './types';
 
@@ -30,7 +30,8 @@ import type { Db, SqlValue } from './types';
  * Two keys are worked out in TypeScript, because they are what the app
  * draws rather than what the database stores: the call number (the same
  * `callNumber()` the book page prints) and the spine colour (the generated
- * binding `hashColour()` picks, placed round the colour wheel). Each is
+ * binding `hashColour()` picks, placed round the colour wheel by the order
+ * the caller passes from the theme, `SortOptions.coverOrder`). Each is
  * computed for the whole library just before the query and handed to it as
  * one BLOB of three-byte ranks indexed by book id, which SQLite reads in
  * constant time with `substr`.
@@ -45,17 +46,7 @@ export const SORT_JOINS: Record<SortJoin, string> = {
   openLoan: 'LEFT JOIN loans ol ON ol.book_id = b.id AND ol.returned_on IS NULL LEFT JOIN borrowers olp ON olp.id = ol.borrower_id',
 };
 
-export interface SortKeyDef {
-  id: SortKeyId;
-  /** "Author": the key's name in the sort sheet and the Shelf's summary. */
-  label: string;
-  /** One line saying exactly what is compared. */
-  hint: string;
-  defaultDirection: SortDirection;
-  /** What each direction is called ("A to Z", "Newest first", "Shortest first"). */
-  directionLabels: Record<SortDirection, string>;
-  /** True when there is no direction to choose (the shuffle). */
-  fixedDirection?: boolean;
+export interface SortKeyDef extends SortKeyInfo {
   /** Joins the SQL reads, beyond `books b`. */
   joins: readonly SortJoin[];
   /**
@@ -69,8 +60,22 @@ export interface SortKeyDef {
   /** A never-null value that breaks this key's own ties in the same direction (books added in the same millisecond: by id). */
   then?: string;
   /** Computed in TypeScript for the whole library before the query: book id -> rank. */
-  rank?: (db: Db) => Promise<Map<number, number>>;
+  rank?: (db: Db, options: SortOptions) => Promise<Map<number, number>>;
 }
+
+/** What the query needs from outside the database. */
+export interface SortOptions {
+  /**
+   * "Spine colour": the place of each generated binding round the colour
+   * wheel, index by index (`rainbowRanks(theme.covers)` in src/theme), so
+   * the order follows the colours on screen. Its length is the number of
+   * bindings `hashColour` picks from. Without it, bindings keep palette order.
+   */
+  coverOrder?: readonly number[];
+}
+
+/** The eight generated bindings in palette order, for callers with no theme (tests, scripts). */
+const PALETTE_ORDER: readonly number[] = [0, 1, 2, 3, 4, 5, 6, 7];
 
 export interface TermContext {
   /** "Surprise me": the sort's seed. */
@@ -202,23 +207,24 @@ function denseRanks<T>(entries: [number, T][], compare: (a: T, b: T) => number):
   return out;
 }
 
-const HUE_RANKS = rainbowRanks();
-/** Title -> place on the wheel: a title's colour never changes, so it is worked out once per title. */
-const hueByTitle = new Map<string, number>();
+/** Title -> generated binding (per palette size): a title's colour never changes, so it is worked out once. */
+const bindingByTitle = new Map<string, number>();
 const MAX_REMEMBERED_TITLES = 50_000;
 
 /** Each book's spine colour, as its place round the colour wheel (0 = red). */
-async function colourRanks(db: Db): Promise<Map<number, number>> {
+async function colourRanks(db: Db, { coverOrder = PALETTE_ORDER }: SortOptions): Promise<Map<number, number>> {
+  const count = coverOrder.length;
   const rows = await db.all<{ id: number; title: string }>('SELECT id, title FROM books');
-  if (hueByTitle.size > MAX_REMEMBERED_TITLES) hueByTitle.clear();
+  if (bindingByTitle.size > MAX_REMEMBERED_TITLES) bindingByTitle.clear();
   const out = new Map<number, number>();
   for (const { id, title } of rows) {
-    let rank = hueByTitle.get(title);
-    if (rank === undefined) {
-      rank = HUE_RANKS[hashColour(title, coverCount)];
-      hueByTitle.set(title, rank);
+    const key = `${count}\u0000${title}`;
+    let binding = bindingByTitle.get(key);
+    if (binding === undefined) {
+      binding = hashColour(title, count);
+      bindingByTitle.set(key, binding);
     }
-    out.set(id, rank);
+    out.set(id, coverOrder[binding]);
   }
   return out;
 }
@@ -480,7 +486,7 @@ export interface SortSql {
  * in TypeScript (call number, spine colour) are computed first, for the
  * whole library.
  */
-export async function buildSortSql(db: Db, sort: ShelfSort = defaultShelfSort): Promise<SortSql> {
+export async function buildSortSql(db: Db, sort: ShelfSort = defaultShelfSort, options: SortOptions = {}): Promise<SortSql> {
   const params: SqlValue[] = [];
   const joins = new Set<SortJoin>();
   const terms: string[] = [];
@@ -489,7 +495,7 @@ export async function buildSortSql(db: Db, sort: ShelfSort = defaultShelfSort): 
     const def = sortKeyRegistry[level.key];
     if (!def) continue;
     def.joins.forEach((j) => joins.add(j));
-    const ranks = def.rank ? await def.rank(db) : undefined;
+    const ranks = def.rank ? await def.rank(db, options) : undefined;
     const bind = (v: SqlValue) => {
       params.push(v);
       return '?';

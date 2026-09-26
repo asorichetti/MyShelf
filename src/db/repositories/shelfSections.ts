@@ -19,6 +19,8 @@ export interface ShelfSection {
 
 export interface ShelfSectionsOptions {
   sort: ShelfSort;
+  /** The theme's rainbow order of generated bindings (see `listBookItems`). */
+  coverOrder?: readonly number[];
   groupBy: ShelfGroupBy;
   query?: string;
   filters?: ShelfFilters;
@@ -73,9 +75,9 @@ const MEMBERSHIP_SQL: Record<Exclude<ShelfGroupBy, 'none'>, string> = {
  * reverses them; the ungrouped section stays last).
  */
 export async function listShelfSections(db: Db, options: ShelfSectionsOptions): Promise<ShelfSections> {
-  const { groupBy, query, filters, sort } = options;
+  const { groupBy, query, filters, sort, coverOrder } = options;
   const within = sectionSort(sort.levels, groupBy);
-  const items = await listBookItems(db, { query, filters, sort: { ...sort, levels: within.levels } });
+  const items = await listBookItems(db, { query, filters, sort: { ...sort, levels: within.levels }, coverOrder });
   if (groupBy === 'none') {
     return { sections: items.length ? [{ sectionKey: 'all', sectionTitle: '', groupBy, id: null, items }] : [], count: items.length, skipped: null };
   }

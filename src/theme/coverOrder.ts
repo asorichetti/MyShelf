@@ -19,10 +19,10 @@ export function hueOf(hex: string): number {
  * The "Rainbow" sort (P11-02): each generated binding's place when the
  * palette is laid out round the colour wheel from red, through orange,
  * green and blue, to violet and magenta. Index `i` is the rank of
- * `palette[i]`; equal hues keep palette order. The sort uses the light
- * palette's ranking in both themes: the dark palette has the same hue
- * families in the same slots, and only its three close purples (plum, deep
- * plum and ink) sit a step differently round the wheel.
+ * `palette[i]`; equal hues keep palette order. The Shelf passes the
+ * current theme's ranking to its query, so the rainbow follows the colours
+ * on screen in light and dark alike (the dark palette's three close purples
+ * sit a step differently round the wheel).
  */
 export function rainbowRanks(palette: readonly CoverColors[] = coverPalette): number[] {
   const order = palette.map((c, i) => ({ i, hue: hueOf(c.cloth) })).sort((a, b) => a.hue - b.hue || a.i - b.i);
@@ -30,6 +30,3 @@ export function rainbowRanks(palette: readonly CoverColors[] = coverPalette): nu
   order.forEach(({ i }, rank) => (ranks[i] = rank));
   return ranks;
 }
-
-/** How many generated bindings there are (`hashColour(title, coverCount)` picks one). */
-export const coverCount = coverPalette.length;

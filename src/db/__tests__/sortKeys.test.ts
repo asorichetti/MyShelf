@@ -17,7 +17,7 @@ import { createTestDb } from '@/testing/createTestDb';
 import type { Fixture } from '@/testing/fixtures';
 import { loadFixture } from '@/testing/loadFixture';
 import { oneKey } from '@/testing/sorts';
-import { coverCount, rainbowRanks } from '@/theme/coverOrder';
+import { coverPalette, rainbowRanks } from '@/theme';
 
 
 /**
@@ -61,8 +61,10 @@ beforeAll(async () => {
 });
 afterAll(() => db.close());
 
+const coverOrder = rainbowRanks(coverPalette);
+const coverCount = coverPalette.length;
 const titles = async (key: SortKeyId, direction: SortDirection = 'asc', seed?: number) =>
-  (await booksRepo.listBookItems(db, { sort: { ...oneKey(key, direction), seed } })).map((b) => b.title);
+  (await booksRepo.listBookItems(db, { sort: { ...oneKey(key, direction), seed }, coverOrder })).map((b) => b.title);
 
 /** The title order a library files by, in TypeScript: articles and accents ignored. */
 const byTitle = (a: string, b: string) => {
@@ -245,7 +247,7 @@ describe('each key on its own', () => {
   });
 
   it('spine colour: the generated binding’s place on the colour wheel, then title', async () => {
-    const hue = rainbowRanks();
+    const hue = coverOrder;
     const expected = crafted.books
       .map((b) => b.title)
       .sort((a, b) => hue[hashColour(a, coverCount)] - hue[hashColour(b, coverCount)] || byTitle(a, b));
@@ -316,7 +318,7 @@ describe('a book added after a computed key’s ranks were worked out', () => {
     const tmp = await createTestDb();
     await loadFixture(tmp, crafted);
     const { id } = await booksRepo.createBook(tmp, { title: 'Zzz Late Arrival' });
-    const spy = jest.spyOn(sortKeyRegistry.colour, 'rank').mockImplementation(async (d) => {
+    const spy = jest.spyOn(sortKeyRegistry.colour, 'rank').mockImplementation(async (d: Db) => {
       const rows = await d.all<{ id: number }>('SELECT id FROM books WHERE id <> ?', [id]);
       return new Map(rows.map((r, i) => [r.id, i % 8]));
     });
