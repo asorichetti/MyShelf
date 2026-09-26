@@ -15,10 +15,10 @@ On `main`: the scaffold (P00-01 to P00-07), the design system, Booky, tabs, data
 | [Phase 04](docs/plan/phase-04-series.md) | Series | 8 / 8 |
 | [Phase 05](docs/plan/phase-05-lending.md) | Lending | 8 / 10 |
 | [Phase 06](docs/plan/phase-06-grouping-and-shelf-views.md) | Grouping and shelf views | 9 / 11 |
-| [Phase 07](docs/plan/phase-07-booky-assistant.md) | Booky assistant | 0 / 9 |
+| [Phase 07](docs/plan/phase-07-booky-assistant.md) | Booky assistant | 8 / 9 |
 | [Phase 08](docs/plan/phase-08-settings-backup.md) | Settings, backup, export and import | 8 / 10 |
 | [Phase 09](docs/plan/phase-09-polish-a11y-release.md) | Polish, accessibility and release | 0 / 12 |
-| **Total** | | **100 / 132** |
+| **Total** | | **108 / 132** |
 
 ## Phase 00 — Foundation
 
@@ -160,14 +160,14 @@ On `main`: the scaffold (P00-01 to P00-07), the design system, Booky, tabs, data
 
 [Phase document](docs/plan/phase-07-booky-assistant.md)
 
-- [ ] P07-01 Tip catalogue
-- [ ] P07-02 Trigger engine
-- [ ] P07-03 Onboarding
-- [ ] P07-04 Empty states audit
-- [ ] P07-05 Contextual help
-- [ ] P07-06 Dismissal, muting and Booky modes
-- [ ] P07-07 Placement and layering
-- [ ] P07-08 Motion and reduce-motion
+- [x] P07-01 Tip catalogue
+- [x] P07-02 Trigger engine
+- [x] P07-03 Onboarding
+- [x] P07-04 Empty states audit
+- [x] P07-05 Contextual help
+- [x] P07-06 Dismissal, muting and Booky modes
+- [x] P07-07 Placement and layering
+- [x] P07-08 Motion and reduce-motion
 - [ ] P07-09 Booky accessibility pass
 
 ## Phase 08 — Settings, backup, export and import
