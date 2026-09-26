@@ -157,10 +157,12 @@ function orderBy(sort: ShelfSortKey, dir: SortDirection): string {
   }
 }
 
-/** Who has the book and when it is due, for the Shelf's loan stamp (P05-09). */
-const OPEN_LOAN_BORROWER = `(SELECT p.name FROM loans l JOIN borrowers p ON p.id = l.borrower_id
-  WHERE l.book_id = b.id AND l.returned_on IS NULL)`;
-const OPEN_LOAN_DUE = '(SELECT l.due_on FROM loans l WHERE l.book_id = b.id AND l.returned_on IS NULL)';
+/**
+ * Who has the book and when it is due, for the Shelf's loan stamp (P05-09):
+ * one join, since a book has at most one open loan (`loans_one_open_per_book`).
+ */
+const OPEN_LOAN_JOIN = `LEFT JOIN loans ol ON ol.book_id = b.id AND ol.returned_on IS NULL
+  LEFT JOIN borrowers olp ON olp.id = ol.borrower_id`;
 
 export interface ListBookItemsOptions {
   /** Full-text search: every word must match the title, subtitle, authors, series, genres, notes or ISBN (see `searchClause`). */
@@ -399,10 +401,9 @@ export async function listBookItems(db: Db, options: ListBookItemsOptions = {}):
   const order = scope.groupId != null && options.groupOrder ? `gb.position, ${SORT_TITLE}, b.id` : orderBy(sort, direction);
   const rows = await db.all<ListRow & { author_sort: string | null }>(
     `SELECT b.id, b.title, b.subtitle, b.cover_uri, b.publication_year, b.series_id, s.name AS series_name, b.series_position,
-       EXISTS (SELECT 1 FROM loans l WHERE l.book_id = b.id AND l.returned_on IS NULL) AS on_loan,
-       ${OPEN_LOAN_BORROWER} AS loan_borrower, ${OPEN_LOAN_DUE} AS loan_due_on,
-       ${PRIMARY_AUTHOR_SORT} AS author_sort
-     FROM books b ${joins.join(' ')} LEFT JOIN series s ON s.id = b.series_id
+       ol.id IS NOT NULL AS on_loan, olp.name AS loan_borrower, ol.due_on AS loan_due_on,
+       ${sort === 'author' ? PRIMARY_AUTHOR_SORT : 'NULL'} AS author_sort
+     FROM books b ${joins.join(' ')} LEFT JOIN series s ON s.id = b.series_id ${OPEN_LOAN_JOIN}
      ${where.length ? `WHERE ${where.join(' AND ')}` : ''}
      ORDER BY ${order}
      ${limit != null ? 'LIMIT ? OFFSET ?' : ''}`,
@@ -455,21 +456,29 @@ export async function listFilterOptions(db: Db): Promise<FilterOptions> {
   };
 }
 
-/** Credited author names per book, in order, in one query (chunked for very long lists). */
+/** Above this many books, reading every author link at once beats asking for each chunk of ids. */
+const ALL_AUTHORS_ABOVE = 1000;
+
+/** Credited author names per book, in order: one query per 500 books, or one for the whole library for long lists. */
 async function authorNamesFor(db: Db, bookIds: number[]): Promise<Map<number, string[]>> {
   const out = new Map<number, string[]>();
-  for (let i = 0; i < bookIds.length; i += 500) {
-    const ids = bookIds.slice(i, i + 500);
-    const rows = await db.all<{ book_id: number; name: string }>(
-      `SELECT ba.book_id, a.name FROM book_authors ba JOIN authors a ON a.id = ba.author_id
-       WHERE ba.book_id IN (${ids.map(() => '?').join(', ')}) ORDER BY ba.book_id, ba.position, a.id`,
-      ids,
-    );
+  const add = (rows: { book_id: number; name: string }[], wanted?: Set<number>) => {
     for (const r of rows) {
+      if (wanted && !wanted.has(r.book_id)) continue;
       const list = out.get(r.book_id);
       if (list) list.push(r.name);
       else out.set(r.book_id, [r.name]);
     }
+  };
+  const sql = (where: string) =>
+    `SELECT ba.book_id, a.name FROM book_authors ba JOIN authors a ON a.id = ba.author_id ${where} ORDER BY ba.book_id, ba.position, a.id`;
+  if (bookIds.length > ALL_AUTHORS_ABOVE) {
+    add(await db.all<{ book_id: number; name: string }>(sql('')), new Set(bookIds));
+    return out;
+  }
+  for (let i = 0; i < bookIds.length; i += 500) {
+    const ids = bookIds.slice(i, i + 500);
+    add(await db.all<{ book_id: number; name: string }>(sql(`WHERE ba.book_id IN (${ids.map(() => '?').join(', ')})`), ids));
   }
   return out;
 }
