@@ -75,10 +75,11 @@ From Phase 03 onward the app uses a native text-recognition module, so it needs 
 | `npm run android` / `npm run web` | open the app on Android or in a browser |
 | `npm run export:web` | static web build into `dist/` |
 | `npm run typecheck` | TypeScript check (route links are only checked strictly while the dev server has generated `.expo/types`; CI does that in the auto test suite job) |
-| `npm test` | Jest unit and component tests |
+| `npm test` | Jest unit and component tests (offline; never touches the network) |
+| `npm run test:live` | live check against the real Open Library APIs that well-known books (Good Omens, Dune, The Hobbit, …) get real cover art; also runs weekly in CI. Set `LIVE_COVERS_OUT=<dir>` to save the covers it picks |
 | `npm run selectors:gen` | regenerate the test ids in `src/testing/testids.gen.ts` from `src/testing/selectors.json` |
 | `npm run selectors:check` | fail if the generated test id file is stale |
-| `npm run check` | everything CI runs for the app: selectors check, typecheck and tests |
+| `npm run check` | everything CI runs for the app: selectors check, lint, typecheck and tests |
 | `npm run autotest:install-browser` | one time: install Chromium for the auto test suite |
 | `npm run autotest:check` | typecheck and unit tests for the auto test suite |
 | `npm run -s autotest:smoke` | run the core journeys with UX gates enforced (needs the web server: `CI=1 npx expo start --web --port 8081`) |

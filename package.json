@@ -60,14 +60,16 @@
     "autotest:selftest": "node --import tsx --test 'tools/auto-test-suite/src/**/*.selftest.ts'",
     "autotest:smoke": "tsx tools/auto-test-suite/src/cli.ts smoke",
     "autotest:journeys": "tsx tools/auto-test-suite/src/cli.ts journey --all",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "test:live": "node --import tsx --test --test-concurrency=1 \"src/**/__live__/*.live.ts\""
   },
   "private": true,
   "jest": {
     "preset": "jest-expo",
     "testPathIgnorePatterns": [
       "/node_modules/",
-      "/tools/"
+      "/tools/",
+      "/__live__/"
     ],
     "setupFiles": [
       "<rootDir>/src/testing/jest.setup.ts"
