@@ -18,4 +18,4 @@ export function appBuild(): string {
 export const GOOGLE_BOOKS_KEYED = Boolean(process.env.EXPO_PUBLIC_GOOGLE_BOOKS_API_KEY);
 
 export const REPO_URL = 'https://github.com/asorichetti/MyShelf';
-export const PRIVACY_URL = `${REPO_URL}/blob/main/docs/adr/0012-local-only-data.md`;
+export const PRIVACY_URL = `${REPO_URL}/blob/main/docs/privacy.md`;

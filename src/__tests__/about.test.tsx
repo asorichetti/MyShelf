@@ -33,7 +33,7 @@ describe('About screen', () => {
     await act(async () => fireEvent.press(screen.getByTestId(A.repoLink)));
     expect(Linking.openURL).toHaveBeenCalledWith('https://github.com/asorichetti/MyShelf');
     await act(async () => fireEvent.press(screen.getByTestId(A.privacyLink)));
-    expect(Linking.openURL).toHaveBeenLastCalledWith('https://github.com/asorichetti/MyShelf/blob/main/docs/adr/0012-local-only-data.md');
+    expect(Linking.openURL).toHaveBeenLastCalledWith('https://github.com/asorichetti/MyShelf/blob/main/docs/privacy.md');
     expect(screen.getByTestId(A.repoLink).props.accessibilityLabel).toBe('MyShelf on GitHub (opens in your browser)');
   });
 
