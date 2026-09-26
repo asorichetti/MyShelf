@@ -10,6 +10,7 @@ import { fixtureNames, isFixtureName } from '@/testing/fixtures';
 import { loadFixture } from '@/testing/loadFixture';
 
 import { isE2eEnabled, safeNextPath } from './e2eFlag';
+import { settleFixtureCovers } from './settleFixtureCovers';
 
 type Params = { fixture?: string; next?: string; today?: string };
 
@@ -35,6 +36,7 @@ function FixtureLoader() {
     let active = true;
     if (frozen != null) setToday(frozen);
     loadFixture(db, fixture)
+      .then(() => settleFixtureCovers(db))
       .then(() => active && router.replace(next as Href))
       .catch((e: unknown) => active && setError(e instanceof Error ? e.message : String(e)));
     return () => {

@@ -70,8 +70,8 @@ register({
       [f.title, 'The Colour of Magic'],
       [f.year, '1985'],
       [f.isbn, '9780552166591'],
-      [f.seriesName, 'Discworld'],
-      [f.seriesPosition, '1'],
+      [Testids.seriesInput.search, 'Discworld'],
+      [Testids.seriesInput.position, '1'],
     ];
     for (const [id, want] of fields) {
       const got = await c.page.locator(tid(id)).inputValue();
@@ -93,7 +93,7 @@ register({
     const title = await textOf(c, tid(d.title));
     expect(title === 'The Colour of Magic', `${path}: expected the title ${q('The Colour of Magic')}, found ${q(title)}`);
     const series = await textOf(c, tid(d.series));
-    expect(series === 'Discworld · #1', `${path}: expected the series ${q('Discworld · #1')}, found ${q(series)}`);
+    expect(series.includes('Discworld') && series.includes('Book 1'), `${path}: expected the series Discworld, book 1, found ${q(series)}`);
     const detailGenres = await textOf(c, tid(d.genres));
     expect(detailGenres.includes('Fantasy'), `${path}: expected the genre Fantasy, found ${q(detailGenres)}`);
     await expectRealCover(c, tid(d.root), path);
@@ -165,22 +165,28 @@ register({
 register({
   name: 'cover-backfill-mocked',
   suite: 'p02',
-  desc: 'Fixture "demo": the tab shell starts the cover backfill; it looks up The Farthest Shore (no cover) through the mocked APIs, finds no cover in the fixture world, and the Shelf keeps its generated cover',
+  desc: 'A book typed in by hand with an ISBN has no cover; on the next start the tab shell runs the cover backfill, which looks it up through the mocked APIs and stores its real cover: the Shelf row shows the image, not the fallback',
   async run(c) {
-    const lookedUp = c.page.waitForRequest((r) => r.url() === 'https://openlibrary.org/isbn/9780140306941.json', { timeout: 20_000 });
-    const lastCover = c.page.waitForRequest((r) => r.url().startsWith('https://covers.openlibrary.org/b/isbn/0140306943-L.jpg'), { timeout: 30_000 });
-    await openFixture(c, 'demo', '/');
-    await waitForCount(c, tid(Testids.home.row), 12, '/');
+    await openFixture(c, 'empty', '/book/new');
+    await waitVisible(c, tid(f.title), '/book/new');
+    await c.page.locator(tid(f.title)).fill('The Colour of Magic');
+    await c.page.locator(tid(f.isbn)).fill('9780552166591');
+    await c.page.locator(tid(f.save)).click();
+    const path = await waitForPath(c, /^\/book\/\d+$/, '/book/new -> save');
+    await waitVisible(c, tid(d.title), path);
+    const before = await coverState(c, tid(d.root));
+    expect(before.images === 0 && before.fallbacks >= 1, `${path}: expected the typed-in book to start with the generated cover, found ${q(before)}`);
+
+    // A fresh start: the tab shell mounts and starts the backfill.
+    const lookedUp = c.page.waitForRequest((r) => r.url() === 'https://openlibrary.org/isbn/9780552166591.json', { timeout: 20_000 });
+    await c.goto('/');
     try {
       await lookedUp;
-      await lastCover;
     } catch {
-      expect(false, '/: expected the cover backfill to look up The Farthest Shore (ISBN, then its cover URLs) through the mock');
+      expect(false, '/: expected the cover backfill to look the book up through the mocked Open Library');
     }
-    const row = `${tid(Testids.home.row)}[aria-label^="The Farthest Shore,"]`;
-    await c.page.waitForTimeout(500);
-    const state = await coverState(c, row);
-    expect(state.images === 0 && state.fallbacks === 1, `/: expected The Farthest Shore to keep its generated cover, found ${q(state)}`);
+    await expectRealCover(c, `${tid(Testids.home.row)}[aria-label^="The Colour of Magic"]`, '/ (after the backfill)');
+    await c.snap('cover-backfilled');
   },
 });
 

@@ -1,6 +1,9 @@
-import { createContext, useContext, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, type ReactNode } from 'react';
 
 import { PendingBanner } from '@/components/book/PendingBanner';
+import { useDatabase } from '@/db';
+import { backfillCoversNow } from '@/features/covers';
+import { emit } from '@/features/events';
 
 import { usePendingLookups, type PendingLookups } from './usePendingLookups';
 
@@ -12,7 +15,17 @@ const PendingLookupsContext = createContext<PendingLookups | null>(null);
  * after an E2E fixture has loaded rather than racing it.
  */
 export function PendingLookupsProvider({ children }: { children: ReactNode }) {
-  const value = usePendingLookups();
+  const db = useDatabase();
+  // Screens showing covers reload when the backfill found some.
+  const backfillCovers = useCallback(
+    (signal: AbortSignal) =>
+      backfillCoversNow(db, { signal }).then((summary) => {
+        if (summary.attached) emit('library-changed');
+        return summary;
+      }),
+    [db],
+  );
+  const value = usePendingLookups({ backfillCovers });
   return <PendingLookupsContext.Provider value={value}>{children}</PendingLookupsContext.Provider>;
 }
 
