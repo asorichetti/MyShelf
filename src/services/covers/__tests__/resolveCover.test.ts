@@ -142,4 +142,12 @@ describe('resolveCover', () => {
     const { http } = setup({ [edition]: jpeg(images.large800) });
     await expect(resolveCover(source, { http, signal: AbortSignal.abort() })).rejects.toMatchObject({ name: 'AbortError' });
   });
+
+  it('does not fetch URLs an earlier resolution already tried', async () => {
+    const { http, fixtures } = setup({ [isbn13]: jpeg(images.large800) });
+    const { cover, tried } = await resolveCover(source, { http, skipUrls: new Set([edition, work]) });
+    expect(cover?.url).toBe(isbn13);
+    expect(fixtures.calls).toEqual([isbn13]);
+    expect(tried.map((t) => t.url)).toEqual([isbn13]);
+  });
 });

@@ -1,0 +1,507 @@
+{
+  "numFound": 26,
+  "start": 0,
+  "numFoundExact": true,
+  "num_found": 26,
+  "documentation_url": "https://openlibrary.org/dev/docs/api/search",
+  "q": "isbn:(9780000000002 OR 9780060853983 OR 9780091865153 OR 9780140306941 OR 9780141439518 OR 9780316129084 OR 9780316556347 OR 9780345339706 OR 9780393316049 OR 9780393609097 OR 9780441172719 OR 9780441478125 OR 9780451419439 OR 9780451524935 OR 9780547928227 OR 9780552134637 OR 9780552166591 OR 9780553418026 OR 9780593135204 OR 9780747532699 OR 9780756404741 OR 9780765350381 OR 9781984880963 OR 9782070612758 OR 9788497592208 OR 9791099999993)",
+  "offset": null,
+  "docs": [
+    {
+      "cover_i": 15155833,
+      "key": "/works/OL82563W",
+      "editions": {
+        "numFound": 1,
+        "start": 0,
+        "numFoundExact": true,
+        "docs": [
+          {
+            "key": "/books/OL25726767M",
+            "cover_i": 7355968,
+            "isbn": [
+              "9780747532699",
+              "0747532699"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "cover_i": 14348537,
+      "key": "/works/OL66554W",
+      "editions": {
+        "numFound": 2,
+        "start": 0,
+        "numFoundExact": true,
+        "docs": [
+          {
+            "key": "/books/OL3700132M",
+            "cover_i": 8467127,
+            "isbn": [
+              "9780141439518",
+              "0141439513"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "cover_i": 10708272,
+      "key": "/works/OL10263W",
+      "editions": {
+        "numFound": 1,
+        "start": 0,
+        "numFoundExact": true,
+        "docs": [
+          {
+            "key": "/books/OL9567312M",
+            "cover_i": 2137711,
+            "isbn": [
+              "9782070612758",
+              "2070612759"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "cover_i": 9267242,
+      "key": "/works/OL1168083W",
+      "editions": {
+        "numFound": 7,
+        "start": 0,
+        "numFoundExact": true,
+        "docs": [
+          {
+            "key": "/books/OL62592675M",
+            "cover_i": 15257452,
+            "isbn": [
+              "9780451524935",
+              "0451524934"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "cover_i": 14627509,
+      "key": "/works/OL27482W",
+      "editions": {
+        "numFound": 5,
+        "start": 0,
+        "numFoundExact": true,
+        "docs": [
+          {
+            "key": "/books/OL26456609M",
+            "cover_i": 14624642,
+            "isbn": [
+              "054792822X",
+              "9780547928227"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "cover_i": 12721865,
+      "key": "/works/OL1063588W",
+      "editions": {
+        "numFound": 1,
+        "start": 0,
+        "numFoundExact": true,
+        "docs": [
+          {
+            "key": "/books/OL27211583M",
+            "cover_i": 14832159,
+            "isbn": [
+              "9780451419439",
+              "045141943X"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "cover_i": 12627383,
+      "key": "/works/OL274505W",
+      "editions": {
+        "numFound": 2,
+        "start": 0,
+        "numFoundExact": true,
+        "docs": [
+          {
+            "key": "/books/OL25938381M",
+            "cover_i": 7438332,
+            "isbn": [
+              "9788497592208",
+              "8497592204"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "cover_i": 11481354,
+      "key": "/works/OL893414W",
+      "editions": {
+        "numFound": 5,
+        "start": 0,
+        "numFoundExact": true,
+        "docs": [
+          {
+            "key": "/books/OL24981555M",
+            "cover_i": 7885536,
+            "isbn": [
+              "0441172660",
+              "0441172717",
+              "9780441172665",
+              "9780441172719"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "cover_i": 14647238,
+      "key": "/works/OL453657W",
+      "editions": {
+        "numFound": 1,
+        "start": 0,
+        "numFoundExact": true,
+        "docs": [
+          {
+            "key": "/books/OL28477029M",
+            "cover_i": 14647238,
+            "isbn": [
+              "9780552166591",
+              "0552166596"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "cover_i": 11447888,
+      "key": "/works/OL17091839W",
+      "editions": {
+        "numFound": 2,
+        "start": 0,
+        "numFoundExact": true,
+        "docs": [
+          {
+            "key": "/books/OL26420821M",
+            "cover_i": 12065533,
+            "isbn": [
+              "9780553418026",
+              "0553418025"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "cover_i": 11480483,
+      "key": "/works/OL8479867W",
+      "editions": {
+        "numFound": 3,
+        "start": 0,
+        "numFoundExact": true,
+        "docs": [
+          {
+            "key": "/books/OL9685760M",
+            "cover_i": 8259446,
+            "isbn": [
+              "9780756404741",
+              "0756404746"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "cover_i": 10482258,
+      "key": "/works/OL453936W",
+      "editions": {
+        "numFound": 2,
+        "start": 0,
+        "numFoundExact": true,
+        "docs": [
+          {
+            "key": "/books/OL7283145M",
+            "cover_i": 10482245,
+            "isbn": [
+              "9780060853983",
+              "0060853980"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "cover_i": 8739376,
+      "key": "/works/OL18012166W",
+      "editions": {
+        "numFound": 1,
+        "start": 0,
+        "numFoundExact": true,
+        "docs": [
+          {
+            "key": "/books/OL26591039M",
+            "cover_i": 8283869,
+            "isbn": [
+              "9780316556347",
+              "0316556343"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "cover_i": 11200092,
+      "key": "/works/OL21745884W",
+      "editions": {
+        "numFound": 1,
+        "start": 0,
+        "numFoundExact": true,
+        "docs": [
+          {
+            "key": "/books/OL30036715M",
+            "cover_i": 12455001,
+            "isbn": [
+              "9780593135204",
+              "0593135202"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "cover_i": 14658160,
+      "key": "/works/OL5738148W",
+      "editions": {
+        "numFound": 3,
+        "start": 0,
+        "numFoundExact": true,
+        "docs": [
+          {
+            "key": "/books/OL24945060M",
+            "cover_i": 14811583,
+            "isbn": [
+              "9780765350381",
+              "0765350386"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "cover_i": 14627060,
+      "key": "/works/OL27513W",
+      "editions": {
+        "numFound": 22,
+        "start": 0,
+        "numFoundExact": true,
+        "docs": [
+          {
+            "key": "/books/OL26451576M",
+            "cover_i": 14625981,
+            "isbn": [
+              "9780345339706",
+              "0345339703"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "cover_i": 14625765,
+      "key": "/works/OL27448W",
+      "editions": {
+        "numFound": 1,
+        "start": 0,
+        "numFoundExact": true,
+        "docs": [
+          {
+            "key": "/books/OL21171006M",
+            "isbn": [
+              "0345339703",
+              "0345339711",
+              "0345339738",
+              "9780345339706",
+              "9780345339713",
+              "9780345339737"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "cover_i": 10618463,
+      "key": "/works/OL59800W",
+      "editions": {
+        "numFound": 4,
+        "start": 0,
+        "numFoundExact": true,
+        "docs": [
+          {
+            "key": "/books/OL7525849M",
+            "cover_i": 284550,
+            "isbn": [
+              "9780441478125",
+              "0441478123"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "cover_i": 7898682,
+      "key": "/works/OL17619634W",
+      "editions": {
+        "numFound": 1,
+        "start": 0,
+        "numFoundExact": true,
+        "docs": [
+          {
+            "key": "/books/OL26224196M",
+            "cover_i": 12824590,
+            "isbn": [
+              "9780393609097",
+              "039360909X"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "cover_i": 9274698,
+      "key": "/works/OL514629W",
+      "editions": {
+        "numFound": 3,
+        "start": 0,
+        "numFoundExact": true,
+        "docs": [
+          {
+            "key": "/books/OL7456916M",
+            "cover_i": 249302,
+            "isbn": [
+              "9780393316049",
+              "0393316041"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "cover_i": 6498990,
+      "key": "/works/OL59855W",
+      "editions": {
+        "numFound": 1,
+        "start": 0,
+        "numFoundExact": true,
+        "docs": [
+          {
+            "key": "/books/OL17852114M",
+            "isbn": [
+              "0140306943",
+              "9780140306941"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "cover_i": 7314237,
+      "key": "/works/OL16114008W",
+      "editions": {
+        "numFound": 2,
+        "start": 0,
+        "numFoundExact": true,
+        "docs": [
+          {
+            "key": "/books/OL32667325M",
+            "cover_i": 11295081,
+            "isbn": [
+              "9780316129084",
+              "0316129089"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "cover_i": 10201431,
+      "key": "/works/OL20878311W",
+      "editions": {
+        "numFound": 1,
+        "start": 0,
+        "numFoundExact": true,
+        "docs": [
+          {
+            "key": "/books/OL28274140M",
+            "cover_i": 10201431,
+            "isbn": [
+              "9781984880963",
+              "1984880969"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "cover_i": 14647546,
+      "key": "/works/OL453749W",
+      "editions": {
+        "numFound": 1,
+        "start": 0,
+        "numFoundExact": true,
+        "docs": [
+          {
+            "key": "/books/OL7814893M",
+            "cover_i": 14647546,
+            "isbn": [
+              "9780552134637",
+              "0552134635"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "cover_i": 14646576,
+      "key": "/works/OL453947W",
+      "editions": {
+        "numFound": 2,
+        "start": 0,
+        "numFoundExact": true,
+        "docs": [
+          {
+            "key": "/books/OL7314926M",
+            "cover_i": 14646576,
+            "isbn": [
+              "9780091865153",
+              "0091865158"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "key": "/works/OL31967309W",
+      "editions": {
+        "numFound": 1,
+        "start": 0,
+        "numFoundExact": true,
+        "docs": [
+          {
+            "key": "/books/OL43684247M",
+            "isbn": [
+              "9780000000002",
+              "0000000000"
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

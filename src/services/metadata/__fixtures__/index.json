@@ -408,6 +408,11 @@
     {
       "url": "https://openlibrary.org/authors/OL9118672A.json",
       "body": "openlibrary/author-OL9118672A.json"
+    },
+    {
+      "url": "https://openlibrary.org/search.json?q=isbn*",
+      "body": "openlibrary/search-isbn-batch.json",
+      "note": "the cover backfill's batch search (findCoverIdsByIsbn): one real answer (September 2026) for every ISBN recorded here, served for any batch; each book takes only the entries matching its own ISBN"
     }
   ]
 }

@@ -39,6 +39,8 @@ export interface ResolveCoverOptions {
   maxFetches?: number;
   /** Minimum cover height in pixels. Default 150. */
   minHeight?: number;
+  /** URLs already tried (e.g. by an earlier resolution with less information); not fetched again. */
+  skipUrls?: ReadonlySet<string>;
 }
 
 /**
@@ -55,7 +57,7 @@ export interface ResolveCoverOptions {
  * refused to answer, so callers can tell "no cover exists" from "try later".
  */
 export async function resolveCover(source: CoverSource, options: ResolveCoverOptions): Promise<CoverResolution> {
-  const { http, signal, includeGoogle = true, maxFetches = 4, minHeight } = options;
+  const { http, signal, includeGoogle = true, maxFetches = 4, minHeight, skipUrls } = options;
   const tried: CoverTrial[] = [];
   const accepted: ResolvedCover[] = [];
   // Errors kept to explain an empty result (in an object: set inside tryCandidate).
@@ -63,6 +65,7 @@ export async function resolveCover(source: CoverSource, options: ResolveCoverOpt
   let fetches = 0;
 
   for (const candidate of coverCandidates(source, { includeGoogle })) {
+    if (skipUrls?.has(candidate.url)) continue;
     if (fetches >= maxFetches) break;
     fetches++;
     const trial = await tryCandidate(candidate);

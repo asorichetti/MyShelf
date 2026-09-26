@@ -1,4 +1,13 @@
 export { deleteAllCovers, deleteCover, downloadCover, isStoredCover, storeCoverFile, type DownloadCoverOptions } from './downloadCover';
+export {
+  COVER_BATCH_SIZE,
+  coverBatchUrl,
+  coverSourcesFromBatch,
+  findCoverIdsByIsbn,
+  searchIsbn13,
+  type CoverBatchResponse,
+  type FindCoverIdsOptions,
+} from './batchCoverIds';
 export { combineCoverSources, coverSourceFromBook, coverSourceFromCandidate } from './coverSource';
 export {
   coverCandidates,
