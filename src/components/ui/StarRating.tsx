@@ -3,6 +3,7 @@ import { useRef, useState } from 'react';
 import { Pressable, StyleSheet, View, type AccessibilityActionEvent } from 'react-native';
 
 import { MAX_RATING, ratingForKey, ratingValues, ratingValueText, stepRating, tapRating, type Rating } from '@/domain';
+import { t, translate, type MessageKey } from '@/i18n';
 import { Testids } from '@/testing/testids.gen';
 import { useTheme } from '@/theme';
 
@@ -23,9 +24,9 @@ export interface StarRatingProps {
 }
 
 const STAR_ICON = 30;
-const ACTIONS = [
-  { name: 'increment', label: 'One more star' },
-  { name: 'decrement', label: 'One star fewer' },
+const ACTIONS: readonly { name: string; label: MessageKey }[] = [
+  { name: 'increment', label: 'rating.control.more' },
+  { name: 'decrement', label: 'rating.control.fewer' },
 ];
 
 /**
@@ -36,9 +37,10 @@ const ACTIONS = [
  * star is a 48 dp target for a finger or a pointer; tapping the current
  * rating clears it, and "Clear rating" says so in words. No animation.
  */
-export function StarRating({ value, onChange, label = 'Rating', clearable = true, disabled = false, testID = Testids.rating.control }: StarRatingProps) {
+export function StarRating({ value, onChange, label: labelProp, clearable = true, disabled = false, testID = Testids.rating.control }: StarRatingProps) {
   const theme = useTheme();
   const { colors, spacing, radii, sizes } = theme;
+  const label = labelProp ?? t('rating.control.label');
   const [focused, setFocused] = useState(false);
   const slider = useRef<View>(null);
   const current = value != null && value >= 1 && value <= MAX_RATING ? value : null;
@@ -73,7 +75,7 @@ export function StarRating({ value, onChange, label = 'Rating', clearable = true
         aria-valuenow={current ?? 0}
         aria-valuetext={valueText}
         accessibilityValue={{ min: 0, max: MAX_RATING, now: current ?? 0, text: valueText }}
-        accessibilityActions={ACTIONS}
+        accessibilityActions={ACTIONS.map((a) => ({ name: a.name, label: translate(a.label) }))}
         onAccessibilityAction={onAccessibilityAction}
         aria-disabled={disabled}
         accessibilityState={{ disabled }}
@@ -121,7 +123,7 @@ export function StarRating({ value, onChange, label = 'Rating', clearable = true
       {clearable ? (
         <IconButton
           icon="close-circle-outline"
-          accessibilityLabel="Clear rating"
+          accessibilityLabel={t('rating.control.clear')}
           disabled={disabled || current == null}
           onPress={() => {
             set(null);

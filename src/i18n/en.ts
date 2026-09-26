@@ -537,6 +537,17 @@ export const en = {
     cleared: 'Rating cleared',
     /** A minimum-rating filter: "4 stars and up". */
     andUp: { one: '{count} star and up', other: '{count} stars and up' },
+    /** The star control (a slider for screen readers). */
+    control: {
+      label: 'Rating',
+      clear: 'Clear rating',
+      /** TalkBack's swipe up / down actions. */
+      more: 'One more star',
+      fewer: 'One star fewer',
+    },
+    /** Under the stars on a book's page, before it is rated. */
+    tapToRate: 'Tap a star to rate this book.',
+    saveFailed: 'Sorry, I couldn’t save that rating. Please try again.',
   },
 
   // Books: detail, form and lookups
@@ -1858,6 +1869,7 @@ export const en = {
       badIsbn: 'The ISBN “{value}” isn’t valid, so it was left out.',
       badYear: 'The year “{value}” wasn’t understood.',
       badPages: 'The page count “{value}” wasn’t understood.',
+      badRating: 'The rating “{value}” wasn’t understood, so it was left out.',
     },
     errors: {
       empty: 'That file is empty. Choose a spreadsheet saved as CSV.',

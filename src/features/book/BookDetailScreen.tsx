@@ -110,7 +110,7 @@ function BookDetailContent({ book }: { book: BookDetail }) {
         ) : null}
       </ConfirmDialog>
       <BookHeader book={book} />
-      <Section title="Your rating" testID={Testids.bookDetail.rating}>
+      <Section title={t('bookForm.fields.rating')} testID={Testids.bookDetail.rating}>
         <BookRating bookId={book.id} rating={book.rating} />
       </Section>
       {book.summary ? (

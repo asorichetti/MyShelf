@@ -5,6 +5,7 @@ import { StarRating, Text, useSnackbar } from '@/components/ui';
 import { booksRepo, useDatabase } from '@/db';
 import { ratingAnnouncement, type Rating } from '@/domain';
 import { emit } from '@/features/events';
+import { t } from '@/i18n';
 import { Testids } from '@/testing/testids.gen';
 import { useTheme } from '@/theme';
 
@@ -44,7 +45,7 @@ export function BookRating({ bookId, rating }: { bookId: number; rating: number 
     } catch (e) {
       console.error('Could not save the rating', e);
       setMine(before);
-      show({ message: 'Sorry, I couldn’t save that rating. Please try again.' });
+      show({ message: t('rating.saveFailed') });
     } finally {
       setSaving((n) => n - 1);
     }
@@ -61,7 +62,7 @@ export function BookRating({ bookId, rating }: { bookId: number; rating: number 
         accessibilityLiveRegion="polite"
         testID={Testids.rating.status}
       >
-        {status || (value == null ? 'Tap a star to rate this book.' : ' ')}
+        {status || (value == null ? t('rating.tapToRate') : ' ')}
       </Text>
     </View>
   );

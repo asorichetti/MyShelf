@@ -273,7 +273,7 @@ export function planImport(rows: readonly string[][], mapping: readonly ImportFi
 
     const ratingText = col(row, 'rating');
     const rating = parseImportRating(ratingText);
-    if (rating === undefined) warnings.push(`The rating “${ratingText}” wasn’t understood, so it was left out.`);
+    if (rating === undefined) warnings.push(t('importCsv.warnings.badRating', { value: ratingText ?? '' }));
 
     const review = stripHtml(raw(row, 'notes'));
     const privateNotes = stripHtml(raw(row, 'privateNotes'));
