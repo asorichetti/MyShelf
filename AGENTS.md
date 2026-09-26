@@ -25,18 +25,18 @@ Use `npx`, not `bunx` (this project uses npm; there is no `bun.lock`).
 | `npm run android` | open on a connected device/emulator | available |
 | `npm run web` | run the web build (http://localhost:8081); for the auto test suite use `CI=1 npx expo start --web --port 8081` (no file watcher; restart after adding a route) | available |
 | `npm run export:web` | static web build into `dist/` | available |
-| `npm run typecheck` | `tsc --noEmit` | available |
+| `npm run typecheck` | `tsc --noEmit`; route strings (`href`, `router.navigate`) are checked strictly only while `.expo/types/router.d.ts` exists, which a running dev server generates, so CI runs it again in the auto test suite job with the server up | available |
 | `npm test` | Jest | available |
 | `npm run selectors:gen` | regenerate test ids from `src/testing/selectors.json` | available |
 | `npm run selectors:check` | fail if the generated test id file is stale | available |
 | `npm run check` | `selectors:check` + `typecheck` + `test --ci` | available (lint added in P00-20) |
-| `npm run lint` / `npx expo lint` | ESLint | to be created in P00-20 |
+| `npm run lint` / `npx expo lint` | ESLint | to be added in P00-20 |
 | `npm run autotest:install-browser` | one time: Chromium for the auto test suite | available |
 | `npm run -s autotest -- <command> [flags]` | run any auto test suite command (`navigate`, `journey`, `smoke`, `screenshot`, `interact`); see [its README](tools/auto-test-suite/README.md) | available |
 | `npm run -s autotest:smoke` | `smoke`: core journeys, gates set to fail; needs the web server on 8081 | available |
 | `npm run -s autotest:journeys` | every journey (`journey --all`); add flags after `--`, e.g. `-- --ux-gates fail` | available |
 | `npm run autotest:check` | typecheck and unit tests for the auto test suite | available |
-| `maestro test .maestro/` | on-device flows | to be created in P00-18 |
+| `maestro test .maestro/` | on-device flows | to be added in P00-18 |
 | `npx expo run:android` | local development build (needed from Phase 03 for ML Kit) | works now; dev client added in P03-01 |
 | `npx expo-doctor` | diagnose dependency/config issues | available |
 | `npx expo install --fix` | fix incompatible package versions | available |
@@ -45,14 +45,17 @@ Use `npx`, not `bunx` (this project uses npm; there is no `bun.lock`).
 
 ### Structure
 
-- **Routes only in `src/app/`** (Expo Router: every file is a screen; `_layout.tsx` defines navigators). Keep components, hooks and logic out of `src/app/`.
+- **Routes only in `src/app/`** (Expo Router: every file is a route; `_layout.tsx` defines navigators). Route files are one-line re-exports of a screen from `src/features` (e.g. `src/app/(tabs)/index.tsx` exports `ShelfScreen`); keep components, hooks and logic out of `src/app/`.
 - `src/components/ui` — themed primitives; `src/components/booky` — Booky; `src/components/<feature>` — feature components.
-- `src/features/<feature>` — hooks that connect screens to repositories/services.
-- `src/services` — network, recognition, backup (no React, no SQL).
+- `src/features/<feature>` — screens (`ShelfScreen.tsx`) and the hooks that connect them to repositories/services (`useBookCount.ts`); `src/features/navigation` holds the tab layout and the loading, database-error and not-found screens.
+- `src/hooks` — small shared hooks with no feature of their own (`useReducedMotion`).
+- `src/services` — network, recognition, backup (no React, no SQL; created in Phase 02).
 - `src/domain` — pure TypeScript models and helpers (no React, no Expo imports).
-- `src/db` — `Db` interface, adapters, migrations, repositories. **No SQL anywhere else.**
-- `src/theme` — design tokens. **No colour, font or spacing literals anywhere else.**
-- Platform differences go in `*.native.ts` / `*.web.ts` files, not scattered `Platform.OS` checks.
+- `src/db` — `Db` interface, adapters (`expo.ts`, `node.ts`), migrations, repositories, and `DatabaseProvider.tsx` (opens and migrates the database, then provides it through `useDatabase()`). **No SQL anywhere else.**
+- `src/theme` — design tokens. **No colour, font or spacing literals anywhere else** (a Jest test fails on colour literals outside `src/theme`).
+- `src/testing` — `selectors.json`, the generated `testids.gen.ts`, `createTestDb()` and render helpers for Jest.
+- Platform differences go in `*.web.ts` (or `*.native.ts`) files next to the default module, not scattered `Platform.OS` checks (e.g. `src/theme/cssVars.web.ts`, `src/db/pragmas.web.ts`).
+- The web page template is `public/index.html`: with `web.output: "single"` Expo Router ignores `src/app/+html.tsx`. The dev server sends the cross-origin isolation headers `expo-sqlite` needs on web from `metro.config.js`.
 - Import with the `@/` alias (`@/db/…`), not long relative paths.
 
 ### Naming
@@ -86,7 +89,7 @@ Every card lists the tests it adds. Three levels (details in `PLAN.md` §10):
 
 - **Jest** for every module. Repository tests use `@jest-environment node` and a real in-memory SQLite database. Network is always mocked with recorded fixtures.
 - **Auto test suite** (`tools/auto-test-suite`, TypeScript + Playwright; reference in [its README](tools/auto-test-suite/README.md)) drives the web build: `navigate`, `journey`, `smoke`, `screenshot`, `interact`. Each command prints one JSON document and writes an evidence bundle (`screenshot.png`, `page.html`, `console.json`, `network.json`, `uxgates.json`) under `screenshots/` (git-ignored). UX gates (`pagestate`, `render`, `console`, `network`, `a11y`) run alongside assertions; exemptions need a written reason (`gates.config.json`, the console allowlist, or a per-journey waiver). Journeys self-register in `tools/auto-test-suite/src/journeys/` with a name, suite and description, and run in a fresh browser each; from P01-01 they start from a fixture via `/e2e?fixture=<name>&next=<route>`.
-- **Maestro** flows in `.maestro/` for camera, OCR and other native-only behaviour, run on an emulator or device.
+- **Maestro** flows in `.maestro/` for camera, OCR and other native-only behaviour, run on an emulator or device (the folder is added in P00-18).
 
 Before a card is done, both must be green:
 

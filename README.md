@@ -6,7 +6,7 @@ MyShelf is a free, open-source Android app for cataloguing the books you own. Sc
 
 No accounts, no ads, no subscriptions, no server: your library lives on your phone.
 
-> **Status:** early development. The app scaffold, routing, web test target, Jest, the test-id contract, the auto test suite and CI are in place; the rest of the foundation phase (theme, Booky, tabs, database, Maestro, linting) is in progress. See [`STATUS.md`](STATUS.md) for the live checklist.
+> **Status:** early development. The foundation is mostly in place: the app scaffold and web test target, the design system (tokens, fonts, UI primitives), Booky, the five tabs, the SQLite database layer with its first migration, Jest, the test-id contract, the auto test suite and CI. Maestro, linting and a few follow-ups are still to come; no book features yet. See [`STATUS.md`](STATUS.md) for the live checklist.
 
 ---
 
@@ -72,7 +72,7 @@ From Phase 03 onward the app uses a native text-recognition module, so it needs 
 | `npm start` | start the Expo dev server |
 | `npm run android` / `npm run web` | open the app on Android or in a browser |
 | `npm run export:web` | static web build into `dist/` |
-| `npm run typecheck` | TypeScript check |
+| `npm run typecheck` | TypeScript check (route links are only checked strictly while the dev server has generated `.expo/types`; CI does that in the auto test suite job) |
 | `npm test` | Jest unit and component tests |
 | `npm run selectors:gen` | regenerate the test ids in `src/testing/testids.gen.ts` from `src/testing/selectors.json` |
 | `npm run selectors:check` | fail if the generated test id file is stale |
@@ -87,9 +87,9 @@ From Phase 03 onward the app uses a native text-recognition module, so it needs 
 
 MyShelf is tested at three levels:
 
-1. **Jest** — every module, from pure domain helpers to screens. Database repositories run against a real in-memory SQLite database; network calls use recorded API fixtures.
+1. **Jest** — every module, from pure domain helpers to screens. Database repositories run against a real in-memory SQLite database (Node's built-in `node:sqlite`); network calls, once they exist (Phase 02), use recorded API fixtures.
 2. **Auto test suite** — a TypeScript + Playwright command-line tool ([`tools/auto-test-suite`](tools/auto-test-suite/README.md)) that drives the web build through scripted journeys. Every run prints JSON and saves an evidence bundle (screenshot, rendered DOM, console and network logs, gate results), and applies UX gates for page state, rendering, console errors, network failures and accessibility.
-3. **Maestro** — YAML flows on an Android emulator or device for the camera, text recognition and other native features.
+3. **Maestro** — YAML flows on an Android emulator or device for the camera, text recognition and other native features (set up in P00-18; no flows yet).
 
 Test ids come from a single [`src/testing/selectors.json`](src/testing/selectors.json), generated into one TypeScript module used by the app, Jest and the auto test suite, so all three levels agree. No change is done until `npm run check` and the UI smoke run with gates enforced are green. The full strategy is in [`PLAN.md`](PLAN.md#10-testing-strategy).
 
