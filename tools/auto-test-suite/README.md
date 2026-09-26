@@ -25,13 +25,28 @@ tools/auto-test-suite/
     │   ├── gates.config.json    render/a11y configuration
     │   ├── console_allowlist.json
     │   └── selftest/            fixture pages + gates.selftest.ts (every rule fires)
-    └── journeys/                registry.ts + one *.journey.ts file per area
+    └── journeys/                registry.ts + one *.journey.ts file per area;
+                                 tipCover.ts: the "Booky's tip covers no control" check
 ```
 
 Unit tests (`*.test.ts`) sit beside the code and run on Node's built-in test
 runner (`npm run autotest:check`). The gate self-tests (`*.selftest.ts`) need
 Chromium and run separately (`npm run autotest:selftest`, see
-[Proving the gates fire](#proving-the-gates-fire)).
+[Proving the gates fire](#proving-the-gates-fire)); so do the tip check's
+(`journeys/tipCover.selftest.ts`, on hand-made pages).
+
+### Booky's tip covers no control
+
+`expectTipCoversNothing(c, where)` (`journeys/tipCover.ts`) holds a screen to
+PLAN §8's rule while a floating tip is showing. It finds every visible
+control (buttons, links, inputs and `role=button/link/tab/checkbox/switch/radio`)
+outside the tip and hit-tests its centre with `document.elementFromPoint`. A
+control whose centre the tip covers, or one further down a scrolling screen,
+passes only if scrolling really brings it clear: the check scrolls it until
+it sits just above the tip, hit-tests again, and puts the scroll positions
+back. Controls hidden by something else (a sheet, a screen underneath) are
+not the tip's business. The report lists the controls checked, those revealed
+by scrolling and those stuck (each a failure).
 
 ## Setup
 
@@ -543,6 +558,9 @@ Re-export after changing app code: `--serve` tests whatever is in `dist/`.
 | `booky-dismiss` | p07 | A tap elsewhere closes the tip (and still works), so does Escape, and a tip without an action closes by itself after 8 s |
 | `booky-modes` | p07 | Settings → Booky: Off hides every Booky and help opens the sheet without him; Quiet: a scanned book gets no "Shelved!" |
 | `booky-motion` | p07 | Booky's transform changes over time; with `prefers-reduced-motion` it never does, and the bubble does not move the page |
+| `booky-clear-overdue-book` | p07 | Fixture `demo`, at 100 % and 200 % text: no overdue nudge over The Murder of Roger Ackroyd's own page (its Loan section says it beside "Mark returned"); help there covers no control scrolling cannot clear ("Mark returned" and "About Priya" among them); the nudge was not used up and shows on the Shelf, covering nothing; screenshots `clear-overdue-*.png` |
+| `booky-clear-help` | p07 | Fixture `demo`: the help tip on every tab, a book and a series covers no control scrolling cannot clear, light at 100 % text and dark at 200 %; screenshots `clear-help-*.png` |
+| `booky-clear-nudges` | p07 | The empty-shelf tip (fixture `first-run`), the series gap tip (fixture `demo`, light 100 % and dark 200 %) and the backup reminder 40 days on (fixture `large`, `page.clock`) cover no control scrolling cannot clear; screenshots `clear-*.png` |
 | `booky-keyboard` | p07 | Keyboard only: the help button opens a tip without moving focus, the tip is in the polite announcer (and only there), More help and ✕ are reachable with Tab, Enter on ✕ closes it |
 | `theme-dark-follows-system` | p09 | With Appearance on System, flipping `prefers-color-scheme` under the running app (`page.emulateMedia`) switches `data-theme`, `color-scheme`, the `--ms-*` tokens, the body and the screen's paper and the h1's colour to the dark theme's values (read from `src/theme/tokens.ts` through `src/themeTokens.ts`) and back; page gates in the dark |
 | `theme-dark-gallery` | p09 | Dark scheme, fixture `demo`: the Shelf, Booky's help tip, book detail, the edit form, Loans, Groups, Settings and Shelf and lending each paint the dark tokens and pass the page gates; fixture `empty`: Booky on the empty Shelf; screenshots `dark-*.png` |
