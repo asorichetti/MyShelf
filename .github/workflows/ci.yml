@@ -18,8 +18,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 23
           cache: npm
@@ -33,7 +33,7 @@ jobs:
     timeout-minutes: 5
     steps:
       # Full history, so the pushed range and the pull request's base exist.
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
       # Runs .githooks/commit-msg on every commit message in the pull request
@@ -52,8 +52,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 23
           cache: npm
@@ -62,7 +62,7 @@ jobs:
         id: playwright
         run: echo "version=$(node -p "require('playwright/package.json').version")" >> "$GITHUB_OUTPUT"
       - name: Cache Playwright browsers
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-${{ steps.playwright.outputs.version }}
@@ -107,7 +107,7 @@ jobs:
         run: npm run -s autotest -- journey --all --exclude-suite core --exclude-suite live --exclude-suite perf --serve dist --ux-gates fail --headless=true
       - name: Upload evidence bundles
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: auto-test-suite-screenshots
           path: |
