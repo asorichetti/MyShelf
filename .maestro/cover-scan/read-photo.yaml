@@ -56,9 +56,12 @@ appId: dev.asorichetti.myshelf
       - tapOn:
           id: picker-work
           index: 0
-- extendedWaitUntil:
-    visible:
+# An opened book lists its editions below the format and language filters and
+# the "Find your edition" field, so the first one is usually below the fold.
+- scrollUntilVisible:
+    element:
       id: picker-edition
+    direction: DOWN
     timeout: 30000
 - tapOn:
     id: picker-edition
