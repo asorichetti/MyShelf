@@ -162,7 +162,16 @@ export function useScanSession({ service: injected, onFound }: UseScanSessionOpt
   const lastRead = useRef<{ data: string; at: number } | null>(null);
   const busy = useRef(false);
 
-  useEffect(() => () => controller.current?.abort(), []);
+  // Leaving the scanner cancels its lookup; one asked for afterwards (a cover read that
+  // finishes late) starts already cancelled, so it never navigates from a gone screen.
+  const gone = useRef(false);
+  useEffect(() => {
+    gone.current = false;
+    return () => {
+      gone.current = true;
+      controller.current?.abort();
+    };
+  }, []);
 
   const found = useCallback(
     (session: ScanSession) => {
@@ -179,6 +188,7 @@ export function useScanSession({ service: injected, onFound }: UseScanSessionOpt
   const begin = useCallback((kind: 'isbn' | 'cover', label: string) => {
     controller.current?.abort();
     const abort = new AbortController();
+    if (gone.current) abort.abort();
     controller.current = abort;
     busy.current = true;
     setNotice(null);

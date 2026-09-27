@@ -93,6 +93,11 @@ export function CoverCapture({ recognize, available, onRecognised, onTypeText, c
     setState({ step: 'reading', uri, from });
     try {
       const result = await recognize(uri);
+      // Reading takes a while: a scanner the user has left does not start a search, and drops the photo.
+      if (!mounted.current) {
+        discardRef.current?.(uri);
+        return;
+      }
       setState({ step: 'aim' });
       onRecognised(result, uri);
     } catch {

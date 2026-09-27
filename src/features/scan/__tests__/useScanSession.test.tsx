@@ -289,3 +289,16 @@ describe('typed words from a cover', () => {
     expect(ocrWords({ blocks: [l('a', 90), l('SMALL', 10), l('BIG ONE', 80), l('~ 7', 70), l('MID', 50), l('LOW', 40), l('TINY', 20)] })).toBe('BIG ONE\nMID\nLOW\nTINY');
   });
 });
+
+describe('useScanSession: after the scanner has gone (P09-04)', () => {
+  it('a cover read that finishes after unmounting starts no search and opens nothing', async () => {
+    const search = jest.spyOn(metadata.service, 'search');
+    const { result, onFound, unmount } = render();
+    const submit = result.current.submitCoverText;
+    unmount();
+    act(() => submit('The Colour of Magic Terry Pratchett'));
+    await settle();
+    expect(search).not.toHaveBeenCalled();
+    expect(onFound).not.toHaveBeenCalled();
+  });
+});
