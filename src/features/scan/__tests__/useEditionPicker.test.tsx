@@ -119,12 +119,75 @@ describe('useEditionPicker (P03-08)', () => {
   });
 
   it('a work whose editions fail to load can be chosen itself', async () => {
-    jest.spyOn(metadata.service, 'editions').mockRejectedValue(new Error('down'));
+    jest.spyOn(metadata.service, 'editionsPage').mockRejectedValue(new Error('down'));
     const { result } = render(await coverSession());
     const group = result.current.groups.find((g) => g.members.length === 0)!;
     act(() => result.current.toggle(group.key));
     await waitFor(() => expect(result.current.loads[group.key].status).toBe('error'));
     expect(result.current.editionsOf(group.key)).toEqual([group.work]);
+  });
+
+  describe('a work with more editions than one page', () => {
+    async function newSpring() {
+      const { candidates } = await metadata.service.search({ text: 'new spring robert jordan' });
+      const { result } = render(createSession({ source: 'cover', candidates }));
+      const key = result.current.groups[0].key;
+      await waitFor(() => expect(result.current.loads[key].status).toBe('ready'));
+      return { result, key };
+    }
+    const GRAPHIC_NOVEL = '9781606902080';
+
+    it('loads the first 100, ranked, and says how many more there are', async () => {
+      const { result, key } = await newSpring();
+      expect(result.current.editionsOf(key)).toHaveLength(100);
+      expect(result.current.loads[key]).toMatchObject({ status: 'ready', total: 130, loaded: 100, more: 'idle' });
+      expect(result.current.hasMore(key)).toBe(true);
+      expect(metadata.fixtures.calls.filter((u) => u.includes('/editions.json'))).toEqual(['https://openlibrary.org/works/OL99999W/editions.json?limit=100']);
+    });
+
+    it('"Show more editions" loads the next page, after the first, until all are loaded', async () => {
+      const { result, key } = await newSpring();
+      const first = result.current.editionsOf(key).map((e) => e.sourceId);
+      act(() => result.current.loadMore(key));
+      expect(result.current.loads[key]).toMatchObject({ more: 'loading' });
+      await waitFor(() => expect(result.current.editionsOf(key)).toHaveLength(130));
+      // The first page keeps its order; the second follows it.
+      expect(result.current.editionsOf(key).slice(0, 100).map((e) => e.sourceId)).toEqual(first);
+      expect(result.current.hasMore(key)).toBe(false);
+      expect(result.current.loads[key]).toMatchObject({ total: 130, loaded: 130, more: 'idle' });
+      // Nothing more to ask for.
+      act(() => result.current.loadMore(key));
+      expect(metadata.fixtures.calls.filter((u) => u.includes('/editions.json'))).toHaveLength(2);
+    });
+
+    it('finds an edition by ISBN, year or publisher among those loaded', async () => {
+      const { result, key } = await newSpring();
+      act(() => result.current.setFilters({ text: GRAPHIC_NOVEL }));
+      expect(result.current.editionsOf(key)).toEqual([]);
+      act(() => result.current.loadMore(key));
+      await waitFor(() => expect(result.current.editionsOf(key).map((e) => e.isbn13)).toEqual([GRAPHIC_NOVEL]));
+      act(() => result.current.setFilters({ text: '978-1-60690-208-0' }));
+      expect(result.current.editionsOf(key).map((e) => e.isbn13)).toEqual([GRAPHIC_NOVEL]);
+      act(() => result.current.setFilters({ text: 'dynamite' }));
+      expect(result.current.editionsOf(key).map((e) => e.isbn13)).toEqual([GRAPHIC_NOVEL]);
+      act(() => result.current.setFilters({ text: '2011' }));
+      expect(result.current.editionsOf(key).every((e) => e.publicationYear === 2011)).toBe(true);
+      act(() => result.current.setFilters({ text: 'dynamite 2011' }));
+      expect(result.current.editionsOf(key).map((e) => e.isbn13)).toEqual([GRAPHIC_NOVEL]);
+      act(() => result.current.setFilters({ text: '' }));
+      expect(result.current.editionsOf(key)).toHaveLength(130);
+    });
+
+    it('a page that fails to load can be asked for again', async () => {
+      const { result, key } = await newSpring();
+      const spy = jest.spyOn(metadata.service, 'editionsPage').mockRejectedValueOnce(new Error('down'));
+      act(() => result.current.loadMore(key));
+      await waitFor(() => expect(result.current.loads[key]).toMatchObject({ more: 'error' }));
+      expect(result.current.editionsOf(key)).toHaveLength(100);
+      spy.mockRestore();
+      act(() => result.current.loadMore(key));
+      await waitFor(() => expect(result.current.editionsOf(key)).toHaveLength(130));
+    });
   });
 
   it('a lone work opens straight away', async () => {

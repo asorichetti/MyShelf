@@ -2511,6 +2511,16 @@ export const en = {
       loadFailed: 'I couldn’t load its editions just now. You can still choose the book itself.',
       noMatch: 'No editions match those filters.',
       showMore: { one: 'Show {count} more edition', other: 'Show {count} more editions' },
+      /** A work with more editions than the first page: loads the next page. {loaded} of {total} are loaded. */
+      loadMore: 'Show more editions',
+      loadMoreLabel: 'Show more editions: {loaded} of {total} loaded',
+      loadedOf: '{loaded} of {total} editions loaded',
+      loadMoreFailed: 'I couldn’t load more editions just now. Try again in a moment.',
+      /** Filters found nothing among the editions loaded so far, and there are more. */
+      noMatchYet: 'None of the {loaded} editions loaded so far match. Show more to look through the rest.',
+      findEdition: 'Find your edition',
+      findEditionPlaceholder: 'Year, publisher or ISBN',
+      findEditionHelp: 'From the copyright page, e.g. 1998, Tor or 978-0-312-85848-9.',
       reviewBeforeSaving: 'Review before saving',
       reviewBeforeSavingLabel: 'Review the details in the form before saving',
       none: 'None of these — add manually',

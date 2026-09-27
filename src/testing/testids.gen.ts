@@ -535,6 +535,8 @@ export const Testids = {
     skeleton: 'picker-skeleton',
     filterFormat: 'picker-filter-format',
     filterLanguage: 'picker-filter-language',
+    findEdition: 'picker-find-edition',
+    loadMore: 'picker-load-more',
     confirm: 'picker-confirm',
     none: 'picker-none',
     review: 'picker-review',

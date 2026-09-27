@@ -108,6 +108,40 @@ register({
 });
 
 register({
+  name: 'scan-editions-paging',
+  suite: 'p03',
+  desc: 'Cover mode -> "NEW SPRING ROBERT JORDAN" -> a (mocked) work with 130 editions opens on its first 100 -> type the ISBN from the copyright page -> none of the 100 match -> Show more editions loads the rest -> the 2011 Dynamite edition -> saved',
+  async run(c) {
+    await openFixture(c, 'empty', '/scan');
+    await c.page.locator(tid(s.modeCover)).click();
+    await waitVisible(c, tid(s.webText), '/scan (cover mode)');
+    await c.page.locator(tid(s.webText)).fill('NEW SPRING ROBERT JORDAN');
+    await c.page.locator(tid(s.webTextSubmit)).click();
+    const path = await waitForPath(c, '/scan/pick', '/scan -> cover search');
+    // One work: it opens by itself, on its first page of editions, 20 at a time.
+    await waitForCount(c, tid(p.edition), 20, `${path} (first page)`);
+    await waitVisible(c, tid(p.findEdition), `${path} (find box)`);
+    await c.checkGates(`${path} (first page)`);
+    await c.page.locator(`${tid(p.findEdition)} input, input${tid(p.findEdition)}`).first().fill('978-1-60690-208-0');
+    await waitForCount(c, tid(p.edition), 0, `${path} (not in the first 100)`);
+    await waitVisible(c, tid(p.loadMore), `${path} (show more editions)`);
+    const label = (await c.page.locator(tid(p.loadMore)).first().getAttribute('aria-label')) ?? '';
+    expect(label === 'Show more editions: 100 of 130 loaded', `${path}: expected the button to say how many are loaded, found ${q(label)}`);
+    await c.snap('picker-find-edition');
+    await c.page.locator(tid(p.loadMore)).click();
+    const dynamite = `${tid(p.edition)}[aria-label*="Dynamite Entertainment, 2011"]`;
+    await waitVisible(c, dynamite, `${path} (second page)`);
+    expect((await c.page.locator(tid(p.loadMore)).count()) === 0, `${path}: expected no more editions to load after the last page`);
+    await c.page.locator(dynamite).click();
+    await c.checkGates(`${path} (found in the second page)`);
+    await c.snap('picker-second-page');
+    const book = await confirmAndLand(c, path);
+    const facts = await textOf(c, tid(d.facts));
+    expect(facts.includes('Dynamite Entertainment') && facts.includes('9781606902080'), `${book}: expected the 2011 Dynamite edition’s facts, found ${q(facts)}`);
+  },
+});
+
+register({
   name: 'scan-not-found-manual',
   suite: 'p03',
   desc: 'An ISBN no catalogue knows -> Booky "couldn’t find that one" -> Add it by hand -> the add form starts with the ISBN, nothing saved yet',

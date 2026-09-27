@@ -35,6 +35,9 @@ import search_practical_magic from './openlibrary/search-practical-magic-alice-h
 import search_problematic_bromance from './openlibrary/search-problematic-summer-bromance-ali-hazelwood.json';
 import search_q_dune from './openlibrary/search-q-dune.json';
 import search_q_the_colour_of_magic_terry_pratchett from './openlibrary/search-the-colour-of-magic-terry-pratchett.json';
+import editions_OL99999W_1 from './openlibrary/synthetic-editions-OL99999W-page1.json';
+import editions_OL99999W_2 from './openlibrary/synthetic-editions-OL99999W-page2.json';
+import search_new_spring from './openlibrary/synthetic-search-new-spring-robert-jordan.json';
 import work_OL10263W from './openlibrary/work-OL10263W.json';
 import work_OL17091839W from './openlibrary/work-OL17091839W.json';
 import work_OL274505W from './openlibrary/work-OL274505W.json';
@@ -111,7 +114,11 @@ export const openLibraryRoutes: FixtureRoutes = {
   [withQuery(`${OL}/search.json`, { q: 'colour of magic pratchett', fields: SEARCH_FIELDS, limit: 10 })]: json(search_q_colour_of_magic_pratchett),
   [withQuery(`${OL}/search.json`, { q: 'the colour of magic terry pratchett', fields: SEARCH_FIELDS, limit: 10 })]:
     json(search_q_the_colour_of_magic_terry_pratchett),
-  [`${OL}/works/OL453657W/editions.json?limit=50`]: json(editions_OL453657W),
+  [`${OL}/works/OL453657W/editions.json?limit=100`]: json(editions_OL453657W),
+  // Synthetic: a work with 130 editions, in two pages of the edition picker's 100 (P03-08 paging).
+  [withQuery(`${OL}/search.json`, { q: 'new spring robert jordan', fields: SEARCH_FIELDS, limit: 10 })]: json(search_new_spring),
+  [`${OL}/works/OL99999W/editions.json?limit=100`]: json(editions_OL99999W_1),
+  [`${OL}/works/OL99999W/editions.json?limit=100&offset=100`]: json(editions_OL99999W_2),
   // The searches the real cover captures (src/domain/__fixtures__/ocr/real-*.json) make, recorded September 2026.
   [withQuery(`${OL}/search.json`, { title: 'problematic summer bromance', author: 'ali hazelwood', fields: SEARCH_FIELDS, limit: 10 })]: json(search_problematic_bromance),
   [withQuery(`${OL}/search.json`, { author: 'ali hazelwood', fields: SEARCH_FIELDS, limit: 10 })]: json(search_ali_hazelwood),

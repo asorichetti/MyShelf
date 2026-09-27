@@ -129,8 +129,27 @@
       "body": "openlibrary/search-q-dune.json"
     },
     {
-      "url": "https://openlibrary.org/works/OL453657W/editions.json?limit=50",
+      "url": "https://openlibrary.org/works/OL453657W/editions.json?limit=100",
       "body": "openlibrary/editions-OL453657W.json"
+    },
+    {
+      "url": "https://openlibrary.org/search.json?q=new%20spring%20robert%20jordan&fields=key%2Ctitle%2Cauthor_name%2Cfirst_publish_year%2Cedition_count%2Cisbn%2Ccover_i%2Csubject%2Clanguage%2Cauthor_key&limit=10",
+      "body": "openlibrary/synthetic-search-new-spring-robert-jordan.json",
+      "note": "Synthetic: one work with 130 editions, for the edition picker's paging"
+    },
+    {
+      "url": "https://openlibrary.org/works/OL99999W/editions.json?limit=100",
+      "body": "openlibrary/synthetic-editions-OL99999W-page1.json",
+      "note": "Synthetic: editions 1-100 of 130"
+    },
+    {
+      "url": "https://openlibrary.org/works/OL99999W/editions.json?limit=100&offset=100",
+      "body": "openlibrary/synthetic-editions-OL99999W-page2.json",
+      "note": "Synthetic: editions 101-130 of 130"
+    },
+    {
+      "url": "https://www.googleapis.com/books/v1/volumes?q=new%20spring%20robert%20jordan&maxResults=10&printType=books&fields=totalItems%2Citems(id%2CvolumeInfo(title%2Csubtitle%2Cauthors%2Cpublisher%2CpublishedDate%2Cdescription%2CindustryIdentifiers%2CpageCount%2Ccategories%2CimageLinks%2Clanguage%2CseriesInfo))",
+      "body": "googlebooks/synthetic-no-items.json"
     },
     {
       "url": "https://www.googleapis.com/books/v1/volumes?q=isbn%3A9780552166591&maxResults=5&printType=books&fields=totalItems%2Citems(id%2CvolumeInfo(title%2Csubtitle%2Cauthors%2Cpublisher%2CpublishedDate%2Cdescription%2CindustryIdentifiers%2CpageCount%2Ccategories%2CimageLinks%2Clanguage%2CseriesInfo))",
