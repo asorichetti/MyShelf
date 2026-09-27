@@ -6,12 +6,12 @@ const FOLD: Record<string, string> = { ß: 'ss', æ: 'ae', œ: 'oe', ø: 'o', ł
 /** Leading articles dropped for matching (English, French, Spanish, Italian, German, Dutch). */
 const LEADING_ARTICLE = /^(?:the|a|an|le|la|les|el|los|las|il|lo|gli|un|une|una|uno|der|die|das|ein|eine|het)\s+(?=\S)/;
 
-/** "Éric" → "Eric", "Łódź" → "Lodz". */
+/** "Éric" → "Eric", "Łódź" → "Lodz", "Æsop" → "Aesop", "Straße" → "Strasse". */
 export function stripDiacritics(text: string): string {
   return text
     .normalize('NFD')
     .replace(/[̀-ͯ]/g, '')
-    .replace(/[ßæœøłđðþı]/gi, (c) => {
+    .replace(/[ßẞæœøłđðþı]/gi, (c) => {
       const lower = FOLD[c.toLowerCase()];
       return c === c.toLowerCase() ? lower : lower.charAt(0).toUpperCase() + lower.slice(1);
     });

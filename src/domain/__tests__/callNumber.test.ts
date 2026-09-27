@@ -48,7 +48,21 @@ describe('callNumber', () => {
     expect(callNumber({ genres: ['Fantasy'], author: 'Le Guin, Ursula K.', title: 'Tehanu', year: 1990 })).toBe('FIC LEG 1990');
     expect(callNumber({ genres: ['Fiction'], author: 'Émile Zola', title: 'Germinal', year: 1885 })).toBe('FIC ZOL 1885');
     expect(callNumber({ genres: ['Fiction'], author: 'Zola, Émile', title: 'Nana', year: 1880 })).toBe('FIC ZOL 1880');
-    expect(callNumber({ genres: ['Fiction'], author: 'Øster', title: 'x', year: null })).toBe('FIC STE');
+    expect(callNumber({ genres: ['Fiction'], author: 'Øster', title: 'x', year: null })).toBe('FIC OST');
+  });
+
+  it('spells out letters Unicode cannot take an accent off (Ø, Æ, Œ, Ł, ß, Þ, Đ)', () => {
+    const mark = (author: string) => callNumber({ genres: ['Fiction'], author, title: 'x', year: null }).split(' ')[1];
+    expect(mark('Øster')).toBe('OST');
+    expect(mark('Æsop')).toBe('AES');
+    expect(mark('Œuvre, Anon')).toBe('OEU');
+    expect(mark('Stanisław Łem')).toBe('LEM');
+    expect(mark('Heinz Straße')).toBe('STR');
+    expect(mark('ẞeta')).toBe('SSE');
+    expect(mark('Þórarinn')).toBe('THO');
+    expect(mark('Đorđević')).toBe('DOR');
+    expect(mark('Ðorður')).toBe('DOR');
+    expect(callNumber({ genres: ['Ævintýri'], author: null, title: 'Øy', year: null })).toBe('AEV OY');
   });
 
   it('files an authorless book under its title, ignoring a leading article', () => {

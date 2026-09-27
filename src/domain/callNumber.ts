@@ -1,4 +1,5 @@
 import { sortableTitle } from './book';
+import { stripDiacritics } from './text';
 
 /** Library class codes for the starter genres; any other genre uses its first three letters. */
 const CLASS_CODES: Record<string, string> = {
@@ -30,10 +31,9 @@ const CLASS_CODES: Record<string, string> = {
   reference: 'REF',
 };
 
+/** Plain Latin capitals: accents dropped, and letters with none to drop spelt out ("Øster" → OSTER, "Æsop" → AESOP). */
 const letters = (s: string) =>
-  s
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
+  stripDiacritics(s)
     .replace(/[^A-Za-z]/g, '')
     .toUpperCase();
 

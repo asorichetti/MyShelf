@@ -312,6 +312,25 @@ describe('each key on its own', () => {
     }
   });
 
+  it('call number: files Øster under O and Æsop under AE, as the book page prints them', async () => {
+    const small = await createTestDb();
+    try {
+      await loadFixture(small, {
+        books: [
+          { title: 'Zebra', authors: ['Pia Pedersen'], genres: ['Fiction'] },
+          { title: 'Fables', authors: ['Æsop'], genres: ['Fiction'] },
+          { title: 'Fjord', authors: ['Lise Øster'], genres: ['Fiction'] },
+          { title: 'Nordic', authors: ['Ole Nygaard'], genres: ['Fiction'] },
+        ],
+      });
+      const got = (await booksRepo.listBookItems(small, { sort: oneKey('callNumber', 'asc'), coverOrder })).map((b) => b.title);
+      // FIC AES, FIC NYG, FIC OST, FIC PED.
+      expect(got).toEqual(['Fables', 'Nordic', 'Fjord', 'Zebra']);
+    } finally {
+      await small.close();
+    }
+  });
+
   it('surprise me: the same seed gives the same order, another seed another; SQL and TypeScript agree', async () => {
     const a = await titles('shuffle', 'asc', 12345);
     expect(await titles('shuffle', 'asc', 12345)).toEqual(a);
