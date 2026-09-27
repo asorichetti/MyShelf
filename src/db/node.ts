@@ -27,10 +27,10 @@ interface NodeSqlite {
 
 declare const process: { getBuiltinModule?: (id: string) => unknown };
 
-/** Node prints a one-time ExperimentalWarning when node:sqlite loads; it is harmless. */
+/** node:sqlite is built in (Node 24.15+ loads it without an ExperimentalWarning). */
 function loadNodeSqlite(): NodeSqlite {
   const mod = process.getBuiltinModule?.('node:sqlite') as NodeSqlite | undefined;
-  if (!mod) throw new Error('node:sqlite is unavailable; Node 22.13+ or 23.4+ is required');
+  if (!mod) throw new Error('node:sqlite is unavailable; Node 24.15+ is required');
   return mod;
 }
 
