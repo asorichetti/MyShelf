@@ -139,7 +139,7 @@ Each journey is added by the card that builds its screen. Suite `core` journeys 
 | Journey | Suite | Steps |
 |---|---|---|
 | `a11y-large-text` | `p09` | text at 200 % (the web E2E font scale, as Android's font size; browser zoom would enlarge the layout too); every tab, book detail, the form, the lend sheet, a series and the covers grid; render gate (no overflow) + a11y gate, nothing cut off |
-| `a11y-keyboard-sheets`, `a11y-keyboard-menu-dialog`, `a11y-keyboard-tabs`, `a11y-keyboard-lend-return`, `a11y-help-focus` | `p09` | keyboard contracts: focus into, trapped in and back out of sheets, dialogs, menus and select lists; Enter and Space on every role; announcements while lending and returning |
+| `a11y-keyboard-sheets`, `a11y-keyboard-menu-dialog`, `a11y-keyboard-tabs`, `a11y-keyboard-lend-return`, `a11y-help-focus`, `a11y-keyboard-background-reload` | `p09` | keyboard contracts: focus into, trapped in and back out of sheets, dialogs, menus and select lists; Enter and Space on every role; announcements while lending and returning; focus kept through background reloads of the Shelf |
 | `theme-dark-gallery` | `p09` | emulate `prefers-color-scheme: dark`; screenshot every main screen; render and a11y gates (contrast itself is checked by `contrast.dark.test.ts`) |
 | `shelf-large-scroll` | `perf` | fixture `large`; scroll to end; record timing; no console errors |
 | `error-boundary` | `p09` | E2E hook throws in a screen → `errorBoundary.root` → retry recovers |

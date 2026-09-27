@@ -575,6 +575,7 @@ Re-export after changing app code: `--serve` tests whatever is in `dist/`.
 | `a11y-keyboard-tabs` | p09 | Space and Enter on the tab bar (`aria-selected` follows), Space on the Loans tabs, a switch (both ways), a Booky mode radio and the erase checkbox; Enter on a Settings row, a series row and an author row (links drawn as `div`s) |
 | `a11y-keyboard-lend-return` | p09 | Lend and return by keyboard alone: "Lent to Sam" arrives in the snackbar's polite live region, which was on the page, empty, before; focus moves to Mark returned when Lend disappears, and back to Lend after returning, with "Welcome home" announced |
 | `a11y-help-focus` | p09 | The help button opens Booky's tip without moving focus; Tab reaches More help; the help sheet traps focus; Escape returns focus to the help button although the tip has gone |
+| `a11y-keyboard-background-reload` | p09 | The Shelf keeps keyboard focus while the library changes in the background: `window.__myshelfE2e.emit('library-changed')` (the web E2E build's hook) reloads it with focus on the search box, Sort, Group by and Filter in turn, and focus stays on the very same element (not a remounted copy) and never falls to the page body; a Tab pressed while a reload is on its way lands on the next control; after the Sort and filter sheets close, a reload neither pulls focus back to their buttons nor drops it |
 
 ### Adding a journey
 

@@ -170,7 +170,10 @@ What the audit checked and found sound, so nothing changed:
   Loans tabs, Settings rows, series and author rows, a switch, a radio, a
   checkbox); `a11y-keyboard-lend-return` (lending and returning by keyboard,
   focus moving to the swapped button, "Lent to Sam" arriving in a live
-  region that was already there); `a11y-help-focus`.
+  region that was already there); `a11y-help-focus`;
+  `a11y-keyboard-background-reload` (the Shelf reloads for a background
+  `library-changed` with focus in its toolbar, and focus stays on the same
+  control, also right after the Sort and filter sheets close).
 - **Jest:** `src/theme/__tests__/fontScale.test.tsx`,
   `src/__tests__/a11yAudit.test.tsx`,
   `src/hooks/__tests__/keyboardActivation.web.test.ts`,

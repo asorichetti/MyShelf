@@ -438,3 +438,127 @@ register({
     await expectFocus(c, help, '/ (help sheet closed)');
   },
 });
+
+// ---- Background changes ----
+
+/** The web E2E build's hook for emitting library events (src/features/e2e/eventHook.web.ts). */
+const E2E_HOOK = '__myshelfE2e';
+/** The Shelf's User Timing measure, one per answer it shows (src/features/shelf/timing.ts). */
+const SHELF_QUERY_MEASURE = 'myshelf:shelf-query';
+
+/**
+ * Starts noting every time focus leaves an element for nothing (the page
+ * body), which is what a remount under the focused control looks like, and
+ * pins the focused element, so `expectKept` can tell "the same control" from
+ * "a new one with the same test id".
+ */
+async function pinFocus(c: Context): Promise<void> {
+  await c.page.evaluate(() => {
+    const w = window as unknown as { __pinned?: Element | null; __dropped?: string[]; __dropWatch?: boolean };
+    w.__pinned = document.activeElement;
+    w.__dropped = [];
+    if (w.__dropWatch) return;
+    w.__dropWatch = true;
+    document.addEventListener(
+      'focusout',
+      (e) => {
+        if (e.relatedTarget == null) w.__dropped!.push((e.target as Element).getAttribute('data-testid') ?? (e.target as Element).tagName);
+      },
+      true,
+    );
+  });
+}
+
+/**
+ * Emits `library-changed` as a background write would (a cover arriving, a
+ * lookup finishing) and waits until the Shelf has shown the reload's answer.
+ * With `settle` false it only emits, for a Tab pressed while the reload is on its way.
+ */
+async function backgroundReload(c: Context, where: string, settle = true): Promise<void> {
+  const before = await c.page.evaluate((n) => performance.getEntriesByName(n).length, SHELF_QUERY_MEASURE);
+  const emitted = await c.page.evaluate((hook) => {
+    const h = (window as unknown as Record<string, { emit?: (e: string) => void } | undefined>)[hook];
+    if (!h?.emit) return false;
+    h.emit('library-changed');
+    return true;
+  }, E2E_HOOK);
+  expect(emitted, `${where}: the E2E build has no window.${E2E_HOOK}.emit`);
+  if (!settle) return;
+  try {
+    await c.page.waitForFunction(([n, count]) => performance.getEntriesByName(n as string).length > (count as number), [SHELF_QUERY_MEASURE, before] as const, { timeout: 10_000 });
+  } catch {
+    expect(false, `${where}: the Shelf never reloaded after library-changed`);
+  }
+  await c.settle();
+}
+
+/** Focus is still on the very element pinned by `pinFocus`, and never fell to the page body meanwhile. */
+async function expectKept(c: Context, testid: string, where: string): Promise<void> {
+  const r = await c.page.evaluate(() => {
+    const w = window as unknown as { __pinned?: Element | null; __dropped?: string[] };
+    return { same: document.activeElement === w.__pinned, connected: !!w.__pinned?.isConnected, dropped: w.__dropped ?? [] };
+  });
+  const f = await focused(c);
+  expect(r.connected, `${where}: ${testid} was replaced by a new element (unmounted and mounted again); focus is on ${show(f)}`);
+  expect(r.same && f.testid === testid, `${where}: expected focus kept on ${testid}, found ${show(f)}`);
+  expect(r.dropped.length === 0, `${where}: focus fell to the page body from ${q(r.dropped)}`);
+}
+
+register({
+  name: 'a11y-keyboard-background-reload',
+  suite: 'p09',
+  desc: 'Keyboard only on the Shelf while the library changes in the background (library-changed, as a cover or lookup arriving sends): focus stays on the very same search box, Sort, Group by and Filter controls through each reload, a Tab pressed while a reload is on its way lands on the next control, and after the Sort and filter sheets close a reload neither moves focus back to their buttons nor drops it',
+  async run(c) {
+    await openFixture(c, 'demo', '/', TODAY);
+    const toolbar = [Testids.home.search, Testids.home.sortButton, Testids.shelfView.groupByButton, Testids.shelfView.filterButton];
+    await tabTo(c, toolbar[0]!, '/');
+    for (const [i, id] of toolbar.entries()) {
+      if (i > 0) await tabTo(c, id, `/ (from ${toolbar[i - 1]})`, 6);
+      await pinFocus(c);
+      await backgroundReload(c, `/ (${id})`);
+      await backgroundReload(c, `/ (${id}, again)`);
+      await expectKept(c, id, `/ (reloaded with focus on ${id})`);
+    }
+
+    // A Tab pressed while a reload is on its way still moves on, one control at a time.
+    await tabTo(c, Testids.home.sortButton, '/ (round again)', 60);
+    await backgroundReload(c, '/ (Tab during a reload)', false);
+    await c.page.keyboard.press('Tab');
+    await expectFocus(c, Testids.shelfView.groupByButton, '/ (Tab during a reload)');
+    await pinFocus(c);
+    await c.settle();
+    await backgroundReload(c, '/ (after the Tab)');
+    await expectKept(c, Testids.shelfView.groupByButton, '/ (reload after the Tab)');
+
+    // The Sort sheet gives focus back to its button once, and only then: a later reload keeps focus where the user took it.
+    await tabTo(c, Testids.home.sortButton, '/ (to Sort)', 60);
+    await c.page.keyboard.press('Enter');
+    await waitVisible(c, tid(Testids.sortSheet.root), '/ (Enter on Sort)');
+    await expectTrapped(c, '/ (sort sheet)', 0);
+    await backgroundReload(c, '/ (sort sheet open)');
+    const inSheet = await focused(c);
+    expect(inSheet.inModal, `/ (sort sheet open): a reload took focus out of the sheet to ${show(inSheet)}`);
+    await c.page.keyboard.press('Escape');
+    await waitGone(c, tid(Testids.sortSheet.root), '/ (Escape on Sort)');
+    await expectFocus(c, Testids.home.sortButton, '/ (sort sheet closed)');
+    await c.page.keyboard.press('Tab');
+    await expectFocus(c, Testids.shelfView.groupByButton, '/ (Tab after the sort sheet)');
+    await pinFocus(c);
+    await backgroundReload(c, '/ (after the sort sheet)');
+    await expectKept(c, Testids.shelfView.groupByButton, '/ (reload after the sort sheet)');
+
+    // The same for the filter sheet, with the reload arriving as it closes.
+    await c.page.keyboard.press('Tab');
+    await expectFocus(c, Testids.shelfView.filterButton, '/ (to Filter)');
+    await c.page.keyboard.press(' ');
+    await waitVisible(c, tid(Testids.shelfView.filterSheet), '/ (Space on Filter)');
+    await expectTrapped(c, '/ (filter sheet)', 0);
+    await c.page.keyboard.press('Escape');
+    await backgroundReload(c, '/ (filter sheet closing)', false);
+    await waitGone(c, tid(Testids.shelfView.filterSheet), '/ (Escape on Filter)');
+    await expectFocus(c, Testids.shelfView.filterButton, '/ (filter sheet closed)');
+    await pinFocus(c);
+    await backgroundReload(c, '/ (after the filter sheet)');
+    await expectKept(c, Testids.shelfView.filterButton, '/ (reload after the filter sheet)');
+  },
+});
