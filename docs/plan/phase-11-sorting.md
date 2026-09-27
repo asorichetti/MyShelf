@@ -47,8 +47,8 @@ Let people sort the Shelf however they actually want to: by genre, then author, 
   - **Primary genre:** a book has no main genre of its own, so it is the first of its genres alphabetically (ignoring case). That is the order the book page lists them in. "The Hound of the Baskervilles" (Mystery, Classics) files under Classics. (Until September 2026 this was also the genre the call number's class came from, which filed a memoir tagged Fiction and Memoir as FIC; the class now weighs all the genres.)
   - **Author** is the first credited author's sort name ("Pratchett, Terry"); **group** is the first of a book's groups alphabetically; **language** sorts by English name ("German" before "Swedish"); **format** runs hardback, paperback, e-book, audiobook (or back), then "other", then unknown, in either direction; **on loan** puts books out now first (a returned loan does not count); **borrower** is who has it now; **title length** counts characters.
   - **Spine colour** ("Rainbow") is the generated binding `hashColour(title)` picks, the colour of every spine and of a cover drawn without a photo. It is not the cover photo's colour, which SQLite cannot see. The bindings are placed round the colour wheel from red (`rainbowRanks` in `src/theme/coverOrder.ts`). The Shelf passes its theme's order to the query (`coverOrder`), so the rainbow follows the colours on screen in light and dark.
-  - **Call number** is exactly what the book page prints ("FIC PRA 1983"), ordered by class, then author mark, then year. It reads all of a book's genres (`group_concat`), as the page's `callNumber` does.
-  - Spine colour and call number are worked out in TypeScript for the whole library just before the query (`rank`). They are handed to SQLite as one BLOB of three-byte ranks indexed by book id, which `substr` reads in constant time. **Later:** the ids are packed in runs split at gaps of more than 64 ids and found with a short binary search in SQL, so the BLOB's size follows the number of books and not the largest id (a crafted backup with an id in the trillions once asked for terabytes). A book added in between sorts last rather than breaking the query.
+  - **Call number** is exactly what the book page prints ("FIC PRA 1983"), ordered by class, then author mark, then year. It reads all of a book's genres (`group_concat`), as the page's `callNumber` does. **Later (P11-07):** it is stored per book (`book_sort_keys.call_number`, with `call_key` to sort by), made by `callNumber()`, and the book page prints the stored value.
+  - Spine colour (and, until P11-07 stored it, the call number) is worked out in TypeScript for the whole library just before the query (`rank`). It is handed to SQLite as one BLOB of three-byte ranks indexed by book id, which `substr` reads in constant time. **Later:** the ids are packed in runs split at gaps of more than 64 ids and found with a short binary search in SQL, so the BLOB's size follows the number of books and not the largest id (a crafted backup with an id in the trillions once asked for terabytes). A book added in between sorts last rather than breaking the query.
   - **Surprise me** is a seeded integer hash of the id in SQL (golden-ratio step plus the seed, one xor-shift-multiply round, XOR written as `(a | b) - (a & b)`). A test checks it against `shuffleRank` for 500 ids and four seeds.
   - **Rating** (Phase 10's column) is a registry key: highest first, unrated last.
 
@@ -103,6 +103,7 @@ Let people sort the Shelf however they actually want to: by genre, then author, 
 - **Description:** Use indexed columns where possible; each preset's query well under 100 ms on the web build with the `huge` fixture; a perf journey for multi-key sorts.
 - **Files:** `src/db/sortKeys.ts`, `tools/auto-test-suite/src/journeys/performance.journey.ts`.
 - **Acceptance:** `shelf-huge-multisort` passes, and its numbers are recorded here.
+- **Tests (September 2026):** `src/db/__tests__/sortKeyStore.test.ts` (the stored keys stay right through every write: the form, authors, genres and series renamed, merged and deleted, links changed in place, delete and undo, CSV import, restore by replace, merge and undo, erase), `src/db/__tests__/migrate0010.test.ts` (upgrades from every schema, 1 to 9, on both SQLite builds).
 - **Delivered:**
   - Every key reads either a column of `books`, the already-joined series and open loan, or one correlated lookup through a primary-key or indexed join (`book_authors`, `book_genres`, `group_books`). Only the correlated lookups and the fold add cost.
   - Candidate extra indexes (`book_authors(book_id, position)`, `genres(name NOCASE)`) were measured and gained under 3 ms, so no migration was added.
@@ -123,6 +124,38 @@ Let people sort the Shelf however they actually want to: by genre, then author, 
   | Library order, grouped by genre | 80.2 | one run |
 
   Every preset is under the 100 ms budget. The two heaviest, Library order and Call number, spend about 30 ms on top of the fixed cost. Library order does two correlated lookups per book (primary genre, first author); Call number works out every book's call number in TypeScript.
+  - **Later (September 2026): stored sort keys.** A scheduled run on a GitHub runner measured Library order at 122 ms (median of 122.3, 126.5, 116.6), over the budget: that machine is about 1.6 times slower than the laptop above. Profiling (EXPLAIN QUERY PLAN; the web build's own wa-sqlite run in Node; node:sqlite; better-sqlite3; timings inside the web build) found three costs:
+    - the correlated lookups and folds for primary genre and first author, about 35 ms of Library order;
+    - working out 10,000 call numbers in TypeScript before every Call number sort, about 50 ms on web;
+    - reading 10,000 rows out of the SQLite worker column by column, plus a second query for every author link, about 55 ms on web for any preset, even A–Z.
+  - What changed:
+    - Migration 0010 stores each book's filing title, first author, primary genre and series (each folded), its author names and its call number in `book_sort_keys`. Triggers mark a row out of date whenever anything it is made from changes. `ensureSortKeys` (`src/db/sortKeyStore.ts`) makes those rows before a list is read, with `foldSql` and `callNumber()`. See PLAN §5.
+    - The book page prints the stored call number, so the page and the sort cannot disagree.
+    - The Shelf reads its rows as one JSON array (`json_group_array(... ORDER BY ...)`), and the spine colours read their titles the same way.
+    - The key registry, NULL-last handling, tiebreaks and every sort order test are unchanged.
+  - The triggers only mark rows. A first version rebuilt the row in SQL inside each trigger, and that made loading the 10,000-book fixture 8 times slower on node:sqlite and 40 times slower on wa-sqlite: every statement that fires a trigger compiles it again, and the folds are about 70 nested `replace` calls each.
+  - Making all 10,000 rows at once, after an import or restore, costs about 110 ms (wa-sqlite in Node) in the next list. That list reads them all at once.
+  - Extra indexes on the stored keys were not needed. The sort itself is a few milliseconds; reading the rows is most of what is left.
+  - Web build, `huge` fixture, `shelf-huge-multisort`, the same laptop. "Before" is one run on 386c9dc. "After" is three runs of the suite, each value the median of that run's three queries:
+
+  | Preset | Before (ms) | After (ms), runs 1 / 2 / 3 |
+  |---|---|---|
+  | Library order | 82.6 | 41.0 / 40.7 / 40.6 |
+  | Series reading order | 58.7 | 39.8 / 37.9 / 38.7 |
+  | Call number | 92.8 | 35.7 / 37.7 / 35.9 |
+  | Newest additions | 55.3 | 37.5 / 37.0 / 37.4 |
+  | A–Z by title | 55.5 | 35.9 / 34.2 / 36.0 |
+  | By author | 71.5 | 40.0 / 37.8 / 40.1 |
+  | Rainbow | 68.5 | 43.0 / 43.7 / 42.5 |
+  | Surprise me | 57.1 | 36.5 / 36.7 / 36.9 |
+  | Library order, grouped by genre | 87.4 | 55.1 / 53.2 / 54.5 |
+
+  - `shelf-huge-search`:
+    - Median search query: 5.9 ms before, 3.8 / 3.9 / 3.8 ms after.
+    - Clearing the search (all 10,000 books): 39.3 ms before, 18.8 / 18.9 / 18.8 ms after.
+    - Scrolling to the end: p95 frame 17 ms before and after, with no long or dropped frames.
+  - `shelf-large-scroll`: first query 33.9 ms before, 28.7 / 28.5 / 27.4 ms after. Frames are unchanged.
+  - The slowest preset, Rainbow, is now 44 ms. On a runner 1.6 times slower that is about 70 ms, under the 100 ms budget, which is unchanged.
 
 ---
 
