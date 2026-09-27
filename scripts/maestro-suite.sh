@@ -66,14 +66,46 @@ say() { printf '\n== %s\n' "$*"; }
 
 # `adb root` works on emulator images without Google Play (and userdebug
 # builds); the checks that read the app's database or set the clock need it.
+# Waits until the device is really usable, not just listed: adb answers,
+# Android reports boot complete and the package manager replies. `adb root`
+# restarts adbd, and CI emulators can drop offline for a moment after boot,
+# so "listed" is not enough before an install.
+wait_ready() {
+  local deadline=$((SECONDS + 180))
+  while (( SECONDS < deadline )); do
+    if a wait-for-device > /dev/null 2>&1 \
+      && [ "$(a shell getprop sys.boot_completed 2> /dev/null | tr -d '\r')" = 1 ] \
+      && a shell pm path android > /dev/null 2>&1; then
+      return 0
+    fi
+    sleep 2
+  done
+  echo "maestro-suite: device $device did not become ready within 180 s" >&2
+  return 1
+}
+
 has_root=false
 if a root > /dev/null 2>&1; then
-  a wait-for-device
+  wait_ready || exit 3
   [ "$(a shell id -u | tr -d '\r')" = 0 ] && has_root=true
 fi
 
+# Installs an APK and proves it is there: retries through a device that has
+# just gone offline, and stops the suite if it cannot, rather than running
+# every flow against a phone without the app.
 install() {
-  a install -r "$1" > /dev/null 2>&1 || { a uninstall "$APP" > /dev/null 2>&1; a install "$1" > /dev/null; }
+  local attempt
+  for attempt in 1 2 3; do
+    wait_ready || exit 3
+    if a install -r "$1" > /dev/null 2>&1 \
+      || { a uninstall "$APP" > /dev/null 2>&1; a install "$1" > /dev/null 2>&1; }; then
+      a shell pm path "$APP" > /dev/null 2>&1 && return 0
+    fi
+    echo "maestro-suite: installing $1 failed (attempt $attempt of 3)" >&2
+    sleep 5
+  done
+  echo "maestro-suite: could not install $1; stopping" >&2
+  exit 3
 }
 
 # The phone's settings as a normal user has them.
