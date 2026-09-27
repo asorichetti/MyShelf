@@ -28,6 +28,7 @@ const outputs = [
   { src: 'adaptive-background.svg', out: 'assets/android-icon-background.png', width: 1024, height: 1024 },
   { src: 'adaptive-monochrome.svg', out: 'assets/android-icon-monochrome.png', width: 1024, height: 1024 },
   { src: 'splash.svg', out: 'assets/splash-icon.png', width: 1024, height: 1024 },
+  { src: 'splash-dark.svg', out: 'assets/splash-icon-dark.png', width: 1024, height: 1024 },
   { src: 'favicon.svg', out: 'assets/favicon.png', width: 48, height: 48 },
   { src: 'notification-icon.svg', out: 'assets/notification-icon.png', width: 96, height: 96 },
   { src: 'icon.svg', out: 'assets/store/icon-512.png', width: 512, height: 512 },
@@ -123,10 +124,16 @@ async function writePreviews(browserPage, rendered, dir) {
   const safe = `<svg xmlns="http://www.w3.org/2000/svg" width="432" height="432" viewBox="0 0 108 108"><image href="${bg}" width="108" height="108"/><image href="${fg}" width="108" height="108"/><rect x="18" y="18" width="72" height="72" fill="none" stroke="#0a0" stroke-width="0.4"/><circle cx="54" cy="54" r="33" fill="none" stroke="#d00" stroke-width="0.4"/></svg>`;
   writeFileSync(join(dir, 'safe-zone.png'), await render(browserPage, safe, 432, 432));
 
-  // Splash as Android 12+ shows it: 200dp image in a 288dp box on paper, cut to a 192dp circle.
-  const splash = dataUrl(rendered.get('assets/splash-icon.png'));
-  const splashView = `<svg xmlns="http://www.w3.org/2000/svg" width="360" height="640" viewBox="0 0 360 640"><rect width="360" height="640" fill="#FBF6EC"/><defs><clipPath id="sc"><circle cx="180" cy="320" r="96"/></clipPath></defs><image href="${splash}" x="80" y="220" width="200" height="200" clip-path="url(#sc)"/></svg>`;
-  writeFileSync(join(dir, 'splash-android12.png'), await render(browserPage, splashView, 360, 640));
+  // Splash as Android 12+ shows it: 200dp image in a 288dp box on paper, cut to a 192dp circle;
+  // in light mode on the paper colour, in dark mode on the night paper.
+  for (const [image, paper, name] of [
+    ['assets/splash-icon.png', '#FBF6EC', 'splash-android12.png'],
+    ['assets/splash-icon-dark.png', '#1C1424', 'splash-android12-dark.png'],
+  ]) {
+    const splash = dataUrl(rendered.get(image));
+    const splashView = `<svg xmlns="http://www.w3.org/2000/svg" width="360" height="640" viewBox="0 0 360 640"><rect width="360" height="640" fill="${paper}"/><defs><clipPath id="sc"><circle cx="180" cy="320" r="96"/></clipPath></defs><image href="${splash}" x="80" y="220" width="200" height="200" clip-path="url(#sc)"/></svg>`;
+    writeFileSync(join(dir, name), await render(browserPage, splashView, 360, 640));
+  }
 }
 
 const previewAt = process.argv.indexOf('--preview');

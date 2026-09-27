@@ -84,7 +84,11 @@
           "image": "./assets/splash-icon.png",
           "imageWidth": 200,
           "resizeMode": "contain",
-          "backgroundColor": "#FBF6EC"
+          "backgroundColor": "#FBF6EC",
+          "dark": {
+            "image": "./assets/splash-icon-dark.png",
+            "backgroundColor": "#1C1424"
+          }
         }
       ],
       "expo-asset",
@@ -120,6 +124,12 @@
         {
           "light": "#6B3FA8",
           "dark": "#C4A8EE"
+        }
+      ],
+      [
+        "./plugins/withAndroidNightBackground",
+        {
+          "dark": "#1C1424"
         }
       ],
       "./plugins/withAndroidTextBounds",

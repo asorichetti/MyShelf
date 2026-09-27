@@ -21,7 +21,7 @@ jobs:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
         with:
-          node-version: 23
+          node-version-file: .nvmrc
           cache: npm
       - run: npm ci
       # selectors:check (generated testids in sync), typecheck, jest
@@ -55,7 +55,7 @@ jobs:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
         with:
-          node-version: 23
+          node-version-file: .nvmrc
           cache: npm
       - run: npm ci
       - name: Playwright version

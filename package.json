@@ -28,6 +28,7 @@
     "expo-splash-screen": "~57.0.9",
     "expo-sqlite": "~57.0.3",
     "expo-status-bar": "~57.0.1",
+    "expo-system-ui": "~57.0.4",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "react-native": "0.86.3",
@@ -69,18 +70,21 @@
     "licences:gen": "node scripts/gen-licences.mjs",
     "licences:check": "node scripts/gen-licences.mjs --check",
     "check": "npm run selectors:check && npm run licences:check && npm run lint && npm run typecheck && npm test -- --ci",
-    "autotest": "tsx --disable-warning=ExperimentalWarning tools/auto-test-suite/src/cli.ts",
-    "autotest:check": "tsc -p tools/auto-test-suite && node --disable-warning=ExperimentalWarning --import tsx --test 'tools/auto-test-suite/src/**/*.test.ts'",
+    "autotest": "tsx tools/auto-test-suite/src/cli.ts",
+    "autotest:check": "tsc -p tools/auto-test-suite && node --import tsx --test 'tools/auto-test-suite/src/**/*.test.ts'",
     "autotest:install-browser": "playwright install chromium",
     "autotest:selftest": "node --import tsx --test 'tools/auto-test-suite/src/**/*.selftest.ts'",
-    "autotest:smoke": "tsx --disable-warning=ExperimentalWarning tools/auto-test-suite/src/cli.ts smoke",
-    "autotest:journeys": "tsx --disable-warning=ExperimentalWarning tools/auto-test-suite/src/cli.ts journey --all",
+    "autotest:smoke": "tsx tools/auto-test-suite/src/cli.ts smoke",
+    "autotest:journeys": "tsx tools/auto-test-suite/src/cli.ts journey --all",
     "lint": "eslint . --max-warnings 0",
-    "test:live": "node --disable-warning=ExperimentalWarning --import tsx --test --test-concurrency=1 \"src/**/__live__/*.live.ts\"",
+    "test:live": "node --import tsx --test --test-concurrency=1 \"src/**/__live__/*.live.ts\"",
     "icons:render": "node scripts/render-icons.mjs",
     "media:hero": "node scripts/render-readme-hero.mjs"
   },
   "private": true,
+  "engines": {
+    "node": "^24.15.0"
+  },
   "jest": {
     "preset": "jest-expo",
     "testPathIgnorePatterns": [
@@ -88,7 +92,6 @@
       "/tools/",
       "/__live__/"
     ],
-    "globalSetup": "<rootDir>/src/testing/jest.globalSetup.ts",
     "setupFiles": [
       "<rootDir>/src/testing/jest.setup.ts"
     ],
@@ -101,5 +104,11 @@
     "xcode": {
       "uuid": "^11.1.1"
     }
+  },
+  "allowScripts": {
+    "better-sqlite3": false,
+    "esbuild": false,
+    "fsevents": false,
+    "unrs-resolver": false
   }
 }

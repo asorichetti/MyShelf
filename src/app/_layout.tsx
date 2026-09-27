@@ -24,6 +24,7 @@ import { useKeyboardActivation } from '@/hooks/useKeyboardActivation';
 import { t } from '@/i18n';
 import { ThemeProvider, useTheme } from '@/theme';
 import { appFonts } from '@/theme/fonts';
+import { RootBackground } from '@/theme/RootBackground';
 
 // Keep the native splash up until fonts and the database are ready (must run at module scope).
 SplashScreen.preventAutoHideAsync().catch(() => {});
@@ -84,6 +85,8 @@ export default function RootLayout() {
     // Swipes and drags (loan rows, a group's order) need the gesture root above every screen.
     <GestureHandlerRootView style={{ flex: 1 }}>
       <ThemeProvider fontScale={fontScaleOverride}>
+        {/* The root view behind every screen takes the theme's paper (no light flash on a dark phone). */}
+        <RootBackground />
         <DatabaseProvider
           open={openDatabase}
           onStatusChange={setDbState}
