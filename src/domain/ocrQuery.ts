@@ -283,6 +283,22 @@ export function buildQueriesFromOcr(result: OcrResult): OcrQuery[] {
 }
 
 /**
+ * Where the words are on the photo: the smallest rectangle around every line
+ * with at least two letters (so the cover itself, when the cover fills most
+ * of the photo), or null when there are none. Used to crop the photo into a
+ * cover (P03-14).
+ */
+export function textBounds(result: OcrResult): OcrFrame | null {
+  const frames = linesOf(result)
+    .filter((l) => letters(l.text).length >= 2)
+    .map((l) => ({ x: l.left, y: l.top, right: l.right, bottom: l.bottom }));
+  if (!frames.length) return null;
+  const x = Math.min(...frames.map((f) => f.x));
+  const y = Math.min(...frames.map((f) => f.y));
+  return { x, y, width: Math.max(...frames.map((f) => f.right)) - x, height: Math.max(...frames.map((f) => f.bottom)) - y };
+}
+
+/**
  * The web test harness's "Type the cover text" (P03-07): one typed line is
  * searched as free text; several lines are read like a cover, top line
  * largest, and end with the free-text search of everything typed.

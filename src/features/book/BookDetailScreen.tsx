@@ -10,6 +10,7 @@ import { ConfirmDialog, EmptyState, Heading, IconButton, Menu, Screen, Stamp, Te
 import type { BookDetail } from '@/domain';
 import { BookGroupsSection } from '@/features/groups/BookGroupsSection';
 import { BookLoanSection } from '@/features/loans/BookLoanSection';
+import { CoverPhotoOfferHost } from '@/features/scan/CoverPhotoOfferHost';
 import { BookSeries } from '@/features/series/BookSeries';
 import { t } from '@/i18n';
 import { Testids } from '@/testing/testids.gen';
@@ -110,6 +111,7 @@ function BookDetailContent({ book }: { book: BookDetail }) {
         ) : null}
       </ConfirmDialog>
       <BookHeader book={book} />
+      <CoverPhotoOfferHost bookId={book.id} title={book.title} />
       <Section title={t('bookForm.fields.rating')} testID={Testids.bookDetail.rating}>
         <BookRating bookId={book.id} rating={book.rating} />
       </Section>

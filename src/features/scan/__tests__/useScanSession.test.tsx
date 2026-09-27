@@ -1,7 +1,7 @@
 import { act, renderHook } from '@testing-library/react-native';
 
 import { StaticDatabaseProvider, type Db } from '@/db';
-import type { OcrResult } from '@/domain';
+import { textBounds, type OcrResult } from '@/domain';
 import { OfflineError } from '@/services/http';
 import { OL_BOOKS } from '@/services/metadata/__fixtures__/openLibraryRoutes';
 import { createTestDb } from '@/testing/createTestDb';
@@ -201,6 +201,9 @@ describe('useScanSession: cover photos (P03-05)', () => {
     await settle();
     const session = onFound.mock.calls[0][0];
     expect(session).toMatchObject({ source: 'cover', photoUri: photo, guess: { title: 'practical magic', author: 'alice hoffman' } });
+    // Where the words are: the cover, to crop the photo to if it becomes the cover (P03-14).
+    expect(session.photoFocus).toEqual(textBounds(ocr));
+    expect(session.photoFocus!.width).toBeGreaterThan(0);
     expect(session.candidates[0]).toMatchObject({ title: 'Practical Magic', authors: ['Alice Hoffman'] });
     expect(discard()).not.toHaveBeenCalled();
   });

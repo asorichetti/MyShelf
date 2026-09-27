@@ -2370,6 +2370,15 @@ export const en = {
       chooseAnother: 'Choose another',
       reading: 'Reading the cover…',
     },
+    /** P03-14: no cover online for a book found from a photo of its cover. {title} is the book's title. */
+    coverPhoto: {
+      message: 'I couldn’t find a cover for “{title}” online. Shall I use your photo?',
+      photoAlt: 'Your photo of the cover of {title}',
+      use: 'Use my photo',
+      decline: 'No thanks',
+      saved: 'Your photo is the cover now.',
+      failed: 'I couldn’t use that photo as the cover.',
+    },
     permission: {
       askTitle: 'May I use the camera?',
       askBody: 'I use the camera only to read barcodes and covers — nothing leaves your phone.',

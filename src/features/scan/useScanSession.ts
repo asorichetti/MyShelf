@@ -8,6 +8,7 @@ import {
   isRepeatRead,
   parseScannedCode,
   queriesFromTypedText,
+  textBounds,
   type OcrQuery,
   type OcrResult,
 } from '@/domain';
@@ -229,7 +230,7 @@ export function useScanSession({ service: injected, onFound }: UseScanSessionOpt
           discardPhoto(photoUri);
           return setState({ phase: 'not-found', kind: 'cover', isbn13: null, guess: queries[0], typed: typedFromQuery(queries[0]) });
         }
-        found(createSession({ source: 'cover', candidates, guess: used ?? queries[0], photoUri }));
+        found(createSession({ source: 'cover', candidates, guess: used ?? queries[0], photoUri, photoFocus: ocr && photoUri ? textBounds(ocr) : null }));
       } catch (error) {
         discardPhoto(photoUri);
         if (abort.signal.aborted || isAbortError(error)) return;

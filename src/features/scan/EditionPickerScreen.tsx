@@ -18,13 +18,13 @@ import type { BookCandidate } from '@/services/metadata';
 import { Testids } from '@/testing/testids.gen';
 import { useTheme } from '@/theme';
 
+import { offerPhotoIfNoCover } from './coverPhotoOffer';
 import { prefillFromCandidate, prefillFromScan, putPrefill } from './prefill';
 import { endSession, getSession } from './sessionStore';
 import { resolveTrayItem } from './useBatchScan';
 import { useDuplicateCheck } from './useDuplicateCheck';
 import { useEditionPicker } from './useEditionPicker';
 import { useSaveCandidate } from './useSaveCandidate';
-
 
 const EDGES = ['top', 'bottom', 'left', 'right'] as const;
 const SHOWN = 20;
@@ -71,7 +71,9 @@ export function EditionPickerScreen() {
     setSaving(true);
     try {
       const saved = await save(candidate);
-      endSession(session.id);
+      // The cover photo stays until the cover search is done: it is offered as the cover if none is found online (P03-14).
+      endSession(session.id, { keepPhoto: session.photoUri != null });
+      offerPhotoIfNoCover(saved, session.photoUri, session.photoFocus);
       setDuplicates(null);
       router.replace({ pathname: '/book/[id]', params: { id: String(saved.id) } });
     } catch (e) {

@@ -1,4 +1,4 @@
-import type { OcrQuery } from '@/domain';
+import type { OcrFrame, OcrQuery } from '@/domain';
 import type { BookCandidate } from '@/services/metadata';
 
 import { discardPhoto } from './tempPhoto';
@@ -20,6 +20,8 @@ export interface ScanSession {
   candidates: BookCandidate[];
   /** The cover photo taken for recognition, kept until the book is saved (P03-14). */
   photoUri: string | null;
+  /** Where the text was read on the photo (the cover itself), to crop it into a cover. */
+  photoFocus: OcrFrame | null;
   /** When the scan belongs to a batch tray item waiting for its edition (P03-12). */
   trayItemId: string | null;
 }
@@ -27,9 +29,9 @@ export interface ScanSession {
 const sessions = new Map<string, ScanSession>();
 let counter = 0;
 
-export function createSession(input: Omit<ScanSession, 'id' | 'photoUri' | 'trayItemId' | 'guess' | 'isbn13'> & Partial<ScanSession>): ScanSession {
+export function createSession(input: Omit<ScanSession, 'id' | 'photoUri' | 'photoFocus' | 'trayItemId' | 'guess' | 'isbn13'> & Partial<ScanSession>): ScanSession {
   counter += 1;
-  const session: ScanSession = { isbn13: null, guess: null, photoUri: null, trayItemId: null, ...input, id: `s${Date.now().toString(36)}${counter}` };
+  const session: ScanSession = { isbn13: null, guess: null, photoUri: null, photoFocus: null, trayItemId: null, ...input, id: `s${Date.now().toString(36)}${counter}` };
   sessions.set(session.id, session);
   return session;
 }
