@@ -31,8 +31,8 @@ import type { Db, SqlValue } from './types';
  * binding `hashColour()` picks, placed round the colour wheel by the order
  * the caller passes from the theme, `SortOptions.coverOrder`). Each is
  * computed for the whole library just before the query and handed to it as
- * one BLOB of three-byte ranks indexed by book id, which SQLite reads in
- * constant time with `substr`.
+ * one BLOB of three-byte ranks indexed by book id, which SQLite reads with
+ * `substr` (`packRanks`: the ids in runs, so a backup's huge ids cost no memory).
  */
 
 /** A join the base Shelf query may need to have for a key's SQL. */
@@ -173,29 +173,78 @@ export function shuffleSql(seed: number): string {
 
 // ---- Computed ranks ----
 
-/** Three bytes per book id: ranks up to 16.7 million. */
+/** Three bytes per book: ranks up to 16.7 million. */
 const RANK_BYTES = 3;
 
-/** Packs id -> rank into the BLOB the SQL reads with `substr`; ids with no rank read as zero bytes. */
-export function packRanks(ranks: Map<number, number>): Uint8Array {
-  let maxId = 0;
-  for (const id of ranks.keys()) maxId = Math.max(maxId, id);
-  const out = new Uint8Array(maxId * RANK_BYTES);
-  for (const [id, rank] of ranks) {
-    const at = (id - 1) * RANK_BYTES;
-    out[at] = (rank >> 16) & 255;
-    out[at + 1] = (rank >> 8) & 255;
-    out[at + 2] = rank & 255;
+/**
+ * Ids this far apart or closer share a run (the ids between them, deleted
+ * books, cost three bytes each); a bigger gap starts a new run. A library's
+ * ids count up from 1 with few gaps, so it is one run.
+ */
+const MAX_RUN_GAP = 64;
+
+/** A stretch of ids `lo`..`hi` whose ranks start at byte `offset` of the BLOB. */
+export interface RankRun {
+  lo: number;
+  hi: number;
+  offset: number;
+}
+
+export interface PackedRanks {
+  /** Three bytes per id of each run, runs one after another; ids with no rank read as zero bytes. */
+  blob: Uint8Array;
+  /** In id order. */
+  runs: RankRun[];
+}
+
+/**
+ * Packs id -> rank into the BLOB the SQL reads with `substr`. Ids are split
+ * into runs at big gaps, so the BLOB grows with the number of books, never
+ * with the size of the largest id (a backup can carry any id).
+ */
+export function packRanks(ranks: Map<number, number>): PackedRanks {
+  const ids = [...ranks.keys()].sort((a, b) => a - b);
+  const runs: RankRun[] = [];
+  let size = 0;
+  for (const id of ids) {
+    const last = runs.at(-1);
+    if (last && id - last.hi <= MAX_RUN_GAP) {
+      size += (id - last.hi) * RANK_BYTES;
+      last.hi = id;
+    } else {
+      runs.push({ lo: id, hi: id, offset: size });
+      size += RANK_BYTES;
+    }
   }
-  return out;
+  const blob = new Uint8Array(size);
+  let run = 0;
+  for (const id of ids) {
+    while (id > runs[run].hi) run++;
+    const at = runs[run].offset + (id - runs[run].lo) * RANK_BYTES;
+    const rank = ranks.get(id)!;
+    blob[at] = (rank >> 16) & 255;
+    blob[at + 1] = (rank >> 8) & 255;
+    blob[at + 2] = rank & 255;
+  }
+  return { blob, runs };
+}
+
+/** Where `b.id`'s rank starts in the BLOB (0-based), or NULL: a binary search over the runs, so each row costs a few comparisons. */
+function rankOffsetSql(runs: readonly RankRun[]): string {
+  if (!runs.length) return 'NULL';
+  if (runs.length === 1) {
+    const [{ lo, hi, offset }] = runs;
+    return `CASE WHEN b.id BETWEEN ${lo} AND ${hi} THEN (b.id - ${lo}) * ${RANK_BYTES} + ${offset} END`;
+  }
+  const mid = runs.length >> 1;
+  return `CASE WHEN b.id < ${runs[mid].lo} THEN ${rankOffsetSql(runs.slice(0, mid))} ELSE ${rankOffsetSql(runs.slice(mid))} END`;
 }
 
 /** The rank term: a book added after the ranks were worked out has none (NULL) and so goes last. */
 function rankTerm(ctx: TermContext): string {
-  const ranks = ctx.ranks ?? new Map<number, number>();
-  const blob = packRanks(ranks);
-  const maxId = blob.length / RANK_BYTES;
-  return `CASE WHEN b.id <= ${maxId} THEN substr(${ctx.bind(blob)}, (b.id - 1) * ${RANK_BYTES} + 1, ${RANK_BYTES}) END`;
+  const { blob, runs } = packRanks(ctx.ranks ?? new Map<number, number>());
+  if (!runs.length) return 'NULL';
+  return `substr(${ctx.bind(blob)}, ${rankOffsetSql(runs)} + 1, ${RANK_BYTES})`;
 }
 
 /** Dense ranks for values sorted by `compare`: equal values share a rank. */
