@@ -57,6 +57,8 @@ export interface SortKeyDef extends SortKeyInfo {
   text?: boolean;
   /** A never-null value that breaks this key's own ties in the same direction (books added in the same millisecond: by id). */
   then?: string;
+  /** A never-null value sorted ascending before `value` whichever the direction: bands that keep their place both ways. */
+  band?: string;
   /** Computed in TypeScript for the whole library before the query: book id -> rank. */
   rank?: (db: Db, options: SortOptions) => Promise<Map<number, number>>;
 }
@@ -150,6 +152,9 @@ const q = (text: string) => `'${text.replace(/'/g, "''")}'`;
 const LANGUAGE_NAME = `CASE b.language ${languages.map((l) => `WHEN ${q(l.code)} THEN ${q(l.name)}`).join(' ')} ELSE upper(b.language) END`;
 
 const FORMAT_ORDER = `CASE b.format WHEN 'hardcover' THEN 1 WHEN 'paperback' THEN 2 WHEN 'ebook' THEN 3 WHEN 'audiobook' THEN 4 END`;
+
+/** "Other" is known but has no place in the run: it goes after the four formats and before unknown, whichever way the run goes. */
+const FORMAT_BAND = `CASE WHEN b.format IN ('hardcover', 'paperback', 'ebook', 'audiobook') THEN 0 WHEN b.format IS NULL THEN 2 ELSE 1 END`;
 
 // ---- Surprise me ----
 
@@ -368,6 +373,7 @@ const defs: Defs = {
     defaultDirection: 'asc',
     directionLabels: { asc: 'sort.direction.hardbackFirst', desc: 'sort.direction.audiobookFirst' },
     joins: [],
+    band: FORMAT_BAND,
     value: () => FORMAT_ORDER,
   },
   onLoan: {
@@ -468,8 +474,9 @@ export function orderTerm(def: SortKeyDef, direction: SortDirection, ctx: TermCo
   const dir = def.fixedDirection ? 'ASC' : direction === 'desc' ? 'DESC' : 'ASC';
   const collate = def.text ? ' COLLATE NOCASE' : '';
   const then = def.then ? `, ${def.then} ${dir}` : '';
-  if (dir === 'DESC') return `(${value})${collate} DESC${then}`;
-  return `COALESCE(${value}, ${LAST})${collate} ASC${then}`;
+  const band = def.band ? `${def.band} ASC, ` : '';
+  if (dir === 'DESC') return `${band}(${value})${collate} DESC${then}`;
+  return `${band}COALESCE(${value}, ${LAST})${collate} ASC${then}`;
 }
 
 export interface SortSql {

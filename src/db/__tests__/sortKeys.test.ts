@@ -214,10 +214,10 @@ describe('each key on its own', () => {
     expect((await titles('language', 'desc')).slice(0, 3)).toEqual(['Ezra', 'Eagle', 'Émile']);
   });
 
-  it('format: hardback, paperback, e-book, audiobook; "other" and none last both ways', async () => {
-    const rest = ['Ålborg Diaries', 'An Apple a Day', ...SAGAS_BY_TITLE, 'Untitled Notes'];
-    expect(await titles('format')).toEqual(['The Hobbit', 'Émile', 'Eagle', 'Ezra', ...rest]);
-    expect(await titles('format', 'desc')).toEqual(['Ezra', 'Eagle', 'Émile', 'The Hobbit', ...rest]);
+  it('format: hardback, paperback, e-book, audiobook; then "other", then none, both ways', async () => {
+    const unknown = ['Ålborg Diaries', ...SAGAS_BY_TITLE, 'Untitled Notes'];
+    expect(await titles('format')).toEqual(['The Hobbit', 'Émile', 'Eagle', 'Ezra', 'An Apple a Day', ...unknown]);
+    expect(await titles('format', 'desc')).toEqual(['Ezra', 'Eagle', 'Émile', 'The Hobbit', 'An Apple a Day', ...unknown]);
   });
 
   it('on loan: lent books first (a returned loan does not count), then the rest', async () => {
