@@ -893,6 +893,8 @@ export const en = {
       firstPublished: 'First published {year}',
       editions: { one: '{count} edition', other: '{count} editions' },
       pages: { one: '{count} page', other: '{count} pages' },
+      /** In the edition picker, for an edition whose catalogue record gives no language. */
+      languageUnknown: 'Language not listed',
     },
     /** What a screen reader says after the title. */
     label: {

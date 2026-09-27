@@ -63,7 +63,7 @@ describe('Edition picker (P03-08) and saving (P03-09)', () => {
     expect(screen.queryByTestId(p.work)).toBeNull();
     const [edition] = screen.getAllByTestId(p.edition);
     expect(edition.props.accessibilityState).toMatchObject({ checked: true });
-    expect(edition.props.accessibilityLabel).toMatch(/^Paperback, Corgi Books, 1985, 287 pages, ISBN 9780552166591, The Colour of Magic/);
+    expect(edition.props.accessibilityLabel).toMatch(/^Paperback, Corgi Books, 1985, English, 287 pages, ISBN 9780552166591, The Colour of Magic/);
     await press(p.confirm);
     const [book] = await booksRepo.listBooks(db);
     expect(r.getPathname()).toBe(`/book/${book.id}`);

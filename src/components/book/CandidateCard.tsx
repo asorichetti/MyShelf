@@ -40,25 +40,40 @@ interface Fact {
   generic?: boolean;
 }
 
-function facts(c: CandidateCardData): Fact[] {
+/**
+ * `showLanguage`: always say the language, right after the year (the
+ * edition picker, where editions of one book differ by language); otherwise
+ * it is said only when it is not English.
+ */
+function facts(c: CandidateCardData, showLanguage = false): Fact[] {
   if (c.kind === 'work') {
     return [
       c.publicationYear != null ? { text: t('candidate.facts.firstPublished', { year: c.publicationYear }), generic: true } : null,
       c.editionCount ? { text: t('candidate.facts.editions', { count: c.editionCount }) } : null,
     ].filter((x): x is Fact => Boolean(x));
   }
+  const language: Fact | null = c.language
+    ? { text: languageName(c.language) }
+    : showLanguage
+      ? { text: t('candidate.facts.languageUnknown'), generic: true }
+      : null;
   return [
     c.publicationYear != null ? { text: String(c.publicationYear) } : null,
+    showLanguage ? language : null,
     c.publisher ? { text: c.publisher } : null,
     c.format ? { text: formatLabels[c.format], generic: true } : null,
     c.pageCount ? { text: t('candidate.facts.pages', { count: c.pageCount }) } : null,
-    c.language && c.language !== 'en' ? { text: languageName(c.language) } : null,
+    !showLanguage && c.language !== 'en' ? language : null,
   ].filter((x): x is Fact => Boolean(x));
 }
 
-/** "1985 · Corgi Books · Paperback · 285 pages" (an edition) or "First published 1983 · 120 editions" (a work). */
-export function candidateFacts(c: CandidateCardData): string[] {
-  return facts(c).map((f) => f.text);
+/**
+ * "1985 · Corgi Books · Paperback · 285 pages" (an edition) or "First
+ * published 1983 · 120 editions" (a work); with `showLanguage`, "1985 ·
+ * English · Corgi Books · …".
+ */
+export function candidateFacts(c: CandidateCardData, { showLanguage = false }: { showLanguage?: boolean } = {}): string[] {
+  return facts(c, showLanguage).map((f) => f.text);
 }
 
 /**
@@ -87,6 +102,8 @@ export interface CandidateCardProps {
   hint?: string;
   /** Replaces the spoken description (the edition picker leads with the edition's facts). */
   accessibilityLabel?: string;
+  /** Always show the language, after the year (the edition picker). */
+  showLanguage?: boolean;
 }
 
 /**
@@ -94,11 +111,20 @@ export interface CandidateCardProps {
  * year, publisher, format and ISBN, with a stamp naming the catalogue it
  * came from. The whole card is the touch target.
  */
-export function CandidateCard({ candidate: c, onPress, role = 'button', selected, testID = Testids.lookup.candidate, hint, accessibilityLabel }: CandidateCardProps) {
+export function CandidateCard({
+  candidate: c,
+  onPress,
+  role = 'button',
+  selected,
+  testID = Testids.lookup.candidate,
+  hint,
+  accessibilityLabel,
+  showLanguage = false,
+}: CandidateCardProps) {
   const theme = useTheme();
   const { colors, spacing, radii, sizes } = theme;
   const author = joinNames(c.authors);
-  const facts = candidateFacts(c);
+  const facts = candidateFacts(c, { showLanguage });
   const isbn = c.isbn13 ?? c.isbn10;
   const radio = role === 'radio';
   return (

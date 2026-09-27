@@ -3,7 +3,7 @@ import { AccessibilityInfo, Modal } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { BookHeader } from '@/components/book/BookHeader';
-import type { CandidateCardData } from '@/components/book/CandidateCard';
+import { candidateFacts, type CandidateCardData } from '@/components/book/CandidateCard';
 import { CandidateList } from '@/components/book/CandidateList';
 import { editionLabel } from '@/components/scan/EditionRow';
 import { Button, SelectField, Sheet, Stamp } from '@/components/ui';
@@ -50,6 +50,20 @@ describe('edition picker', () => {
   it('says whether an edition has a cover picture to compare, since the cover is how a sighted reader spots theirs', () => {
     expect(editionLabel(candidate('The Colour of Magic', 'https://covers.openlibrary.org/b/id/1-M.jpg'))).toMatch(/, with a cover picture$/);
     expect(editionLabel(candidate('The Colour of Magic', null))).toMatch(/, no cover picture$/);
+  });
+
+  it('shows and says every edition\'s language after its year, English included, so editions in other languages stand out', () => {
+    const english = candidate('The Colour of Magic', null);
+    const dutch = { ...english, language: 'nl', publisher: 'Van Goor' };
+    const unknown = { ...english, language: null };
+    expect(candidateFacts(english, { showLanguage: true })).toEqual(['1985', 'English', 'Corgi', 'Paperback', '285 pages']);
+    expect(candidateFacts(dutch, { showLanguage: true }).slice(0, 2)).toEqual(['1985', 'Dutch']);
+    expect(candidateFacts(unknown, { showLanguage: true }).slice(0, 2)).toEqual(['1985', 'Language not listed']);
+    // Elsewhere (lookup results) English goes unsaid.
+    expect(candidateFacts(english)).toEqual(['1985', 'Corgi', 'Paperback', '285 pages']);
+    expect(editionLabel(english)).toMatch(/^Paperback, Corgi, 1985, English, 285 pages/);
+    expect(editionLabel(dutch)).toMatch(/^Paperback, Van Goor, 1985, Dutch, /);
+    expect(editionLabel(unknown)).toMatch(/1985, Language not listed, /);
   });
 });
 

@@ -5,9 +5,9 @@ import { t } from '@/i18n';
 import { Testids } from '@/testing/testids.gen';
 
 /**
- * "Hardback, Doubleday, 1987, 285 pages, ISBN 9780385…, The Colour of Magic":
- * what a screen reader says for an edition, facts first so editions of the
- * same work are told apart quickly.
+ * "Hardback, Doubleday, 1987, English, 285 pages, ISBN 9780385…, The Colour
+ * of Magic": what a screen reader says for an edition, facts first so
+ * editions of the same work are told apart quickly.
  */
 export function editionLabel(c: CandidateCardData): string {
   const isbn = c.isbn13 ?? c.isbn10;
@@ -15,8 +15,8 @@ export function editionLabel(c: CandidateCardData): string {
     c.format ? formatLabels[c.format] : null,
     c.publisher,
     c.publicationYear != null ? String(c.publicationYear) : null,
+    c.language ? languageName(c.language) : t('candidate.facts.languageUnknown'),
     c.pageCount ? t('editions.row.pages', { count: c.pageCount }) : null,
-    c.language && c.language !== 'en' ? languageName(c.language) : null,
     isbn ? t('editions.row.isbn', { isbn }) : t('editions.row.noIsbn'),
     c.title,
     t('editions.row.from', { source: sourceLabels[c.source] }),
@@ -32,7 +32,7 @@ export interface EditionRowProps {
   onSelect: () => void;
 }
 
-/** One edition in the picker: a radio card with its cover, publisher, year, format, pages and ISBN. */
+/** One edition in the picker: a radio card with its cover, year, language, publisher, format, pages and ISBN. */
 export function EditionRow({ edition, selected, onSelect }: EditionRowProps) {
   return (
     <CandidateCard
@@ -42,6 +42,7 @@ export function EditionRow({ edition, selected, onSelect }: EditionRowProps) {
       onPress={onSelect}
       testID={Testids.picker.edition}
       accessibilityLabel={editionLabel(edition)}
+      showLanguage
     />
   );
 }
