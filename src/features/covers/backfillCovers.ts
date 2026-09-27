@@ -27,6 +27,8 @@ export interface BackfillCoversOptions extends Omit<AttachCoverOptions, 'replace
   concurrency?: number;
   /** Called as soon as each cover is stored, so screens can show it at once. */
   onAttached?: (bookId: number) => void;
+  /** E2E builds: never look at books that came with a fixture (`settleFixtureCovers`). */
+  skipFixtureBooks?: boolean;
 }
 
 export interface BackfillSummary {
@@ -81,12 +83,12 @@ const inFlight = new WeakMap<Db, Set<number>>();
  * growing backoff; being offline stops the run without recording anything.
  */
 export async function backfillCovers(db: Db, options: BackfillCoversOptions): Promise<BackfillSummary> {
-  const { limit = 5, now = Date.now, signal, findCoverIds, concurrency = 1, onAttached } = options;
+  const { limit = 5, now = Date.now, signal, findCoverIds, concurrency = 1, onAttached, skipFixtureBooks = false } = options;
   const summary: BackfillSummary = { checked: 0, attached: 0, none: 0, failed: 0, offline: false };
   let busy = inFlight.get(db);
   if (!busy) inFlight.set(db, (busy = new Set()));
   const mine = busy;
-  const due = await coverAttemptsRepo.listBooksNeedingCover(db, { now: new Date(now()).toISOString(), limit });
+  const due = await coverAttemptsRepo.listBooksNeedingCover(db, { now: new Date(now()).toISOString(), limit, skipFixtureBooks });
   const books = due.filter((b) => !mine.has(b.id));
   if (!books.length) return summary;
   books.forEach((b) => mine.add(b.id));

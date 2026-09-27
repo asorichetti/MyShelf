@@ -1,4 +1,5 @@
 import { booksRepo, settingsRepo, type Db } from '@/db';
+import { isE2eEnabled } from '@/features/e2e/e2eFlag';
 import { getLookupServices } from '@/features/lookup/metadataService';
 import { COVER_BATCH_SIZE, coverSourceFromCandidate, deleteCover, findCoverIdsByIsbn, GOOGLE_COVERS_REACHABLE, isLocalCover } from '@/services/covers';
 import { isOnMobileData } from '@/services/covers/mobileData';
@@ -83,6 +84,7 @@ export async function backfillCoversNow(
     includeGoogle,
     concurrency: BACKFILL_CONCURRENCY,
     onAttached,
+    skipFixtureBooks: isE2eEnabled(),
     findCoverIds: (isbns, s) => findCoverIdsByIsbn(http, isbns, { signal: s }),
     lookupIsbn: (isbn, s) => metadata.lookupIsbn(isbn, { signal: s }),
     search: (query, s) => metadata.search(query, { signal: s }),
