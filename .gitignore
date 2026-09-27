@@ -57,3 +57,7 @@ yarn-error.*
 # Release signing: EAS local credentials point at the upload key. Never commit
 # a keystore, its passwords or its base64 form (docs/release.md).
 credentials.json
+
+# Gradle output of the local Expo modules
+/modules/*/android/build/
+/modules/*/android/.cxx/
