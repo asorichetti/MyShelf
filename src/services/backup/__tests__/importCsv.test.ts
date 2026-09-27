@@ -205,6 +205,15 @@ describe('round trip through MyShelf’s own CSV', () => {
     expect(mort.rating).toBe(5);
     await other.close();
   });
+
+  it('reads back cells the export guarded against formulas exactly as they were', async () => {
+    const book = await booksRepo.createBook(db, { title: '=1+1', subtitle: "'=quoted", notes: '- first point\n- second point', publisher: '@home' });
+    const { text } = await exportCsv(db);
+    expect(text).toContain("'=1+1");
+    const table = readCsvTable(text);
+    const [planned] = planImport(table.rows, mappingFor(table.headers, table.preset)).books;
+    expect(planned.book).toMatchObject({ title: book.title, subtitle: book.subtitle, notes: book.notes, publisher: book.publisher });
+  });
 });
 
 describe('field parsers', () => {

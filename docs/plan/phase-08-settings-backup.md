@@ -55,7 +55,7 @@ Give the user control and peace of mind: sensible preferences, a full backup the
 - **Files:** `src/services/backup/csv.ts`, `src/services/backup/exportCsv.ts`.
 - **Acceptance:** quoting of commas, quotes and newlines; loan columns absent unless opted in.
 - **Tests:** `src/services/backup/__tests__/csv.test.ts`, `exportCsv.test.ts`.
-- **Delivered:** `csv.ts` reads and writes RFC 4180 (quotes, doubled quotes, line breaks in fields, CRLF/LF/CR, BOM) and detects comma, semicolon or tab delimiters. `exportCsv` writes one row per book from `bookExportRepo.listBooksForExport`: Title, Subtitle, Authors (`; `), ISBN-13, ISBN-10, Publisher, Year, Pages, Format, Language, Genres, Series, Series position, Groups, Notes, Added, with On loan to / Lent on / Due on only when "Include lending details" is on (off by default). UTF-8 with a BOM, CRLF. Settings → Export as a spreadsheet shares `myshelf-books-YYYY-MM-DD.csv`.
+- **Delivered:** `csv.ts` reads and writes RFC 4180 (quotes, doubled quotes, line breaks in fields, CRLF/LF/CR, BOM) and detects comma, semicolon or tab delimiters. `exportCsv` writes one row per book from `bookExportRepo.listBooksForExport`: Title, Subtitle, Authors (`; `), ISBN-13, ISBN-10, Publisher, Year, Pages, Format, Language, Genres, Series, Series position, Groups, Notes, Added, with On loan to / Lent on / Due on only when "Include lending details" is on (off by default). UTF-8 with a BOM, CRLF. Text that a spreadsheet would run as a formula (starting with `=`, `+`, `-`, `@`, a tab or a carriage return) gets a leading apostrophe against CSV injection, which the import takes off again. Settings → Export as a spreadsheet shares `myshelf-books-YYYY-MM-DD.csv`.
 
 ### P08-05 CSV import with mapping and Goodreads preset
 

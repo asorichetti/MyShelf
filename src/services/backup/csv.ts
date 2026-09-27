@@ -116,10 +116,38 @@ export function parseCsv(text: string, delimiter: CsvDelimiter = detectDelimiter
 
 const NEEDS_QUOTES = /[",\r\n;\t]|^\s|\s$/;
 
-/** One field, quoted when it holds a delimiter, a quote, a line break or edge spaces. */
+/**
+ * Text a spreadsheet app would run as a formula ("=HYPERLINK(…)", "+1",
+ * "-2", "@SUM(…)", or one of those after a tab or line break it trims).
+ */
+const FORMULA_START = /^[=+\-@\t\r]/;
+
+/** Starts like a formula once any leading apostrophes are set aside, so text that already began with "'=" survives a round trip too. */
+const formulaLike = (text: string) => FORMULA_START.test(text.replace(/^'+/, ''));
+
+/**
+ * Text that opens a spreadsheet as a formula gets a leading apostrophe, the
+ * usual guard against CSV injection: Excel, Numbers and LibreOffice show the
+ * text as typed instead of running it. `unescapeFormula` takes it off again
+ * when MyShelf reads the file back.
+ */
+export function escapeFormula(text: string): string {
+  return formulaLike(text) ? `'${text}` : text;
+}
+
+/** Undoes `escapeFormula`: one apostrophe in front of a formula-like start is dropped. */
+export function unescapeFormula(text: string): string {
+  return text.startsWith("'") && formulaLike(text) ? text.slice(1) : text;
+}
+
+/**
+ * One field, quoted when it holds a delimiter, a quote, a line break or edge
+ * spaces. Text that a spreadsheet would run as a formula is neutralised
+ * (`escapeFormula`); numbers are written as they are.
+ */
 export function csvField(value: string | number | null | undefined): string {
   if (value == null) return '';
-  const s = String(value);
+  const s = typeof value === 'number' ? String(value) : escapeFormula(value);
   return NEEDS_QUOTES.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
 }
 

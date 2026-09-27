@@ -1,4 +1,4 @@
-import { csvField, detectDelimiter, parseCsv, toCsv, CsvParseError } from '@/services/backup';
+import { csvField, detectDelimiter, escapeFormula, parseCsv, toCsv, unescapeFormula, CsvParseError } from '@/services/backup';
 
 describe('parseCsv', () => {
   it('reads plain and quoted fields', () => {
@@ -74,6 +74,18 @@ describe('writing CSV', () => {
     expect(csvField(' lead')).toBe('" lead"');
     expect(csvField(null)).toBe('');
     expect(csvField(2.5)).toBe('2.5');
+  });
+
+  it('neutralises text a spreadsheet would run as a formula, and reads it back unchanged', () => {
+    expect(csvField('=HYPERLINK("http://evil.example","Click")')).toBe('"\'=HYPERLINK(""http://evil.example"",""Click"")"');
+    expect(csvField('+1 great read')).toBe("'+1 great read");
+    expect(csvField('-2 stars')).toBe("'-2 stars");
+    expect(csvField('@SUM(A1)')).toBe("'@SUM(A1)");
+    expect(csvField('\t=cmd')).toBe('"\'\t=cmd"');
+    expect(csvField('A = B')).toBe('A = B');
+    expect(csvField(-3)).toBe('-3');
+    for (const text of ['=1+1', '+44', '-', '@home', "'quoted'", "'=already"]) expect(unescapeFormula(escapeFormula(text))).toBe(text);
+    expect(unescapeFormula("'tis the season")).toBe("'tis the season");
   });
 
   it('writes CRLF rows with an optional BOM, and reads back what it wrote', () => {

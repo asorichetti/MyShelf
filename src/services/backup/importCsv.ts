@@ -18,7 +18,7 @@ import {
 } from '@/domain';
 import { t } from '@/i18n';
 
-import { CsvParseError, detectDelimiter, parseCsv, type CsvDelimiter } from './csv';
+import { CsvParseError, detectDelimiter, parseCsv, unescapeFormula, type CsvDelimiter } from './csv';
 import { detectPreset, type ImportField, type PresetId } from './csvPresets';
 
 /** A CSV file read and split into its header and data rows. */
@@ -110,7 +110,7 @@ export function unwrapFormula(value: string): string {
 }
 
 const clean = (v: string | undefined) => {
-  const s = unwrapFormula(v ?? '').replace(/\s+/g, ' ').trim();
+  const s = unescapeFormula(unwrapFormula(v ?? '')).replace(/\s+/g, ' ').trim();
   return s || null;
 };
 const splitList = (v: string | null, separator: RegExp) =>
@@ -216,7 +216,7 @@ export function planImport(rows: readonly string[][], mapping: readonly ImportFi
   };
   const raw = (row: readonly string[], field: ImportField) => {
     const i = mapping.indexOf(field);
-    return i < 0 ? null : (row[i] ?? '').trim() || null;
+    return i < 0 ? null : unescapeFormula((row[i] ?? '').trim()).trim() || null;
   };
 
   rows.forEach((row, index) => {
