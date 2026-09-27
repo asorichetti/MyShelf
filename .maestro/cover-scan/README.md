@@ -2,7 +2,10 @@
 
 On-device flows for reading a book's cover (P03-05, P03-06, P03-14). They need
 an **E2E build** (`EXPO_PUBLIC_E2E=1`, so `myshelf://e2e` loads fixtures) on an
-emulator or phone, and network access for the catalogue searches.
+emulator or phone. The catalogue searches answer from recorded responses
+(`src/services/metadata/__fixtures__/index.json`, the ones the web suite
+uses), so they need no network: a search a flow makes that is not recorded
+fails and is reported by `scripts/maestro-suite.sh`.
 
 | Flow | Checks |
 |---|---|

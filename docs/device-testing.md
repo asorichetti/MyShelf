@@ -11,8 +11,8 @@ build itself.
 
 | Build | Command | Output | Use |
 |---|---|---|---|
-| E2E | `scripts/build-android-apk.sh e2e` | `build/myshelf-e2e.apk` | Maestro. The fixture loader is in (`EXPO_PUBLIC_E2E=1`, [ADR 0015](adr/0015-e2e-fixture-loader-per-platform.md)): `myshelf://e2e?fixture=<name>&next=<route>` wipes the library and loads a fixture, `myshelf://e2e/scan?isbn=<isbn>` injects a barcode read. Never give it to anyone. |
-| Production | `scripts/build-android-apk.sh production` | `build/myshelf-production.apk` | What users install (`EXPO_PUBLIC_E2E=0`): the E2E links are a "Page not found" and touch nothing. The first-run flow runs on it. |
+| E2E | `scripts/build-android-apk.sh e2e` | `build/myshelf-e2e.apk` | Maestro. The fixture loader is in (`EXPO_PUBLIC_E2E=1`, [ADR 0015](adr/0015-e2e-fixture-loader-per-platform.md)): `myshelf://e2e?fixture=<name>&next=<route>` wipes the library and loads a fixture, `myshelf://e2e/scan?isbn=<isbn>` injects a barcode read. So are the [recorded API responses](#recorded-api-responses) (`EXPO_PUBLIC_E2E_MOCK_API=1`). Never give it to anyone. |
+| Production | `scripts/build-android-apk.sh production` | `build/myshelf-production.apk` | What users install (`EXPO_PUBLIC_E2E=0`, `EXPO_PUBLIC_E2E_MOCK_API=0`): the E2E links are a "Page not found" and touch nothing, and the recorded responses are not in the bundle. The first-run flow runs on it. |
 
 Both are release builds (Hermes, minified, shrunk with R8, no Metro), signed
 with the debug key unless the `MYSHELF_UPLOAD_*` values are set
@@ -26,6 +26,60 @@ export JAVA_HOME=$(ls -d ~/Library/Java/jdk-17*/Contents/Home | head -1)   # mac
 export ANDROID_HOME=$HOME/Library/Android/sdk
 export PATH=$JAVA_HOME/bin:$ANDROID_HOME/platform-tools:$ANDROID_HOME/emulator:$PATH
 ```
+
+## Recorded API responses
+
+A flow that looked books up in the real Open Library could fail because Open
+Library was slow: run 36352469638 failed `cover-scan-synthetic` with the
+app's "I can't reach the library catalogues right now" (the HTTP client's
+10 s timeout, an `OfflineError`; the text recognition had read "THE COLOUR OF
+MAGIC" and "TERRY PRATCHETT" correctly). So the E2E APK answers Open Library,
+Google Books and cover requests from the **same recorded responses the web
+auto test suite serves with `--mock-api`**
+(`src/services/metadata/__fixtures__/index.json`) and the same synthetic test
+covers, and only the flows tagged `live` use the real services.
+
+- **Inside the HTTP client's `fetch`**, nothing else:
+  `src/features/lookup/metadataService.ts` passes `e2eApiFetch()`
+  (`src/features/e2e/mockApi.ts`), which is `undefined` (the global `fetch`)
+  in every other build. App logic, the rate limiter, the cache, retries and
+  error mapping all run as usual.
+- **The fixtures go only into the E2E APK.** `npm run e2eapi:gen` writes them,
+  with the test covers, to `src/generated/e2eApiFixtures.json` (loaded and
+  validated by the web suite's own `loadMockIndex`; `npm run check` fails when
+  it is out of date). `metro.config.js` resolves that file to an empty module
+  unless `EXPO_PUBLIC_E2E_MOCK_API=1`, which only `scripts/build-android-apk.sh
+  e2e` and the `e2e` EAS profile set. Proof on the September 2026 builds:
+  the production APK's `index.android.bundle` is 5,236,736 bytes against the
+  E2E one's 5,564,832, and `grep -a -c myshelf-e2e-api-fixtures-v1` (the
+  bundle's marker) and a recorded work key (`OL453657W`) find nothing in it.
+- **Unrecorded requests fail loudly**, like the web `network/unmocked` rule:
+  the request fails (the app sees no network) and the app logs
+  `[e2e-mock-api] unmocked <url>`. `scripts/maestro-suite.sh` keeps the app's
+  JavaScript log in `maestro-results/app-js.log` and fails the
+  `mock-api-unmocked` check listing every such URL
+  (`unmocked-requests.txt`). Record them with `scripts/record-fixture.mjs`
+  (Open Library) or add a synthetic Google Books entry to the index, then
+  `npm run e2eapi:gen` and rebuild.
+- **The switch is per flow**, from the fixture link: `api=mock` (the default)
+  or `api=live`, and `network=online` (default) or `network=offline`, which
+  fails every request as a phone without a connection does, without touching
+  the radio. `common/open-fixture.yaml` takes them as `API` and `NETWORK`;
+  `myshelf://e2e/network?state=online&next=/` switches the network back
+  without reloading. The switch is kept in the app's files (`e2e-api.json`),
+  so it survives a cold start and `clearState` resets it.
+- **Covers shown by `expo-image`** (the fixture books' `covers.openlibrary.org`
+  URLs) are loaded by Android's image loader, not the HTTP client, so they
+  still come from the internet when there is one. No flow depends on them: in
+  airplane mode they fall back to the drawn covers and every flow passes.
+
+| Flows | Services |
+|---|---|
+| every flow in `.maestro/` except those below, the `cover-scan/photo-*` flows and the hooks | recorded responses (the offline pair with the simulated network off, then on) |
+| `lookup-isbn-online.yaml` and the script's `lookup-cover-stored` check | **live**: the real Open Library and Google Books over the phone's network stack, to prove that path; the lookup is sent again up to three times when it cannot reach the catalogues, and the suite runs the flow up to three times, after waiting for the network |
+
+`scripts/maestro-suite.sh --offline` runs everything but the live steps in
+airplane mode, to prove the rest never needs the network.
 
 ## Running the Maestro suite locally
 
@@ -58,13 +112,19 @@ anything failed. Look at the screenshots, not only the pass/fail.
 cannot:
 
 - installs the E2E APK and puts the phone in a known state (light mode, 100 %
-  text, online, automatic time), and pushes the test backup and the Goodreads
-  export to Downloads for the document picker;
+  text, online or, with `--offline`, in airplane mode, automatic time), and
+  pushes the test backup and the Goodreads export to Downloads for the
+  document picker;
 - runs the flows that need the phone changed around them: dark mode
   (`cmd uimode night yes`), 200 % text (`settings put system font_scale 2.0`),
-  airplane mode (then back online for `hooks/offline-resume.yaml`);
-- after the online lookup, checks the app's database holds the cover as a
-  `file://` path and the file exists;
+  the offline queue (the app's simulated network off, then on for
+  `hooks/offline-resume.yaml`);
+- runs the `live` flow with up to three attempts, each after checking the
+  phone can reach `openlibrary.org:443`, and then checks the app's database
+  holds the cover as a `file://` path and the file exists (waiting up to a
+  minute for the download);
+- fails the `mock-api-unmocked` check if any request had no recorded
+  response;
 - after turning on reminders, checks Android's alarm list has the reminder,
   kills the app, moves the clock to the loan's due date, waits for the
   notification and taps it (`hooks/reminder-open.yaml`), which must open the
@@ -86,8 +146,8 @@ workflow, or `gh workflow run android-e2e.yml --ref <branch>`; also every
 Monday on `main`) builds both APKs for x86_64, boots a Pixel emulator on
 Android 15 (Google APIs, KVM) with `reactivecircus/android-emulator-runner`,
 runs `scripts/maestro-suite.sh` and uploads `maestro-results/` as an artifact.
-The lookup flows use the real Open Library and Google Books, so a run can
-fail when either is down or rate-limits the runner; the optional
+Only the `live` steps use the real Open Library and Google Books (and so
+need the runner's network); they retry, as above. The optional
 `GOOGLE_BOOKS_API_KEY` secret is built in when set. The developer's cover
 photos are not there, so those three flows are skipped; the committed
 made-up cover still exercises on-device text recognition.
@@ -136,8 +196,8 @@ the app than an arm64 emulator on an Apple-silicon Mac):
 | `onboarding.yaml` | first-run fixture: the four onboarding pages, then a relaunch goes straight to the Shelf |
 | `first-run-production.yaml` | **production APK**: a fresh install shows the onboarding, Skip lands on an empty Shelf, a relaunch does not show it again, and the E2E link is a "Page not found" that leaves the library alone |
 | `book-add-manual.yaml` | add a book with the Android keyboard (title, author chip, genre chip, year, four stars), save, see it on the Shelf |
-| `lookup-isbn-online.yaml` | a real ISBN lookup (Open Library and Google Books over the phone's network stack with the app's User-Agent), choose, save; the cover is downloaded into the app's storage (`file://…/covers/1.jpg`, checked in the database) |
-| `scan-inject-isbn.yaml` | a barcode read injected by the E2E link → real lookup → edition picker → saved book |
+| `lookup-isbn-online.yaml` (**live**) | a real ISBN lookup (Open Library and Google Books over the phone's network stack with the app's User-Agent), choose, save; the cover is downloaded into the app's storage (`file://…/covers/1.jpg`, checked in the database) |
+| `scan-inject-isbn.yaml` | a barcode read injected by the E2E link → lookup (recorded) → edition picker → saved book |
 | `book-detail.yaml` | rate five stars, edit the year (call number follows), delete from the menu with the confirmation, Undo from the Shelf's snackbar |
 | `loan-lend-return.yaml` | lend to a new borrower with **Android's date picker** (next month, the 15th), the stamp, the Loans tab's order, Mark returned, History |
 | `series-detail.yaml` | Discworld's spine shelf with the dashed gap, "Add #3" opens the form with the series and number filled in |
@@ -159,7 +219,7 @@ the app than an arm64 emulator on an Apple-silicon Mac):
 | `dark-mode.yaml` | with the phone in dark mode: the Shelf, a book, the lend sheet, the date picker, Loans, Settings and the spines, for review |
 | `font-scale.yaml` | at Android's 200 % text: the Shelf in all three views, a book, the edit form, Loans, Groups, Settings and Scan, for review |
 | `shelf-spines-scroll.yaml` | the `large` fixture (2,000 books): the covers grid and the spines scroll with no "app not responding", and the view mode survives a restart |
-| `offline-queue.yaml` (+ hook) | in airplane mode the lookup says it cannot reach the catalogues, a scanned ISBN is queued with the Shelf's banner; back online, reopening the app finds the details and the banner goes |
+| `offline-queue.yaml` (+ hook) | with the simulated network off the lookup says it cannot reach the catalogues, a scanned ISBN is queued with the Shelf's banner; back on, reopening the app finds the details and the banner goes |
 
 ## Regression checklist (P09-10)
 
