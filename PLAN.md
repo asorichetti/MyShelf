@@ -126,7 +126,8 @@ Versions below are what is installed on `main` today (from `package-lock.json`).
 | Web | react-native-web | 0.21.3 | Metro bundler, `output: "single"` |
 | Database | expo-sqlite | 57.0.3 | [ADR 0005](docs/adr/0005-sqlite-with-migrations-and-db-interface.md) |
 | Fonts | expo-font, `@expo-google-fonts/lora`, `nunito`, `courier-prime` | 57.0.4 / 0.4.2 / 0.4.2 / 0.4.1 | each weight imported from its own subpath so only the weights in use are bundled |
-| Splash | expo-splash-screen | 57.0.9 | held until fonts and database are ready |
+| Splash | expo-splash-screen | 57.0.9 | held until fonts and database are ready; a night version on a phone in dark mode |
+| System UI | expo-system-ui | 57.0.4 | `userInterfaceStyle: automatic` on Android; the root view takes the theme's paper (`RootBackground`) |
 | Unit tests | Jest / jest-expo | 29.7.0 / 57.0.5 | |
 | Component tests | @testing-library/react-native | 13.3.3 | |
 | Vector graphics | react-native-svg | 15.15.4 | Booky and library motifs |

@@ -199,6 +199,7 @@ Every image is rendered from an SVG in `assets/source/` by `npm run icons:render
 | `assets/icon.png` | 1024² | `app.json` `icon` |
 | `assets/android-icon-foreground.png`, `-background.png`, `-monochrome.png` | 1024² | adaptive icon layers; monochrome for Android 13+ themed icons |
 | `assets/splash-icon.png` | 1024² | splash (Booky and the wordmark, 200 dp on the paper colour) |
+| `assets/splash-icon-dark.png` | 1024² | the same for a phone in dark mode, on the night paper (`#1C1424`) |
 | `assets/favicon.png` | 48² | web |
 | `assets/notification-icon.png` | 96² | the loan reminders' status bar icon (`expo-notifications` plugin; Android keeps only its alpha) |
 | `assets/store/icon-512.png` | 512² | Google Play hi-res icon |
