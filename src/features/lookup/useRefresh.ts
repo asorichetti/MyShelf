@@ -150,6 +150,7 @@ export function useRefresh(bookId: number | null, { service: injected }: { servi
     const abort = new AbortController();
     (async () => {
       const book = await booksRepo.getBookDetail(db, bookId);
+      if (abort.signal.aborted) return;
       if (!book) return setState({ status: 'missing' });
       try {
         const proposal = await proposeForBook(db, book, service, abort.signal);
@@ -167,7 +168,7 @@ export function useRefresh(bookId: number | null, { service: injected }: { servi
       }
     })().catch((error) => {
       console.error('Could not load the book to refresh', error);
-      setState({ status: 'missing' });
+      if (!abort.signal.aborted) setState({ status: 'missing' });
     });
     return () => abort.abort();
   }, [db, bookId, service]);

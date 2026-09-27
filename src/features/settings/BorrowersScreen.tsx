@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Booky } from '@/components/booky';
@@ -41,10 +41,19 @@ export function BorrowersScreen() {
   const [blocked, setBlocked] = useState<BorrowerWithStats | null>(null);
   const [busy, setBusy] = useState(false);
 
+  // Only the latest answer is shown (reloads can overlap), and none once the screen has gone.
+  const asked = useRef(0);
+  useEffect(
+    () => () => {
+      asked.current += 1;
+    },
+    [],
+  );
   const load = useCallback(() => {
+    const ask = ++asked.current;
     loansRepo
       .listBorrowersWithStats(db)
-      .then(setList)
+      .then((next) => ask === asked.current && setList(next))
       .catch((e) => console.error('Could not list borrowers', e));
   }, [db]);
   useEffect(load, [load]);
