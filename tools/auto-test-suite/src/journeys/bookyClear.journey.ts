@@ -7,7 +7,7 @@
 // every tab and on the book and series pages, and the backup reminder; at
 // 100 % and 200 % text, in the light and the dark theme.
 import { Testids, tid } from '../selectors.ts';
-import { openFixture, waitForCount, waitForPath, waitVisible } from './helpers.ts';
+import { openBigFixture, openFixture, waitForCount, waitForPath, waitVisible } from './helpers.ts';
 import { openFirstRun } from './onboarding.journey.ts';
 import { expect, q, register, type Context } from './registry.ts';
 import { expectTipCoversNothing } from './tipCover.ts';
@@ -191,7 +191,8 @@ register({
 
     // Forty days on, a library of 10+ books never backed up: Booky suggests a backup when the app starts.
     await c.page.emulateMedia({ colorScheme: 'light' });
-    await openFixture(c, 'large', '/');
+    // 2,000 books: loads slowly, so it gets the big-fixture wait, not the 15 s page check.
+    await openBigFixture(c, 'large');
     await c.page.clock.setSystemTime(new Date(Date.now() + 40 * 24 * 60 * 60 * 1000));
     await gotoAtScale(c, '/book/1', 1);
     await waitVisible(c, vis(tid(Testids.bookDetail.title)), '/book/1 (40 days on)');

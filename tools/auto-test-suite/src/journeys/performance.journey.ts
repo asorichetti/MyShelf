@@ -7,7 +7,7 @@ import { writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { Testids, tid } from '../selectors.ts';
-import { rowNames, waitVisible } from './helpers.ts';
+import { openBigFixture, rowNames, waitVisible } from './helpers.ts';
 import { expect, q, register, type Context } from './registry.ts';
 
 const row = tid(Testids.home.row);
@@ -21,32 +21,6 @@ const SHELF_QUERY_MEASURE = 'myshelf:shelf-query';
 const SEARCH_DEBOUNCE_MS = 200;
 /** PLAN P09-03: search under 100 ms. Checked on the database query, the part the app controls. */
 const SEARCH_BUDGET_MS = 100;
-
-/**
- * Loads a big fixture: its loader page can take longer than the gates'
- * 15 s content wait, so this waits for the redirect itself and runs the page
- * gates on the Shelf once the rows are there.
- */
-/**
- * How long a big fixture may take to load. Seeding 10,000 books on web takes
- * about 45 s on a laptop and several minutes on a shared CI runner, so the
- * scheduled workflow raises it with AUTOTEST_BIG_FIXTURE_TIMEOUT_MS.
- */
-const BIG_FIXTURE_TIMEOUT_MS = Number(process.env.AUTOTEST_BIG_FIXTURE_TIMEOUT_MS) || 180_000;
-
-async function openBigFixture(c: Context, fixture: string): Promise<number> {
-  const started = Date.now();
-  await c.page.goto(c.url(`/e2e?fixture=${fixture}&next=${encodeURIComponent('/')}`), { waitUntil: 'load' });
-  try {
-    await c.page.waitForURL((u) => u.pathname === '/', { timeout: BIG_FIXTURE_TIMEOUT_MS });
-    await c.page.locator(row).first().waitFor({ state: 'visible', timeout: 60_000 });
-  } catch {
-    expect(false, `/e2e?fixture=${fixture}: expected the Shelf with rows, stayed on ${q(new URL(c.page.url()).pathname)}`);
-  }
-  const loadMs = Date.now() - started;
-  await c.checkGates('/ (' + fixture + ')');
-  return loadMs;
-}
 
 interface ScrollTiming {
   totalMs: number;

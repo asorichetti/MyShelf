@@ -199,3 +199,31 @@ export async function waitForGridCovers(
     .catch(() => {});
   return { settled, seconds, cells: await gridCovers(c) };
 }
+
+/**
+ * How long a big fixture (`large`, 2,000 books; `huge`, 10,000) may take to
+ * load. Seeding 10,000 books on web takes about 45 s on a laptop and several
+ * minutes on a shared CI runner, so the scheduled workflow raises it with
+ * AUTOTEST_BIG_FIXTURE_TIMEOUT_MS.
+ */
+const BIG_FIXTURE_TIMEOUT_MS = Number(process.env.AUTOTEST_BIG_FIXTURE_TIMEOUT_MS) || 180_000;
+
+/**
+ * Loads a big fixture and returns how long it took. Its loader page can take
+ * longer than the gates' 15 s content wait, so this waits for the redirect to
+ * the Shelf itself and runs the page gates once the rows are there.
+ */
+export async function openBigFixture(c: Context, fixture: string): Promise<number> {
+  const row = tid(Testids.home.row);
+  const started = Date.now();
+  await c.page.goto(c.url(`/e2e?fixture=${fixture}&next=${encodeURIComponent('/')}`), { waitUntil: 'load' });
+  try {
+    await c.page.waitForURL((u) => u.pathname === '/', { timeout: BIG_FIXTURE_TIMEOUT_MS });
+    await c.page.locator(row).first().waitFor({ state: 'visible', timeout: 60_000 });
+  } catch {
+    expect(false, `/e2e?fixture=${fixture}: expected the Shelf with rows, stayed on ${q(new URL(c.page.url()).pathname)}`);
+  }
+  const loadMs = Date.now() - started;
+  await c.checkGates('/ (' + fixture + ')');
+  return loadMs;
+}
