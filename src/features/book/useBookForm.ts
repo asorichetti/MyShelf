@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { authorsRepo, booksRepo, genresRepo, useDatabase } from '@/db';
 import {
@@ -53,6 +53,7 @@ export function useBookForm(id: number | null, prefill?: Partial<BookDraft>): Bo
   const [authorText, setAuthorText] = useState('');
   const [genreText, setGenreText] = useState('');
   const [saving, setSaving] = useState(false);
+  const submitting = useRef(false);
   const [existingGenres, setExistingGenres] = useState<string[]>([]);
 
   useEffect(() => {
@@ -98,6 +99,8 @@ export function useBookForm(id: number | null, prefill?: Partial<BookDraft>): Bo
   );
 
   const submit = useCallback(async (): Promise<SubmitResult> => {
+    // A second Save while the first is still writing would create the book twice.
+    if (submitting.current) return { ok: false, firstInvalid: null };
     // Include a name or genre that was typed but not added yet.
     const full: BookDraft = {
       ...draft,
@@ -114,6 +117,7 @@ export function useBookForm(id: number | null, prefill?: Partial<BookDraft>): Bo
     }
     setErrors({});
     setSaving(true);
+    submitting.current = true;
     try {
       const seriesProbe = await beginSeriesSave(db, { bookId: id, seriesNames: [full.seriesName] });
       const savedId = await booksRepo.saveBookDraft(db, result.value, id ?? undefined);
@@ -129,6 +133,7 @@ export function useBookForm(id: number | null, prefill?: Partial<BookDraft>): Bo
       void seriesProbe.finish(savedId);
       return { ok: true, id: savedId, title: result.value.title };
     } finally {
+      submitting.current = false;
       setSaving(false);
     }
   }, [db, draft, authorText, genreText, existingGenres, id]);

@@ -49,6 +49,18 @@ describe('useBookForm', () => {
     off();
   });
 
+  it('saves a new book once when Save is pressed twice before the first save ends', async () => {
+    const { result } = renderHook(() => useBookForm(null), { wrapper });
+    await act(async () => {});
+    act(() => result.current.setField('title', 'The Hobbit'));
+    let results: Awaited<ReturnType<typeof result.current.submit>>[] = [];
+    await act(async () => {
+      results = await Promise.all([result.current.submit(), result.current.submit()]);
+    });
+    expect(await booksRepo.countBooks(db)).toBe(1);
+    expect(results.filter((r) => r.ok)).toHaveLength(1);
+  });
+
   it('blocks an invalid ISBN, reports the first invalid field and saves nothing', async () => {
     const { result } = renderHook(() => useBookForm(null), { wrapper });
     await act(async () => {});
