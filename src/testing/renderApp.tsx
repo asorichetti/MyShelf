@@ -1,5 +1,5 @@
 import { Stack } from 'expo-router';
-import { act, renderRouter } from 'expo-router/testing-library';
+import { act, fireEvent, renderRouter, screen } from 'expo-router/testing-library';
 import { Text } from 'react-native';
 
 import { BookyOverlay, BookyProvider, BookyTouchArea } from '@/components/booky';
@@ -82,4 +82,14 @@ export async function advance(ms: number) {
     jest.advanceTimersByTime(ms);
   });
   await act(async () => {});
+}
+
+/**
+ * Waits for the element with `testId`, then presses it inside act. The wait
+ * stays outside act: findBy* polls with React's act environment switched off,
+ * and a render landing mid-poll inside an act scope makes React warn.
+ */
+export async function pressWhenShown(testId: string) {
+  const target = await screen.findByTestId(testId);
+  await act(async () => fireEvent.press(target));
 }

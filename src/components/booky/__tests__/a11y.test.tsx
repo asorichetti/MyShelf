@@ -3,7 +3,7 @@ import { act, fireEvent, renderRouter, screen } from 'expo-router/testing-librar
 import { Text, View } from 'react-native';
 
 import { Booky, BookyBubble, bookyExpressions, BookyOverlay, BookyProvider, emitBooky, expressionDescriptions } from '@/components/booky';
-import { AppTestProviders, renderWithTheme } from '@/testing/render';
+import { AppTestProviders, renderWithTheme, settle } from '@/testing/render';
 import { Testids } from '@/testing/testids.gen';
 import { contrastRatio } from '@/theme/contrast';
 import { lightColors, textPairs } from '@/theme/tokens';
@@ -35,8 +35,9 @@ const send = (event: BookyEvent) => act(async () => emitBooky(event));
 const added: BookyEvent = { type: 'book-added', vars: { books: '2 books' } };
 
 describe('Booky accessibility (P07-09)', () => {
-  it.each(bookyExpressions)('Booky (%s) is one labelled image with its artwork hidden', (expression) => {
+  it.each(bookyExpressions)('Booky (%s) is one labelled image with its artwork hidden', async (expression) => {
     renderWithTheme(<Booky expression={expression} animated={false} testID="booky" />);
+    await settle();
     const booky = screen.getByTestId('booky');
     expect(booky.props.role).toBe('img');
     expect(booky.props.accessibilityLabel).toBe(`Booky the bookmark, ${expressionDescriptions[expression]}`);

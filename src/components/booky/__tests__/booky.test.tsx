@@ -2,7 +2,7 @@ import { act, fireEvent, screen } from '@testing-library/react-native';
 import { AccessibilityInfo } from 'react-native';
 
 import { Booky, BookyBubble, bookyExpressions, expressionDescriptions } from '@/components/booky';
-import { renderWithTheme } from '@/testing/render';
+import { renderWithTheme, settle } from '@/testing/render';
 
 describe('Booky', () => {
   it.each(bookyExpressions)('renders the %s expression with an accessible label', async (expression) => {
@@ -39,7 +39,7 @@ describe('Booky', () => {
 });
 
 describe('BookyBubble', () => {
-  it('shows the message, actions and a dismiss button', () => {
+  it('shows the message, actions and a dismiss button', async () => {
     const onDismiss = jest.fn();
     const onAction = jest.fn();
     renderWithTheme(
@@ -53,6 +53,7 @@ describe('BookyBubble', () => {
         dismissTestID="dismiss"
       />,
     );
+    await settle();
     expect(screen.getByText('Tap Scan to add your first book.')).toBeOnTheScreen();
     expect(screen.getByLabelText('Booky the bookmark, looking excited')).toBeOnTheScreen();
     fireEvent.press(screen.getByRole('button', { name: 'Scan now' }));

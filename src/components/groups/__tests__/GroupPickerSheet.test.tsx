@@ -1,7 +1,7 @@
 import { fireEvent, screen } from '@testing-library/react-native';
 
 import { GroupPickerSheet } from '@/components/groups/GroupPickerSheet';
-import { hostsWithRole, renderWithTheme } from '@/testing/render';
+import { hostsWithRole, renderWithTheme, settle } from '@/testing/render';
 import { Testids } from '@/testing/testids.gen';
 
 const groups = [
@@ -10,9 +10,10 @@ const groups = [
 ];
 
 describe('GroupPickerSheet', () => {
-  it('offers each group as a named button and reports the pick', () => {
+  it('offers each group as a named button and reports the pick', async () => {
     const onPick = jest.fn();
     renderWithTheme(<GroupPickerSheet visible title="Add 3 books to a group" groups={groups} onPick={onPick} onNew={jest.fn()} onClose={jest.fn()} />);
+    await settle();
     expect(screen.getAllByTestId(Testids.groups.pickerOption)).toHaveLength(2);
     fireEvent.press(screen.getByRole('button', { name: 'Signed, 1 book' }));
     expect(onPick).toHaveBeenCalledWith(2);

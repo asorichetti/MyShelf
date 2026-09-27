@@ -1,12 +1,13 @@
 import { act, fireEvent, screen } from '@testing-library/react-native';
 
 import { GroupEditorSheet } from '@/components/groups/GroupEditorSheet';
-import { renderWithTheme } from '@/testing/render';
+import { renderWithTheme, settle } from '@/testing/render';
 import { Testids } from '@/testing/testids.gen';
 
 describe('GroupEditorSheet', () => {
-  it('names every swatch and icon for screen readers', () => {
+  it('names every swatch and icon for screen readers', async () => {
     renderWithTheme(<GroupEditorSheet visible onSave={jest.fn()} onCancel={jest.fn()} />);
+    await settle();
     const swatches = screen.getAllByTestId(Testids.groups.editorSwatch);
     const icons = screen.getAllByTestId(Testids.groups.editorIcon);
     expect(swatches).toHaveLength(8);
@@ -45,11 +46,13 @@ describe('GroupEditorSheet', () => {
   });
 
   it('keeps the sheet open with a message when saving fails', async () => {
-    jest.spyOn(console, 'error').mockImplementation(() => {});
+    const error = jest.spyOn(console, 'error').mockImplementation(() => {});
     renderWithTheme(<GroupEditorSheet visible onSave={() => Promise.reject(new Error('disk full'))} onCancel={jest.fn()} />);
     fireEvent.changeText(screen.getByTestId(Testids.groups.editorName), 'Kids');
     await act(async () => fireEvent.press(screen.getByTestId(Testids.groups.editorSave)));
     expect(screen.getByRole('alert')).toHaveTextContent(/couldn’t save/);
+    expect(error).toHaveBeenCalledWith('Could not save the group', expect.objectContaining({ message: 'disk full' }));
+    error.mockRestore();
   });
 
   it('renders nothing while closed', () => {

@@ -8,7 +8,7 @@ import { drainCoverBackfill } from '@/features/covers';
 import { ImportCsvScreen } from '@/features/settings/ImportCsvScreen';
 import { pickTextFile } from '@/services/backup/pickFile';
 import { createTestDb } from '@/testing/createTestDb';
-import { renderApp } from '@/testing/renderApp';
+import { pressWhenShown, renderApp } from '@/testing/renderApp';
 import { Testids } from '@/testing/testids.gen';
 
 jest.mock('@/services/backup/pickFile', () => ({ pickTextFile: jest.fn() }));
@@ -30,7 +30,7 @@ afterEach(() => db.close());
 async function chooseFile(name: string, text: string) {
   pick.mockResolvedValueOnce({ name, text });
   renderApp(db, '/settings/import-csv', { 'settings/import-csv': ImportCsvScreen });
-  await act(async () => fireEvent.press(await screen.findByTestId(C.pick)));
+  await pressWhenShown(C.pick);
 }
 
 describe('Import books from a spreadsheet', () => {
@@ -52,7 +52,7 @@ describe('Import books from a spreadsheet', () => {
 
   it('can leave the shelves out', async () => {
     await chooseFile('goodreads.csv', goodreads);
-    await act(async () => fireEvent.press(await screen.findByTestId(C.shelvesToggle)));
+    await pressWhenShown(C.shelvesToggle);
     await act(async () => fireEvent.press(screen.getByTestId(C.confirm)));
     await waitFor(() => expect(screen.getByTestId(C.report)).toBeOnTheScreen());
     expect(await groupsRepo.listGroups(db)).toEqual([]);

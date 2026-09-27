@@ -161,12 +161,10 @@ describe('BookyProvider and the overlay', () => {
   });
 
   it('throws outside a provider', () => {
-    const spy = jest.spyOn(console, 'error').mockImplementation(() => {});
     function Naked() {
       useBooky();
       return null;
     }
     expect(() => renderRouter({ index: Naked }, { initialUrl: '/' })).toThrow(/BookyProvider/);
-    spy.mockRestore();
   });
 });

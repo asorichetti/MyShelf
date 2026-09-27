@@ -1,7 +1,7 @@
 import { act, fireEvent, screen } from '@testing-library/react-native';
 
 import { lastCameraProps, resetCamera } from '@/testing/mockCamera';
-import { renderWithTheme } from '@/testing/render';
+import { renderWithTheme, settle } from '@/testing/render';
 import { Testids } from '@/testing/testids.gen';
 
 import { BarcodeScanner, NO_READ_TIP_MS } from '../BarcodeScanner';
@@ -24,8 +24,9 @@ function render(paused = false) {
 const scanCode = (type: string, data: string) => act(() => lastCameraProps()!.onBarcodeScanned({ type, data }));
 
 describe('BarcodeScanner', () => {
-  it('listens for EAN-13, EAN-8 and UPC-A and passes every read on', () => {
+  it('listens for EAN-13, EAN-8 and UPC-A and passes every read on', async () => {
     const { onBarcode } = render();
+    await settle();
     expect(lastCameraProps()!.barcodeScannerSettings).toEqual({ barcodeTypes: ['ean13', 'ean8', 'upc_a'] });
     scanCode('ean13', '9780552166591');
     scanCode('upc_a', '036000291452');

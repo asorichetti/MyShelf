@@ -124,7 +124,7 @@ describe('Choosing a cover', () => {
     jest.mocked(storeCoverFile).mockImplementationOnce(() => {
       throw new Error('No space left on device');
     });
-    jest.spyOn(console, 'error').mockImplementation(() => undefined);
+    const error = jest.spyOn(console, 'error').mockImplementation(() => undefined);
     renderApp(db, `/book/${mort.id}/edit`, routes);
     await advance(0);
     fireEvent.changeText(screen.getByTestId(Testids.bookForm.title), 'Mort (signed)');
@@ -136,7 +136,8 @@ describe('Choosing a cover', () => {
     expect(book.coverUri).toBe('file:///docs/covers/old.jpg');
     expect(book.title).toBe('Mort');
     expect(deleteCoverFile).not.toHaveBeenCalled();
-    jest.mocked(console.error).mockRestore();
+    expect(error).toHaveBeenCalledWith('Could not save the book', expect.objectContaining({ message: 'No space left on device' }));
+    error.mockRestore();
   });
 
   it('explains when the camera is not allowed', async () => {

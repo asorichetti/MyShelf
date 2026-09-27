@@ -8,7 +8,7 @@ import { CandidateList } from '@/components/book/CandidateList';
 import { editionLabel } from '@/components/scan/EditionRow';
 import { Button, SelectField, Sheet, Stamp } from '@/components/ui';
 import type { BookDetail } from '@/domain';
-import { hostsWithRole, renderWithTheme } from '@/testing/render';
+import { hostsWithRole, renderWithTheme, settle } from '@/testing/render';
 import { Testids } from '@/testing/testids.gen';
 import { ThemeProvider } from '@/theme';
 
@@ -32,9 +32,10 @@ const candidate = (title: string, coverUrl: string | null): CandidateCardData =>
 } as CandidateCardData);
 
 describe('lookup results', () => {
-  it('are a list of cards only: the announced count and Show more sit outside it', () => {
+  it('are a list of cards only: the announced count and Show more sit outside it', async () => {
     const cards = Array.from({ length: 7 }, (_, i) => candidate(`Book ${i + 1}`, null));
     renderWithTheme(<CandidateList candidates={cards} onChoose={jest.fn()} label="7 matches" />);
+    await settle();
     const [list, ...others] = hostsWithRole(screen.UNSAFE_root, 'list');
     expect(others).toHaveLength(0);
     expect(list!.props['aria-label']).toBe('7 matches');

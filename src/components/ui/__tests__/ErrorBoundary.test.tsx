@@ -24,7 +24,12 @@ beforeEach(() => {
   // React reports every caught render error on the console; these are on purpose.
   consoleError = jest.spyOn(console, 'error').mockImplementation(() => {});
 });
-afterEach(() => consoleError.mockRestore());
+afterEach(() => {
+  // Nothing but React's report of each error a boundary caught.
+  const unrelated = consoleError.mock.calls.filter((call) => !call.some((arg: unknown) => typeof arg === 'string' && arg.startsWith('The above error occurred in the <')));
+  consoleError.mockRestore();
+  expect(unrelated).toEqual([]);
+});
 
 describe('ErrorBoundary (P09-04)', () => {
   it('shows the fallback instead of children that throw, and tells onError', () => {

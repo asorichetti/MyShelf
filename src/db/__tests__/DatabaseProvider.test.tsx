@@ -73,6 +73,7 @@ describe('DatabaseProvider', () => {
     fail = false;
     fireEvent.press(screen.getByRole('button', { name: 'retry' }));
     expect(await screen.findByTestId('has-db')).toBeOnTheScreen();
+    expect(spy.mock.calls.map(([message, error]) => [message, (error as Error).message])).toEqual([['Could not open the MyShelf database', 'disk full']]);
     spy.mockRestore();
   });
 
@@ -94,7 +95,7 @@ describe('DatabaseProvider', () => {
     expect(screen.getByTestId(Testids.pageState.error)).toBeOnTheScreen();
     expect(screen.getByTestId(Testids.dbError.title)).toHaveTextContent("I couldn't open your library");
     expect(screen.getByText(/newer than this app understands/)).toBeOnTheScreen();
-    expect(spy).toHaveBeenCalledWith('Could not open the MyShelf database', expect.any(MigrationError));
+    expect(spy.mock.calls).toEqual([['Could not open the MyShelf database', expect.any(MigrationError)]]);
 
     db = await open();
     fireEvent.press(screen.getByTestId(Testids.dbError.retry));
@@ -120,8 +121,6 @@ describe('DatabaseProvider', () => {
   });
 
   it('useDatabase throws outside a provider', () => {
-    const spy = jest.spyOn(console, 'error').mockImplementation(() => {});
     expect(() => render(<UsesDb />)).toThrow(/DatabaseProvider/);
-    spy.mockRestore();
   });
 });

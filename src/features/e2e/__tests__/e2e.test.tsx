@@ -7,7 +7,7 @@ import { safeNextPath } from '@/features/e2e/e2eFlag';
 import { E2eScreen } from '@/features/e2e/E2eScreen';
 import { NotFoundScreen } from '@/features/navigation/NotFoundScreen';
 import { createTestDb } from '@/testing/createTestDb';
-import { AppTestProviders } from '@/testing/render';
+import { AppTestProviders, settle } from '@/testing/render';
 import { Testids } from '@/testing/testids.gen';
 
 let db: Db;
@@ -41,6 +41,7 @@ describe('/e2e fixture loader', () => {
     delete process.env.EXPO_PUBLIC_E2E;
     await booksRepo.createBook(db, { title: 'Keep me' });
     const r = renderRouter(routes, { initialUrl: '/e2e?fixture=empty&next=/', wrapper: Root });
+    await settle();
     expect(screen.getByTestId(Testids.notFound.title)).toHaveTextContent('Page not found');
     expect(r.getPathname()).toBe('/e2e');
     expect(await booksRepo.countBooks(db)).toBe(1);

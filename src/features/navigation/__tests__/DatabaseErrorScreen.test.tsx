@@ -66,16 +66,18 @@ describe('DatabaseErrorScreen: save a copy of the library file', () => {
   });
 
   it.each([
-    ['there is no file', () => mockRead.mockRejectedValue(new NoDatabaseFileError()), "There's no library file on this device yet, so there's nothing to save."],
-    ['the device cannot share', () => mockShare.mockResolvedValue('unavailable'), "This device can't share files, so the copy couldn't be saved."],
-    ['reading fails', () => mockRead.mockRejectedValue(new Error('disk I/O error')), "I couldn't save a copy of the library file."],
-  ])('explains when %s', async (_, arrange, message) => {
+    ['there is no file', () => mockRead.mockRejectedValue(new NoDatabaseFileError()), "There's no library file on this device yet, so there's nothing to save.", []],
+    ['the device cannot share', () => mockShare.mockResolvedValue('unavailable'), "This device can't share files, so the copy couldn't be saved.", []],
+    ['reading fails', () => mockRead.mockRejectedValue(new Error('disk I/O error')), "I couldn't save a copy of the library file.", ['Could not save a copy of the database file']],
+  ])('explains when %s', async (_, arrange, message, logged) => {
     const error = jest.spyOn(console, 'error').mockImplementation(() => {});
     arrange();
     await renderScreen();
     await press(T.export);
     expect(screen.getByTestId(T.exportStatus)).toHaveTextContent(message, { exact: false });
     expect(screen.getByTestId(T.exportStatus).props.role).toBe('alert');
+    // Only an unexpected failure is logged; the ones the screen explains are not.
+    expect(error.mock.calls.map(([first]) => first)).toEqual(logged);
     error.mockRestore();
   });
 

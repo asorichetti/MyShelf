@@ -21,8 +21,6 @@ beforeEach(async () => {
   db = await createTestDb();
 });
 afterEach(async () => {
-  // Let late list renders land before the tree goes away.
-  await act(async () => new Promise((resolve) => setTimeout(resolve, 100)));
   await db.close();
 });
 
@@ -84,6 +82,9 @@ describe.each(cases.filter(([name]) => name !== 'Scan' && name !== 'Settings'))(
     // The Shelf decides it is empty only once the database has answered.
     const empty = await screen.findByTestId(Testids.emptyState.root);
     expect(within(empty).getByLabelText(/^Booky the bookmark/)).toBeOnTheScreen();
+    // Testing Library unmounts the tree before this file's afterEach runs, so
+    // late list renders have to land here, inside act.
+    await settle();
   });
 });
 
@@ -91,6 +92,7 @@ describe('Shelf screen contract', () => {
   it('keeps the MyShelf h1 with the home.title testid inside page-content', async () => {
     renderScreen(ShelfScreen);
     await screen.findByTestId(Testids.home.bookCount);
+    await settle();
     const title = screen.getByTestId(Testids.home.title);
     expect(title).toHaveTextContent('MyShelf');
     expect(title.props.role).toBe('heading');
@@ -103,6 +105,7 @@ describe('Shelf screen contract', () => {
     await booksRepo.createBook(db, { title: 'Dune' });
     renderScreen(ShelfScreen);
     expect(await screen.findByTestId(Testids.home.bookCount)).toHaveTextContent('2 books catalogued');
+    await settle();
   });
 
   it('opens a Booky tip on request', async () => {

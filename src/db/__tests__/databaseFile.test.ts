@@ -39,6 +39,10 @@ describe('readDatabaseFile (Android)', () => {
     expect(mockConnection.closeAsync).toHaveBeenCalled();
     mockOpen.mockRejectedValue(new Error('unable to open database file'));
     await expect(readDatabaseFile()).resolves.toEqual(new Uint8Array([1, 2, 3]));
+    expect(warn.mock.calls.map(([message, error]) => [message, (error as Error).message])).toEqual([
+      ['The database could not be read as a database; saving the file as it is', 'file is not a database'],
+      ['The database could not be read as a database; saving the file as it is', 'unable to open database file'],
+    ]);
     warn.mockRestore();
   });
 
