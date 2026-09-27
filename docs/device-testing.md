@@ -115,6 +115,13 @@ the app than an arm64 emulator on an Apple-silicon Mac):
   "Welcome to MyShelf"). `metro.config.js` now keys the cache on a hash of the
   public values. Reproduce with `CI=true scripts/build-android-apk.sh` for one
   kind and then the other.
+- **It catches what Jest cannot.** The first run on the merged fixes of
+  late September found two regressions only a real device shows: "Use this
+  photo" deleted the camera's photo before the text reader opened it (every
+  camera cover read failed), and closing the in-memory database a restore
+  uses to bring an older backup up to date aborted the app natively
+  (expo-sqlite finalizing statements SQLite's search index keeps for itself;
+  it is now opened with `finalizeUnusedStatementsBeforeClosing: false`).
 - An action snackbar lasts 6 s. On a much slower emulator (one core), the
   steps between an Undo appearing and the tap on it can take longer than
   that, and the tap then lands on the Add book button, which drops back into
