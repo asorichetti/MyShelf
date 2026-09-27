@@ -1552,6 +1552,11 @@
    "license": "MIT"
   },
   {
+   "name": "expo-system-ui",
+   "version": "57.0.4",
+   "license": "MIT"
+  },
+  {
    "name": "expo-updates-interface",
    "version": "57.0.2",
    "license": "MIT"
@@ -1624,6 +1629,11 @@
   {
    "name": "fresh",
    "version": "0.5.2",
+   "license": "MIT"
+  },
+  {
+   "name": "fsevents",
+   "version": "2.3.3",
    "license": "MIT"
   },
   {
