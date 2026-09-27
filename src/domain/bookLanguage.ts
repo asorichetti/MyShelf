@@ -19,16 +19,18 @@ export interface LanguagePreference {
 
 /**
  * Short function words that give a language away on a cover or in a typed
- * title. A word shared by several languages ("de") splits its vote.
+ * title. A word shared by several languages ("de") splits its vote. Words
+ * that are also common English ("romance", "roman", "as", "do") are left
+ * out: an English cover says "A Novel" or "Romance" as often as any.
  */
 const STOPWORDS: Record<string, readonly string[]> = {
   en: ['the', 'of', 'and', 'a', 'an', 'to', 'in', 'for', 'with', 'by', 'from', 'my', 'your', 'is', 'at', 'this', 'novel', 'author'],
-  fr: ['le', 'la', 'les', 'des', 'du', 'de', 'et', 'un', 'une', 'au', 'aux', 'avec', 'pour', 'dans', 'sur', 'est', 'roman', 'petit'],
+  fr: ['le', 'la', 'les', 'des', 'du', 'de', 'et', 'un', 'une', 'au', 'aux', 'avec', 'pour', 'dans', 'sur', 'est', 'petit'],
   es: ['el', 'la', 'los', 'las', 'del', 'de', 'y', 'una', 'con', 'por', 'para', 'que', 'su', 'novela'],
-  de: ['der', 'die', 'das', 'und', 'ein', 'eine', 'mit', 'von', 'zu', 'im', 'den', 'dem', 'des', 'auf', 'für', 'nicht', 'roman'],
-  nl: ['de', 'het', 'een', 'van', 'en', 'voor', 'met', 'niet', 'op', 'wordt', 'ik', 'roman'],
+  de: ['der', 'die', 'das', 'und', 'ein', 'eine', 'mit', 'von', 'zu', 'im', 'den', 'dem', 'des', 'auf', 'für', 'nicht'],
+  nl: ['de', 'het', 'een', 'van', 'en', 'voor', 'met', 'niet', 'op', 'wordt', 'ik'],
   it: ['il', 'lo', 'gli', 'la', 'le', 'della', 'delle', 'dei', 'di', 'e', 'una', 'che', 'per', 'con', 'nel', 'romanzo'],
-  pt: ['o', 'os', 'as', 'da', 'do', 'das', 'dos', 'de', 'e', 'um', 'uma', 'com', 'para', 'em', 'não', 'romance'],
+  pt: ['o', 'os', 'da', 'das', 'dos', 'de', 'e', 'um', 'uma', 'com', 'para', 'não'],
 };
 
 /** Letters that belong to one language among those above. */
@@ -58,7 +60,7 @@ const WORD_VOTE = 6;
 /** Below this much evidence, say nothing. */
 const MIN_EVIDENCE = 6;
 /** The winner needs this share of all the evidence. */
-const MIN_SHARE = 0.6;
+const MIN_SHARE = 0.55;
 
 type Votes = Map<string, number>;
 

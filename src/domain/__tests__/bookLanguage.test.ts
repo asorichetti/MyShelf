@@ -25,6 +25,7 @@ describe('detectTextLanguage', () => {
   it.each<[string, string | null]>([
     ['Cien años de soledad\nGabriel García Márquez', 'es'],
     ['Le Petit Prince', 'fr'],
+    ['Le Petit Prince\nAntoine de Saint-Exupéry', 'fr'],
     ['Der Vorleser', 'de'],
     ['Het Achterhuis', 'nl'],
     ['Il nome della rosa', 'it'],
@@ -35,6 +36,9 @@ describe('detectTextLanguage', () => {
     ['Мастер и Маргарита', 'ru'],
     // Nothing to go on: names and title words that are not function words.
     ['PRACTICAL MAGIC\nALICE HOFFMAN', null],
+    // "Romance" is a genre word in English too, not a sign of Portuguese.
+    ['Problematic Summer Romance\nAli Hazelwood', null],
+    ['As Good as Dead', null],
     ['Norwegian Wood', null],
     ['', null],
     // One English and one French word: no clear majority.
@@ -64,7 +68,7 @@ describe('detectOcrLanguage', () => {
 
   it('says nothing without a clear majority or enough to go on', () => {
     expect(detectOcrLanguage(lines(['ALICE', 'ro']))).toBeNull();
-    expect(detectOcrLanguage(lines(['PRACTICAL MAGIC', 'en'], ['MAGISCHE PRAKTIJKEN', 'nl']))).toBeNull();
+    expect(detectOcrLanguage(lines(['PRACTICAL MAGIC', 'en'], ['PRAKTISCHE MAGIE', 'nl']))).toBeNull();
     expect(detectOcrLanguage({ blocks: [] })).toBeNull();
   });
 });
