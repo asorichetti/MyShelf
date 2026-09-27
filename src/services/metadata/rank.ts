@@ -116,7 +116,19 @@ export const EDITION_WEIGHTS = {
   year: 0.25,
   pages: 0.25,
   format: 0.25,
+  /** Taken off an ebook or audiobook: a cover or barcode was scanned from a book in the hand. */
+  notInHand: 1.5,
 } as const;
+
+/**
+ * How alike an edition's title is to the one wanted, forgiving a subtitle
+ * folded into the title ("Sapiens: A Brief History of Humankind" for
+ * "Sapiens").
+ */
+function editionTitleSimilarity(title: string, wanted: string): number {
+  const main = title.split(/\s*[:;]\s*/)[0];
+  return Math.max(titleSimilarity(title, wanted), main && main !== title ? titleSimilarity(main, wanted) : 0);
+}
 
 /** Whether a candidate knows where a cover of its own is. */
 export function hasOwnCover(c: Pick<BookCandidate, 'coverUrl' | 'coverRefs'>): boolean {
@@ -134,14 +146,15 @@ export interface RankEditionsOptions {
 export function scoreEdition(edition: BookCandidate, { language, title }: RankEditionsOptions = {}): number {
   const w = EDITION_WEIGHTS;
   return (
-    (title ? w.title * titleSimilarity(edition.title, title) ** 2 : 0) +
+    (title ? w.title * editionTitleSimilarity(edition.title, title) ** 2 : 0) +
     (language ? (language.detected ? w.detectedLanguage : w.localeLanguage) * languageMatch(edition, language.code) : 0) +
     (hasOwnCover(edition) ? w.cover : 0) +
     (edition.isbn13 || edition.isbn10 ? w.isbn : 0) +
     (edition.publisher ? w.publisher : 0) +
     (edition.publicationYear != null ? w.year : 0) +
     (edition.pageCount ? w.pages : 0) +
-    (edition.format ? w.format : 0)
+    (edition.format ? w.format : 0) -
+    (edition.format === 'ebook' || edition.format === 'audiobook' ? w.notInHand : 0)
   );
 }
 
@@ -151,9 +164,10 @@ export function scoreEdition(edition: BookCandidate, { language, title }: RankEd
  * edition known to be in another language never comes before one in that
  * language or of unknown language: a Dutch edition is never offered first
  * for an English cover. Within that, by score: the title closest to the one
- * wanted (a study guide "Lektürehilfen Der Vorleser" sinks below the novel),
- * the preferred language (unknown counts half), a cover of its own, a fuller
- * record; then the newest. Ties keep the provider's order.
+ * wanted, a subtitle aside (a study guide "Lektürehilfen Der Vorleser" sinks
+ * below the novel), the preferred language (unknown counts half), a cover of
+ * its own, a fuller record, and not an ebook or audiobook (a book in the hand
+ * was scanned); then the newest. Ties keep the provider's order.
  */
 export function rankEditions(editions: readonly BookCandidate[], options: RankEditionsOptions = {}): BookCandidate[] {
   const { language } = options;

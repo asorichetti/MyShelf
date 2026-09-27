@@ -186,4 +186,17 @@ describe('rankEditions', () => {
     const vintage = base('Practical Magic', { language: 'en', publisher: 'Vintage Books', publicationYear: 2002, isbn13: '9780099429173', pageCount: 280, coverRefs: covers(14809819) });
     expect(rankEditions([deluxe, vintage], { language: { code: 'en', detected: true }, title: 'Practical Magic' })[0]).toBe(vintage);
   });
+
+  it('forgives a subtitle folded into the title ("Sapiens: A Brief History of Humankind")', () => {
+    const english = base('Sapiens: A Brief History of Humankind', { language: 'en', publisher: 'Harper', publicationYear: 2015, coverRefs: covers(7) });
+    // Debolsillo's Spanish edition is titled just "Sapiens".
+    const spanish = base('Sapiens', { language: 'es', publisher: 'Debolsillo', publicationYear: 2022, coverRefs: covers(8) });
+    expect(rankEditions([spanish, english], { language: { code: 'en', detected: false }, title: 'Sapiens' })[0]).toBe(english);
+  });
+
+  it('prefers a printed edition to an audiobook or ebook of the same book', () => {
+    const audio = base('Educated', { language: 'en', publisher: 'Random House Audio', publicationYear: 2018, format: 'audiobook', isbn13: '9781987146127', coverRefs: covers(9) });
+    const hardback = base('Educated', { language: 'en', publisher: 'Random House', publicationYear: 2018, format: 'hardcover', isbn13: '9780399590504', coverRefs: covers(10) });
+    expect(rankEditions([audio, hardback], { language: { code: 'en', detected: true }, title: 'Educated' })[0]).toBe(hardback);
+  });
 });
