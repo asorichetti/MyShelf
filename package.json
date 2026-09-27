@@ -87,6 +87,7 @@
       "/tools/",
       "/__live__/"
     ],
+    "globalSetup": "<rootDir>/src/testing/jest.globalSetup.ts",
     "setupFiles": [
       "<rootDir>/src/testing/jest.setup.ts"
     ],
