@@ -151,11 +151,19 @@ describe('rankEditions', () => {
     expect(rankEditions(olOrder)).toEqual(olOrder);
   });
 
-  it('a detected language outranks everything; unknown languages come between', () => {
+  it('a detected language puts every edition known to be in another language last, however complete', () => {
     const bare = base('Problematic Summer Romance', { language: 'en' });
-    const unknown = base('Problematic Summer Romance', { publisher: 'X', publicationYear: 2025, isbn13: '9781408729885', coverRefs: covers(1) });
+    const unknown = base('Problematic Summer Romance');
     const ranked = rankEditions([vanGoor, unknown, bare], { language: { code: 'en', detected: true }, title });
     expect(ranked).toEqual([bare, unknown, vanGoor]);
+  });
+
+  it('an edition of unknown language can outrank a same-language one on the rest (the novel over its study guide)', () => {
+    // OL14871157W: the Diogenes edition records no language; the Klett study guide says German.
+    const guide = base('Lektürehilfen Der Vorleser.', { language: 'de', publisher: 'Ernst Klett Verlag', publicationYear: 2001, coverRefs: covers(4) });
+    const novel = base('Der Vorleser', { publisher: 'Diogenes Verlag AG', publicationYear: 2017, isbn13: '9783257229530', coverRefs: covers(5) });
+    const dutch = base('De voorlezer', { language: 'nl', publisher: 'Ambo', publicationYear: 2000, coverRefs: covers(6) });
+    expect(rankEditions([guide, dutch, novel], { language: { code: 'de', detected: true }, title: 'Der Vorleser' })).toEqual([novel, guide, dutch]);
   });
 
   it("the app's language gives way to a much closer title (a Spanish cover read without a language)", () => {

@@ -104,6 +104,8 @@ export function rankCandidates(candidates: readonly BookCandidate[], query: Sear
 
 /** Points per signal when ordering one work's editions (`rankEditions`). */
 export const EDITION_WEIGHTS = {
+  /** Times the language match (1 same, ½ unknown) when the cover's language was read. */
+  detectedLanguage: 3,
   /** Times the square of the title's similarity to the one wanted (0–1), so a partial match counts for little. */
   title: 6,
   /** The app's language (when the cover's is unknown); a cover's detected language outranks every score. */
@@ -128,12 +130,12 @@ export interface RankEditionsOptions {
   title?: string | null;
 }
 
-/** An edition's score apart from a detected language: title, cover, fuller record and, weakly, the app's language. */
+/** An edition's score: title, the preferred language, a cover of its own, a fuller record. */
 export function scoreEdition(edition: BookCandidate, { language, title }: RankEditionsOptions = {}): number {
   const w = EDITION_WEIGHTS;
   return (
     (title ? w.title * titleSimilarity(edition.title, title) ** 2 : 0) +
-    (language && !language.detected ? w.localeLanguage * languageMatch(edition, language.code) : 0) +
+    (language ? (language.detected ? w.detectedLanguage : w.localeLanguage) * languageMatch(edition, language.code) : 0) +
     (hasOwnCover(edition) ? w.cover : 0) +
     (edition.isbn13 || edition.isbn10 ? w.isbn : 0) +
     (edition.publisher ? w.publisher : 0) +
@@ -145,17 +147,17 @@ export function scoreEdition(edition: BookCandidate, { language, title }: RankEd
 
 /**
  * One work's editions, likeliest first for this user (the edition picker and
- * whatever saves its first choice). With a language read on the cover, every
- * edition in that language comes before those of unknown language, and those
- * before other languages: a Dutch edition is never offered first for an
- * English cover. Within that: title closest to the one wanted (a study guide
- * "Lektürehilfen Der Vorleser" sinks), the app's language when the cover's is
- * unknown, a cover of its own, a fuller record, then the newest. Ties keep
- * the provider's order.
+ * whatever saves its first choice). With a language read on the cover, an
+ * edition known to be in another language never comes before one in that
+ * language or of unknown language: a Dutch edition is never offered first
+ * for an English cover. Within that, by score: the title closest to the one
+ * wanted (a study guide "Lektürehilfen Der Vorleser" sinks below the novel),
+ * the preferred language (unknown counts half), a cover of its own, a fuller
+ * record; then the newest. Ties keep the provider's order.
  */
 export function rankEditions(editions: readonly BookCandidate[], options: RankEditionsOptions = {}): BookCandidate[] {
   const { language } = options;
-  const tier = (e: BookCandidate) => (language?.detected ? languageMatch(e, language.code) : 0);
+  const tier = (e: BookCandidate) => (language?.detected && languageMatch(e, language.code) === 0 ? 0 : 1);
   return editions
     .map((edition, index) => ({ edition, index, tier: tier(edition), score: scoreEdition(edition, options) }))
     .sort(
