@@ -1,0 +1,107 @@
+name: Android E2E
+
+# The Maestro suite (.maestro/) on an Android emulator (P00-18, P09-10;
+# docs/device-testing.md): builds an E2E APK (fixture loader on) and a
+# production APK for x86_64, boots a Pixel emulator with KVM and runs
+# scripts/maestro-suite.sh, which sets the device up for the flows that need
+# it (dark mode, font size, airplane mode, the clock for reminders).
+# Screenshots, logs and JUnit reports are uploaded on every run.
+#
+# Run it from Actions -> Android E2E -> Run workflow, or with
+#   gh workflow run android-e2e.yml --ref <branch>
+# It also runs every Monday, against main. The flows that look books up use
+# the real Open Library and Google Books, so a run can fail when they are
+# down or rate-limit the runner.
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 5 * * 1'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: android-e2e-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  maestro:
+    name: Maestro on an emulator
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    env:
+      # Optional build-time Google Books key (docs/release.md). Empty = keyless.
+      EXPO_PUBLIC_GOOGLE_BOOKS_API_KEY: ${{ secrets.GOOGLE_BOOKS_API_KEY }}
+      # The emulator on a Linux runner is x86_64; build only that ABI.
+      ABIS: x86_64
+      MAESTRO_VERSION: 2.10.0
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/.ghcup /usr/share/swift /usr/local/share/boost
+          df -h /
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 23
+          cache: npm
+      - run: npm ci
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+
+      # Same SDK packages as the release build, read from React Native's catalog.
+      - name: Install Android SDK packages
+        run: |
+          catalog=node_modules/react-native/gradle/libs.versions.toml
+          value() { sed -n "s/^$1 *= *\"\(.*\)\"/\1/p" "$catalog"; }
+          ndk=$(value ndkVersion); build_tools=$(value buildTools); compile_sdk=$(value compileSdk)
+          echo "NDK $ndk, build-tools $build_tools, platform android-$compile_sdk"
+          sdkmanager="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          yes | "$sdkmanager" --licenses > /dev/null || true
+          "$sdkmanager" --install "ndk;$ndk" "build-tools;$build_tools" "platforms;android-$compile_sdk" "cmake;3.22.1" > /dev/null
+
+      - name: Build the E2E APK
+        run: scripts/build-android-apk.sh e2e build/myshelf-e2e.apk
+      - name: Build the production APK
+        run: scripts/build-android-apk.sh production build/myshelf-production.apk
+
+      - name: Install Maestro
+        run: |
+          curl -fsSL "https://get.maestro.mobile.dev" | bash
+          echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
+
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      # A Google APIs image (not Google Play) so `adb root` works: the suite
+      # reads the app's database and moves the clock for the reminder check.
+      - name: Run the Maestro suite
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_7
+          ram-size: 4096M
+          disk-size: 6000M
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+          disable-animations: true
+          script: scripts/maestro-suite.sh --e2e-apk build/myshelf-e2e.apk --production-apk build/myshelf-production.apk --out maestro-results
+
+      - name: Upload screenshots and reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: maestro-results
+          path: maestro-results/
+          if-no-files-found: warn
+          retention-days: 14
