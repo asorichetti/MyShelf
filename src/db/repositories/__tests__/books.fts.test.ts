@@ -162,6 +162,18 @@ describe.each([
     expect(await search(db, 'moller')).toEqual([]);
   });
 
+  it('puts books with the number in their title above books that only have it in their ISBN', async () => {
+    await booksRepo.createBook(db, { title: '1984', isbn13: '9780451524935' });
+    await booksRepo.createBook(db, { title: 'Zebra Crossings', isbn13: '9781984801258' });
+    await booksRepo.createBook(db, { title: 'Apple 1984 Edition' });
+    await booksRepo.createBook(db, { title: 'Yonder', isbn10: '1984801252' });
+    // By title, Z to A: the ISBN-only matches would come first without the ranking.
+    expect(await search(db, '1984', { sort: oneKey('title', 'desc') })).toEqual(['Apple 1984 Edition', '1984', 'Zebra Crossings', 'Yonder']);
+    expect(await search(db, '1984', { sort: oneKey('title', 'asc') })).toEqual(['1984', 'Apple 1984 Edition', 'Yonder', 'Zebra Crossings']);
+    // A word search is ordered by the sort alone.
+    expect(await search(db, 'zebra yonder')).toEqual([]);
+  });
+
   it('finds ISBNs typed with or without hyphens, and parts of them', async () => {
     expect(await search(db, '9780552166591')).toEqual(['The Colour of Magic']);
     expect(await search(db, '978-0-552')).toEqual(['The Colour of Magic']);

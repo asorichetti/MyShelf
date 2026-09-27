@@ -354,10 +354,12 @@ export function searchGlob(term: string): string {
  * - Without either (a database from before migration 0006), the old `LIKE`
  *   over title, subtitle, series and author names.
  *
- * A digit-ish query ("978-0-441") is one word, its ISBN digits, and also
- * matches the ISBN columns anywhere. Returns null for a blank query.
+ * A digit-ish query ("978-0-441", "1984") is one word, its ISBN digits, and
+ * also matches the ISBN columns anywhere; its `rank` puts books with those
+ * digits in the title or subtitle first, before books that match only
+ * through an ISBN. Returns null for a blank query.
  */
-export async function searchClause(db: Db, query: string): Promise<SqlClause | null> {
+export async function searchClause(db: Db, query: string): Promise<(SqlClause & { rank?: SqlClause }) | null> {
   const text = query.trim();
   if (!text) return null;
   const isbn = isbnFragment(text);
@@ -391,6 +393,9 @@ export async function searchClause(db: Db, query: string): Promise<SqlClause | n
   if (isbn) {
     alternatives.push('b.isbn13 LIKE ?', 'b.isbn10 LIKE ?');
     params.push(`%${isbn}%`, `%${isbn}%`);
+    // "1984" is a title as much as ISBN digits: books with it in the title or subtitle go before those that only have it in an ISBN.
+    const rank = { sql: "CASE WHEN b.title LIKE ? OR b.subtitle LIKE ? THEN 0 ELSE 1 END", params: [`%${isbn}%`, `%${isbn}%`] };
+    return { sql: `(${alternatives.join(' OR ')})`, params, rank };
   }
   return { sql: `(${alternatives.join(' OR ')})`, params };
 }
@@ -434,9 +439,9 @@ export async function listBookItems(db: Db, options: ListBookItemsOptions = {}):
        ol.id IS NOT NULL AS on_loan, olp.name AS loan_borrower, ol.due_on AS loan_due_on, b.rating
      FROM books b ${joins.join(' ')} ${BASE_JOINS}
      ${where.length ? `WHERE ${where.join(' AND ')}` : ''}
-     ORDER BY ${order.orderBy}
+     ORDER BY ${search?.rank ? `${search.rank.sql}, ` : ''}${order.orderBy}
      ${limit != null ? 'LIMIT ? OFFSET ?' : ''}`,
-    [...params, ...order.params, ...(limit != null ? [limit, offset] : [])],
+    [...params, ...(search?.rank?.params ?? []), ...order.params, ...(limit != null ? [limit, offset] : [])],
   );
 
   const names = await authorNamesFor(db, rows.map((r) => r.id));
