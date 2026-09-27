@@ -1,6 +1,7 @@
 {
   "synthetic": false,
-  "note": "Recorded with Apple Vision (scripts/record-ocr-fixture.swift) from a developer's phone photo of the cover, as a stand-in for ML Kit, which cannot run on a Mac. The photo is not committed (the cover art is copyrighted). Replace with an ML Kit capture from a device when a development build can record one.",
+  "recogniser": "vision",
+  "note": "Recorded with Apple Vision (scripts/record-ocr-fixture.swift) from a developer's phone photo of the cover, as a stand-in for ML Kit, which cannot run on a Mac. The photo is not committed (the cover art is copyrighted). The ML Kit capture of the same photo is the matching real-mlkit-*.json.",
   "description": "Handheld, angled photo on a busy background. Vision misreads the tick-box \"?ROMANCE\" as \"BROMANCE\" and puts a stray \"~\" before PROBLEMATIC; the byline sits at the top over a bestseller strap.",
   "expected": {
     "title": "Problematic Summer Romance",

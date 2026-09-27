@@ -1,0 +1,129 @@
+{
+  "synthetic": false,
+  "recogniser": "mlkit",
+  "source": "ML Kit on Android emulator from developer photos",
+  "note": "ML Kit Text Recognition v2 (bundled Latin model) through the app's module, read from the phone photo chosen in Scan → Cover (scripts/record-mlkit-fixture.mjs). The photo is not committed (the cover art is copyrighted).",
+  "description": "Handheld, angled photo on a busy background (the photo behind real-problematic-summer-romance.json). ML Kit reads ROMANCE right (Vision read BROMANCE) but mixes case in the script lettering (PROBLEmATIC, SUmmER), and reads the \"a novel\" tag as \"2 novel\".",
+  "expected": {
+    "title": "Problematic Summer Romance",
+    "author": "Ali Hazelwood"
+  },
+  "imageSize": {
+    "width": 3024,
+    "height": 4032
+  },
+  "result": {
+    "blocks": [
+      {
+        "text": "ALI HAZELWOOD",
+        "frame": {
+          "x": 1000,
+          "y": 672,
+          "width": 1348,
+          "height": 130
+        },
+        "lines": [
+          {
+            "text": "ALI HAZELWOOD",
+            "frame": {
+              "x": 1000,
+              "y": 672,
+              "width": 1348,
+              "height": 130
+            },
+            "confidence": 0.74,
+            "language": "und-Latn"
+          }
+        ]
+      },
+      {
+        "text": "New York Times Bestselling Author of Deep End",
+        "frame": {
+          "x": 896,
+          "y": 808,
+          "width": 1484,
+          "height": 72
+        },
+        "lines": [
+          {
+            "text": "New York Times Bestselling Author of Deep End",
+            "frame": {
+              "x": 896,
+              "y": 808,
+              "width": 1484,
+              "height": 72
+            },
+            "confidence": 0.89,
+            "language": "en"
+          }
+        ]
+      },
+      {
+        "text": "PROBLEmATIC\nSUmmER\nROMANCE",
+        "frame": {
+          "x": 936,
+          "y": 2386,
+          "width": 1502,
+          "height": 966
+        },
+        "lines": [
+          {
+            "text": "PROBLEmATIC",
+            "frame": {
+              "x": 1008,
+              "y": 2386,
+              "width": 1430,
+              "height": 390
+            },
+            "confidence": 0.62,
+            "language": "en"
+          },
+          {
+            "text": "SUmmER",
+            "frame": {
+              "x": 986,
+              "y": 2648,
+              "width": 1104,
+              "height": 378
+            },
+            "confidence": 0.5,
+            "language": "en"
+          },
+          {
+            "text": "ROMANCE",
+            "frame": {
+              "x": 982,
+              "y": 2912,
+              "width": 1056,
+              "height": 394
+            },
+            "confidence": 0.58,
+            "language": "en"
+          }
+        ]
+      },
+      {
+        "text": "2 novel",
+        "frame": {
+          "x": 2130,
+          "y": 3210,
+          "width": 224,
+          "height": 72
+        },
+        "lines": [
+          {
+            "text": "2 novel",
+            "frame": {
+              "x": 2130,
+              "y": 3210,
+              "width": 224,
+              "height": 72
+            },
+            "confidence": 0.49,
+            "language": "pt"
+          }
+        ]
+      }
+    ]
+  }
+}

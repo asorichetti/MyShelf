@@ -41,8 +41,15 @@ export interface OcrQuery {
 }
 
 /** Cover furniture that is never the title or the author. Matched against the cleaned line. */
+/**
+ * A genre word on its own ("A NOVEL", "ROMANCE"): furniture when set small,
+ * but part of the title when set as large as it ("PROBLEMATIC / SUMMER /
+ * ROMANCE"), which `buildQueriesFromOcr` decides by size.
+ */
+const GENRE_LINE = /^(a|an|the)?\s*(novel|romance|thriller|memoir|mystery|story|stories|tale)$/i;
+
 const NOISE: RegExp[] = [
-  /^(a|an|the)?\s*(novel|romance|thriller|memoir|mystery|story|stories|tale)$/i,
+  GENRE_LINE,
   /^(a|an)\s+.+\s+(novel|mystery|thriller|romance|story|adventure)$/i,
   // A subtitle that says what kind of book it is: "A Memoir of Surviving Abuse", "A Novel of the Sea".
   /^(a|an|the)\s+(memoir|novel|biography|autobiography|true story|history|life|guide|thriller|romance)\b/i,
@@ -78,10 +85,14 @@ export function cleanOcrLine(text: string): string {
     .filter((t) => t === '&' || /[\p{L}\p{N}]/u.test(t));
   while (tokens[0] === '&') tokens.shift();
   while (tokens[tokens.length - 1] === '&') tokens.pop();
-  return tokens
-    .join(' ')
-    .replace(/^[^\p{L}\p{N}"“'‘]+|[\s\-–—•·*_|:;,'"“”~+=^<>\\/]+$/gu, '')
-    .trim();
+  return (
+    tokens
+      .join(' ')
+      .replace(/^[^\p{L}\p{N}"“'‘]+|[\s\-–—•·*_|:;,'"“”~+=^<>\\/]+$/gu, '')
+      // A full stop after a word ("MAGIC."), not after an initial ("Iain M.") or an abbreviation ("Jr.").
+      .replace(/(\p{L}{3,})\.$/u, (word, w: string) => (/^(jr|sr)$/i.test(w) ? word : w))
+      .trim()
+  );
 }
 
 /** True for cover furniture: blurbs, prices, prizes, imprints, "A NOVEL". */
@@ -225,7 +236,11 @@ export function buildQueriesFromOcr(result: OcrResult): OcrQuery[] {
   const imageTop = Math.min(...all.map((l) => l.top));
   const imageBottom = Math.max(...all.map((l) => l.bottom));
   const span = Math.max(1, imageBottom - imageTop);
-  const units = joinSplitNames(all.filter((l) => !isNoiseLine(l.text)));
+  // A lone genre word set as large as the rest of the title is part of it ("PROBLEMATIC / SUMMER / ROMANCE").
+  const kept = all.filter((l) => !isNoiseLine(l.text));
+  const keptLargest = Math.max(0, ...kept.map((l) => l.height));
+  const titleSized = (l: Unit) => GENRE_LINE.test(l.text) && !/^(a|an|the)\s/i.test(l.text) && keptLargest > 0 && l.height >= keptLargest * 0.8;
+  const units = joinSplitNames(all.filter((l) => !isNoiseLine(l.text) || titleSized(l)));
   if (!units.length) return [];
 
   const largest = Math.max(...units.map((u) => u.height));

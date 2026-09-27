@@ -12,8 +12,8 @@
 // src/domain/__fixtures__/ocr/ are: add "synthetic": false, a "note" saying it
 // was recorded with Apple Vision from a developer photo, a "description" and the
 // "expected" title and author. Never commit the photo itself (the cover art is
-// copyrighted). Real ML Kit captures from a device should replace these when a
-// development build can record them.
+// copyrighted). ML Kit captures from an Android device or emulator are recorded
+// with scripts/record-mlkit-fixture.mjs instead.
 import AppKit
 import Foundation
 import Vision

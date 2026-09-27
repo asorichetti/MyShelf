@@ -1,0 +1,129 @@
+{
+  "synthetic": false,
+  "recogniser": "mlkit",
+  "source": "ML Kit on Android emulator from developer photos",
+  "note": "ML Kit Text Recognition v2 (bundled Latin model) through the app's module, read from the phone photo chosen in Scan → Cover (scripts/record-mlkit-fixture.mjs). The photo is not committed (the cover art is copyrighted).",
+  "description": "Handheld photo with uneven light (the photo behind real-practical-magic.json). ML Kit reads \"PRACTICAL :\" and \"MAGIC.\" with stray punctuation, the ampersand flourish as \"+ALICE\", and the author over two stacked lines.",
+  "expected": {
+    "title": "Practical Magic",
+    "author": "Alice Hoffman"
+  },
+  "imageSize": {
+    "width": 3024,
+    "height": 4032
+  },
+  "result": {
+    "blocks": [
+      {
+        "text": "PRACTICAL :\nMAGIC.",
+        "frame": {
+          "x": 876,
+          "y": 904,
+          "width": 1382,
+          "height": 548
+        },
+        "lines": [
+          {
+            "text": "PRACTICAL :",
+            "frame": {
+              "x": 876,
+              "y": 906,
+              "width": 1366,
+              "height": 298
+            },
+            "confidence": 0.75,
+            "language": "en"
+          },
+          {
+            "text": "MAGIC.",
+            "frame": {
+              "x": 1244,
+              "y": 1172,
+              "width": 830,
+              "height": 258
+            },
+            "confidence": 0.63,
+            "language": "en"
+          }
+        ]
+      },
+      {
+        "text": "+ALICE\nHOFFMAN",
+        "frame": {
+          "x": 1018,
+          "y": 2438,
+          "width": 1158,
+          "height": 480
+        },
+        "lines": [
+          {
+            "text": "+ALICE",
+            "frame": {
+              "x": 1038,
+              "y": 2446,
+              "width": 912,
+              "height": 214
+            },
+            "confidence": 0.67,
+            "language": "ro"
+          },
+          {
+            "text": "HOFFMAN",
+            "frame": {
+              "x": 1026,
+              "y": 2686,
+              "width": 1150,
+              "height": 232
+            },
+            "confidence": 0.78,
+            "language": "en"
+          }
+        ]
+      },
+      {
+        "text": "NEW YORK TIMES BESTSELLING AUTHOR",
+        "frame": {
+          "x": 1058,
+          "y": 2900,
+          "width": 1098,
+          "height": 86
+        },
+        "lines": [
+          {
+            "text": "NEW YORK TIMES BESTSELLING AUTHOR",
+            "frame": {
+              "x": 1058,
+              "y": 2900,
+              "width": 1098,
+              "height": 86
+            },
+            "confidence": 0.87,
+            "language": "en"
+          }
+        ]
+      },
+      {
+        "text": "OF THE RULES OF MAGIC",
+        "frame": {
+          "x": 1276,
+          "y": 2990,
+          "width": 664,
+          "height": 64
+        },
+        "lines": [
+          {
+            "text": "OF THE RULES OF MAGIC",
+            "frame": {
+              "x": 1276,
+              "y": 2990,
+              "width": 664,
+              "height": 64
+            },
+            "confidence": 0.83,
+            "language": "en"
+          }
+        ]
+      }
+    ]
+  }
+}

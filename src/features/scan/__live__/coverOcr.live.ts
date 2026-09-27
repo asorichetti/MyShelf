@@ -1,5 +1,6 @@
-// Live check of the cover path end to end on real captures: OCR text (the
-// Apple Vision stand-in captures in src/domain/__fixtures__/ocr/real-*.json)
+// Live check of the cover path end to end on real captures: OCR text (in
+// src/domain/__fixtures__/ocr/real-*.json: ML Kit read through the app on an
+// Android emulator, real-mlkit-*, and the earlier Apple Vision stand-ins)
 // -> buildQueriesFromOcr -> searchCover against the real Open Library ->
 // the top candidate must be the right book, with a real cover. It uses the
 // network, so it is not part of `npm test`; run it with `npm run test:live`.

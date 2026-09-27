@@ -1,0 +1,129 @@
+{
+  "synthetic": false,
+  "recogniser": "mlkit",
+  "source": "ML Kit on Android emulator from developer photos",
+  "note": "ML Kit Text Recognition v2 (bundled Latin model) through the app's module, read from the phone photo chosen in Scan → Cover (scripts/record-mlkit-fixture.mjs). The photo is not committed (the cover art is copyrighted).",
+  "description": "Handheld photo of a hardback (the photo behind real-nobodys-girl.json). ML Kit drops the apostrophe and splits the word, NOBO DYS, reads the author over two lines of the same size, and the memoir subtitle over two smaller ones.",
+  "expected": {
+    "title": "Nobody’s Girl",
+    "author": "Virginia Roberts Giuffre"
+  },
+  "imageSize": {
+    "width": 3024,
+    "height": 4032
+  },
+  "result": {
+    "blocks": [
+      {
+        "text": "NOBO DYS\nGIRL",
+        "frame": {
+          "x": 586,
+          "y": 1712,
+          "width": 1856,
+          "height": 676
+        },
+        "lines": [
+          {
+            "text": "NOBO DYS",
+            "frame": {
+              "x": 586,
+              "y": 1712,
+              "width": 1848,
+              "height": 312
+            },
+            "confidence": 0.68,
+            "language": "en"
+          },
+          {
+            "text": "GIRL",
+            "frame": {
+              "x": 936,
+              "y": 2152,
+              "width": 862,
+              "height": 220
+            },
+            "confidence": 0.82,
+            "language": "und-Latn"
+          }
+        ]
+      },
+      {
+        "text": "A Memoir of Surviving Abuse\nand Fighting for Justice",
+        "frame": {
+          "x": 506,
+          "y": 2550,
+          "width": 1744,
+          "height": 336
+        },
+        "lines": [
+          {
+            "text": "A Memoir of Surviving Abuse",
+            "frame": {
+              "x": 510,
+              "y": 2554,
+              "width": 1740,
+              "height": 130
+            },
+            "confidence": 0.9,
+            "language": "en"
+          },
+          {
+            "text": "and Fighting for Justice",
+            "frame": {
+              "x": 642,
+              "y": 2748,
+              "width": 1442,
+              "height": 136
+            },
+            "confidence": 0.93,
+            "language": "en"
+          }
+        ]
+      },
+      {
+        "text": "Virginia Roberts",
+        "frame": {
+          "x": 356,
+          "y": 3048,
+          "width": 2050,
+          "height": 278
+        },
+        "lines": [
+          {
+            "text": "Virginia Roberts",
+            "frame": {
+              "x": 356,
+              "y": 3048,
+              "width": 2050,
+              "height": 278
+            },
+            "confidence": 0.93,
+            "language": "en"
+          }
+        ]
+      },
+      {
+        "text": "Giuffre",
+        "frame": {
+          "x": 890,
+          "y": 3444,
+          "width": 890,
+          "height": 256
+        },
+        "lines": [
+          {
+            "text": "Giuffre",
+            "frame": {
+              "x": 890,
+              "y": 3444,
+              "width": 890,
+              "height": 256
+            },
+            "confidence": 0.89,
+            "language": "en"
+          }
+        ]
+      }
+    ]
+  }
+}

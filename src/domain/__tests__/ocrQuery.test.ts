@@ -1,10 +1,12 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { buildQueriesFromOcr, cleanOcrLine, isNameLike, isNoiseLine, queriesFromTypedText, type OcrResult } from '../ocrQuery';
+import { buildQueriesFromOcr, cleanOcrLine, isNameLike, isNoiseLine, queriesFromTypedText, textBounds, type OcrResult } from '../ocrQuery';
 
 interface OcrFixture {
   synthetic: boolean;
+  /** Real captures: Apple Vision on a Mac (a stand-in), or ML Kit through the app on Android. */
+  recogniser?: 'vision' | 'mlkit';
   description: string;
   /** The book on the cover; `ocrTitle` when the recogniser misread the title itself. */
   expected: { title: string; author: string | null; ocrTitle?: string };
@@ -19,7 +21,9 @@ const all = readdirSync(dir)
 /** Hand-written to the ML Kit output shape, tuned against while the builder was written. */
 const fixtures = all.filter(([, f]) => f.synthetic);
 /** Recorded from developer photos with Apple Vision (scripts/record-ocr-fixture.swift), a stand-in for ML Kit. */
-const real = all.filter(([, f]) => !f.synthetic);
+const real = all.filter(([, f]) => !f.synthetic && f.recogniser === 'vision');
+/** The same photos read by ML Kit in the app on an Android emulator (scripts/record-mlkit-fixture.mjs). */
+const mlKit = all.filter(([, f]) => !f.synthetic && f.recogniser === 'mlkit');
 
 const line = (text: string, y: number, height: number) => {
   const frame = { x: 40, y, width: 800, height };
@@ -59,6 +63,7 @@ describe('buildQueriesFromOcr on real captures (Apple Vision stand-in)', () => {
   it('has the three recorded covers, and every fixture says which kind it is', () => {
     expect(real.map(([name]) => name)).toEqual(['real-nobodys-girl', 'real-practical-magic', 'real-problematic-summer-romance']);
     expect(all.every(([, f]) => typeof f.synthetic === 'boolean')).toBe(true);
+    expect(all.filter(([, f]) => !f.synthetic).every(([, f]) => f.recogniser === 'vision' || f.recogniser === 'mlkit')).toBe(true);
   });
 
   it.each([
@@ -159,6 +164,11 @@ describe('line helpers', () => {
     expect(cleanOcrLine('NEIL GAIMAN & TERRY PRATCHETT')).toBe('NEIL GAIMAN & TERRY PRATCHETT');
     expect(cleanOcrLine('& MORE')).toBe('MORE');
     expect(cleanOcrLine('-')).toBe('');
+    // ML Kit: a full stop after a word goes; one after an initial or an abbreviation stays.
+    expect(cleanOcrLine('MAGIC.')).toBe('MAGIC');
+    expect(cleanOcrLine('PRACTICAL :')).toBe('PRACTICAL');
+    expect(cleanOcrLine('Iain M.')).toBe('Iain M.');
+    expect(cleanOcrLine('Martin Luther King Jr.')).toBe('Martin Luther King Jr.');
   });
 
   it('treats a memoir subtitle as furniture, and a possessive as a title word', () => {
@@ -185,3 +195,63 @@ describe('queriesFromTypedText (web harness)', () => {
     expect(queriesFromTypedText('  \n ')).toEqual([]);
   });
 });
+
+describe('buildQueriesFromOcr on real ML Kit captures (Android emulator)', () => {
+  it('has the three covers, read from the same photos as the Vision captures', () => {
+    expect(mlKit.map(([name]) => name)).toEqual(['real-mlkit-nobodys-girl', 'real-mlkit-practical-magic', 'real-mlkit-problematic-summer-romance']);
+    for (const [, f] of mlKit) {
+      const lines = f.result.blocks.flatMap((b) => b.lines);
+      // ML Kit reports a confidence for every line, which the fixtures keep.
+      expect(lines.every((l) => typeof l.confidence === 'number' && l.confidence > 0 && l.confidence <= 1)).toBe(true);
+    }
+  });
+
+  it.each([
+    [
+      // ML Kit drops the apostrophe and splits the word ("NOBO DYS"): the title is left as read for the
+      // search fallback (the author's books, ranked by title) to forgive; the name over two lines is joined.
+      'real-mlkit-nobodys-girl',
+      [
+        { title: 'nobo dys girl', author: 'virginia roberts giuffre' },
+        { title: 'nobo dys girl' },
+        { text: 'nobo dys girl virginia roberts giuffre' },
+      ],
+    ],
+    [
+      // "PRACTICAL :" and "MAGIC." lose their stray punctuation; "+ALICE" / "HOFFMAN" is one name.
+      'real-mlkit-practical-magic',
+      [{ title: 'practical magic', author: 'alice hoffman' }, { title: 'practical magic' }, { text: 'practical magic alice hoffman' }],
+    ],
+    [
+      // ML Kit reads ROMANCE right (Vision read BROMANCE); set as large as the rest of the title, the genre word stays in it.
+      'real-mlkit-problematic-summer-romance',
+      [
+        { title: 'problematic summer romance', author: 'ali hazelwood' },
+        { title: 'problematic summer romance' },
+        { text: 'problematic summer romance ali hazelwood' },
+      ],
+    ],
+  ])('%s', (name, queries) => {
+    const f = mlKit.find(([n]) => n === name)![1];
+    expect(buildQueriesFromOcr(f.result)).toEqual(queries);
+  });
+
+  it('keeps a small genre word out of the title, but one set as large as the title in it', () => {
+    expect(buildQueriesFromOcr({ blocks: [line('MORT', 100, 200), line('A NOVEL', 400, 40), line('TERRY PRATCHETT', 600, 60)] })[0]).toEqual({
+      title: 'mort',
+      author: 'terry pratchett',
+    });
+    expect(buildQueriesFromOcr({ blocks: [line('SUMMER', 100, 200), line('ROMANCE', 320, 190), line('ALI HAZELWOOD', 600, 60)] })[0]).toEqual({
+      title: 'summer romance',
+      author: 'ali hazelwood',
+    });
+  });
+});
+
+describe('textBounds', () => {
+  it('is the rectangle around every line with words', () => {
+    expect(textBounds({ blocks: [line('MORT', 100, 200), line('TERRY PRATCHETT', 600, 60), line('~', 1500, 30)] })).toEqual({ x: 40, y: 100, width: 800, height: 560 });
+    expect(textBounds({ blocks: [] })).toBeNull();
+  });
+});
+
