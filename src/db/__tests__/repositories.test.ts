@@ -554,4 +554,39 @@ describe('settings repository', () => {
     await db.run("INSERT INTO settings (key, value) VALUES ('bookyMode', 'not json'), ('retired', '1')");
     expect(await settingsRepo.getAllSettings(db)).toEqual(settingDefaults);
   });
+
+  it('falls back to the default for a stored value of the wrong type (an edited backup)', async () => {
+    const wrong: [string, string][] = [
+      ['series.dismissedBookIds', 'null'],
+      ['series.pendingConfirmBookIds', '{"0": 5}'],
+      ['mutedTips', '"first-scan"'],
+      ['booky.seen', '7'],
+      ['loanDays', '"28"'],
+      ['loanReminders', '"false"'],
+      ['coversOnMobileData', '0'],
+      ['googleBooksEnabled', 'null'],
+      ['shelfFilters', '[]'],
+      ['shelfSort', '"title"'],
+      ['shelfSortPresets', '{}'],
+      ['bookyMode', '["off"]'],
+      ['onboarding.done', '"yes"'],
+      ['backup.lastAt', '12'],
+    ];
+    for (const [key, value] of wrong) await db.run('INSERT INTO settings (key, value) VALUES (?, ?)', [key, value]);
+    expect(await settingsRepo.getAllSettings(db)).toEqual(settingDefaults);
+    expect(await settingsRepo.getSetting(db, 'series.dismissedBookIds')).toEqual([]);
+    expect(await settingsRepo.getSetting(db, 'loanReminders')).toBe(false);
+
+    // The right types still come through, nulls included where a setting allows them.
+    await settingsRepo.setSetting(db, 'onboarding.done', true);
+    await settingsRepo.setSetting(db, 'backup.lastAt', '2026-01-01T00:00:00.000Z');
+    await settingsRepo.setSetting(db, 'loanDays', 14);
+    await db.run("UPDATE settings SET value = '{\"sort\":\"author\",\"direction\":\"desc\"}' WHERE key = 'shelfSort'");
+    expect(await settingsRepo.getAllSettings(db)).toMatchObject({
+      'onboarding.done': true,
+      'backup.lastAt': '2026-01-01T00:00:00.000Z',
+      loanDays: 14,
+      shelfSort: { sort: 'author', direction: 'desc' },
+    });
+  });
 });

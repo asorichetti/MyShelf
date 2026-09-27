@@ -2,16 +2,31 @@ import { settingDefaults, type AppSettings, type SettingKey } from '@/domain';
 
 import type { Db } from '../types';
 
+const kind = (v: unknown) => (v === null ? 'null' : Array.isArray(v) ? 'array' : typeof v);
+
+/**
+ * Whether a parsed value has the shape its setting holds: the type of its
+ * default (a list, an object, a number…), or for settings whose default is
+ * null ("never answered", "never backed up") null or their one other type.
+ * Stored values come from backups too, which people can edit.
+ */
+function fits(key: SettingKey, value: unknown): boolean {
+  const fallback: unknown = settingDefaults[key];
+  if (fallback !== null) return kind(value) === kind(fallback);
+  return value === null || typeof value === (key === 'onboarding.done' ? 'boolean' : 'string');
+}
+
 function decode<K extends SettingKey>(key: K, raw: string | null | undefined): AppSettings[K] {
   if (raw == null) return settingDefaults[key];
   try {
-    return JSON.parse(raw) as AppSettings[K];
+    const value: unknown = JSON.parse(raw);
+    return fits(key, value) ? (value as AppSettings[K]) : settingDefaults[key];
   } catch {
     return settingDefaults[key];
   }
 }
 
-/** A setting's value, or its default when unset or unreadable. */
+/** A setting's value, or its default when unset, unreadable or of the wrong type. */
 export async function getSetting<K extends SettingKey>(db: Db, key: K): Promise<AppSettings[K]> {
   const row = await db.get<{ value: string | null }>('SELECT value FROM settings WHERE key = ?', [key]);
   return decode(key, row?.value);
