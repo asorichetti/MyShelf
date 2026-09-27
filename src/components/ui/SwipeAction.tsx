@@ -16,8 +16,10 @@ import type { ReactNode } from 'react';
 const ACTIVATE_DP = 16;
 /** How far (dp) up or down a finger may move before the swipe gives way to scrolling. */
 const FAIL_DP = 20;
-/** A swipe past this share of the row's width does the action on release. */
+/** A swipe past this share of the row's width does the action on release... */
 export const SWIPE_THRESHOLD = 0.35;
+/** ...or past this many dp on a wide row (a tablet, the web). */
+export const SWIPE_MAX_DP = 120;
 /** ...or a quick flick of at least this speed (dp/s) past a touch target's width. */
 const FLICK_SPEED = 800;
 
@@ -62,7 +64,7 @@ export function SwipeAction({ children, label, icon, onAction, testID, panelTest
       offset.value = Math.max(-width.value, Math.min(0, e.translationX));
     })
     .onEnd((e) => {
-      const far = width.value > 0 && -offset.value >= width.value * SWIPE_THRESHOLD;
+      const far = width.value > 0 && -offset.value >= Math.min(width.value * SWIPE_THRESHOLD, SWIPE_MAX_DP);
       const flick = e.velocityX <= -FLICK_SPEED && -offset.value >= sizes.touchTarget;
       offset.value = reduceMotion ? 0 : withTiming(0, { duration: 180 });
       if (far || flick) scheduleOnRN(onAction);

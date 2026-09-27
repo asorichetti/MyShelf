@@ -84,10 +84,10 @@ describe('LoanRow', () => {
 
   describe('swipe to return', () => {
     // The card's width is only known after layout; give it a phone's.
-    const layOut = () =>
-      fireEvent(screen.getByTestId(Testids.loans.rowSwipePanel, { includeHiddenElements: true }).parent!.parent!, 'layout', { nativeEvent: { layout: { x: 0, y: 0, width: 360, height: 200 } } });
+    const layOut = (width = 360) =>
+      fireEvent(screen.getByTestId(Testids.loans.rowSwipePanel, { includeHiddenElements: true }).parent!.parent!, 'layout', { nativeEvent: { layout: { x: 0, y: 0, width, height: 200 } } });
     const swipe = (translationX: number, velocityX = 0) =>
-      act(() =>
+      act(async () =>
         fireGestureHandler(getByGestureTestId(Testids.loans.rowSwipe), [
           { state: State.BEGAN, translationX: 0, velocityX: 0 },
           { state: State.ACTIVE, translationX: translationX / 2, velocityX },
@@ -110,6 +110,20 @@ describe('LoanRow', () => {
       await swipe(-60);
       await swipe(240);
       expect(h.onReturn).not.toHaveBeenCalled();
+    });
+
+    it('needs 35 % of a narrow card, but no more than 120 dp on a wider one', async () => {
+      const h = await renderRow(base);
+      layOut(300);
+      await swipe(-100);
+      expect(h.onReturn).not.toHaveBeenCalled();
+      await swipe(-110);
+      expect(h.onReturn).toHaveBeenCalledTimes(1);
+      layOut(1000);
+      await swipe(-115);
+      expect(h.onReturn).toHaveBeenCalledTimes(1);
+      await swipe(-125);
+      expect(h.onReturn).toHaveBeenCalledTimes(2);
     });
 
     it('takes a quick flick as a swipe', async () => {
