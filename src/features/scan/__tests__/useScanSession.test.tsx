@@ -64,6 +64,26 @@ describe('useScanSession: barcodes (P03-03)', () => {
     jest.requireMock('../haptics').tick.mockClear();
   });
 
+  it('a barcode still in view after a slow lookup is not read again', async () => {
+    const { result, onFound, lookup } = render();
+    let now = 1_000_000;
+    const clock = jest.spyOn(Date, 'now').mockImplementation(() => now);
+    const { service: real } = createFixtureMetadata();
+    // The camera is paused while the lookup runs; this one takes five seconds.
+    lookup.mockImplementation(async (...args) => {
+      now += 5000;
+      return real.lookupIsbn(...args);
+    });
+    act(() => result.current.onBarcode({ type: 'ean13', data: OL_BOOKS.colourOfMagic }));
+    await settle();
+    now += 300;
+    act(() => result.current.onBarcode({ type: 'ean13', data: OL_BOOKS.colourOfMagic }));
+    await settle();
+    expect(onFound).toHaveBeenCalledTimes(1);
+    clock.mockRestore();
+    jest.requireMock('../haptics').tick.mockClear();
+  });
+
   it('a valid ISBN triggers exactly one lookup, even when the camera reports it many times', async () => {
     const { result, onFound, lookup } = render();
     const { tick } = jest.requireMock('../haptics');

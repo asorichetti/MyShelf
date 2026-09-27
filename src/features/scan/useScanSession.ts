@@ -189,6 +189,8 @@ export function useScanSession({ service: injected, onFound }: UseScanSessionOpt
   const finish = useCallback((abort: AbortController) => {
     if (controller.current === abort) controller.current = null;
     busy.current = false;
+    // The camera was paused meanwhile: a code still in view counts from now, not from before the lookup.
+    if (lastRead.current) lastRead.current = { ...lastRead.current, at: Date.now() };
   }, []);
 
   const lookUp = useCallback(
