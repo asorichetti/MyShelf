@@ -212,7 +212,7 @@ function PlacedTip({ tip, onTabs }: { tip: ShownTip; onTabs: boolean }) {
   return (
     <View ref={host} style={[styles.host, { left: place.left, width: place.width, bottom: place.bottom }]} testID={ids.root} onLayout={onLayout}>
       {/* A tip without an action goes away by itself after a while (not with a screen reader on). */}
-      {actions.some((a) => a.testID !== Testids.booky.mute) ? null : <AutoDismiss key={tip.showId} onDismiss={dismissTip} />}
+      {actions.some((a) => a.testID !== Testids.booky.mute) ? null : <AutoDismiss key={`auto-${tip.showId}`} onDismiss={dismissTip} />}
       <BookyBubble
         key={tip.showId}
         message={tip.text}
