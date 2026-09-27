@@ -1499,7 +1499,7 @@ export const en = {
       fallbackName: 'the group',
     },
     reorder: {
-      hint: 'Use the arrows to change the order.',
+      hint: 'Hold a book and drag it to its place, or use the arrows.',
       listLabel: 'Books in this group',
       /** A row's name: "2. Mort". */
       rowLabel: '{index}. {title}',

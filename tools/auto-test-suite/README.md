@@ -518,12 +518,14 @@ Re-export after changing app code: `--serve` tests whatever is in `dist/`.
 | `book-form-discard` | p01 | A dirty form asks before leaving: Escape closes the dialog, keeps the text and returns focus to Cancel; Discard goes back to the empty Shelf |
 | `book-detail-missing` | p01 | `/book/99999` shows `page-error` with the h1 "Book not found" and Booky; the `pagestate/error-marker` finding is waived because the error page is the point; Back to shelf goes to `/` |
 | `loan-lend-return` | p05 | Fixture `demo`, today fixed: a home book → Lend (`role="dialog"`, today and today + 28 days filled in; saving without a borrower shows the error) → "sam" → Add → "Sam already exists — use them?" → Use Sam, due 29 Jun, note (page gates run on the sheet) → stamp "ON LOAN · SAM · DUE 29 JUN", "Lent to Sam", Mark returned instead of Lend → Loans tab: 3 rows, overdue first → Mark returned on the row (sheet gates) → "Welcome home" → History first row "RETURNED 15 JUN" → Undo puts it back out; screenshots `lend-sheet.png`, `lent.png`, `return-sheet.png`, `loans-history.png` |
+| `loan-swipe-return` | p05 | Fixture `demo`, today fixed, Loans tab: the panel under a loan card is `aria-hidden`; a 40 px drag slides back and opens nothing; a mouse swipe to the left moves the card and uncovers "Mark returned" (screenshot `swipe-half-way.png`), and letting go opens the same return sheet as the button (today filled in, sheet gates) → "Welcome home, “Dune”!", the other card in place → History has Dune first and returned loans offer no swipe |
 | `loan-double-lend-blocked` | p05 | Dune (on loan) has Mark returned and no Lend, with its loan summary |
 | `loans-overview` | p05 | Fixture `demo`, today fixed: `/loans` lists Roger Ackroyd ("OVERDUE · 5 DAYS", read out as "Overdue by 5 days…") then Dune ("DUE 26 JUN"); the Loans tab is named "Loans, 1 overdue" with a 1 badge; History has Mort (page gates run); the borrower filter narrows to Sam; the overdue book's page stamps "ON LOAN · PRIYA · OVERDUE · 5 DAYS"; screenshots `loans-tab.png`, `overdue-book.png` |
 | `borrower-detail` | p05 | Sam from Dune's loan row → `/borrower/<id>`: h1 Sam, Dune under Currently has, Mort under Has borrowed before, stats line; Remove shows a `role="alert"` explaining Sam still has a book, and no dialog; screenshot `borrower-detail.png` |
 | `loans-empty` | p05 | Fixture `empty`: `/loans` shows sleepy Booky and "Every book is home. Lovely." with no rows; screenshot `loans-empty.png` |
 | `shelf-loan-badge` | p05 | Fixture `demo`, today fixed: only Dune ("on loan to Sam") and Roger Ackroyd ("on loan to Priya, overdue") are named as on loan, stamped ON LOAN and OVERDUE; screenshot `shelf-loan-badges.png` |
 | `loan-overdue-nudge` | p05 | Fixture `demo`, then a restart: Booky (concerned) says "“The Murder of Roger Ackroyd” was due back from Priya 5 days ago." (page gates run with the bubble open) → Open loans → `/loans`; a second restart the same day shows no nudge; screenshot `overdue-nudge.png` |
+| `group-drag-reorder` | p06 | Holiday reads → Reorder: a drag without the hold moves nothing; holding Pride and Prejudice lifts it (primary border), dragging it above the first row makes Good Omens move down (screenshot `drag-in-progress.png`); letting go gives Pride and Prejudice, Good Omens, Murder on the Orient Express, announces "Pride and Prejudice moved to 1 of 3", leaves no row shifted (page gates), waits for the save (`groups-changed`, counted by the E2E hook) and the order survives a reload |
 | `home-responsive` | responsive | Viewport meta has `width=device-width, initial-scale=1`; at mobile, tablet and desktop the title is fully on screen and the page does not scroll sideways; one screenshot per width |
 | `lookup-isbn-found` | core | Fixture `empty`: `/book/new` → look up ISBN 9780552166591 (mocked APIs) → one candidate card with its real cover → choose → title, year, ISBN, series, author and genre chips filled, real cover on the card → save → the detail page shows series and genre and the real cover (no fallback) |
 | `lookup-isbn-not-found` | p02 | An ISBN Open Library 404s (fixture marked `expected`) → Booky's "couldn’t find that one" → Add it by hand keeps the ISBN and focuses the title |
@@ -608,6 +610,9 @@ Re-export after changing app code: `--serve` tests whatever is in `dist/`.
    - `expect` messages must say what was expected and what was found; `q()`
      quotes a value.
    - Wait on conditions (`locator.waitFor`, `expect` on state), not clocks.
+     Before a reload that must read a save back, wait for the save's event
+     with `waitForEvent(c, 'groups-changed', before)` (the web E2E build
+     counts every library event on `window.__myshelfE2e.counts`).
    - `c.checkGates('/where')` runs the page gates on a screen reached by a
      click rather than by `c.goto`.
    - Use `c.snap('name')` for extra screenshots in the run directory.
