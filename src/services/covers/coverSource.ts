@@ -12,6 +12,7 @@ export function coverSourceFromCandidate(candidate: BookCandidate): CoverSource 
     olEditionCoverIds: refs.olEditionCoverIds,
     olEditionId: candidate.source === 'openlibrary' && candidate.kind === 'edition' ? candidate.sourceId : null,
     olWorkCoverIds: refs.olWorkCoverIds,
+    olOtherEditionCoverIds: refs.olOtherEditionCoverIds ?? [],
     googleVolumeId: refs.googleVolumeId,
     googleImageUrl: refs.googleImageUrl,
   };
@@ -39,6 +40,7 @@ export function combineCoverSources(first: CoverSource, second: CoverSource): Co
     olEditionCoverIds: pick('olEditionCoverIds'),
     olEditionId: pick('olEditionId'),
     olWorkCoverIds: pick('olWorkCoverIds'),
+    olOtherEditionCoverIds: pick('olOtherEditionCoverIds'),
     googleVolumeId: pick('googleVolumeId'),
     googleImageUrl: pick('googleImageUrl'),
   };

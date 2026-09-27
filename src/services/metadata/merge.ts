@@ -29,6 +29,9 @@ export function mergeCoverRefs(primary: CoverRefs, secondary: CoverRefs): CoverR
   return {
     olEditionCoverIds: primary.olEditionCoverIds.length ? primary.olEditionCoverIds : secondary.olEditionCoverIds,
     olWorkCoverIds: primary.olWorkCoverIds.length ? primary.olWorkCoverIds : secondary.olWorkCoverIds,
+    ...(primary.olOtherEditionCoverIds?.length || secondary.olOtherEditionCoverIds?.length
+      ? { olOtherEditionCoverIds: primary.olOtherEditionCoverIds?.length ? primary.olOtherEditionCoverIds : secondary.olOtherEditionCoverIds }
+      : {}),
     googleVolumeId: primary.googleVolumeId ?? secondary.googleVolumeId,
     googleImageUrl: primary.googleImageUrl ?? secondary.googleImageUrl,
   };

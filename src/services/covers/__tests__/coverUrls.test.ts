@@ -45,6 +45,18 @@ describe('coverCandidates: the chain, best first', () => {
       [`openlibrary-olid ${OL}/olid/OL18986719M-L.jpg?default=false`, `openlibrary-work ${OL}/id/12627383-L.jpg`],
     ],
     ['edition and work share a cover: tried once', { olEditionCoverIds: [7], olWorkCoverIds: [7] }, [`openlibrary-edition ${OL}/id/7-L.jpg`]],
+    [
+      "other editions' covers come last, at most two, and are marked as another edition's art",
+      { olEditionId: 'OL48500325M', olWorkCoverIds: [14810040], isbn13: '9780593718148', olOtherEditionCoverIds: [14809819, 15126599, 6973614, 14810040] },
+      [
+        `openlibrary-olid ${OL}/olid/OL48500325M-L.jpg?default=false`,
+        `openlibrary-work ${OL}/id/14810040-L.jpg`,
+        `openlibrary-isbn13 ${OL}/isbn/9780593718148-L.jpg?default=false`,
+        `openlibrary-isbn10 ${OL}/isbn/0593718143-L.jpg?default=false`,
+        `openlibrary-other-edition ${OL}/id/14809819-L.jpg`,
+        `openlibrary-other-edition ${OL}/id/15126599-L.jpg`,
+      ],
+    ],
     ['a Google volume id alone', { googleVolumeId: 'abc_12-X' }, [`googlebooks ${G}?id=abc_12-X&printsec=frontcover&img=1&zoom=1&fife=w800`]],
     ['invalid ISBNs are skipped', { isbn13: '9780552166592', isbn10: '123' }, []],
     ['nothing known', {}, []],
@@ -92,7 +104,7 @@ describe('cover sources', () => {
       source: 'openlibrary',
       sourceId: 'OL28477029M',
       isbn13: '9780552166591',
-      coverRefs: { olEditionCoverIds: [14647238], olWorkCoverIds: [13642933], googleVolumeId: 'g1', googleImageUrl: 'http://x' },
+      coverRefs: { olEditionCoverIds: [14647238], olWorkCoverIds: [13642933], olOtherEditionCoverIds: [99], googleVolumeId: 'g1', googleImageUrl: 'http://x' },
     });
     expect(coverSourceFromCandidate(candidate)).toEqual({
       isbn13: '9780552166591',
@@ -100,6 +112,7 @@ describe('cover sources', () => {
       olEditionCoverIds: [14647238],
       olEditionId: 'OL28477029M',
       olWorkCoverIds: [13642933],
+      olOtherEditionCoverIds: [99],
       googleVolumeId: 'g1',
       googleImageUrl: 'http://x',
     });

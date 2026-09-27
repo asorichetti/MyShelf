@@ -86,6 +86,33 @@ describe('resolveCover', () => {
     expect(fixtures.calls).toEqual(calls);
   });
 
+  describe("other editions' covers (a different edition's art)", () => {
+    const bare: CoverSource = { olEditionId: 'OL48500325M', isbn13: '9780593718148', olOtherEditionCoverIds: [301, 302] };
+    const [olid, byIsbn13, byIsbn10, other1, other2] = coverCandidates(bare).map((c) => c.url);
+
+    it('are tried only when the edition has no cover anywhere, and marked as such', async () => {
+      const { http, fixtures } = setup({ [olid]: missing, [byIsbn13]: missing, [byIsbn10]: missing, [other1]: jpeg(images.large800) });
+      const { cover } = await resolveCover(bare, { http });
+      expect(cover).toMatchObject({ url: other1, origin: 'openlibrary-other-edition' });
+      expect(fixtures.calls).toEqual([olid, byIsbn13, byIsbn10, other1]);
+    });
+
+    it('get one fetch beyond the budget when the edition used it all', async () => {
+      const { http, fixtures } = setup({ [olid]: missing, [byIsbn13]: missing, [byIsbn10]: missing, [other1]: jpeg(images.large800) });
+      const { cover } = await resolveCover(bare, { http, maxFetches: 2 });
+      expect(cover).toMatchObject({ origin: 'openlibrary-other-edition' });
+      expect(fixtures.calls).toEqual([olid, byIsbn13, other1]);
+    });
+
+    it("are never fetched when the edition's own sources gave a cover, even a square one", async () => {
+      const { http, fixtures } = setup({ [olid]: jpeg(images.square300), [byIsbn13]: missing, [byIsbn10]: missing });
+      const { cover } = await resolveCover(bare, { http });
+      expect(cover).toMatchObject({ url: olid, origin: 'openlibrary-olid' });
+      expect(fixtures.calls).not.toContain(other1);
+      expect(fixtures.calls).not.toContain(other2);
+    });
+  });
+
   it('reports what it tried', async () => {
     const { http } = setup({ [edition]: jpeg(images.square300), [work]: jpeg(images.small128), [isbn13]: missing, [isbn10]: jpeg(images.thumb128) });
     const { cover, tried } = await resolveCover(source, { http });

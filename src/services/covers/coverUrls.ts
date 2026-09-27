@@ -7,7 +7,9 @@ export type CoverOrigin =
   | 'openlibrary-work'
   | 'openlibrary-isbn13'
   | 'openlibrary-isbn10'
-  | 'googlebooks';
+  | 'googlebooks'
+  /** Another edition of the same work: a different edition's art, tried only when nothing else has a cover. */
+  | 'openlibrary-other-edition';
 
 /**
  * What is known about a book that can lead to a cover: from a merged lookup
@@ -23,6 +25,12 @@ export interface CoverSource {
   olEditionId?: string | null;
   /** Open Library cover ids on the work record, best first. */
   olWorkCoverIds?: readonly number[];
+  /**
+   * Open Library cover ids of other editions of the same work, best first
+   * (same language first). Their art may differ from the book in hand, so
+   * they are the chain's last resort.
+   */
+  olOtherEditionCoverIds?: readonly number[];
   /** Google Books volume id. */
   googleVolumeId?: string | null;
   /** Google Books `imageLinks.thumbnail` (or `smallThumbnail`) as the API sent it. */
@@ -98,7 +106,9 @@ const positive = (ids: readonly number[] | undefined) => (ids ?? []).filter((id)
  * 2. the work's cover id (the cover Open Library shows for the book as a whole);
  * 3. Open Library by ISBN-13, then ISBN-10;
  * 4. Google Books, upgraded to its largest reliable size (skipped when
- *    `includeGoogle` is false, i.e. the user turned Google Books off).
+ *    `includeGoogle` is false, i.e. the user turned Google Books off);
+ * 5. other editions of the same work (`openlibrary-other-edition`, at most
+ *    two): a different edition's art, better than no cover at all.
  * Only the first id of each record is used: it is the one the record shows.
  */
 export function coverCandidates(source: CoverSource, { includeGoogle = true }: { includeGoogle?: boolean } = {}): CoverCandidate[] {
@@ -126,5 +136,10 @@ export function coverCandidates(source: CoverSource, { includeGoogle = true }: {
       upgradeGoogleCoverUrl(source.googleImageUrl) ?? (source.googleVolumeId ? googleCoverUrlForVolume(source.googleVolumeId) : null);
     add(google, 'googlebooks');
   }
+
+  for (const id of positive(source.olOtherEditionCoverIds).slice(0, MAX_OTHER_EDITION_COVERS)) add(olCoverByIdUrl(id), 'openlibrary-other-edition');
   return out;
 }
+
+/** Other editions' covers tried at most: the best two of the same work. */
+export const MAX_OTHER_EDITION_COVERS = 2;

@@ -72,7 +72,12 @@ export async function resolveCover(source: CoverSource, options: ResolveCoverOpt
     // Covers by ISBN are rate-limited (100 per 5 minutes) and show the edition's own cover, which a cover
     // id already fetched: once an id gave a usable portrait cover, they are not worth the wait.
     if (isIsbnOrigin(candidate.origin) && accepted.some((c) => c.shape === 'portrait')) continue;
-    if (fetches >= maxFetches) break;
+    // Another edition's art only when this edition has none at all; it has a fetch of its own
+    // beyond `maxFetches`, so an edition whose own sources all fail still gets a cover.
+    if (candidate.origin === 'openlibrary-other-edition') {
+      if (accepted.length) break;
+      if (fetches >= maxFetches + 1) break;
+    } else if (fetches >= maxFetches) continue;
     fetches++;
     const trial = await tryCandidate(candidate);
     tried.push(trial.record);
