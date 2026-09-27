@@ -109,8 +109,15 @@ export function unwrapFormula(value: string): string {
   return (m ? m[1] : value).trim();
 }
 
+/**
+ * Composed Unicode ("é" as one character): some spreadsheets hold accents as
+ * a letter plus a combining mark, which looks the same but would not match
+ * the library's names, be found by search on the web, or sort by its letter.
+ */
+const composed = (v: string) => v.normalize('NFC');
+
 const clean = (v: string | undefined) => {
-  const s = unescapeFormula(unwrapFormula(v ?? '')).replace(/\s+/g, ' ').trim();
+  const s = composed(unescapeFormula(unwrapFormula(v ?? ''))).replace(/\s+/g, ' ').trim();
   return s || null;
 };
 const splitList = (v: string | null, separator: RegExp) =>
@@ -229,7 +236,7 @@ export function planImport(rows: readonly string[][], mapping: readonly ImportFi
   };
   const raw = (row: readonly string[], field: ImportField) => {
     const i = mapping.indexOf(field);
-    return i < 0 ? null : unescapeFormula((row[i] ?? '').trim()).trim() || null;
+    return i < 0 ? null : composed(unescapeFormula((row[i] ?? '').trim())).trim() || null;
   };
 
   rows.forEach((row, index) => {

@@ -187,6 +187,20 @@ describe('rows with problems', () => {
   });
 });
 
+describe('decomposed accents', () => {
+  it('are composed, so the books are found, sorted and linked like typed ones', async () => {
+    const marquez = await authorsRepo.createAuthor(db, 'Gabriel García Márquez');
+    const nfd = (text: string) => text.normalize('NFD');
+    const rows = [[nfd('Cien años de soledad'), nfd('Gabriel García Márquez'), nfd('Notas: añejo')], [nfd('Émile'), 'Rousseau', '']];
+    expect(rows[0][0]).not.toBe('Cien años de soledad');
+    await importPlannedBooks(db, planImport(rows, ['title', 'authors', 'notes']));
+    expect((await booksRepo.listBookItems(db, { query: 'anos' })).map((b) => b.title)).toEqual(['Cien años de soledad']);
+    expect((await booksRepo.listBookItems(db, { query: 'emile' })).map((b) => b.title)).toEqual(['Émile']);
+    expect((await authorsRepo.listBooksByAuthor(db, marquez.id)).map((b) => [b.title, b.notes])).toEqual([['Cien años de soledad', 'Notas: añejo']]);
+    expect((await authorsRepo.listAuthors(db)).map((a) => a.name)).toEqual(['Gabriel García Márquez', 'Rousseau']);
+  });
+});
+
 describe('a large import', () => {
   /** `db` with every statement it runs recorded in `seen`. */
   function recording(inner: Db, seen: string[]): Db {
