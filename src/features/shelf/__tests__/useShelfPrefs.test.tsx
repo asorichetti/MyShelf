@@ -1,6 +1,6 @@
 import { act, renderHook, waitFor } from '@testing-library/react-native';
 
-import { settingsRepo, StaticDatabaseProvider, type Db } from '@/db';
+import { genresRepo, settingsRepo, StaticDatabaseProvider, type Db } from '@/db';
 import { noFilters } from '@/domain';
 import { defaultShelfPrefs, loadShelfPrefs, PREFS_DEBOUNCE_MS, useShelfPrefs } from '@/features/shelf/useShelfPrefs';
 import { createTestDb } from '@/testing/createTestDb';
@@ -54,6 +54,9 @@ describe('useShelfPrefs', () => {
   });
 
   it('writes filters once, after a short pause (debounced)', async () => {
+    // Filters name genres that exist (reading drops the ids of deleted ones).
+    await genresRepo.createGenre(db, 'Fantasy');
+    await genresRepo.createGenre(db, 'Horror');
     const { result } = await renderPrefs();
     jest.useFakeTimers();
     const spy = jest.spyOn(settingsRepo, 'setSetting');
