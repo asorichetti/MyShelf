@@ -3,6 +3,7 @@ import {
   BACKUP_FORMAT_VERSION,
   backupColumnsAt,
   isRating,
+  MAX_SERIES_POSITION,
   backupTableNames,
   backupTablesAt,
   joinNames,
@@ -100,6 +101,10 @@ function checkRow(spec: BackupTableSpec, columns: readonly BackupColumn[], raw: 
     }
     if (spec.name === 'books' && col.name === 'rating' && v !== null && !isRating(v)) {
       throw new BackupError('bad-row', t('restore.errors.badRating', { row, value: String(v) }));
+    }
+    // Series numbers the app itself never stores: the Series screens count up to the highest one.
+    if (typeof v === 'number' && ((col.name === 'total_count' && v > MAX_SERIES_POSITION) || (col.name === 'series_position' && v >= MAX_SERIES_POSITION))) {
+      throw new BackupError('bad-row', t('restore.errors.unexpectedField', { row, field: col.name }));
     }
   }
   return raw as BackupRow;

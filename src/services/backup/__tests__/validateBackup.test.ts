@@ -130,6 +130,23 @@ describe('validateBackup', () => {
     }
   });
 
+  it('refuses series numbers far beyond any series, which would hang the Series screens', () => {
+    const cases: [string, (b: BackupFile) => void][] = [
+      ['series of a billion books', (b) => (b.tables.series![0].total_count = 1_000_000_000)],
+      ['book number a billion', (b) => (b.tables.books!.find((r) => r.series_id != null)!.series_position = 1e9)],
+      ['book number 10,000', (b) => (b.tables.books!.find((r) => r.series_id != null)!.series_position = 10_000)],
+    ];
+    for (const [what, tamper] of cases) {
+      const doc = clone();
+      tamper(doc);
+      expect({ what, code: check(doc) }).toEqual({ what, code: 'bad-row' });
+    }
+    const fine = clone();
+    fine.tables.series![0].total_count = 10_000;
+    fine.tables.books!.find((r) => r.series_id != null)!.series_position = 9_999.5;
+    expect(check(fine)).toBe('accepted');
+  });
+
   it('allows columns the database fills in to be left out', () => {
     const doc = clone();
     delete doc.tables.books![0].created_at;
