@@ -348,8 +348,9 @@ export async function importPlannedBooks(db: Db, plan: ImportPlan): Promise<Impo
     const report: ImportReport = { imported: 0, bookIds: [], skipped: [...plan.skipped], groupsCreated: [] };
     const groups = new Map((await groupsRepo.listGroups(tx)).map((g) => [normaliseText(g.name, { dropArticle: false }), g.id]));
     const groupPositions = new Map<number, number>();
+    const seriesIdFor = await seriesRepo.seriesFinder(tx);
     for (const planned of plan.books) {
-      const seriesId = planned.series ? (await seriesRepo.findOrCreateSeries(tx, planned.series.name)).id : null;
+      const seriesId = planned.series ? await seriesIdFor(planned.series.name) : null;
       const book = await booksRepo.createBook(tx, { ...planned.book, seriesId, seriesPosition: planned.series?.position ?? null });
       if (planned.addedAt) await booksRepo.setAddedAt(tx, book.id, planned.addedAt);
       const links = [];

@@ -54,6 +54,28 @@ export async function findOrCreateSeries(db: Db, name: string): Promise<Series> 
   return (await findSeriesByName(db, name)) ?? createSeries(db, name);
 }
 
+/**
+ * `findOrCreateSeries` for many names in a row (an import): the series are
+ * read once and matched in memory, the same way, rather than read again for
+ * every book. Use it within one transaction, so no one else adds a series
+ * meanwhile.
+ */
+export async function seriesFinder(db: Db): Promise<(name: string) => Promise<number>> {
+  const ids = new Map<string, number>();
+  for (const r of await db.all<SeriesRow>('SELECT id, name, total_count FROM series ORDER BY id')) {
+    const key = normaliseText(r.name);
+    if (!ids.has(key)) ids.set(key, r.id);
+  }
+  return async (name) => {
+    const key = normaliseText(name);
+    const known = key ? ids.get(key) : undefined;
+    if (known != null) return known;
+    const { id } = await createSeries(db, name);
+    if (key) ids.set(key, id);
+    return id;
+  };
+}
+
 export async function listSeries(db: Db): Promise<Series[]> {
   const rows = await db.all<SeriesRow>('SELECT id, name, total_count FROM series ORDER BY name COLLATE NOCASE, id');
   return rows.map(toSeries);

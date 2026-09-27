@@ -187,6 +187,34 @@ describe('rows with problems', () => {
   });
 });
 
+describe('a large import', () => {
+  /** `db` with every statement it runs recorded in `seen`. */
+  function recording(inner: Db, seen: string[]): Db {
+    const wrap = (d: Db): Db => ({
+      exec: (sql) => (seen.push(sql), d.exec(sql)),
+      run: (sql, params) => (seen.push(sql), d.run(sql, params)),
+      get: (sql, params) => (seen.push(sql), d.get(sql, params)),
+      all: (sql, params) => (seen.push(sql), d.all(sql, params)),
+      transaction: (fn) => d.transaction((tx) => fn(wrap(tx))),
+      close: () => d.close(),
+    });
+    return wrap(inner);
+  }
+
+  it('reads the series table once, not once per book', async () => {
+    await seriesRepo.createSeries(db, 'The Expanse');
+    const rows = Array.from({ length: 300 }, (_, i) => [`Book ${i}`, i % 3 ? `Series ${i % 100}` : 'Expanse', String((i % 9) + 1)]);
+    const seen: string[] = [];
+    const report = await importPlannedBooks(recording(db, seen), planImport(rows, ['title', 'series', 'seriesPosition']));
+    expect(report.imported).toBe(300);
+    expect(seen.filter((sql) => /FROM series\b/.test(sql) && !/WHERE/.test(sql))).toHaveLength(1);
+    // Matched as before: "Expanse" is the existing "The Expanse", and each other name became one series.
+    expect((await seriesRepo.listSeries(db)).length).toBe(1 + 100);
+    const expanse = (await seriesRepo.findSeriesByName(db, 'The Expanse'))!;
+    expect(await seriesRepo.listBooksInSeries(db, expanse.id)).toHaveLength(100);
+  });
+});
+
 describe('round trip through MyShelf’s own CSV', () => {
   it('imports its own export back with the same books', async () => {
     await loadFixture(db, 'demo');
