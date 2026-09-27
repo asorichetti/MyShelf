@@ -236,3 +236,34 @@ export async function openBigFixture(c: Context, fixture: string): Promise<numbe
   await c.checkGates('/ (' + fixture + ')');
   return loadMs;
 }
+
+/** The web E2E build's hook (src/features/e2e/eventHook.web.ts). */
+const E2E_HOOK = '__myshelfE2e';
+
+/** A library event the app emits after a write commits (src/features/events.ts). */
+export type LibraryEvent = 'library-changed' | 'loans-changed' | 'groups-changed' | 'settings-changed' | 'pending-changed' | 'pending-retry';
+
+/** How many times the app has emitted `event` since the page loaded. */
+export async function eventCount(c: Context, event: LibraryEvent): Promise<number> {
+  return c.page.evaluate(
+    ([hook, e]) => (window as unknown as Record<string, { counts?: Record<string, number> } | undefined>)[hook]?.counts?.[e] ?? 0,
+    [E2E_HOOK, event] as const,
+  );
+}
+
+/**
+ * Waits until the app has emitted `event` more than `before` times: the
+ * write that emits it has committed, so a reload will read it back. Use it
+ * in place of a fixed wait before a reload.
+ */
+export async function waitForEvent(c: Context, event: LibraryEvent, before: number, where: string): Promise<void> {
+  try {
+    await c.page.waitForFunction(
+      ([hook, e, n]) => ((window as unknown as Record<string, { counts?: Record<string, number> } | undefined>)[hook as string]?.counts?.[e as string] ?? 0) > (n as number),
+      [E2E_HOOK, event, before] as const,
+      { timeout: 10_000 },
+    );
+  } catch {
+    expect(false, `${where}: expected the app to emit ${q(event)} (a save committing), it did not`);
+  }
+}

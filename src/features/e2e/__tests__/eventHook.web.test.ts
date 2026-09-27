@@ -2,7 +2,7 @@
  * @jest-environment jsdom
  */
 import { E2E_HOOK, installE2eEventHook, type E2eWindowHook } from '@/features/e2e/eventHook.web';
-import { subscribe } from '@/features/events';
+import { emit, subscribe } from '@/features/events';
 
 // The web build's rule (e2eFlag.web.ts): on unless a build opts out.
 let mockE2e = true;
@@ -23,6 +23,15 @@ describe('installE2eEventHook', () => {
     hook()!.emit('library-changed');
     stop();
     expect(heard).toEqual(['library-changed']);
+  });
+
+  it('counts every event emitted, so a journey can tell when a write has committed', () => {
+    installE2eEventHook();
+    expect(hook()!.counts).toEqual({});
+    emit('groups-changed');
+    emit('groups-changed');
+    emit('settings-changed');
+    expect(hook()!.counts).toEqual({ 'groups-changed': 2, 'settings-changed': 1 });
   });
 
   it('is not there when the build has the E2E loader off', () => {
