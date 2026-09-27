@@ -19,6 +19,7 @@ async function waitForText(c: Context, selector: string, test: (s: string) => bo
   while (Date.now() - start < timeout) {
     last = (await c.page.locator(selector).first().innerText().catch(() => '')).trim();
     if (test(last)) return last;
+    // Polling: the test is a Node-side predicate, so it cannot run in waitForFunction.
     await c.page.waitForTimeout(100);
   }
   expect(false, `${where}: ${selector} never showed the expected text; last saw ${q(last)}`);
@@ -34,6 +35,7 @@ export async function expectRealCover(c: Context, scope: string, where: string):
   const deadline = Date.now() + 20_000;
   let state = await coverState(c, scope);
   while ((state.loaded < 1 || state.fallbacks > 0) && Date.now() < deadline) {
+    // Polling until the deadline: cover images load (or fall back) with no event to wait on.
     await c.page.waitForTimeout(250);
     state = await coverState(c, scope);
   }

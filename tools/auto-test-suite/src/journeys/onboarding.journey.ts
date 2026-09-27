@@ -1,7 +1,7 @@
 // Phase 07: the first-run onboarding (P07-03). Only the `first-run` fixture
 // asks for it; every other fixture starts with it done.
 import { Testids, tid } from '../selectors.ts';
-import { waitForPath, waitVisible } from './helpers.ts';
+import { waitForNote, waitForPath, waitVisible } from './helpers.ts';
 import { expect, q, register, type Context } from './registry.ts';
 
 const o = Testids.onboarding;
@@ -52,7 +52,9 @@ register({
 
     // Shown once: starting the app again goes straight to the Shelf.
     await c.goto('/');
-    await c.page.waitForTimeout(800);
+    const redirect = await waitForNote<boolean>(c, 'onboarding-check', 0, '/ (second start)');
+    expect(!redirect, '/ (second start): the onboarding check sent the user back to the onboarding');
+    await c.settle();
     const path = new URL(c.page.url()).pathname;
     expect(path === '/', `/ (second start): expected to stay on the Shelf, went to ${q(path)}`);
   },
@@ -70,7 +72,9 @@ register({
     await c.checkGates('/ (after skip)');
     await c.page.reload();
     await waitVisible(c, tid(Testids.home.root), '/ (reload)');
-    await c.page.waitForTimeout(800);
+    const redirect = await waitForNote<boolean>(c, 'onboarding-check', 0, '/ (reload)');
+    expect(!redirect, '/ (reload): the onboarding check sent the user back to the onboarding');
+    await c.settle();
     const path = new URL(c.page.url()).pathname;
     expect(path === '/', `/ (reload): expected to stay on the Shelf, went to ${q(path)}`);
   },

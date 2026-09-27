@@ -172,18 +172,22 @@ register({
   async run(c) {
     await openFixture(c, 'demo', '/');
     await waitForCount(c, row, 12, '/');
+    const start = await eventCount(c, 'settings-changed');
     await groupBy(c, sv.groupByAuthor);
     await c.page.locator(tid(sv.modeCovers)).click();
     await c.page.locator(tid(Testids.home.sortButton)).click();
     await c.page.getByRole('button', { name: 'Sort by: Title. Change' }).click();
     await c.page.locator(`${tid(Testids.sortSheet.levelKeyOption)}[aria-label="Year published"]`).click();
     await c.page.locator(tid(Testids.sortSheet.done)).click();
+    // The grouping, the mode and the sort are each saved at once: three writes.
+    await waitForEvent(c, 'settings-changed', start + 2, '/ grouping, mode and sort saved');
+    const saves = await eventCount(c, 'settings-changed');
     await c.page.locator(tid(sv.filterButton)).click();
     await c.page.locator(`${tid(sv.filterGenre)}[aria-label^="Science Fiction,"]`).click();
     await c.page.locator(tid(sv.filterDone)).click();
     await waitForSections(c, ['Frank Herbert, 1 book', 'Ursula K. Le Guin, 1 book'], '/ before reload');
-    // Preferences are written a moment after the last change.
-    await c.page.waitForTimeout(800);
+    // Filters are saved a short pause after the last change; reload once that write has committed.
+    await waitForEvent(c, 'settings-changed', saves, '/ filter saved');
 
     await c.page.reload();
     await waitForSections(c, ['Frank Herbert, 1 book', 'Ursula K. Le Guin, 1 book'], '/ after reload');

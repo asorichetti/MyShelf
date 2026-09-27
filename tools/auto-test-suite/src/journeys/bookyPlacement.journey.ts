@@ -29,7 +29,8 @@ const overlaps = (a: Box, b: Box) => a.x < b.x + b.width && b.x < a.x + a.width 
 async function helpClearOf(c: Context, where: string, obstacles: Record<string, string>): Promise<void> {
   if ((await c.page.locator(bubble).count()) === 0) await c.page.locator(helpButton).first().click();
   await waitVisible(c, bubble, where);
-  // Let the bubble measure itself and settle where it belongs.
+  // A settle after the tap: let the bubble measure itself and move to where it belongs
+  // (two frames, then its short slide into place).
   await c.settle();
   await c.page.waitForTimeout(200);
   const b = await boxOf(c, host, where);
@@ -69,7 +70,7 @@ register({
     await c.page.locator(tid(Testids.shelfView.filterButton)).focus();
     await c.page.keyboard.press('Enter');
     await waitVisible(c, tid(Testids.shelfView.filterSheet), '/ filter sheet');
-    await c.page.waitForTimeout(200);
+    await c.page.waitForFunction((sel) => document.querySelectorAll(sel).length === 0, bubble, { timeout: 5_000 }).catch(() => {});
     expect((await c.page.locator(bubble).count()) === 0, '/ (filter sheet open): expected Booky’s bubble hidden while a sheet is open');
     await c.snap('placement-sheet-open');
     await c.page.keyboard.press('Escape');

@@ -251,6 +251,61 @@ export async function eventCount(c: Context, event: LibraryEvent): Promise<numbe
   );
 }
 
+/** The values the app has noted for journeys under `key`, oldest first (`noteForE2e` in src/features/e2e/eventHook.web.ts). */
+export async function notesOf<T>(c: Context, key: string): Promise<T[]> {
+  return c.page.evaluate(
+    ([hook, k]) => ((window as unknown as Record<string, { notes?: Record<string, unknown[]> } | undefined>)[hook]?.notes?.[k] ?? []) as never,
+    [E2E_HOOK, key] as const,
+  );
+}
+
+/**
+ * Waits until the app has noted a value under `key` that is past the first
+ * `before` and passes `match`, and returns it. The app notes a decision once
+ * it has made it (the onboarding check, Booky's choice of tip), so a journey
+ * can check that nothing happened without waiting a fixed time for it not to.
+ */
+export async function waitForNote<T>(c: Context, key: string, before: number, where: string, match: (value: T) => boolean = () => true): Promise<T> {
+  const deadline = Date.now() + 15_000;
+  for (;;) {
+    const noted = await notesOf<T>(c, key);
+    const found = noted.slice(before).find(match);
+    if (found !== undefined) return found;
+    const left = deadline - Date.now();
+    if (left <= 0) {
+      expect(false, `${where}: expected the app to note ${q(key)} (a decision being made), it did not`);
+    }
+    // Sleep until the app notes something new, then look again.
+    await c.page
+      .waitForFunction(
+        ([hook, k, n]) => ((window as unknown as Record<string, { notes?: Record<string, unknown[]> } | undefined>)[hook as string]?.notes?.[k as string]?.length ?? 0) > (n as number),
+        [E2E_HOOK, key, noted.length] as const,
+        { timeout: left },
+      )
+      .catch(() => {});
+  }
+}
+
+/** What Booky's engine made of one emission (BookyDecision in src/components/booky/BookyProvider.tsx). */
+export interface BookyDecision {
+  triggers: string[];
+  tip: string | null;
+}
+
+/** How many decisions Booky has made since the page loaded. */
+export async function bookyDecisionCount(c: Context): Promise<number> {
+  return (await notesOf<BookyDecision>(c, 'booky')).length;
+}
+
+/**
+ * Waits for Booky's decision about a `trigger` event made after the first
+ * `before` decisions, and returns the tip it chose (null: it stayed quiet).
+ */
+export async function waitForBookyDecision(c: Context, trigger: string, before: number, where: string): Promise<string | null> {
+  const decision = await waitForNote<BookyDecision>(c, 'booky', before, where, (d) => d.triggers.includes(trigger));
+  return decision.tip;
+}
+
 /**
  * Waits until the app has emitted `event` more than `before` times: the
  * write that emits it has committed, so a reload will read it back. Use it

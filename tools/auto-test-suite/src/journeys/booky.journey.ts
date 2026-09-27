@@ -1,5 +1,5 @@
 import { Testids, tid } from '../selectors.ts';
-import { openFixture, waitForCount, waitForPath, waitVisible } from './helpers.ts';
+import { bookyDecisionCount, openFixture, waitForBookyDecision, waitForCount, waitForPath, waitVisible } from './helpers.ts';
 import { openFirstRun } from './onboarding.journey.ts';
 import { expect, q, register, type Context } from './registry.ts';
 
@@ -185,10 +185,13 @@ register({
 
     await c.page.reload();
     await waitVisible(c, tid(Testids.settings.googleBooksToggle), '/settings (reload)');
+    const decided = await bookyDecisionCount(c);
     await c.page.locator(tid(Testids.tabs.shelf)).click();
     await waitForPath(c, '/', '/settings -> Shelf');
     await waitVisible(c, emptyState, '/ (reload)');
-    await c.page.waitForTimeout(1_500);
+    const shown = await waitForBookyDecision(c, 'shelf-empty', decided, '/ (reload)');
+    expect(shown === null, `/ (reload): Booky chose ${q(shown)} for the empty shelf; the tip is muted`);
+    await c.settle();
     expect((await c.page.locator(bubble).count()) === 0, '/ (reload): the muted empty-shelf tip came back');
   },
 });
@@ -253,10 +256,13 @@ register({
     await c.page.locator(tid(Testids.scan.webIsbnSubmit)).click();
     await waitForPath(c, '/scan/pick', '/scan -> lookup');
     await waitVisible(c, tid(Testids.picker.confirm), '/scan/pick');
+    const decided = await bookyDecisionCount(c);
     await c.page.locator(tid(Testids.picker.confirm)).click();
     const book = await waitForPath(c, /^\/book\/\d+$/, '/scan/pick -> confirm');
     await waitVisible(c, vis(tid(Testids.bookDetail.title)), book);
-    await c.page.waitForTimeout(1_500);
+    const shown = await waitForBookyDecision(c, 'book-added', decided, `${book} (quiet)`);
+    expect(shown === null, `${book} (quiet): Booky chose ${q(shown)} for the new book in Quiet mode`);
+    await c.settle();
     expect((await c.page.locator(`${bubble} >> visible=true`).count()) === 0, `${book} (quiet): expected no "Shelved!" tip in Quiet mode`);
     const face = await c.page.locator('[role="img"][aria-label^="Booky"] >> visible=true').count();
     expect(face === 0, `${book} (quiet): expected no Booky bubble, found ${face} Booky images`);
@@ -268,6 +274,7 @@ async function avatarTransforms(c: Context): Promise<string[]> {
   const out: string[] = [];
   for (let i = 0; i < 4; i++) {
     out.push(await c.page.locator(`${bubble} ${avatar}`).first().evaluate((el) => getComputedStyle(el).transform));
+    // Sampling an animation over time: the gap between samples is the point.
     await c.page.waitForTimeout(400);
   }
   return out;
