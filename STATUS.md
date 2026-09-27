@@ -11,7 +11,7 @@ On `main`: the scaffold (P00-01 to P00-07), the design system, Booky, tabs, data
 | [Phase 00](docs/plan/phase-00-foundation.md) | Foundation | 29 / 30 |
 | [Phase 01](docs/plan/phase-01-library-core.md) | Library core: CRUD and book detail | 12 / 12 |
 | [Phase 02](docs/plan/phase-02-metadata-providers.md) | Metadata providers | 16 / 16 |
-| [Phase 03](docs/plan/phase-03-scanning.md) | Scanning: barcode, OCR and edition picker | 10 / 14 |
+| [Phase 03](docs/plan/phase-03-scanning.md) | Scanning: barcode, OCR and edition picker | 13 / 14 |
 | [Phase 04](docs/plan/phase-04-series.md) | Series | 8 / 8 |
 | [Phase 05](docs/plan/phase-05-lending.md) | Lending | 8 / 10 |
 | [Phase 06](docs/plan/phase-06-grouping-and-shelf-views.md) | Grouping and shelf views | 9 / 11 |
@@ -20,7 +20,7 @@ On `main`: the scaffold (P00-01 to P00-07), the design system, Booky, tabs, data
 | [Phase 09](docs/plan/phase-09-polish-a11y-release.md) | Polish, accessibility and release | 6 / 12 |
 | [Phase 10](docs/plan/phase-10-ratings.md) | Ratings | 9 / 9 |
 | [Phase 11](docs/plan/phase-11-sorting.md) | Sorting | 7 / 7 |
-| **Total** | | **130 / 148** |
+| **Total** | | **133 / 148** |
 
 ## Phase 00 — Foundation
 
@@ -103,8 +103,8 @@ On `main`: the scaffold (P00-01 to P00-07), the design system, Booky, tabs, data
 - [x] P03-02 Camera permission flow
 - [x] P03-03 Barcode scanner
 - [x] P03-04 Scan result flow for barcodes
-- [ ] P03-05 Cover capture and ML Kit OCR
-- [ ] P03-06 OCR text → search queries
+- [x] P03-05 Cover capture and ML Kit OCR
+- [x] P03-06 OCR text → search queries
 - [x] P03-07 Web stub and E2E scan injection
 - [x] P03-08 Edition picker
 - [x] P03-09 Save from candidate
@@ -112,7 +112,7 @@ On `main`: the scaffold (P00-01 to P00-07), the design system, Booky, tabs, data
 - [x] P03-11 Manual fallback with prefill
 - [x] P03-12 Continuous scanning mode
 - [x] P03-13 Scan screen polish and help
-- [ ] P03-14 Use the cover photo when no online cover exists
+- [x] P03-14 Use the cover photo when no online cover exists
 
 ## Phase 04 — Series
 

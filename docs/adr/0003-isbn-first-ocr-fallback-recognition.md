@@ -12,7 +12,7 @@ The owner wants to scan a book's cover and have MyShelf identify both the book a
 A hybrid, fully on-device pipeline:
 
 1. **Barcode first.** `expo-camera` `CameraView` scans EAN-13; a `978`/`979` EAN-13 is the ISBN-13 and identifies the exact edition.
-2. **OCR fallback.** When there is no barcode or the ISBN is unknown, the user photographs the cover; Google ML Kit text recognition (`@react-native-ml-kit/text-recognition`, on-device, free) extracts text; a pure query builder turns it into title/author queries.
+2. **OCR fallback.** When there is no barcode or the ISBN is unknown, the user photographs the cover; Google ML Kit text recognition (on-device, free; through the app's own Expo module since [0016](0016-local-expo-module-for-text-recognition.md), first planned as `@react-native-ml-kit/text-recognition`) extracts text; a pure query builder turns it into title/author queries.
 3. **Free metadata APIs.** Open Library (ISBN, works, editions, search, covers) and Google Books (volumes search), both keyless at low volume, called directly from the device with polite rate limiting, a descriptive User-Agent and a local cache.
 4. **User confirms.** Results are shown as candidates in an edition picker; nothing is saved without the user choosing an edition or falling back to manual entry.
 

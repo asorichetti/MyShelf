@@ -158,6 +158,17 @@ Blocked: `READ_EXTERNAL_STORAGE`, `READ_MEDIA_*`, `ACCESS_MEDIA_LOCATION` (the p
 
 After changing plugins or dependencies, check the result: the CI run's summary lists the permissions in the built APK (`aapt2 dump permissions`), and `npx expo prebuild --platform android` shows the app's own manifest in `android/app/src/main/AndroidManifest.xml`.
 
+## The bundled text-recognition model
+
+Reading covers (P03-05) uses ML Kit Text Recognition v2 with its **bundled Latin model** (`com.google.mlkit:text-recognition:16.0.1`, added by the local module in `modules/text-recognition`), not the thin variant that downloads the model through Google Play services: covers can be read offline, from the first launch, on phones without Play services. The price is size. Measured on 26 September 2026 with two release APKs built for `arm64-v8a` only (`./gradlew assembleRelease -PreactNativeArchitectures=arm64-v8a`), identical except for the module:
+
+| Build | APK size |
+|---|---|
+| without the text-recognition module | 59.7 MB |
+| with it | 72.3 MB (**+12.6 MB**, +21 %) |
+
+The increase is the native OCR library (`libmlkit_google_ocr_pipeline.so`, 11.1 MB for `arm64-v8a`) and the models (about 1.5 MB in `assets/mlkit-google-ocr-models/`). The library is per ABI: 6.8 MB for `armeabi-v7a`, 11.6 MB for `x86` and `x86_64`, so an APK for all four ABIs grows by about 42 MB, while an App Bundle download from Google Play grows by one ABI's share (about 12.6 MB on a 64-bit ARM phone). The module adds no Android permission (`aapt2 dump permissions` is unchanged). Like the barcode scanner's bundled ML Kit model, it may send Google diagnostic information, never the images or the words read (see [privacy.md](privacy.md#camera-and-photos)).
+
 ## Icons, splash and store graphics
 
 Every image is rendered from an SVG in `assets/source/` by `npm run icons:render` (`scripts/render-icons.mjs`, Chromium via Playwright; install it once with `npm run autotest:install-browser`). Add `-- --preview <folder>` to also get review sheets: the adaptive icon in circle, squircle and rounded-square masks at 192 and 48 px, the themed (monochrome) icon, the safe zone and the Android 12 splash.

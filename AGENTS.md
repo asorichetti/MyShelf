@@ -54,6 +54,7 @@ Use `npx`, not `bunx` (this project uses npm; there is no `bun.lock`).
 - `src/features/<feature>` — screens (`ShelfScreen.tsx`) and the hooks that connect them to repositories/services (`useBookCount.ts`); `src/features/navigation` holds the tab layout and the loading, database-error and not-found screens.
 - `src/hooks` — small shared hooks with no feature of their own (`useReducedMotion`).
 - `src/services` — network, recognition, backup (no React, no SQL; created in Phase 02).
+- `modules/<name>` — the app's own Expo modules (native code, found by autolinking), such as `modules/text-recognition` (ML Kit OCR, Kotlin). Import their JavaScript side with `@modules/<name>`, only from `src/services`.
 - `src/domain` — pure TypeScript models and helpers (no React, no Expo imports).
 - `src/db` — `Db` interface, adapters (`expo.ts`, `node.ts`), migrations, repositories, and `DatabaseProvider.tsx` (opens and migrates the database, then provides it through `useDatabase()`). **No SQL anywhere else.**
 - `src/theme` — design tokens. **No colour, font or spacing literals anywhere else** (a Jest test fails on colour literals outside `src/theme`).

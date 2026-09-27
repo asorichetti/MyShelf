@@ -31,6 +31,7 @@ MyShelf connects to the internet only to look up book details and covers, and on
 These requests happen when you:
 
 - scan or type an ISBN, or search by title and author;
+- read a book's cover: the words MyShelf read on it (a title and an author) are searched for; the photo itself is not sent;
 - save a book (MyShelf fetches its cover);
 - come back online after scanning offline (the ISBNs you scanned are looked up then);
 - have books without a cover (typed in by hand, imported from a spreadsheet, or restored from a backup): MyShelf looks for their covers when it starts or comes back to the foreground, and straight after an import or restore. It sends those books' ISBNs (up to 40 in one Open Library search), or a book's title and first author when it has no ISBN.
@@ -55,8 +56,8 @@ The About screen links to the MyShelf source code, Open Library and Google Books
 
 ## Camera and photos
 
-- **Camera** (Android asks for permission the first time): used to read barcodes in the Scan tab and to photograph a book's cover. Barcodes are read on the phone by Google's ML Kit library, which is built into the app. The camera image is never uploaded. Google states that ML Kit may send it limited diagnostic information (such as device model, Android version, app version and performance figures), not the images; see [ML Kit's data disclosure](https://developers.google.com/ml-kit/android-data-disclosure).
-- **Cover photos:** a photo you take or choose for a cover is saved in the app's private storage as that book's cover. A photo taken only to read a cover's text is deleted once it has been used.
+- **Camera** (Android asks for permission the first time): used to read barcodes in the Scan tab and to photograph a book's cover. Barcodes, and the words on a cover, are read on the phone by Google's ML Kit library, which is built into the app with its recognition models, so reading works offline and needs nothing downloaded. Camera images and cover photos are never uploaded. Google states that ML Kit may send it limited diagnostic information (such as device model, Android version, app version, which ML Kit feature ran, the size of its input and output, and performance figures and error codes), not the images or the words read; it goes to `firebaselogging.googleapis.com`. See [ML Kit's data disclosure](https://developers.google.com/ml-kit/android-data-disclosure).
+- **Cover photos:** a photo you take or choose for a cover is saved in the app's private storage as that book's cover. A photo taken or chosen to read a cover's words is kept only until the book is saved and its cover search has finished, then deleted, unless no cover exists online and you tap **Use my photo**: then a cropped copy becomes that book's cover. If nothing is found, the photo is deleted straight away.
 - **Photos from your gallery** are chosen with Android's own picker, which gives MyShelf only the picture you pick. MyShelf has no access to the rest of your photos.
 
 ## Backups and exports

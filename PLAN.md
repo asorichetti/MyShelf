@@ -134,8 +134,8 @@ Versions below are what is installed on `main` today (from `package-lock.json`).
 | Safe areas | react-native-safe-area-context | 5.7.0 | used by `Screen` and the tab bar |
 | Images | expo-image | 57.0.5 | cached cover images (P01-10) |
 | Cover photos | expo-image-picker | 57.0.20 | choose or take a photo of a cover in the book form (P01-10) |
-| Camera + barcodes | expo-camera | *planned* (P03-03) | `CameraView` barcode scanning (EAN-13) |
-| OCR | @react-native-ml-kit/text-recognition | *planned* (P03-05) | on-device Google ML Kit; needs a development build |
+| Camera + barcodes | expo-camera | 57.0.5 (P03-03) | `CameraView` barcode scanning (EAN-13) |
+| OCR | local Expo module `modules/text-recognition` (ML Kit Text Recognition v2, `com.google.mlkit:text-recognition`) | 16.0.1 (P03-05) | on-device, bundled Latin model; Kotlin, Expo Modules API (New Architecture); Android only; needs a development or release build, not Expo Go |
 | Dev builds | expo-dev-client | *planned* (P03-01) | |
 | Files / sharing | expo-file-system; expo-sharing, expo-document-picker | 57.0.7 (P02-09); others *planned* (P08-02) | covers cache (`File`/`Directory`/`Paths` API), backups |
 | Notifications | expo-notifications | *planned* (P05-08) | local due-date reminders only |
@@ -167,6 +167,7 @@ MyShelf/
 ├── .github/workflows/          [main] ci.yml (P00-19) · P09-07 release.yml
 ├── .maestro/                   P00-18 on-device flows (*.yaml)
 ├── assets/                     [main] icons, splash
+├── modules/text-recognition/   P03-05 local Expo module: ML Kit text recognition (Kotlin, Android only; ADR 0016)
 ├── docs/
 │   ├── adr/                    [main] architecture decision records
 │   ├── plan/                   [main] one document per phase
@@ -419,10 +420,13 @@ flowchart TD
   V -- no --> B
   L -->|found| C1[Single edition candidate]
   L -->|not found| O
-  B -->|user taps 'No barcode? Read the cover'| O[Take photo of cover]
+  B -->|user taps 'No barcode? Read the cover'| O[Take a photo of the cover, or choose one from the gallery]
   O --> T[ML Kit text recognition on device]
+  T -->|no words / no title| FIX[Booky: fill the frame, or change the words read]
   T --> Q[Build queries: title = largest text lines; author = name-like lines]
-  Q --> S[Search Open Library + Google Books]
+  Q --> S[searchCover: title + author, then the author's books by title, then shorter title, title, free text]
+  S -->|nothing| FIX
+  FIX --> S
   S --> W[Group results by work; list editions]
   W --> EP[Edition picker]
   C1 --> EP
@@ -432,12 +436,14 @@ flowchart TD
   EP -->|none match| MAN
   MAN --> SAVE
   SAVE --> DET[Book detail, Booky celebrates]
+  DET -->|from a cover photo, and no cover online| PH[Booky offers the photo as the cover]
 ```
 
 Key points:
 
 - **Barcode first.** An EAN-13 starting `978`/`979` *is* the ISBN-13 and pins the exact edition. EAN-8/UPC-A are accepted only to show a helpful "that's not a book barcode" message.
-- **OCR fallback.** When there is no barcode (older books, dust-jacket removed) or the ISBN is unknown to both providers, the user takes one photo of the cover. ML Kit returns text blocks with bounding boxes; the query builder ranks lines by box height (larger text = title), drops noise ("A NOVEL", "NEW YORK TIMES BESTSELLER", prices), and treats short capitalised 2–4-word lines as author candidates. Pure function, unit-tested with recorded OCR outputs.
+- **OCR fallback.** When there is no barcode (older books, dust-jacket removed) or the ISBN is unknown to both providers, the user takes one photo of the cover, or chooses one from the gallery (the system photo picker: no permission, so it works with the camera refused). The app's local Expo module (`modules/text-recognition`, Kotlin) runs **ML Kit Text Recognition v2 with the bundled Latin model** (no Play services download; works offline): `recognize(uri)` takes `file://` or `content://` URIs, applies EXIF rotation, and returns blocks of lines with pixel frames, confidence and language (`src/services/recognition`; the web build throws `NotSupportedOnWeb` and keeps typed cover text). The query builder (`src/domain/ocrQuery.ts`) ranks lines by box height (larger text = title), drops noise ("A NOVEL", "NEW YORK TIMES BESTSELLER", prices) unless a genre word is set as large as the title, joins names split over lines, and treats short capitalised 2–4-word lines as author candidates; `searchCover` forgives misreads in at most five searches. Pure functions, unit-tested with synthetic covers and real captures from the developer's photos: ML Kit on an Android emulator (`real-mlkit-*.json`, recorded with `scripts/record-mlkit-fixture.mjs`) and the earlier Apple Vision stand-ins; `npm run test:live` finds all of them in Open Library. No words → Booky asks to fill the frame; no title or no match → "Change the words" opens the typed cover text prefilled with what was read.
+- **The photo.** It stays on the phone. It is kept only until the book is saved and its cover search has finished; when no online cover exists, Booky offers it as the cover (an upright 2:3 crop around the text read, stored as `covers/<bookId>.jpg`), otherwise it is deleted.
 - **The user always confirms.** Recognition proposes; the edition picker shows cover, title, authors, year, publisher, format and ISBN so the user can match what is in their hand. Nothing is saved without a tap.
 - **Web and tests.** On web the Scan tab offers "Type an ISBN" and "Type the cover text" inputs that feed the same pipeline after the camera/OCR step. On device, E2E builds accept `myshelf://e2e/scan?isbn=…` so Maestro can inject a scan result.
 
@@ -693,7 +699,7 @@ Total: **148 task cards**. Progress is tracked in [`STATUS.md`](STATUS.md).
 |---|---|
 | [0001](docs/adr/0001-expo-react-native-typescript.md) | Expo React Native with TypeScript |
 | [0002](docs/adr/0002-web-target-for-automated-ui-testing.md) | Web build as a test target driven by a browser auto test suite; Maestro for device-only flows |
-| [0003](docs/adr/0003-isbn-first-ocr-fallback-recognition.md) | ISBN barcode first, on-device OCR fallback, free metadata APIs, no server |
+| [0003](docs/adr/0003-isbn-first-ocr-fallback-recognition.md) | ISBN barcode first, on-device OCR fallback, free metadata APIs, no server (OCR library updated by 0016) |
 | [0004](docs/adr/0004-public-plans-in-repo.md) | Plans and status tracked publicly in the repo |
 | [0005](docs/adr/0005-sqlite-with-migrations-and-db-interface.md) | SQLite via expo-sqlite, versioned migrations, `Db` interface |
 | [0006](docs/adr/0006-data-model.md) | v1 data model |
@@ -706,3 +712,4 @@ Total: **148 task cards**. Progress is tracked in [`STATUS.md`](STATUS.md).
 | [0013](docs/adr/0013-typescript-auto-test-suite.md) | Auto test suite in TypeScript with the Playwright library (replaces the Go version) |
 | [0014](docs/adr/0014-warm-paper-palette-and-labelled-booky.md) | Warm paper palette with role-named tokens, and a labelled Booky (updates 0007) |
 | [0015](docs/adr/0015-e2e-fixture-loader-per-platform.md) | E2E fixture loader: on for the web test target, opt-in (`EXPO_PUBLIC_E2E=1`) on Android |
+| [0016](docs/adr/0016-local-expo-module-for-text-recognition.md) | Text recognition through a local Expo module: ML Kit v2, bundled Latin model (updates 0003's OCR library) |
