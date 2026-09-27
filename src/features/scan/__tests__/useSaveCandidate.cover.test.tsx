@@ -18,7 +18,7 @@ jest.mock('@/features/covers', () => ({ ...jest.requireActual('@/features/covers
 jest.mock('../tempPhoto', () => ({ discardPhoto: jest.fn() }));
 jest.mock('@/services/covers', () => ({
   ...jest.requireActual('@/services/covers'),
-  storeCoverFile: jest.fn((bookId: number) => `file:///documents/covers/${bookId}.jpg`),
+  storeCoverFile: jest.fn((_uri: string, { bookId }: { bookId?: number } = {}) => `file:///documents/covers/${bookId}-1.jpg`),
 }));
 jest.mock('@/services/recognition', () => ({
   ...jest.requireActual('@/services/recognition'),
@@ -67,12 +67,12 @@ describe('the cover photo when no online cover exists (P03-14)', () => {
     const saved = await saveWith({ status: 'none', tried: [] });
     const changed = jest.fn();
     const off = subscribe('library-changed', changed);
-    await expect(acceptCoverPhoto(db, saved.id)).resolves.toBe(`file:///documents/covers/${saved.id}.jpg`);
+    await expect(acceptCoverPhoto(db, saved.id)).resolves.toBe(`file:///documents/covers/${saved.id}-1.jpg`);
     const { coverFromPhoto } = jest.requireMock<typeof import('@/services/recognition')>('@/services/recognition');
     const { storeCoverFile } = jest.requireMock<typeof import('@/services/covers')>('@/services/covers');
     expect(coverFromPhoto).toHaveBeenCalledWith(photo, focus);
-    expect(storeCoverFile).toHaveBeenCalledWith(saved.id, 'file:///cache/cover-photos/cropped.jpg');
-    expect((await booksRepo.getBook(db, saved.id))?.coverUri).toBe(`file:///documents/covers/${saved.id}.jpg`);
+    expect(storeCoverFile).toHaveBeenCalledWith('file:///cache/cover-photos/cropped.jpg', { bookId: saved.id });
+    expect((await booksRepo.getBook(db, saved.id))?.coverUri).toBe(`file:///documents/covers/${saved.id}-1.jpg`);
     expect(discardPhoto).toHaveBeenCalledWith(photo);
     expect(discardPhoto).toHaveBeenCalledWith('file:///cache/cover-photos/cropped.jpg');
     expect(coverPhotoOffer(saved.id)).toBeNull();
@@ -111,7 +111,7 @@ describe('the cover photo when no online cover exists (P03-14)', () => {
         fireEvent.press(screen.getByTestId(Testids.coverPhoto.use));
       });
       await waitFor(() => expect(screen.queryByTestId(Testids.coverPhoto.offer)).toBeNull());
-      expect((await booksRepo.getBook(db, saved.id))?.coverUri).toBe(`file:///documents/covers/${saved.id}.jpg`);
+      expect((await booksRepo.getBook(db, saved.id))?.coverUri).toBe(`file:///documents/covers/${saved.id}-1.jpg`);
     });
 
     it('a double tap on "Use my photo" makes the cover once', async () => {
@@ -125,7 +125,7 @@ describe('the cover photo when no online cover exists (P03-14)', () => {
       });
       await waitFor(() => expect(screen.queryByTestId(Testids.coverPhoto.offer)).toBeNull());
       expect(coverFromPhoto).toHaveBeenCalledTimes(1);
-      expect((await booksRepo.getBook(db, saved.id))?.coverUri).toBe(`file:///documents/covers/${saved.id}.jpg`);
+      expect((await booksRepo.getBook(db, saved.id))?.coverUri).toBe(`file:///documents/covers/${saved.id}-1.jpg`);
     });
 
     it('"No thanks" dismisses it', async () => {

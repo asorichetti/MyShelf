@@ -3,7 +3,7 @@ import { act, fireEvent, screen } from 'expo-router/testing-library';
 import { booksRepo, type Db } from '@/db';
 import { BookDetailScreen } from '@/features/book/BookDetailScreen';
 import { UNDO_WINDOW_MS } from '@/features/book/useDeleteBook';
-import { deleteCover } from '@/services/covers';
+import { deleteCoverFile } from '@/services/covers';
 import { createTestDb } from '@/testing/createTestDb';
 import { loadFixture } from '@/testing/loadFixture';
 import { advance, renderApp } from '@/testing/renderApp';
@@ -11,14 +11,15 @@ import { Testids } from '@/testing/testids.gen';
 
 jest.mock('@/services/covers', () => ({
   ...jest.requireActual('@/services/covers'),
-  deleteCover: jest.fn(() => true),
+  deleteCoverFile: jest.fn(() => true),
+  isStoredCover: jest.fn(() => true),
 }));
 
 let db: Db;
 beforeEach(async () => {
   db = await createTestDb();
   await loadFixture(db, 'demo');
-  jest.mocked(deleteCover).mockClear();
+  jest.mocked(deleteCoverFile).mockClear();
 });
 afterEach(() => db.close());
 
@@ -87,9 +88,9 @@ describe('Deleting a book', () => {
     await booksRepo.updateBook(db, mort.id, { coverUri: 'file:///covers/mort.jpg' });
     await askToDelete('Mort');
     await press(Testids.dialog.confirm);
-    expect(deleteCover).not.toHaveBeenCalled();
+    expect(deleteCoverFile).not.toHaveBeenCalled();
     await advance(UNDO_WINDOW_MS);
-    expect(deleteCover).toHaveBeenCalledWith(mort.id);
+    expect(deleteCoverFile).toHaveBeenCalledWith('file:///covers/mort.jpg');
   });
 
   it('keeps the cover file when Undo is used', async () => {
@@ -99,20 +100,31 @@ describe('Deleting a book', () => {
     await press(Testids.dialog.confirm);
     await press(Testids.snackbar.action);
     await advance(UNDO_WINDOW_MS);
-    expect(deleteCover).not.toHaveBeenCalled();
+    expect(deleteCoverFile).not.toHaveBeenCalled();
     expect((await booksRepo.getBook(db, mort.id))!.coverUri).toBe('file:///covers/mort.jpg');
   });
 
-  it('leaves the cover of a new book that took the deleted book’s id', async () => {
+  it('leaves a cover file another book still names (a restore or an Undo put them back that way)', async () => {
     const newest = (await booksRepo.listBooks(db)).reduce((a, b) => (b.id > a.id ? b : a));
-    await booksRepo.updateBook(db, newest.id, { coverUri: `file:///covers/${newest.id}.jpg` });
+    await booksRepo.updateBook(db, newest.id, { coverUri: 'file:///covers/shared.jpg' });
     await askToDelete(newest.title);
     await press(Testids.dialog.confirm);
-    // New books never get a deleted book's id (migration 0008), but one can still hold it, from a
-    // restored backup say, and its cover the same file name.
-    await db.run('INSERT INTO books (id, title, cover_uri) VALUES (?, ?, ?)', [newest.id, 'Added meanwhile', `file:///covers/${newest.id}.jpg`]);
+    await db.run('INSERT INTO books (title, cover_uri) VALUES (?, ?)', ['Added meanwhile', 'file:///covers/shared.jpg']);
     await advance(UNDO_WINDOW_MS);
     await advance(0);
-    expect(deleteCover).not.toHaveBeenCalled();
+    expect(deleteCoverFile).not.toHaveBeenCalled();
+  });
+
+  it('leaves a cover file the safety copy of a restore still names', async () => {
+    const [mort] = await booksRepo.findBooksByIsbn(db, '9780552131063');
+    await booksRepo.updateBook(db, mort.id, { coverUri: 'file:///covers/mort-1.jpg' });
+    await db.run("INSERT INTO backup_snapshots (reason, created_at, book_count, body) VALUES ('before-restore', 'x', 1, ?)", [
+      JSON.stringify({ tables: { books: [{ id: 99, cover_uri: 'file:///covers/mort-1.jpg' }] } }),
+    ]);
+    await askToDelete('Mort');
+    await press(Testids.dialog.confirm);
+    await advance(UNDO_WINDOW_MS);
+    await advance(0);
+    expect(deleteCoverFile).not.toHaveBeenCalled();
   });
 });

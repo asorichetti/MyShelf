@@ -1,5 +1,7 @@
 import { authorsRepo, booksRepo, coverAttemptsRepo, settingsRepo, type Db } from '@/db';
 import { openNodeDatabase } from '@/db/node';
+import { isE2eEnabled } from '@/features/e2e/e2eFlag';
+import { settleFixtureCovers } from '@/features/e2e/settleFixtureCovers';
 import { exportBackup, restoreBackup } from '@/services/backup';
 import { images } from '@/services/covers/__fixtures__/images';
 import { coverBatchUrl } from '@/services/covers/batchCoverIds';
@@ -9,9 +11,6 @@ import batch from '@/services/metadata/__fixtures__/openlibrary/search-isbn-batc
 import { OL_BOOKS, openLibraryRoutes } from '@/services/metadata/__fixtures__/openLibraryRoutes';
 import { createTestDb } from '@/testing/createTestDb';
 import { createFixtureFetch } from '@/testing/fixtureFetch';
-
-import { isE2eEnabled } from '@/features/e2e/e2eFlag';
-import { settleFixtureCovers } from '@/features/e2e/settleFixtureCovers';
 import { loadFixture } from '@/testing/loadFixture';
 
 import { backfillCoversNow, drainCoverBackfill, throttle } from '../index';

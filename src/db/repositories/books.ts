@@ -612,6 +612,24 @@ export async function saveBookDraft(db: Db, draft: ValidBookDraft, id?: number):
   });
 }
 
+/**
+ * Whether anything still names the cover file `uri`: a book, or the safety
+ * copy of the library a restore keeps for "Undo restore" (a JSON document,
+ * searched for the URI as JSON writes it). A file is deleted only when not.
+ */
+export async function coverInUse(db: Db, uri: string): Promise<boolean> {
+  const row = await db.get<{ used: number }>(
+    `SELECT EXISTS (SELECT 1 FROM books WHERE cover_uri = ?) OR EXISTS (SELECT 1 FROM backup_snapshots WHERE instr(body, ?) > 0) AS used`,
+    [uri, JSON.stringify(uri)],
+  );
+  return row?.used === 1;
+}
+
+/** The cover URIs stored on the device (`file:`) that books name now, for releasing them after the library is replaced. */
+export async function listLocalCoverUris(db: Db): Promise<string[]> {
+  return (await db.all<{ cover_uri: string }>("SELECT DISTINCT cover_uri FROM books WHERE cover_uri LIKE 'file:%'")).map((r) => r.cover_uri);
+}
+
 // ---- Delete with undo ----
 
 type Row = Record<string, SqlValue>;

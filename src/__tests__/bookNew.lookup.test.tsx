@@ -25,7 +25,8 @@ jest.mock('@/services/covers', () => ({
   ...jest.requireActual('@/services/covers'),
   resolveCover: jest.fn(async () => ({ cover: null, tried: [] })),
   // A picked photo is copied next to the book's other files; here it only names the copy.
-  storeCoverFile: jest.fn((bookId: number) => `file:///docs/covers/${bookId}.jpg`),
+  storeCoverFile: jest.fn(() => 'file:///docs/covers/book-1.jpg'),
+  isStoredCover: jest.fn((uri: string) => uri.startsWith('file:///docs/covers/')),
 }));
 jest.mock('@/features/covers', () => ({
   ...jest.requireActual('@/features/covers'),
@@ -246,7 +247,7 @@ describe('Find a cover online', () => {
     expect(screen.queryByText('Found the cover and put it on the card.')).toBeNull();
     await press(f.save);
     const [book] = await booksRepo.listBooks(db);
-    expect(book.coverUri).toBe(`file:///docs/covers/${book.id}.jpg`);
+    expect(book.coverUri).toBe('file:///docs/covers/book-1.jpg');
     expect(attachBestCover).not.toHaveBeenCalled();
   });
 

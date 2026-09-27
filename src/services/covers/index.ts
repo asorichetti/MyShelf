@@ -1,4 +1,4 @@
-export { deleteAllCovers, deleteCover, downloadCover, isStoredCover, storeCoverFile, type DownloadCoverOptions } from './downloadCover';
+export { deleteAllCovers, deleteCoverFile, downloadCover, isStoredCover, storeCoverFile, type DownloadCoverOptions } from './downloadCover';
 export {
   COVER_BATCH_SIZE,
   coverBatchUrl,

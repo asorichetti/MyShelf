@@ -2,8 +2,9 @@ import { useSyncExternalStore } from 'react';
 
 import { booksRepo, type Db } from '@/db';
 import type { OcrFrame } from '@/domain';
+import { releaseCover } from '@/features/covers';
 import { emit } from '@/features/events';
-import { storeCoverFile } from '@/services/covers';
+import { deleteCoverFile, storeCoverFile } from '@/services/covers';
 import { coverFromPhoto } from '@/services/recognition';
 
 import { discardPhoto } from './tempPhoto';
@@ -58,8 +59,9 @@ export function declineCoverPhoto(bookId: number): void {
 
 /**
  * "Use my photo": an upright 2:3 copy of the photo, cropped around its text,
- * becomes the book's cover (`covers/<bookId>.jpg`, like a picked photo),
- * then the photo and the copy are deleted. Resolves with the stored cover's URI.
+ * becomes the book's cover (a file of its own in `covers/`, like a picked
+ * photo), then the photo and the copy are deleted, and any cover the book
+ * had meanwhile is released. Resolves with the stored cover's URI.
  */
 export function acceptCoverPhoto(db: Db, bookId: number): Promise<string> {
   // A second tap while the first is still making the cover waits for it.
@@ -79,8 +81,15 @@ async function accept(db: Db, bookId: number): Promise<string> {
   const { uri, focus } = offer;
   const prepared = await coverFromPhoto(uri, focus);
   try {
-    const coverUri = storeCoverFile(bookId, prepared);
-    await booksRepo.updateBook(db, bookId, { coverUri });
+    const before = (await booksRepo.getBook(db, bookId))?.coverUri ?? null;
+    const coverUri = storeCoverFile(prepared, { bookId });
+    try {
+      if (!(await booksRepo.updateBook(db, bookId, { coverUri }))) throw new Error(`No book ${bookId}`);
+    } catch (error) {
+      deleteCoverFile(coverUri);
+      throw error;
+    }
+    if (before && before !== coverUri) void releaseCover(db, before);
     offers.delete(bookId);
     discardPhoto(uri);
     changed();

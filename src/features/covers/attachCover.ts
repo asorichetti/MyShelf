@@ -1,6 +1,8 @@
 import { booksRepo, coverAttemptsRepo, type Db } from '@/db';
-import { downloadCover as platformDownloadCover, resolveCover, type CoverSource, type CoverTrial, type ResolvedCover } from '@/services/covers';
+import { deleteCoverFile, downloadCover as platformDownloadCover, resolveCover, type CoverSource, type CoverTrial, type ResolvedCover } from '@/services/covers';
 import { isAbortError, OfflineError, type HttpClient } from '@/services/http';
+
+import { releaseCover } from './release';
 
 export interface AttachCoverOptions {
   /** The app's HTTP client (`getLookupServices(db).http`). */
@@ -67,19 +69,36 @@ export async function attachBestCover(db: Db, bookId: number, source: CoverSourc
       await record('none');
       return { status: 'none', tried };
     }
-    // The search took a while: the user may have chosen a cover of their own (stored under the
-    // same file name) or deleted the book meanwhile. Neither may be overwritten or brought back.
-    const current = await booksRepo.getBook(db, bookId);
-    if (!current) return { status: 'failed', error: `No book ${bookId}` };
-    if ((current.coverUri ?? '') !== (book.coverUri ?? '')) return { status: 'kept' };
+    // The search took a while: the user may have chosen a cover of their own or deleted the book
+    // meanwhile. Neither may be overwritten or brought back.
+    const changed = async () => {
+      const current = await booksRepo.getBook(db, bookId);
+      if (!current) return { status: 'failed', error: `No book ${bookId}` } as const;
+      return (current.coverUri ?? '') !== (book.coverUri ?? '') ? ({ status: 'kept' } as const) : null;
+    };
+    const early = await changed();
+    if (early) return early;
     const { bytes, ...found } = cover;
     // Hand the bytes we already have to the downloader instead of fetching them again.
     const reuse: AttachCoverOptions['http'] = {
       getBinary: (url, opts) => (url === cover.url ? Promise.resolve({ bytes, contentType: cover.contentType }) : http.getBinary(url, opts)),
     };
+    // A new file of its own: the old cover stays on disk (and on screen) until the book names the new one.
     const coverUri = await downloadCover(bookId, cover.url, { http: reuse, signal });
-    if (signal?.aborted) throw Object.assign(new Error('The operation was aborted'), { name: 'AbortError' });
-    await booksRepo.updateBook(db, bookId, { coverUri });
+    const late = signal?.aborted ? null : await changed().catch(() => null);
+    if (signal?.aborted || late) {
+      deleteCoverFile(coverUri);
+      if (signal?.aborted) throw Object.assign(new Error('The operation was aborted'), { name: 'AbortError' });
+      return late!;
+    }
+    try {
+      await booksRepo.updateBook(db, bookId, { coverUri });
+    } catch (error) {
+      deleteCoverFile(coverUri);
+      throw error;
+    }
+    // The cover it replaces goes once nothing names it ("Find a better cover", "Refresh details").
+    if (book.coverUri && book.coverUri !== coverUri) await releaseCover(db, book.coverUri);
     await coverAttemptsRepo.clear(db, bookId);
     return { status: 'attached', coverUri, cover: found };
   } catch (error) {
