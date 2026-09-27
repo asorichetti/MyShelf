@@ -179,17 +179,35 @@ export function parseImportRating(value: string | null): number | null | undefin
   return m ? Number(m[1]) : undefined;
 }
 
-/** "2023/01/15", "2023-01-15" or a full ISO timestamp → ISO-8601 UTC (midday for a plain date). */
+/** Midday UTC on a calendar date, or null when there is no such day. */
+function middayOn(y: number, mo: number, d: number): string | null {
+  const date = new Date(Date.UTC(y, mo - 1, d, 12));
+  return date.getUTCFullYear() === y && date.getUTCMonth() === mo - 1 && date.getUTCDate() === d ? date.toISOString() : null;
+}
+
+/**
+ * A "Date Added" cell → ISO-8601 UTC (midday for a plain date): Goodreads'
+ * "2023/01/15", "2023-01-15", a full ISO timestamp, and what a spreadsheet
+ * app makes of them when the file is saved again: "15/01/2023" or
+ * "1/15/2023" (whichever the numbers allow: "02/03/2023" could be either
+ * and is left out), "15.01.2023" (always day first) and "2023-01-15 09:30".
+ */
 export function parseAddedDate(value: string | null): string | null {
   if (!value) return null;
-  const m = /^(\d{4})[/-](\d{1,2})[/-](\d{1,2})$/.exec(value.trim());
+  const text = value.trim();
+  let m = /^(\d{4})[/.-](\d{1,2})[/.-](\d{1,2})(?:[ T]\d{1,2}:\d{2}(?::\d{2})?)?$/.exec(text);
+  if (m && !/T/.test(text)) return middayOn(Number(m[1]), Number(m[2]), Number(m[3]));
+  m = /^(\d{1,2})\.(\d{1,2})\.(\d{4})$/.exec(text);
+  if (m) return middayOn(Number(m[3]), Number(m[2]), Number(m[1]));
+  m = /^(\d{1,2})[/-](\d{1,2})[/-](\d{4})$/.exec(text);
   if (m) {
-    const [y, mo, d] = [Number(m[1]), Number(m[2]), Number(m[3])];
-    const date = new Date(Date.UTC(y, mo - 1, d, 12));
-    return date.getUTCMonth() === mo - 1 && date.getUTCDate() === d ? date.toISOString() : null;
+    const [a, b, y] = [Number(m[1]), Number(m[2]), Number(m[3])];
+    if (a > 12 && b <= 12) return middayOn(y, b, a);
+    if (b > 12 && a <= 12) return middayOn(y, a, b);
+    return null;
   }
-  const time = Date.parse(value);
-  return Number.isNaN(time) || !/^\d{4}-\d{2}-\d{2}T/.test(value.trim()) ? null : new Date(time).toISOString();
+  const time = Date.parse(text);
+  return Number.isNaN(time) || !/^\d{4}-\d{2}-\d{2}T/.test(text) ? null : new Date(time).toISOString();
 }
 
 /** "to-read" → "To read", "currently-reading" → "Currently reading", "favourites" → "Favourites". */
@@ -295,6 +313,10 @@ export function planImport(rows: readonly string[][], mapping: readonly ImportFi
     const rating = parseImportRating(ratingText);
     if (rating === undefined) warnings.push(t('importCsv.warnings.badRating', { value: ratingText ?? '' }));
 
+    const addedText = col(row, 'added');
+    const addedAt = parseAddedDate(addedText);
+    if (addedText && !addedAt) warnings.push(t('importCsv.warnings.badAdded', { value: addedText }));
+
     const review = notesText(raw(row, 'notes'));
     const privateNotes = notesText(raw(row, 'privateNotes'));
     const notes = [review, privateNotes].filter(Boolean).join('\n\n') || null;
@@ -327,7 +349,7 @@ export function planImport(rows: readonly string[][], mapping: readonly ImportFi
       genres: unique(splitList(col(row, 'genres'), /\s*;\s*/)),
       series,
       groups,
-      addedAt: parseAddedDate(col(row, 'added')),
+      addedAt,
       warnings,
     };
     plan.books.push(book);

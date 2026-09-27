@@ -1992,6 +1992,7 @@ export const en = {
       badYear: 'The year “{value}” wasn’t understood.',
       badPages: 'The page count “{value}” wasn’t understood.',
       badRating: 'The rating “{value}” wasn’t understood, so it was left out.',
+      badAdded: 'The date added “{value}” wasn’t understood, so the book is dated today.',
     },
     errors: {
       empty: 'That file is empty. Choose a spreadsheet saved as CSV.',

@@ -293,6 +293,23 @@ describe('field parsers', () => {
     expect(parseAddedDate('2023/01/15')).toBe('2023-01-15T12:00:00.000Z');
     expect(parseAddedDate('2023-02-30')).toBeNull();
     expect(parseAddedDate('yesterday')).toBeNull();
+  });
+
+  it('reads the dates a spreadsheet app writes after re-saving a Goodreads export', () => {
+    const feb20 = '2019-02-20T12:00:00.000Z';
+    // Day first (UK, Europe), month first (US) where the numbers say which, dots, and a time of day.
+    for (const text of ['20/02/2019', '20-2-2019', '20.02.2019', '2/20/2019', '02/20/2019', '2019.02.20', '2019-02-20 14:03:00', '2019/2/20']) {
+      expect({ text, date: parseAddedDate(text) }).toEqual({ text, date: feb20 });
+    }
+    expect(parseAddedDate('3.4.2019')).toBe('2019-04-03T12:00:00.000Z');
+    // 02/03 could be either: left out rather than guessed.
+    expect(parseAddedDate('02/03/2019')).toBeNull();
+    expect(parseAddedDate('31/02/2019')).toBeNull();
+    const plan = planImport([['Dune', '02/03/2019'], ['Emma', '20/02/2019']], ['title', 'added']);
+    expect(plan.books.map((b) => [b.addedAt, b.warnings])).toEqual([
+      [null, ['The date added “02/03/2019” wasn’t understood, so the book is dated today.']],
+      [feb20, []],
+    ]);
     expect(shelfToGroupName('currently-reading')).toBe('Currently reading');
     expect(shelfToGroupName('book_club')).toBe('Book club');
   });
