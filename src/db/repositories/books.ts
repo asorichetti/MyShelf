@@ -261,10 +261,10 @@ export function searchTerms(query: string): string[] {
  * Each word of a search in the spellings it may be stored under: fully
  * folded (`searchTerms`: "søren" → "soren", "straße" → "strasse") and with
  * only the accents Unicode can take off a letter ("søren", "straße",
- * "łodz"). The index folds the second kind itself but keeps letters such as
- * ø, ł, đ, ß, æ, œ and þ, so a word typed as it is written must be looked
- * for as written too. One entry per word; a word's spellings are
- * alternatives.
+ * "łodz"). Since migration 0009 both indexes hold a folded copy of the text
+ * (ø, ł, đ, ß, æ, œ, þ spelt o, l, d, ss, ae, oe, th), which the first kind
+ * matches; FTS5 also keeps the text as written, which the second matches.
+ * One entry per word; a word's spellings are alternatives.
  */
 function searchWordSpellings(query: string): string[][] {
   const words = query.normalize('NFC').split(/[^\p{L}\p{N}\p{M}]+/u).filter((w) => /[\p{L}\p{N}]/u.test(w));
@@ -343,14 +343,14 @@ export function searchGlob(term: string): string {
  * - With the plain index (`books_search`; web and Node have no FTS5), the
  *   same: each word matches the start of a word in that same text, found
  *   with `instr` in rows that are all ASCII and with a GLOB pattern that
- *   folds case and accents in the rest. The two agree except for letters
- *   that fold to two ("ß" → "ss"), which neither folds the same way, for
- *   letters with a stroke or slash (ø, ł, đ), which only the plain index
- *   finds from a plain "o", "l" or "d", and for words longer than FTS5
- *   indexes.
- * - Either way a word is also looked for as typed, less its accents
- *   (`searchWordSpellings`), so "Søren", "Straße" or "Ælfric" typed as
- *   written always finds the book.
+ *   folds case and accents in the rest. The two agree except for words
+ *   longer than FTS5 indexes.
+ * - Letters with no accent to take off (ø, ł, đ, ß, æ, œ, þ) are found
+ *   from the letters people type for them ("soren", "lodz", "strasse",
+ *   "aelfric"): since migration 0009 both indexes hold the text with them
+ *   folded, as `searchTerms` folds each word. A word is also looked for as
+ *   typed, less its accents (`searchWordSpellings`), so "Søren", "Straße"
+ *   or "Ælfric" typed as written finds the book too.
  * - Without either (a database from before migration 0006), the old `LIKE`
  *   over title, subtitle, series and author names.
  *
