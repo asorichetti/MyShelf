@@ -17,10 +17,10 @@ On `main`: the scaffold (P00-01 to P00-07), the design system, Booky, tabs, data
 | [Phase 06](docs/plan/phase-06-grouping-and-shelf-views.md) | Grouping and shelf views | 10 / 11 |
 | [Phase 07](docs/plan/phase-07-booky-assistant.md) | Booky assistant | 8 / 9 |
 | [Phase 08](docs/plan/phase-08-settings-backup.md) | Settings, backup, export and import | 8 / 10 |
-| [Phase 09](docs/plan/phase-09-polish-a11y-release.md) | Polish, accessibility and release | 7 / 12 |
+| [Phase 09](docs/plan/phase-09-polish-a11y-release.md) | Polish, accessibility and release | 8 / 12 |
 | [Phase 10](docs/plan/phase-10-ratings.md) | Ratings | 9 / 9 |
 | [Phase 11](docs/plan/phase-11-sorting.md) | Sorting | 7 / 7 |
-| **Total** | | **137 / 148** |
+| **Total** | | **138 / 148** |
 
 ## Phase 00 — Foundation
 
@@ -198,7 +198,7 @@ On `main`: the scaffold (P00-01 to P00-07), the design system, Booky, tabs, data
 - [x] P09-05 App icon, splash and store graphics
 - [x] P09-06 Release build configuration
 - [ ] P09-07 CI release workflow
-- [ ] P09-08 Screenshots and README media
+- [x] P09-08 Screenshots and README media
 - [x] P09-09 Privacy policy
 - [x] P09-10 Final device regression
 - [x] P09-11 Localisation readiness
