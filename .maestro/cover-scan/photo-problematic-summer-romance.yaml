@@ -1,11 +1,10 @@
-# Cover scan from a gallery photo (P03-05, P03-06): "Problematic Summer Romance". Needs an E2E build,
-# network access, and the photo at .maestro/cover-scan/photos/problematic-summer-romance.jpg, made with
+# Cover scan from a gallery photo (P03-05, P03-06): "Problematic Summer Romance". Needs an E2E build
+# (the searches answer from recorded responses) and the photo at .maestro/cover-scan/photos/problematic-summer-romance.jpg, made with
 # scripts/prepare-test-photo.swift (git-ignored; see .maestro/cover-scan/README.md).
 appId: dev.asorichetti.myshelf
 tags:
   - cover-scan
   - needs-photos
-  - network
 ---
 - addMedia:
     - photos/problematic-summer-romance.jpg

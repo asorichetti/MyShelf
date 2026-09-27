@@ -1,14 +1,16 @@
-# P02-10: offline (scripts/maestro-suite.sh turns on airplane mode first),
-# the add form says it cannot reach the catalogues, and a scanned ISBN is
-# queued with the Shelf's pending banner. hooks/offline-resume.yaml then
-# checks the lookup runs once the phone is back online.
+# P02-10: offline, the add form says it cannot reach the catalogues, and a
+# scanned ISBN is queued with the Shelf's pending banner.
+# hooks/offline-resume.yaml then checks the lookup runs once the phone is back
+# online. "Offline" is the E2E build's simulated network (NETWORK: offline:
+# every request fails as a phone without a connection makes it fail), not
+# airplane mode, so the pair needs no real network in either half.
 appId: dev.asorichetti.myshelf
 name: Offline lookups queue
 tags: [core, offline, hooked]
 ---
 - runFlow:
     file: common/open-fixture.yaml
-    env: { FIXTURE: empty, NEXT: /book/new }
+    env: { FIXTURE: empty, NEXT: /book/new, NETWORK: offline }
 - tapOn: { id: lookup-isbn-input }
 - inputText: '9780552166591'
 - tapOn: { id: lookup-isbn-submit }

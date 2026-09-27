@@ -1,8 +1,11 @@
-# Run by scripts/maestro-suite.sh after offline-queue.yaml, with the network
-# back on: coming back to the app looks the queued ISBN up and the banner goes.
+# Run by scripts/maestro-suite.sh after offline-queue.yaml: the simulated
+# network comes back on, and coming back to the app looks the queued ISBN up
+# (in the recorded responses) and the banner goes.
 appId: dev.asorichetti.myshelf
 name: Offline lookups resume
 ---
+- openLink: myshelf://e2e/network?state=online&next=/
+- extendedWaitUntil: { visible: { id: page-content }, timeout: 20000 }
 - pressKey: Home
 - launchApp
 - extendedWaitUntil: { visible: 'Good news — I found details for 1 book you added offline.', timeout: 60000 }

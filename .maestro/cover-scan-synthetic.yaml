@@ -3,11 +3,12 @@
 # "The Colour of Magic" by Terry Pratchett (ours, so it is committed:
 # cover-scan/synthetic-colour-of-magic.jpg, rendered by
 # scripts/make-synthetic-cover.mjs). ML Kit reads it on the device and the
-# catalogue search finds the book. Needs an E2E build and network access.
+# catalogue search finds the book. Needs an E2E build. The searches answer
+# from recorded responses, so it needs no network (it once failed in CI when
+# the real Open Library did not answer within the app's timeout).
 appId: dev.asorichetti.myshelf
 tags:
   - cover-scan
-  - network
 ---
 - addMedia:
     - cover-scan/synthetic-colour-of-magic.jpg

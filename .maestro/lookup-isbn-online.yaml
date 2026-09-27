@@ -1,20 +1,30 @@
-# P02: look up an ISBN against the real Open Library and Google Books, choose
-# the result and save it with its real cover. Needs the internet: this checks
-# the native network stack, the User-Agent the APIs accept, and the cover
-# download into the app's own storage (a file:// path).
+# P02, live: look up an ISBN against the real Open Library and Google Books,
+# choose the result and save it with its real cover. Needs the internet: this
+# checks the native network stack, the User-Agent the APIs accept, and the
+# cover download into the app's own storage (a file:// path). One of the two
+# flows that use the real services (with the `lookup-cover-stored` check in
+# scripts/maestro-suite.sh); every other flow answers from recorded responses.
+# A slow or refusing Open Library is retried here (the lookup is sent again
+# after "can't reach the catalogues"), and the suite runs the whole flow again
+# after waiting for the network, before it counts a failure.
 appId: dev.asorichetti.myshelf
 name: Look up an ISBN online
-tags: [core, network, hooked]
+tags: [live, network, hooked]
 ---
 - runFlow:
     file: common/open-fixture.yaml
-    env: { FIXTURE: empty, NEXT: /book/new }
+    env: { FIXTURE: empty, NEXT: /book/new, API: live }
 - tapOn: { id: lookup-isbn-input }
 - inputText: '9780552166591'
-- tapOn: { id: lookup-isbn-submit }
-- extendedWaitUntil: { visible: { id: lookup-candidate }, timeout: 30000 }
+# The app waits up to 10 s for each answer and retries a 429 or 5xx itself
+# (1, 2, then 4 s apart); a lookup that still fails says it cannot reach the
+# catalogues, and is sent again, up to three more times.
+- retry:
+    maxRetries: 3
+    commands:
+      - tapOn: { id: lookup-isbn-submit }
+      - extendedWaitUntil: { visible: { id: lookup-candidate }, timeout: 60000 }
 - assertVisible: { id: lookup-candidate, text: 'The Colour of Magic, by Terry Pratchett.*' }
-- takeScreenshot: screenshots/lookup-candidate-early
 - takeScreenshot: screenshots/lookup-candidate
 - tapOn: { id: lookup-candidate }
 - extendedWaitUntil: { visible: { id: lookup-chosen }, timeout: 10000 }
@@ -26,8 +36,8 @@ tags: [core, network, hooked]
     when: { visible: { id: series-confirm-root } }
     commands:
       - tapOn: { id: series-confirm-save }
-- extendedWaitUntil: { visible: { id: book-detail-title }, timeout: 30000 }
+- extendedWaitUntil: { visible: { id: book-detail-title }, timeout: 60000 }
 - assertVisible: { id: book-detail-title, text: The Colour of Magic }
 # The cover is checked in the screenshot, and scripts/maestro-suite.sh
-# checks the database holds a file:// cover for it.
+# checks the database holds a file:// cover for it (waiting for the download).
 - takeScreenshot: screenshots/lookup-saved

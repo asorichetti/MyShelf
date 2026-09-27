@@ -1,18 +1,25 @@
 # Starts the app afresh on a fixture through the E2E build's deep link and
 # waits for the screen it opens. Needs an E2E build (EXPO_PUBLIC_E2E=1,
 # ADR 0015).
-#   env: FIXTURE (empty, first-run, demo, large, huge, series), NEXT (a route)
+#   env: FIXTURE (empty, first-run, demo, large, huge, series), NEXT (a route),
+#        API (mock, the default: Open Library, Google Books and covers answer
+#        from recorded responses; live: the real services, only for the
+#        flows tagged `live`), NETWORK (online, the default; offline: every
+#        request fails as with no network, without touching the phone's radio)
 #
 # The app's data is cleared first and the deep link cold-starts it, so the
 # only screen with a content marker is the fixture's destination (the loader
 # itself is `page-loading`): no screen from before the load can satisfy the
 # wait. Clearing also resets runtime permissions. The `large` fixture (2,000
 # books) can take a minute to load on a first launch after installing.
+#
+# (A subflow's own `env:` would override its caller's values, so the defaults
+# are written into the link instead.)
 appId: dev.asorichetti.myshelf
 ---
 - stopApp
 - clearState
-- openLink: myshelf://e2e?fixture=${FIXTURE}&next=${NEXT}
+- openLink: "myshelf://e2e?fixture=${FIXTURE}&next=${NEXT}&api=${typeof API === 'undefined' ? 'mock' : API}&network=${typeof NETWORK === 'undefined' ? 'online' : NETWORK}"
 - extendedWaitUntil:
     visible:
       id: page-content

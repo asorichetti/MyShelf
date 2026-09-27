@@ -5,22 +5,34 @@
 #
 #   scripts/maestro-suite.sh --e2e-apk build/myshelf-e2e.apk \
 #     [--production-apk build/myshelf-production.apk] [--device emulator-5554] \
-#     [--out maestro-results]
+#     [--out maestro-results] [--offline]
+#
+# Every flow answers Open Library, Google Books and cover requests from the
+# recorded responses built into the E2E APK (src/features/e2e/mockApi.ts),
+# except the `live` steps, which use the real services and so need the
+# internet: lookup-isbn-online and its lookup-cover-stored check. A request
+# with no recorded response fails in the app and fails the `mock-api-unmocked`
+# check at the end. --offline runs the whole suite in airplane mode without
+# the live steps, to prove the others never touch the network.
 #
 # 1. Installs the E2E APK and puts the device in a known state: light mode,
-#    100 % font size, online, automatic time, and the backup and Goodreads
-#    test files in Downloads.
-# 2. Runs every flow not tagged `manual`, `production` or `hooked`, then each
-#    cover-scan/photo-<book>.yaml whose photo of the developer's own copy is
-#    in .maestro/cover-scan/photos/ (never committed; .maestro/cover-scan/README.md).
+#    100 % font size, online (airplane mode with --offline), automatic time,
+#    and the backup and Goodreads test files in Downloads.
+# 2. Runs every flow not tagged `manual`, `production`, `hooked` or `live`,
+#    then each cover-scan/photo-<book>.yaml whose photo of the developer's own
+#    copy is in .maestro/cover-scan/photos/ (never committed;
+#    .maestro/cover-scan/README.md).
 # 3. Runs each `hooked` flow with its set-up and checks:
-#      lookup-isbn-online  then checks the database holds a file:// cover
+#      lookup-isbn-online  live: waits for the network, runs (up to 3 attempts
+#                          when Open Library is slow or refuses), then checks
+#                          the database holds a file:// cover (lookup-cover-stored)
 #      reminders           then checks the alarm is set, moves the clock to the
 #                          due date, checks the notification is posted and taps
 #                          it (hooks/reminder-open.yaml); needs `adb root`
 #      dark-mode           in `cmd uimode night yes`
 #      font-scale          at font_scale 2.0
-#      offline-queue       in airplane mode, then hooks/offline-resume.yaml online
+#      offline-queue       with the simulated network off, then
+#                          hooks/offline-resume.yaml turns it back on
 #      group-drag-reorder  then holds and drags a row with `input draganddrop`
 #                          and runs hooks/group-drag-check.yaml
 #      db-export           after db-export-setup.yaml and the E2E fault marker,
@@ -29,9 +41,9 @@
 # 4. With --production-apk, installs it and runs the `production` flows, then
 #    puts the E2E APK back.
 #
-# Screenshots, logs and JUnit reports go to --out, one folder per step. The
-# device's settings are put back however the run ends. Exits 1 if any step
-# failed.
+# Screenshots, logs and JUnit reports go to --out, one folder per step, with
+# the app's JavaScript log in app-js.log. The device's settings are put back
+# however the run ends. Exits 1 if any step failed.
 set -uo pipefail
 
 root=$(cd "$(dirname "$0")/.." && pwd)
@@ -39,13 +51,15 @@ e2e_apk=''
 production_apk=''
 device=${ANDROID_SERIAL:-}
 out="$root/maestro-results"
+offline=false
 while [ $# -gt 0 ]; do
   case "$1" in
     --e2e-apk) e2e_apk=$2; shift 2 ;;
     --production-apk) production_apk=$2; shift 2 ;;
     --device) device=$2; shift 2 ;;
     --out) out=$2; shift 2 ;;
-    *) echo "usage: $0 --e2e-apk <apk> [--production-apk <apk>] [--device <serial>] [--out <dir>]" >&2; exit 2 ;;
+    --offline) offline=true; shift ;;
+    *) echo "usage: $0 --e2e-apk <apk> [--production-apk <apk>] [--device <serial>] [--out <dir>] [--offline]" >&2; exit 2 ;;
   esac
 done
 [ -n "$e2e_apk" ] || { echo "maestro-suite: --e2e-apk is required" >&2; exit 2; }
@@ -108,13 +122,17 @@ install() {
   exit 3
 }
 
-# The phone's settings as a normal user has them.
+# The phone's settings as a normal user has them (in airplane mode with --offline).
 reset_device() {
   a shell cmd uimode night no > /dev/null
   a shell settings put system font_scale 1.0
-  a shell cmd connectivity airplane-mode disable > /dev/null 2>&1
-  a shell svc wifi enable > /dev/null 2>&1
-  a shell svc data enable > /dev/null 2>&1
+  if $offline; then
+    a shell cmd connectivity airplane-mode enable > /dev/null 2>&1
+  else
+    a shell cmd connectivity airplane-mode disable > /dev/null 2>&1
+    a shell svc wifi enable > /dev/null 2>&1
+    a shell svc data enable > /dev/null 2>&1
+  fi
   if $has_root; then
     a shell settings put global auto_time 1
     # The emulator does not always take network time back at once: set it
@@ -124,7 +142,14 @@ reset_device() {
   a shell settings put system accelerometer_rotation 0 > /dev/null 2>&1
   a shell settings put system user_rotation 0 > /dev/null 2>&1
 }
-trap reset_device EXIT
+# However the run ends: the phone back online and as a user has it, and the log capture stopped.
+logcat_pid=''
+finish() {
+  offline=false
+  reset_device
+  [ -n "$logcat_pid" ] && kill "$logcat_pid" > /dev/null 2>&1
+}
+trap finish EXIT
 
 # maestro test with a step name: its own output folder and JUnit report.
 run() {
@@ -155,8 +180,9 @@ centre_of() {
     awk 'NF == 4 { print int(($1 + $3) / 2), int(($2 + $4) / 2) }'
 }
 
-# Waits until the device can reach Open Library over HTTPS. A TCP connect to
-# port 443 is what the app needs; ping is often blocked on CI runners.
+# Waits until the device can reach Open Library over HTTPS (the live steps
+# only). A TCP connect to port 443 is what the app needs; ping is often
+# blocked on CI runners.
 wait_online() {
   for _ in $(seq 1 30); do
     a shell nc -z -w 3 openlibrary.org 443 > /dev/null 2>&1 && return 0
@@ -165,16 +191,44 @@ wait_online() {
   return 1
 }
 
-say "Device $device (root: $has_root)"
+# A `live` flow (tagged `live`: the real Open Library and Google Books): up to
+# three attempts, each after waiting for the network and the ones after the
+# first after a pause, so a slow or rate-limiting service does not fail the
+# run on its own. Every attempt keeps its own output; only the outcome counts.
+run_live() {
+  local step=$1 attempt; shift
+  if $offline; then
+    echo "Skipping $step (live, needs the network; --offline)"
+    return 1
+  fi
+  for attempt in 1 2 3; do
+    say "$step (live, attempt $attempt of 3)"
+    wait_online || echo "maestro-suite: the device cannot reach openlibrary.org:443 yet"
+    if maestro --device "$device" test --format junit --output "$out/$step-$attempt.xml" --test-output-dir "$out/$step-$attempt" "$@"; then
+      passed+=("$step")
+      return 0
+    fi
+    [ "$attempt" -lt 3 ] && sleep 30
+  done
+  failed+=("$step")
+  return 1
+}
+
+say "Device $device (root: $has_root, offline: $offline)"
 install "$e2e_apk"
 reset_device
+# The app's JavaScript log for the whole run (the recorded-responses check reads
+# it); restarted if the device drops out for a moment.
+a logcat -c > /dev/null 2>&1
+( while :; do adb -s "$device" logcat -v time -s ReactNativeJS:V 2> /dev/null; sleep 1; done ) > "$out/app-js.log" &
+logcat_pid=$!
 a shell mkdir -p /sdcard/Download
 a push "$root/src/services/backup/__fixtures__/backup-phone-covers.json" /sdcard/Download/myshelf-backup-test.json > /dev/null
 a push "$root/src/services/backup/__fixtures__/goodreads_library_export.csv" /sdcard/Download/goodreads_library_export.csv > /dev/null
 # Let the media scanner index them, so the document picker lists them.
 a shell content call --uri content://media/external/file --method scan_volume --arg external_primary > /dev/null 2>&1 || true
 
-run flows "$flows" --exclude-tags manual,production,hooked
+run flows "$flows" --exclude-tags manual,production,hooked,live
 
 # Real covers: only where the developer's photo is there.
 for flow in "$flows"/cover-scan/photo-*.yaml; do
@@ -186,12 +240,17 @@ for flow in "$flows"/cover-scan/photo-*.yaml; do
   fi
 done
 
-# Online lookup, and the cover it saved is a file on the phone.
-if run lookup-isbn-online "$flows/lookup-isbn-online.yaml" && $has_root; then
-  covers=$(a shell "sqlite3 $DB \"select count(*) from books where cover_uri like 'file://%'\"" | tr -d '\r')
-  files=$(a shell "ls /data/data/$APP/files/covers 2> /dev/null | wc -l" | tr -d '\r ')
+# Live: the real online lookup, and the cover it saved is a file on the phone
+# (the download runs after the save, so it is given up to a minute).
+if run_live lookup-isbn-online "$flows/lookup-isbn-online.yaml" && $has_root; then
+  for _ in $(seq 1 30); do
+    covers=$(a shell "sqlite3 $DB \"select count(*) from books where cover_uri like 'file://%'\"" | tr -d '\r')
+    files=$(a shell "ls /data/data/$APP/files/covers 2> /dev/null | wc -l" | tr -d '\r ')
+    [ "${covers:-0}" -ge 1 ] && [ "${files:-0}" -ge 1 ] && break
+    sleep 2
+  done
   [ "${covers:-0}" -ge 1 ] && [ "${files:-0}" -ge 1 ] && ok=true || ok=false
-  check lookup-cover-stored "$ok" "books with a file:// cover: ${covers:-?}, files in covers/: ${files:-?}"
+  check lookup-cover-stored "$ok" "live; books with a file:// cover: ${covers:-?}, files in covers/: ${files:-?}"
 fi
 
 # Reminders: scheduled, delivered on the due date, and opened from the shade.
@@ -263,13 +322,10 @@ a shell settings put system font_scale 2.0
 run font-scale "$flows/font-scale.yaml"
 a shell settings put system font_scale 1.0
 
-a shell cmd connectivity airplane-mode enable > /dev/null
+# The E2E build's simulated network, off and then on again (the flows switch it).
 if run offline-queue "$flows/offline-queue.yaml"; then
-  a shell cmd connectivity airplane-mode disable > /dev/null
-  wait_online || echo "maestro-suite: the device did not come back online"
   run offline-resume "$flows/hooks/offline-resume.yaml"
 fi
-a shell cmd connectivity airplane-mode disable > /dev/null
 
 if [ -n "$production_apk" ]; then
   a uninstall "$APP" > /dev/null 2>&1
@@ -277,6 +333,15 @@ if [ -n "$production_apk" ]; then
   run production "$flows" --include-tags production
   a uninstall "$APP" > /dev/null 2>&1
   install "$e2e_apk"
+fi
+
+# Every request the recorded-responses flows made had a recorded answer.
+unmocked=$(grep -o '\[e2e-mock-api\] unmocked [^ ]*' "$out/app-js.log" 2> /dev/null | sed 's/.* unmocked //' | sort -u)
+if [ -n "$unmocked" ]; then
+  printf '%s\n' "$unmocked" > "$out/unmocked-requests.txt"
+  check mock-api-unmocked false "$(printf '%s\n' "$unmocked" | wc -l | tr -d ' ') URL(s) with no recorded response, listed in $out/unmocked-requests.txt; record them with scripts/record-fixture.mjs"
+else
+  check mock-api-unmocked true "every request had a recorded response"
 fi
 
 say "Summary"

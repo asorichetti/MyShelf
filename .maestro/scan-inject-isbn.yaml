@@ -1,10 +1,10 @@
 # P03: the scan result path on a phone, with the barcode read injected by
 # the E2E build's deep link (a camera cannot be pointed at a book here):
-# the ISBN is looked up online, the edition picker opens, and confirming
-# saves the book.
+# the ISBN is looked up (in the recorded responses), the edition picker
+# opens, and confirming saves the book.
 appId: dev.asorichetti.myshelf
 name: Scan result from an injected ISBN
-tags: [core, network]
+tags: [core]
 ---
 - runFlow:
     file: common/open-fixture.yaml
