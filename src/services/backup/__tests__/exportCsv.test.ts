@@ -70,6 +70,15 @@ describe('exportCsv', () => {
     expect(t.text).toContain('"Lent twice, ""never"" again\nsecond line"');
   });
 
+  it('neutralises cells a spreadsheet would run as formulas (CSV injection)', async () => {
+    const [book] = await booksRepo.searchBooks(db, 'Mort');
+    await booksRepo.updateBook(db, book.id, { title: '=HYPERLINK("http://evil.example","Mort")', notes: '+1 would lend again', publisher: '@Corgi', subtitle: '-A Discworld novel' });
+    const { text } = await exportCsv(db);
+    const cells = parseCsv(text).flat();
+    expect(cells.filter((c) => /^[=+\-@]/.test(c))).toEqual([]);
+    expect(cells).toEqual(expect.arrayContaining(['\'=HYPERLINK("http://evil.example","Mort")', "'+1 would lend again", "'@Corgi", "'-A Discworld novel"]));
+  });
+
   it('names the file after the day', () => {
     expect(csvFileName(new Date(2026, 0, 5))).toBe('myshelf-books-2026-01-05.csv');
   });

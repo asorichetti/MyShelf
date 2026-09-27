@@ -1,7 +1,7 @@
 import { act, renderHook } from '@testing-library/react-native';
 
 import { BookyProvider, useBooky } from '@/components/booky';
-import { booksRepo, StaticDatabaseProvider, type Db } from '@/db';
+import { booksRepo, pendingLookupsRepo, StaticDatabaseProvider, type Db } from '@/db';
 import { attachCoverFromCandidate } from '@/features/covers';
 import { subscribe } from '@/features/events';
 import { OL_BOOKS } from '@/services/metadata/__fixtures__/openLibraryRoutes';
@@ -46,6 +46,17 @@ describe('saveCandidate (P03-09)', () => {
     await expect(saved.cover).resolves.toMatchObject({ status: 'attached' });
     expect((await booksRepo.getBook(db, saved.id))?.coverUri).toBe('https://covers.openlibrary.org/b/id/1-L.jpg');
     expect(changed).toHaveBeenCalledTimes(2); // the save, then the cover
+    off();
+  });
+
+  it('takes a book scanned offline out of the queue once it is saved', async () => {
+    jest.mocked(attachCoverFromCandidate).mockResolvedValue({ status: 'none', tried: [] });
+    await pendingLookupsRepo.enqueue(db, OL_BOOKS.colourOfMagic);
+    const pendingChanged = jest.fn();
+    const off = subscribe('pending-changed', pendingChanged);
+    await saveCandidate(db, await colourOfMagic());
+    expect(await pendingLookupsRepo.list(db)).toEqual([]);
+    expect(pendingChanged).toHaveBeenCalledTimes(1);
     off();
   });
 

@@ -257,6 +257,24 @@ export function searchTerms(query: string): string[] {
   return stripDiacritics(query).toLowerCase().split(/[^\p{L}\p{N}]+/u).filter(Boolean).slice(0, MAX_SEARCH_TERMS);
 }
 
+/**
+ * Each word of a search in the spellings it may be stored under: fully
+ * folded (`searchTerms`: "søren" → "soren", "straße" → "strasse") and with
+ * only the accents Unicode can take off a letter ("søren", "straße",
+ * "łodz"). The index folds the second kind itself but keeps letters such as
+ * ø, ł, đ, ß, æ, œ and þ, so a word typed as it is written must be looked
+ * for as written too. One entry per word; a word's spellings are
+ * alternatives.
+ */
+function searchWordSpellings(query: string): string[][] {
+  const words = query.normalize('NFC').split(/[^\p{L}\p{N}\p{M}]+/u).filter((w) => /[\p{L}\p{N}]/u.test(w));
+  return words.slice(0, MAX_SEARCH_TERMS).map((word) => {
+    const folded = searchTerms(word).join('');
+    const light = word.normalize('NFD').replace(/\p{M}/gu, '').normalize('NFC').toLowerCase();
+    return light === folded ? [folded] : [folded, light];
+  });
+}
+
 const searchIndexes = new WeakMap<Db, Promise<SearchIndexKind | null>>();
 
 /**
@@ -326,8 +344,13 @@ export function searchGlob(term: string): string {
  *   same: each word matches the start of a word in that same text, found
  *   with `instr` in rows that are all ASCII and with a GLOB pattern that
  *   folds case and accents in the rest. The two agree except for letters
- *   that fold to two ("ß" → "ss"), which neither folds the same way, and for
- *   words longer than FTS5 indexes.
+ *   that fold to two ("ß" → "ss"), which neither folds the same way, for
+ *   letters with a stroke or slash (ø, ł, đ), which only the plain index
+ *   finds from a plain "o", "l" or "d", and for words longer than FTS5
+ *   indexes.
+ * - Either way a word is also looked for as typed, less its accents
+ *   (`searchWordSpellings`), so "Søren", "Straße" or "Ælfric" typed as
+ *   written always finds the book.
  * - Without either (a database from before migration 0006), the old `LIKE`
  *   over title, subtitle, series and author names.
  *
@@ -338,18 +361,23 @@ export async function searchClause(db: Db, query: string): Promise<SqlClause | n
   const text = query.trim();
   if (!text) return null;
   const isbn = isbnFragment(text);
-  const terms = isbn ? [isbn.toLowerCase()] : searchTerms(text);
-  const kind = terms.length ? await searchIndexKind(db) : null;
+  const words = isbn ? [[isbn.toLowerCase()]] : searchWordSpellings(text);
+  const kind = words.length ? await searchIndexKind(db) : null;
   const alternatives: string[] = [];
   const params: (string | number)[] = [];
+  const isAscii = (t: string) => /^[\x20-\x7e]+$/.test(t);
   if (kind === 'fts5') {
     alternatives.push('b.id IN (SELECT rowid FROM books_fts WHERE books_fts MATCH ?)');
-    params.push(terms.map((t) => `"${t}"*`).join(' '));
+    // FTS5 takes no implicit AND after a bracket, so the words are joined with an explicit one.
+    params.push(words.map((spellings) => (spellings.length > 1 ? `(${spellings.map((t) => `"${t}"*`).join(' OR ')})` : `"${spellings[0]}"*`)).join(' AND '));
   } else if (kind === 'plain') {
     // ASCII text cannot hold an accent to fold: a plain substring search for " word" is enough, and fast.
-    const conditions = terms.map((t) => (/^[\x20-\x7e]+$/.test(t) ? '(CASE WHEN ascii THEN instr(body, ?) > 0 ELSE body GLOB ? END)' : 'body GLOB ?'));
+    const conditions = words.map((spellings) => {
+      const each = spellings.map((t) => (isAscii(t) ? '(CASE WHEN ascii THEN instr(body, ?) > 0 ELSE body GLOB ? END)' : 'body GLOB ?'));
+      return each.length > 1 ? `(${each.join(' OR ')})` : each[0];
+    });
     alternatives.push(`b.id IN (SELECT book_id FROM books_search WHERE ${conditions.join(' AND ')})`);
-    for (const t of terms) params.push(...(/^[\x20-\x7e]+$/.test(t) ? [` ${t}`, searchGlob(t)] : [searchGlob(t)]));
+    for (const t of words.flat()) params.push(...(isAscii(t) ? [` ${t}`, searchGlob(t)] : [searchGlob(t)]));
   } else {
     const like = `%${likeEscape(text)}%`;
     alternatives.push(
@@ -658,16 +686,29 @@ async function restoreEntity(db: Db, table: string, row: Row, key: string): Prom
   return (await db.get<{ id: number }>('SELECT last_insert_rowid() AS id'))!.id;
 }
 
+/** Inserts a row with its old id when that id is free, else as a new row. Returns the id it got. */
+async function insertWithId(db: Db, table: string, row: Row): Promise<number> {
+  if (!(await db.get(`SELECT 1 FROM ${table} WHERE id = ?`, [row.id]))) {
+    await insertRow(db, table, row);
+    return row.id as number;
+  }
+  const { id: _old, ...rest } = row;
+  await insertRow(db, table, rest);
+  return (await db.get<{ id: number }>('SELECT last_insert_rowid() AS id'))!.id;
+}
+
 /**
- * Undoes `removeBook`: re-inserts the book with the same id and every link
- * and loan, restoring authors, series, groups and borrowers that went
- * missing in the meantime. All or nothing.
+ * Undoes `removeBook`: re-inserts the book and every link and loan,
+ * restoring authors, series, groups and borrowers that went missing in the
+ * meantime. The book keeps its id: new books and loans never reuse one
+ * (migration 0008). Should a book hold it all the same (a backup restored
+ * meanwhile, with its own ids), the book comes back with a new id; the same
+ * goes for its loans. All or nothing. Returns the book's id.
  */
-export async function restoreBook(db: Db, snapshot: BookSnapshot): Promise<void> {
-  await db.transaction(async (tx) => {
+export async function restoreBook(db: Db, snapshot: BookSnapshot): Promise<number> {
+  return db.transaction(async (tx) => {
     const series = snapshot.series ? await restoreEntity(tx, 'series', snapshot.series, 'name') : null;
-    await insertRow(tx, 'books', { ...snapshot.book, series_id: series });
-    const bookId = snapshot.book.id as number;
+    const bookId = await insertWithId(tx, 'books', { ...snapshot.book, series_id: series });
 
     const authorIds = new Map<SqlValue, number>();
     for (const a of snapshot.authors) authorIds.set(a.id, await restoreEntity(tx, 'authors', a, 'name'));
@@ -691,7 +732,8 @@ export async function restoreBook(db: Db, snapshot: BookSnapshot): Promise<void>
     const borrowerIds = new Map<SqlValue, number>();
     for (const b of snapshot.borrowers) borrowerIds.set(b.id, await restoreEntity(tx, 'borrowers', b, 'name'));
     for (const loan of snapshot.loans) {
-      await insertRow(tx, 'loans', { ...loan, book_id: bookId, borrower_id: borrowerIds.get(loan.borrower_id) ?? loan.borrower_id });
+      await insertWithId(tx, 'loans', { ...loan, book_id: bookId, borrower_id: borrowerIds.get(loan.borrower_id) ?? loan.borrower_id });
     }
+    return bookId;
   });
 }

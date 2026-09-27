@@ -259,6 +259,14 @@ export const en = {
       },
       trying: 'Trying…',
       tryNow: 'Try now',
+      /** Details found for books scanned offline, waiting for the user to choose the edition and save. */
+      arrived: {
+        one: 'I found details for {count} book you scanned offline.',
+        other: 'I found details for {count} books you scanned offline.',
+      },
+      review: 'Review',
+      /** "Review" as read out: which book it opens. */
+      reviewLabel: 'Review the details found for ISBN {isbn}',
     },
   },
   /** The Shelf's filter sheet and the chips showing active filters. */
@@ -1984,6 +1992,7 @@ export const en = {
       badYear: 'The year “{value}” wasn’t understood.',
       badPages: 'The page count “{value}” wasn’t understood.',
       badRating: 'The rating “{value}” wasn’t understood, so it was left out.',
+      badAdded: 'The date added “{value}” wasn’t understood, so the book is dated today.',
     },
     errors: {
       empty: 'That file is empty. Choose a spreadsheet saved as CSV.',

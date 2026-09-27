@@ -30,6 +30,8 @@ export interface ScannerHostProps {
    */
   typedCover?: string | null;
   onTypedCoverDone?: () => void;
+  /** Cover mode: deletes a photo taken or chosen but never read (see `CoverCapture`). */
+  onDiscardPhoto?: (uri: string) => void;
 }
 
 /**
@@ -60,6 +62,7 @@ export function ScannerHost(props: ScannerHostProps) {
       choosePhoto={props.choosePhoto}
       cameraBlocked={cameraBlocked}
       paused={paused}
+      onDiscardPhoto={props.onDiscardPhoto}
     />
   );
   if (typing || permission.state === 'loading') {

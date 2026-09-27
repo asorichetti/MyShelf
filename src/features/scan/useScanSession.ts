@@ -68,7 +68,7 @@ export interface ScanSessionApi {
   paused: boolean;
   /** The last book found, for the mini card (P03-13). */
   lastFound: { title: string; authors: string[]; coverUrl: string | null } | null;
-  /** A barcode read from the camera. Repeats of the same code within 3 s are ignored. */
+  /** A barcode read from the camera. The same code is ignored until it has been out of view for 3 s. */
   onBarcode: (read: { type?: string | null; data: string }) => void;
   /** A typed ISBN (the web harness, or "Type ISBN instead"). */
   submitIsbn: (text: string) => void;
@@ -189,6 +189,8 @@ export function useScanSession({ service: injected, onFound }: UseScanSessionOpt
   const finish = useCallback((abort: AbortController) => {
     if (controller.current === abort) controller.current = null;
     busy.current = false;
+    // The camera was paused meanwhile: a code still in view counts from now, not from before the lookup.
+    if (lastRead.current) lastRead.current = { ...lastRead.current, at: Date.now() };
   }, []);
 
   const lookUp = useCallback(
@@ -256,10 +258,17 @@ export function useScanSession({ service: injected, onFound }: UseScanSessionOpt
 
   const onBarcode = useCallback(
     (read: { type?: string | null; data: string }) => {
-      if (busy.current) return;
       const now = Date.now();
-      if (isRepeatRead(lastRead.current, read.data, now, REPEAT_WINDOW_MS)) return;
+      // A code still in view keeps counting as the same read: it must leave the camera for the
+      // whole window before it counts again (with "Scan several" the camera stays on the book).
+      const seen = lastRead.current?.data === read.data;
+      if (busy.current) {
+        if (seen) lastRead.current = { data: read.data, at: now };
+        return;
+      }
+      const repeat = isRepeatRead(lastRead.current, read.data, now, REPEAT_WINDOW_MS);
       lastRead.current = { data: read.data, at: now };
+      if (repeat) return;
       const code = parseScannedCode(read);
       if (code.kind === 'invalid') return;
       if (code.kind === 'product') {

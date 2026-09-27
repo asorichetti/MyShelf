@@ -4,7 +4,7 @@ import { parsePosition, parseSeriesString } from '@/domain/seriesParser';
 import { stripHtml } from '@/domain/text';
 
 import { emptyCoverRefs, makeCandidate } from './candidate';
-import { cleanText, uniqueStrings } from './openLibraryMap';
+import { cleanText, plausiblePageCount, plausibleYear, uniqueStrings } from './openLibraryMap';
 
 import type { BookCandidate, SeriesHint } from './types';
 
@@ -38,7 +38,7 @@ export interface GbVolumesResponse {
 /** "2012-05-10", "2007-03" or "1985" → the year. */
 export function parsePublishedDate(value: string | null | undefined): number | null {
   const m = /^\s*(\d{4})/.exec(value ?? '');
-  return m ? Number(m[1]) : null;
+  return m ? plausibleYear(Number(m[1])) : null;
 }
 
 /** Cover thumbnail over HTTPS, without the curled-page effect. */
@@ -67,7 +67,8 @@ export function isbnsFromIdentifiers(ids: GbVolumeInfo['industryIdentifiers']): 
 
 /** `seriesInfo.bookDisplayNumber` → a position-only hint (Google Books gives no series name). */
 export function seriesHintFromInfo(info: GbVolumeInfo['seriesInfo']): SeriesHint[] {
-  const position = parsePosition(info?.bookDisplayNumber) ?? info?.volumeSeries?.find((s) => s.orderNumber)?.orderNumber ?? null;
+  const order = info?.volumeSeries?.find((s) => s.orderNumber)?.orderNumber;
+  const position = parsePosition(info?.bookDisplayNumber) ?? (typeof order === 'number' ? parsePosition(String(order)) : null);
   return position ? [{ name: null, position, source: 'googlebooks', raw: info?.bookDisplayNumber ?? String(position) }] : [];
 }
 
@@ -98,7 +99,7 @@ export function mapVolume(volume: GbVolume, confidence = 0.5): BookCandidate | n
     authors: uniqueStrings(info.authors ?? []),
     publisher: cleanText(info.publisher),
     publicationYear: parsePublishedDate(info.publishedDate),
-    pageCount: typeof info.pageCount === 'number' && info.pageCount > 0 ? info.pageCount : null,
+    pageCount: plausiblePageCount(info.pageCount),
     isbn13,
     isbn10,
     language: toIso6391(info.language),

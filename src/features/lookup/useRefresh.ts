@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { booksRepo, genresRepo, useDatabase } from '@/db';
 import {
@@ -39,8 +39,11 @@ export interface Refresh {
   ticked: ReadonlySet<RefreshField>;
   toggle: (field: RefreshField) => void;
   applying: boolean;
-  /** Saves the ticked changes; resolves with how many fields changed (0 when nothing was ticked). */
-  apply: () => Promise<number>;
+  /**
+   * Saves the ticked changes; resolves with how many fields changed (0 when
+   * nothing was ticked), or null when a save is already running.
+   */
+  apply: () => Promise<number | null>;
 }
 
 /** The candidate describing this book: by ISBN, else a title + first author search that must match. */
@@ -69,6 +72,8 @@ export function useRefresh(bookId: number | null, { service: injected }: { servi
   const [state, setState] = useState<RefreshState>(bookId == null ? { status: 'missing' } : { status: 'loading' });
   const [ticked, setTicked] = useState<ReadonlySet<RefreshField>>(new Set());
   const [applying, setApplying] = useState(false);
+  // A second tap while the first is still saving must not apply everything again.
+  const busy = useRef(false);
 
   useEffect(() => {
     if (bookId == null) return;
@@ -115,8 +120,10 @@ export function useRefresh(bookId: number | null, { service: injected }: { servi
   }, []);
 
   const apply = useCallback(async () => {
+    if (busy.current) return null;
     if (state.status !== 'ready' || !ticked.size) return 0;
     const { book, candidate, proposed } = state;
+    busy.current = true;
     setApplying(true);
     try {
       const current = currentOf(book);
@@ -139,6 +146,7 @@ export function useRefresh(bookId: number | null, { service: injected }: { servi
       }
       return ticked.size;
     } finally {
+      busy.current = false;
       setApplying(false);
     }
   }, [db, state, ticked]);

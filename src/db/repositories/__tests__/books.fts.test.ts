@@ -115,6 +115,26 @@ describe.each([
     expect(await search(db, 'HÓBBIT')).toEqual(['The Hobbit']);
   });
 
+  it('finds letters that have no accent to drop (ø, ł, đ, ß, æ, œ, þ) typed as they are written', async () => {
+    const titles = ['Søren Kierkegaard', 'Łódź nocą', 'Đuro Daničić', 'Straße der Besten', 'Ælfric’s Colloquy', 'Œuvres complètes', 'Þórr og Loki'];
+    for (const title of titles) await booksRepo.createBook(db, { title });
+    for (const [query, title] of [
+      ['Søren', 'Søren Kierkegaard'],
+      ['søren kier', 'Søren Kierkegaard'],
+      ['Łódź', 'Łódź nocą'],
+      ['łodz', 'Łódź nocą'],
+      ['đuro', 'Đuro Daničić'],
+      ['straße', 'Straße der Besten'],
+      ['STRAßE', 'Straße der Besten'],
+      ['ælfric', 'Ælfric’s Colloquy'],
+      ['œuvres', 'Œuvres complètes'],
+      ['Þórr', 'Þórr og Loki'],
+      ['þorr loki', 'Þórr og Loki'],
+    ]) {
+      expect({ query, found: await search(db, query) }).toEqual({ query, found: [title] });
+    }
+  });
+
   it('finds ISBNs typed with or without hyphens, and parts of them', async () => {
     expect(await search(db, '9780552166591')).toEqual(['The Colour of Magic']);
     expect(await search(db, '978-0-552')).toEqual(['The Colour of Magic']);

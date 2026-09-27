@@ -2,6 +2,7 @@
  * @jest-environment node
  */
 import { booksRepo, groupsRepo, libraryRepo, loansRepo, type Db } from '@/db';
+import { emptyDraft, validateBookDraft } from '@/domain';
 import { createTestDb } from '@/testing/createTestDb';
 import { loadFixture } from '@/testing/loadFixture';
 
@@ -76,6 +77,41 @@ describe('removeBook and restoreBook', () => {
     const counts = await libraryRepo.countRows(db);
     await expect(booksRepo.restoreBook(db, { ...snapshot!, loans: [{ ...snapshot!.loans[0], lent_on: null }] })).rejects.toThrow();
     expect(await libraryRepo.countRows(db)).toEqual(counts);
+  });
+
+  it('never gives a deleted book’s id (or its loans’) to a book added before Undo, so Undo puts it back as it was', async () => {
+    // The newest book, with an author and an open loan: the highest book and loan ids.
+    const borrower = (await loansRepo.listBorrowers(db))[0];
+    const draft = validateBookDraft({ ...emptyDraft(), title: 'Newest', authors: [{ name: 'Nova Author', role: 'author', sortName: null }] });
+    if (!draft.ok) throw new Error('invalid draft');
+    const id = await booksRepo.saveBookDraft(db, draft.value);
+    const lent = await loansRepo.lendBook(db, { bookId: id, borrowerId: borrower.id, lentOn: '2026-01-01' });
+    const snapshot = (await booksRepo.removeBook(db, id))!;
+
+    // Covers are stored as covers/<book id>.jpg: a newcomer must not inherit the deleted book's file.
+    const newcomer = await booksRepo.createBook(db, { title: 'Newcomer' });
+    expect(newcomer.id).toBeGreaterThan(id);
+    const loan = await loansRepo.lendBook(db, { bookId: newcomer.id, borrowerId: borrower.id, lentOn: '2026-01-02' });
+    expect(loan.id).toBeGreaterThan(lent.id);
+
+    expect(await booksRepo.restoreBook(db, snapshot)).toBe(id);
+    const detail = (await booksRepo.getBookDetail(db, id))!;
+    expect(detail).toMatchObject({ title: 'Newest', openLoan: { id: lent.id, borrowerId: borrower.id, lentOn: '2026-01-01' } });
+    expect(detail.authors.map((a) => a.name)).toEqual(['Nova Author']);
+    expect((await booksRepo.getBookDetail(db, newcomer.id))!).toMatchObject({ title: 'Newcomer', openLoan: { id: loan.id } });
+  });
+
+  it('still brings a book back, under a new id, if its id is taken all the same (a restored backup)', async () => {
+    const dune = await idOf('9780441172719');
+    const snapshot = (await booksRepo.removeBook(db, dune))!;
+    await db.run('INSERT INTO books (id, title) VALUES (?, ?)', [dune, 'Squatter']);
+    const restored = await booksRepo.restoreBook(db, snapshot);
+    expect(restored).not.toBe(dune);
+    const detail = (await booksRepo.getBookDetail(db, restored))!;
+    expect(detail.title).toBe('Dune');
+    expect(detail.authors.map((a) => a.name)).toEqual(['Frank Herbert']);
+    expect(detail.openLoan).not.toBeNull();
+    expect((await booksRepo.getBook(db, dune))!.title).toBe('Squatter');
   });
 
   it('returns null for an unknown book', async () => {

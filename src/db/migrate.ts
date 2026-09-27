@@ -52,13 +52,24 @@ export async function migrate(db: Db, migrations: readonly Migration[] = allMigr
   const applied: number[] = [];
   for (const m of migrations) {
     if (done.has(m.version)) continue;
-    await db.transaction(async (tx) => {
-      if (typeof m.up === 'string') await tx.exec(m.up);
-      else await m.up(tx);
-      await tx.run('INSERT INTO schema_migrations (version, name) VALUES (?, ?)', [m.version, m.name]);
-      // Mirror the version in the file header too, so tools (and backups) can read it without a query.
-      await tx.exec(`PRAGMA user_version = ${m.version}`);
-    });
+    // PRAGMA foreign_keys is a no-op inside a transaction: switch it around the migration's own.
+    const keysWereOn = m.foreignKeysOff ? (await db.get<{ foreign_keys: number }>('PRAGMA foreign_keys'))?.foreign_keys === 1 : false;
+    if (keysWereOn) await db.exec('PRAGMA foreign_keys = OFF');
+    try {
+      await db.transaction(async (tx) => {
+        if (typeof m.up === 'string') await tx.exec(m.up);
+        else await m.up(tx);
+        if (m.foreignKeysOff) {
+          const broken = await tx.all<{ table: string }>('PRAGMA foreign_key_check');
+          if (broken.length) throw new MigrationError(`${m.name} left ${broken.length} broken references (first in ${broken[0].table})`);
+        }
+        await tx.run('INSERT INTO schema_migrations (version, name) VALUES (?, ?)', [m.version, m.name]);
+        // Mirror the version in the file header too, so tools (and backups) can read it without a query.
+        await tx.exec(`PRAGMA user_version = ${m.version}`);
+      });
+    } finally {
+      if (keysWereOn) await db.exec('PRAGMA foreign_keys = ON');
+    }
     applied.push(m.version);
   }
   return { from, to: await getSchemaVersion(db), applied };

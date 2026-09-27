@@ -1,6 +1,6 @@
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import { router, useLocalSearchParams } from 'expo-router';
-import { useState } from 'react';
+import { router, useLocalSearchParams, useNavigation } from 'expo-router';
+import { useEffect, useRef, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 
 import { formatLabels } from '@/components/book/BookForm';
@@ -46,6 +46,17 @@ export function EditionPickerScreen() {
   const [saving, setSaving] = useState(false);
   const [duplicates, setDuplicates] = useState<{ existing: BookDetail[]; candidate: BookCandidate } | null>(null);
   const [shown, setShown] = useState<Record<string, number>>({});
+  // A second tap while the first is still checking or saving must not save the book twice.
+  const busy = useRef(false);
+  const navigation = useNavigation();
+  // Leaving without saving (Back, Android back): the scan is over, and its cover photo goes with it.
+  // Saving or "None of these" end the session themselves; a tray item keeps its scan for later.
+  useEffect(() => {
+    if (!session || session.trayItemId) return;
+    return navigation.addListener('beforeRemove', () => {
+      if (getSession(session.id)) endSession(session.id);
+    });
+  }, [navigation, session]);
   // Booky's help tip sits above the bottom bar, never over "This is my edition" (P07-07).
   const { attach: attachBar, onLayout: layoutBar } = useBottomObstacle(session != null);
   // Room for Booky's floating tip below the list.
@@ -68,6 +79,8 @@ export function EditionPickerScreen() {
   }
 
   const saveIt = async (candidate: BookCandidate) => {
+    if (busy.current) return;
+    busy.current = true;
     setSaving(true);
     try {
       const saved = await save(candidate);
@@ -80,32 +93,48 @@ export function EditionPickerScreen() {
       console.error('Could not save the book', e);
       show({ message: t('common.saveFailed') });
     } finally {
+      busy.current = false;
       setSaving(false);
+    }
+  };
+
+  /** "Review before saving": the form, filled in; nothing is saved until the user taps Save there. */
+  const reviewIt = async (candidate: BookCandidate) => {
+    if (busy.current) return;
+    busy.current = true;
+    try {
+      const genres = (await genresRepo.listGenres(db)).map((g) => g.name);
+      const id = putPrefill(prefillFromCandidate(candidate, genres));
+      setDuplicates(null);
+      endSession(session.id);
+      router.replace({ pathname: '/book/new', params: { prefill: id } });
+    } finally {
+      busy.current = false;
     }
   };
 
   const confirm = async () => {
     const candidate = picker.chosen();
-    if (!candidate) return;
+    if (!candidate || busy.current) return;
     if (session.trayItemId) {
       resolveTrayItem(session.trayItemId, candidate);
       endSession(session.id);
       backToScan();
       return;
     }
-    if (review) {
-      const genres = (await genresRepo.listGenres(db)).map((g) => g.name);
-      const id = putPrefill(prefillFromCandidate(candidate, genres));
-      endSession(session.id);
-      router.replace({ pathname: '/book/new', params: { prefill: id } });
-      return;
+    // Already on the shelf? Asked first, whether it is saved now or reviewed in the form.
+    busy.current = true;
+    let existing: BookDetail[];
+    try {
+      existing = await check(candidate);
+    } finally {
+      busy.current = false;
     }
-    const existing = await check(candidate);
     if (existing.length) {
       setDuplicates({ existing, candidate });
       return;
     }
-    await saveIt(candidate);
+    await (review ? reviewIt(candidate) : saveIt(candidate));
   };
 
   const addManually = () => {
@@ -231,7 +260,7 @@ export function EditionPickerScreen() {
           endSession(session.id);
           if (first) router.replace({ pathname: '/book/[id]', params: { id: String(first.id) } });
         }}
-        onAddCopy={() => duplicates && void saveIt(duplicates.candidate)}
+        onAddCopy={() => duplicates && void (review ? reviewIt(duplicates.candidate) : saveIt(duplicates.candidate))}
       />
     </Screen>
   );

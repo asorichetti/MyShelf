@@ -1,7 +1,7 @@
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { CameraView } from 'expo-camera';
 import { Image } from 'expo-image';
-import { useRef, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { BookyBubble } from '@/components/booky';
@@ -30,6 +30,12 @@ export interface CoverCaptureProps {
    */
   cameraBlocked?: ReactNode;
   paused: boolean;
+  /**
+   * Deletes a photo that is not handed on to `onRecognised`: retaken,
+   * replaced by another chosen photo, or left on screen when the capture goes
+   * away. Photos are temporary files in the cache directory.
+   */
+  onDiscardPhoto?: (uri: string) => void;
 }
 
 type From = 'camera' | 'library';
@@ -45,11 +51,32 @@ type Step =
  * device. In a build without the text reader the typed cover text stands in,
  * exactly as on the web.
  */
-export function CoverCapture({ recognize, available, onRecognised, onTypeText, choosePhoto, cameraBlocked, paused }: CoverCaptureProps) {
+export function CoverCapture({ recognize, available, onRecognised, onTypeText, choosePhoto, cameraBlocked, paused, onDiscardPhoto }: CoverCaptureProps) {
   const { spacing, radii, colors, sizes } = useTheme();
   const camera = useRef<CameraView>(null);
   const [state, setState] = useState<Step>({ step: 'aim' });
   const [choosing, setChoosing] = useState(false);
+  // The photo on screen and not (yet) handed on: deleted if it is replaced or left behind.
+  const held = useRef<string | null>(null);
+  const discardRef = useRef(onDiscardPhoto);
+  useEffect(() => {
+    discardRef.current = onDiscardPhoto;
+  });
+  const release = (keep: string | null = null) => {
+    const uri = held.current;
+    held.current = keep;
+    if (uri && uri !== keep) discardRef.current?.(uri);
+  };
+  const mounted = useRef(true);
+  useEffect(
+    () => () => {
+      mounted.current = false;
+      const uri = held.current;
+      held.current = null;
+      if (uri) discardRef.current?.(uri);
+    },
+    [],
+  );
 
   if (!available) {
     return (
@@ -61,12 +88,19 @@ export function CoverCapture({ recognize, available, onRecognised, onTypeText, c
   }
 
   const read = async (uri: string, from: From) => {
+    // While it is read the photo is on its way to the scan, which deletes it when done with it.
+    release();
     setState({ step: 'reading', uri, from });
     try {
       const result = await recognize(uri);
       setState({ step: 'aim' });
       onRecognised(result, uri);
     } catch {
+      if (!mounted.current) {
+        discardRef.current?.(uri);
+        return;
+      }
+      held.current = uri;
       setState({ step: 'failed', uri, from, message: t('scan.cover.readFailed') });
     }
   };
@@ -74,10 +108,18 @@ export function CoverCapture({ recognize, available, onRecognised, onTypeText, c
   const capture = async () => {
     try {
       const photo = await camera.current?.takePictureAsync({ quality: 0.7 });
-      if (photo?.uri) setState({ step: 'review', uri: photo.uri, from: 'camera' });
+      if (photo?.uri) {
+        release(photo.uri);
+        setState({ step: 'review', uri: photo.uri, from: 'camera' });
+      }
     } catch {
       setState({ step: 'aim' });
     }
+  };
+
+  const retake = () => {
+    release();
+    setState({ step: 'aim' });
   };
 
   const pick = async () => {
@@ -141,7 +183,7 @@ export function CoverCapture({ recognize, available, onRecognised, onTypeText, c
         <Button
           variant="secondary"
           label={fromLibrary ? t('scan.cover.chooseAnother') : t('scan.cover.retake')}
-          onPress={() => (fromLibrary ? void pick() : setState({ step: 'aim' }))}
+          onPress={() => (fromLibrary ? void pick() : retake())}
           disabled={state.step === 'reading' || choosing}
           testID={Testids.scan.retake}
         />

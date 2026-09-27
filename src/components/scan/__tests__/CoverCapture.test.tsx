@@ -20,8 +20,11 @@ function render(
 ) {
   const onRecognised = jest.fn();
   const onTypeText = jest.fn();
-  renderWithTheme(<CoverCapture recognize={recognize} available={available} onRecognised={onRecognised} onTypeText={onTypeText} paused={false} {...extra} />);
-  return { onRecognised, onTypeText };
+  const onDiscardPhoto = jest.fn();
+  const utils = renderWithTheme(
+    <CoverCapture recognize={recognize} available={available} onRecognised={onRecognised} onTypeText={onTypeText} onDiscardPhoto={onDiscardPhoto} paused={false} {...extra} />,
+  );
+  return { onRecognised, onTypeText, onDiscardPhoto, unmount: utils.unmount };
 }
 
 async function press(testID: string) {
@@ -48,6 +51,30 @@ describe('CoverCapture (P03-05)', () => {
     await press(Testids.scan.capture);
     await press(Testids.scan.retake);
     expect(screen.getByTestId(Testids.scan.camera)).toBeOnTheScreen();
+  });
+
+  it('deletes a photo that is retaken, replaced or left behind, and never one handed on', async () => {
+    const camera = 'file:///cache/Camera/cover.jpg';
+    const retaken = render(jest.fn());
+    await press(Testids.scan.capture);
+    await press(Testids.scan.retake);
+    expect(retaken.onDiscardPhoto).toHaveBeenCalledWith(camera);
+    retaken.unmount();
+
+    const left = render(jest.fn());
+    await press(Testids.scan.capture);
+    left.unmount();
+    expect(left.onDiscardPhoto).toHaveBeenCalledWith(camera);
+
+    const picks = ['file:///cache/ImagePicker/a.jpg', 'file:///cache/ImagePicker/b.jpg'];
+    const choosePhoto = jest.fn(async () => picks.shift()!);
+    const replaced = render(jest.fn().mockRejectedValueOnce(new Error('no text')).mockResolvedValueOnce(result), true, { choosePhoto });
+    await press(Testids.scan.choosePhoto);
+    await press(Testids.scan.retake); // "Choose another"
+    expect(replaced.onDiscardPhoto).toHaveBeenCalledWith('file:///cache/ImagePicker/a.jpg');
+    expect(replaced.onRecognised).toHaveBeenCalledWith(result, 'file:///cache/ImagePicker/b.jpg');
+    replaced.unmount();
+    expect(replaced.onDiscardPhoto).not.toHaveBeenCalledWith('file:///cache/ImagePicker/b.jpg');
   });
 
   it('a failed read shows Booky concerned with Try again', async () => {

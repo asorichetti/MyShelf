@@ -5,6 +5,7 @@ import { booksRepo, useDatabase, type Db } from '@/db';
 import { candidateSeries } from '@/domain';
 import { attachCoverFromCandidate, type AttachCoverResult } from '@/features/covers';
 import { emit } from '@/features/events';
+import { clearPendingLookup } from '@/features/lookup/clearPendingLookup';
 import { applyDetectedSeries } from '@/features/series/detectedSeries';
 import { beginSeriesSave } from '@/features/series/seriesEvents';
 import type { BookCandidate } from '@/services/metadata';
@@ -33,7 +34,7 @@ export interface SavedCandidate {
  * Saves one candidate: the book in one transaction, then its series guess
  * (`applyDetectedSeries`, which asks "Is this Discworld #5?" for a weaker
  * guess) with the series milestones, then — in the background — its best real
- * cover. A cover that cannot be found or fetched leaves the book saved with
+ * cover. An ISBN waiting in the offline queue leaves it. A cover that cannot be found or fetched leaves the book saved with
  * its generated cover.
  */
 export async function saveCandidate(db: Db, candidate: BookCandidate, { onNoOnlineCover }: SaveCandidateOptions = {}): Promise<SavedCandidate> {
@@ -42,6 +43,8 @@ export async function saveCandidate(db: Db, candidate: BookCandidate, { onNoOnli
   const id = await booksRepo.createBookFromCandidate(db, candidate);
   await applyDetectedSeries(db, id, series);
   emit('library-changed');
+  // Scanned offline and now saved: its details are no longer waiting (P02-10).
+  if (await clearPendingLookup(db, candidate.isbn13)) emit('pending-changed');
   void probe.finish(id);
   const count = await booksRepo.countBooks(db);
   const cover = attachCoverFromCandidate(db, id, candidate)

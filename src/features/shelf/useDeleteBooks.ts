@@ -3,9 +3,10 @@ import { useCallback } from 'react';
 import { useSnackbar } from '@/components/ui';
 import { booksRepo, useDatabase } from '@/db';
 import { UNDO_WINDOW_MS } from '@/features/book/useDeleteBook';
+import { deleteCoverOfDeletedBook } from '@/features/covers';
 import { emit } from '@/features/events';
 import { t } from '@/i18n';
-import { deleteCover, isLocalCover } from '@/services/covers';
+import { isLocalCover } from '@/services/covers';
 
 function announceChanges() {
   emit('library-changed');
@@ -54,7 +55,7 @@ export function useDeleteBooks(): (ids: readonly number[]) => Promise<number> {
         },
         onHide: (reason) => {
           if (reason === 'action') return;
-          for (const s of snapshots) if (isLocalCover(s.book.cover_uri as string | null)) deleteCover(s.book.id as number);
+          for (const s of snapshots) if (isLocalCover(s.book.cover_uri as string | null)) void deleteCoverOfDeletedBook(db, s.book.id as number);
         },
       });
       return snapshots.length;

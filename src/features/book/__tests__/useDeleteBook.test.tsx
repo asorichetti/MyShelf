@@ -102,4 +102,17 @@ describe('Deleting a book', () => {
     expect(deleteCover).not.toHaveBeenCalled();
     expect((await booksRepo.getBook(db, mort.id))!.coverUri).toBe('file:///covers/mort.jpg');
   });
+
+  it('leaves the cover of a new book that took the deleted book’s id', async () => {
+    const newest = (await booksRepo.listBooks(db)).reduce((a, b) => (b.id > a.id ? b : a));
+    await booksRepo.updateBook(db, newest.id, { coverUri: `file:///covers/${newest.id}.jpg` });
+    await askToDelete(newest.title);
+    await press(Testids.dialog.confirm);
+    // New books never get a deleted book's id (migration 0008), but one can still hold it, from a
+    // restored backup say, and its cover the same file name.
+    await db.run('INSERT INTO books (id, title, cover_uri) VALUES (?, ?, ?)', [newest.id, 'Added meanwhile', `file:///covers/${newest.id}.jpg`]);
+    await advance(UNDO_WINDOW_MS);
+    await advance(0);
+    expect(deleteCover).not.toHaveBeenCalled();
+  });
 });

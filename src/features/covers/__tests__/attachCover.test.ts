@@ -89,6 +89,50 @@ describe('attachBestCover', () => {
     await expect(attachBestCover(db, book.id, source, { http, downloadCover, replace: true })).resolves.toMatchObject({ status: 'attached' });
   });
 
+  it('keeps a cover the user chose while the search ran', async () => {
+    const book = await booksRepo.createBook(db, { title: 'Picked meanwhile' });
+    const photo = `file:///doc/covers/${book.id}.jpg`;
+    const { downloadCover } = setup({});
+    // The user picks their own photo while the cover is downloading.
+    const http = {
+      getBinary: async () => {
+        await booksRepo.updateBook(db, book.id, { coverUri: photo });
+        return { bytes: images.large800, contentType: 'image/jpeg' };
+      },
+    };
+    await expect(attachBestCover(db, book.id, source, { http, downloadCover })).resolves.toEqual({ status: 'kept' });
+    expect(downloadCover).not.toHaveBeenCalled();
+    expect((await booksRepo.getBook(db, book.id))?.coverUri).toBe(photo);
+  });
+
+  it('keeps a cover the user chose while a replacement was searched for', async () => {
+    const book = await booksRepo.createBook(db, { title: 'Replaced meanwhile', coverUri: 'https://covers.example/old.jpg' });
+    const photo = `file:///doc/covers/${book.id}.jpg`;
+    const { downloadCover } = setup({});
+    const http = {
+      getBinary: async () => {
+        await booksRepo.updateBook(db, book.id, { coverUri: photo });
+        return { bytes: images.large800, contentType: 'image/jpeg' };
+      },
+    };
+    await expect(attachBestCover(db, book.id, source, { http, downloadCover, replace: true })).resolves.toEqual({ status: 'kept' });
+    expect(downloadCover).not.toHaveBeenCalled();
+    expect((await booksRepo.getBook(db, book.id))?.coverUri).toBe(photo);
+  });
+
+  it('stores no file for a book deleted while the search ran', async () => {
+    const book = await booksRepo.createBook(db, { title: 'Deleted meanwhile' });
+    const { downloadCover } = setup({});
+    const http = {
+      getBinary: async () => {
+        await booksRepo.removeBook(db, book.id);
+        return { bytes: images.large800, contentType: 'image/jpeg' };
+      },
+    };
+    await expect(attachBestCover(db, book.id, source, { http, downloadCover })).resolves.toMatchObject({ status: 'failed' });
+    expect(downloadCover).not.toHaveBeenCalled();
+  });
+
   it('reports a storage failure without losing the book', async () => {
     const book = await booksRepo.createBook(db, { title: 'Disk full' });
     const { http } = setup({ [edition]: { bytes: images.large800 } });

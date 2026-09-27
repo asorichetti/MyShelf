@@ -3,6 +3,7 @@ import { AppState, type AppStateStatus } from 'react-native';
 
 import { BookyProvider, useBooky } from '@/components/booky';
 import { pendingLookupsRepo, StaticDatabaseProvider, type Db } from '@/db';
+import { emit } from '@/features/events';
 import { HttpError, OfflineError } from '@/services/http';
 import type { MetadataResult } from '@/services/metadata';
 import { googleBooksRoutes } from '@/services/metadata/__fixtures__/googleBooksRoutes';
@@ -101,11 +102,34 @@ describe('usePendingLookups', () => {
     expect(maxInFlight).toBe(1);
     expect(result.current.lookups.results.map((r) => r.isbn13).sort()).toEqual([A, B].sort());
     expect(result.current.lookups.pending).toEqual([]);
-    expect(await pendingLookupsRepo.list(db)).toEqual([]);
+    // Still queued until the user saves (or dismisses) each book: nothing is lost if the app closes first.
+    expect((await pendingLookupsRepo.list(db)).map((p) => p.isbn13).sort()).toEqual([A, B].sort());
     await waitFor(() => expect(result.current.booky.tip).toMatchObject({ tip: { expression: 'excited' }, text: expect.stringContaining('2 books') }));
+
+    // Another return to the foreground does not look them up again.
+    await foreground();
+    expect(lookup).toHaveBeenCalledTimes(3);
 
     act(() => result.current.lookups.dismissResult(A));
     expect(result.current.lookups.results.map((r) => r.isbn13)).toEqual([B]);
+    await waitFor(async () => expect((await pendingLookupsRepo.list(db)).map((p) => p.isbn13)).toEqual([B]));
+  });
+
+  it('finds arrived details again after a restart, and forgets them once the book is saved', async () => {
+    await pendingLookupsRepo.enqueue(db, A);
+    const lookup = jest.fn(async (isbn13: string) => found(isbn13));
+    const first = renderLookups({ lookup, backfillCovers: null });
+    await waitFor(() => expect(first.result.current.lookups.results).toHaveLength(1));
+    first.unmount();
+
+    const second = renderLookups({ lookup, backfillCovers: null });
+    await waitFor(() => expect(second.result.current.lookups.results.map((r) => r.isbn13)).toEqual([A]));
+    expect(second.result.current.lookups.pending).toEqual([]);
+
+    // Saving the book (saveCandidate) takes it out of the queue and says so.
+    await pendingLookupsRepo.remove(db, A);
+    await act(async () => emit('pending-changed'));
+    await waitFor(() => expect(second.result.current.lookups.results).toEqual([]));
   });
 
   it('succeeds against the real providers once back online', async () => {

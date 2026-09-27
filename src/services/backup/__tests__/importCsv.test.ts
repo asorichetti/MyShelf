@@ -187,6 +187,48 @@ describe('rows with problems', () => {
   });
 });
 
+describe('decomposed accents', () => {
+  it('are composed, so the books are found, sorted and linked like typed ones', async () => {
+    const marquez = await authorsRepo.createAuthor(db, 'Gabriel García Márquez');
+    const nfd = (text: string) => text.normalize('NFD');
+    const rows = [[nfd('Cien años de soledad'), nfd('Gabriel García Márquez'), nfd('Notas: añejo')], [nfd('Émile'), 'Rousseau', '']];
+    expect(rows[0][0]).not.toBe('Cien años de soledad');
+    await importPlannedBooks(db, planImport(rows, ['title', 'authors', 'notes']));
+    expect((await booksRepo.listBookItems(db, { query: 'anos' })).map((b) => b.title)).toEqual(['Cien años de soledad']);
+    expect((await booksRepo.listBookItems(db, { query: 'emile' })).map((b) => b.title)).toEqual(['Émile']);
+    expect((await authorsRepo.listBooksByAuthor(db, marquez.id)).map((b) => [b.title, b.notes])).toEqual([['Cien años de soledad', 'Notas: añejo']]);
+    expect((await authorsRepo.listAuthors(db)).map((a) => a.name)).toEqual(['Gabriel García Márquez', 'Rousseau']);
+  });
+});
+
+describe('a large import', () => {
+  /** `db` with every statement it runs recorded in `seen`. */
+  function recording(inner: Db, seen: string[]): Db {
+    const wrap = (d: Db): Db => ({
+      exec: (sql) => (seen.push(sql), d.exec(sql)),
+      run: (sql, params) => (seen.push(sql), d.run(sql, params)),
+      get: (sql, params) => (seen.push(sql), d.get(sql, params)),
+      all: (sql, params) => (seen.push(sql), d.all(sql, params)),
+      transaction: (fn) => d.transaction((tx) => fn(wrap(tx))),
+      close: () => d.close(),
+    });
+    return wrap(inner);
+  }
+
+  it('reads the series table once, not once per book', async () => {
+    await seriesRepo.createSeries(db, 'The Expanse');
+    const rows = Array.from({ length: 300 }, (_, i) => [`Book ${i}`, i % 3 ? `Series ${i % 100}` : 'Expanse', String((i % 9) + 1)]);
+    const seen: string[] = [];
+    const report = await importPlannedBooks(recording(db, seen), planImport(rows, ['title', 'series', 'seriesPosition']));
+    expect(report.imported).toBe(300);
+    expect(seen.filter((sql) => /FROM series\b/.test(sql) && !/WHERE/.test(sql))).toHaveLength(1);
+    // Matched as before: "Expanse" is the existing "The Expanse", and each other name became one series.
+    expect((await seriesRepo.listSeries(db)).length).toBe(1 + 100);
+    const expanse = (await seriesRepo.findSeriesByName(db, 'The Expanse'))!;
+    expect(await seriesRepo.listBooksInSeries(db, expanse.id)).toHaveLength(100);
+  });
+});
+
 describe('round trip through MyShelf’s own CSV', () => {
   it('imports its own export back with the same books', async () => {
     await loadFixture(db, 'demo');
@@ -204,6 +246,23 @@ describe('round trip through MyShelf’s own CSV', () => {
     expect(await ratings(other)).toEqual(await ratings(db));
     expect(mort.rating).toBe(5);
     await other.close();
+  });
+
+  it('keeps plain notes exactly as written: angle brackets, ampersands, blank lines and indents', async () => {
+    const notes = 'I <3 it: a < b > c, R&D; x & y.\n\n\n    Indented line\nLast';
+    await booksRepo.createBook(db, { title: 'Notes', notes });
+    const table = readCsvTable((await exportCsv(db)).text);
+    const [planned] = planImport(table.rows, mappingFor(table.headers, table.preset)).books;
+    expect(planned.book.notes).toBe(notes);
+  });
+
+  it('reads back cells the export guarded against formulas exactly as they were', async () => {
+    const book = await booksRepo.createBook(db, { title: '=1+1', subtitle: "'=quoted", notes: '- first point\n- second point', publisher: '@home' });
+    const { text } = await exportCsv(db);
+    expect(text).toContain("'=1+1");
+    const table = readCsvTable(text);
+    const [planned] = planImport(table.rows, mappingFor(table.headers, table.preset)).books;
+    expect(planned.book).toMatchObject({ title: book.title, subtitle: book.subtitle, notes: book.notes, publisher: book.publisher });
   });
 });
 
@@ -234,6 +293,23 @@ describe('field parsers', () => {
     expect(parseAddedDate('2023/01/15')).toBe('2023-01-15T12:00:00.000Z');
     expect(parseAddedDate('2023-02-30')).toBeNull();
     expect(parseAddedDate('yesterday')).toBeNull();
+  });
+
+  it('reads the dates a spreadsheet app writes after re-saving a Goodreads export', () => {
+    const feb20 = '2019-02-20T12:00:00.000Z';
+    // Day first (UK, Europe), month first (US) where the numbers say which, dots, and a time of day.
+    for (const text of ['20/02/2019', '20-2-2019', '20.02.2019', '2/20/2019', '02/20/2019', '2019.02.20', '2019-02-20 14:03:00', '2019/2/20']) {
+      expect({ text, date: parseAddedDate(text) }).toEqual({ text, date: feb20 });
+    }
+    expect(parseAddedDate('3.4.2019')).toBe('2019-04-03T12:00:00.000Z');
+    // 02/03 could be either: left out rather than guessed.
+    expect(parseAddedDate('02/03/2019')).toBeNull();
+    expect(parseAddedDate('31/02/2019')).toBeNull();
+    const plan = planImport([['Dune', '02/03/2019'], ['Emma', '20/02/2019']], ['title', 'added']);
+    expect(plan.books.map((b) => [b.addedAt, b.warnings])).toEqual([
+      [null, ['The date added “02/03/2019” wasn’t understood, so the book is dated today.']],
+      [feb20, []],
+    ]);
     expect(shelfToGroupName('currently-reading')).toBe('Currently reading');
     expect(shelfToGroupName('book_club')).toBe('Book club');
   });

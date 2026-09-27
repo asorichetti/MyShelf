@@ -57,6 +57,15 @@ afterEach(() => {
 });
 
 describe('dismissing Booky (P07-06)', () => {
+  it('shows a tip without an action with no duplicate React keys', async () => {
+    const error = jest.spyOn(console, 'error').mockImplementation(() => {});
+    renderOverlay();
+    await send(added);
+    expect(screen.getByTestId(Testids.booky.bubble)).toBeOnTheScreen();
+    expect(error.mock.calls.filter(([message]) => String(message).includes('same key'))).toEqual([]);
+    error.mockRestore();
+  });
+
   it('closes with the ✕', async () => {
     renderOverlay();
     await send(added);

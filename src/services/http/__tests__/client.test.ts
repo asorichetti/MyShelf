@@ -220,6 +220,64 @@ describe('createHttpClient', () => {
   });
 });
 
+describe('createHttpClient, while the body arrives', () => {
+  // Web streams settle through microtasks and immediates, which must stay real here.
+  beforeEach(() => {
+    jest.useFakeTimers({ now: 0, doNotFake: ['nextTick', 'queueMicrotask', 'setImmediate'] });
+  });
+
+  /** Headers arrive at once (as `fetch` resolves in a browser), then the body stalls until the signal aborts. */
+  const stalledBody = (signal: AbortSignal) =>
+    Promise.resolve(
+      new Response(
+        new ReadableStream({
+          start(controller) {
+            controller.enqueue(new TextEncoder().encode('{"title":'));
+            signal.addEventListener('abort', () => {
+              const error = new Error('aborted');
+              error.name = 'AbortError';
+              controller.error(error);
+            });
+          },
+        }),
+        { status: 200, headers: { 'Content-Type': 'application/json' } },
+      ),
+    );
+
+  it('times out a response whose body stops arriving', async () => {
+    const { fetch, calls } = scriptedFetch(stalledBody);
+    const result = failure(createHttpClient({ fetch }).getJson(URL_A));
+    await jest.advanceTimersByTimeAsync(10_000);
+    const error = await result;
+    expect(error).toBeInstanceOf(TimeoutError);
+    expect(calls[0].signal.aborted).toBe(true);
+  });
+
+  it('cancels a request whose body is still arriving when the caller aborts', async () => {
+    const { fetch, calls } = scriptedFetch(stalledBody);
+    const controller = new AbortController();
+    const result = failure(createHttpClient({ fetch }).getBinary(URL_A, { signal: controller.signal }));
+    await jest.advanceTimersByTimeAsync(100);
+    controller.abort();
+    expect(await result).toMatchObject({ name: 'AbortError' });
+    expect(calls[0].signal.aborted).toBe(true);
+  });
+
+  it('maps a connection lost while the body arrives to OfflineError', async () => {
+    const broken = new Response(
+      new ReadableStream({
+        start(controller) {
+          controller.error(new TypeError('terminated'));
+        },
+      }),
+      { status: 200 },
+    );
+    const { fetch } = scriptedFetch(broken);
+    const error = await failure(createHttpClient({ fetch }).getBinary(URL_A));
+    expect(error).toBeInstanceOf(OfflineError);
+  });
+});
+
 describe('parseRetryAfter', () => {
   it.each([
     [null, null],

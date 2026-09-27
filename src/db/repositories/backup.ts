@@ -168,10 +168,10 @@ export async function mergeTables(tx: Db, tables: BackupTables): Promise<MergeSu
     summary.booksAdded++;
   }
 
-  const link = async (table: BackupTableName, remap: Record<string, Map<number, number>>) => {
+  const link = async (table: BackupTableName, remap: Record<string, Map<number, number>>, adjust: (row: BackupRow) => BackupRow = (row) => row) => {
     const spec = backupTableSpec(table);
     for (const row of rows(table)) {
-      const mapped: BackupRow = { ...row };
+      let mapped: BackupRow = { ...row };
       let skip = false;
       for (const [col, ids] of Object.entries(remap)) {
         const id = ids.get(Number(row[col]));
@@ -179,13 +179,21 @@ export async function mergeTables(tx: Db, tables: BackupTables): Promise<MergeSu
         else mapped[col] = id;
       }
       if (skip) continue;
+      mapped = adjust(mapped);
       const cols = present(mapped, spec.columns.map((c) => c.name));
       await tx.run(`INSERT OR IGNORE INTO ${table} (${cols.join(', ')}) VALUES (${cols.map(() => '?').join(', ')})`, cols.map((c) => mapped[c] ?? null));
     }
   };
   await link('book_authors', { book_id: bookIds, author_id: authorIds });
   await link('book_genres', { book_id: bookIds, genre_id: genreIds });
-  await link('group_books', { book_id: bookIds, group_id: groupIds });
+  // A group that is already here keeps its own books first: the backup's follow them, in the backup's order.
+  const groupEnds = new Map(
+    (await tx.all<{ group_id: number; next: number }>('SELECT group_id, MAX(position) + 1 AS next FROM group_books GROUP BY group_id')).map((r) => [r.group_id, r.next]),
+  );
+  await link('group_books', { book_id: bookIds, group_id: groupIds }, (row) => {
+    const end = groupEnds.get(Number(row.group_id)) ?? 0;
+    return end ? { ...row, position: end + Number(row.position ?? 0) } : row;
+  });
 
   for (const row of rows('loans')) {
     const bookId = bookIds.get(Number(row.book_id));

@@ -61,7 +61,19 @@ export function declineCoverPhoto(bookId: number): void {
  * becomes the book's cover (`covers/<bookId>.jpg`, like a picked photo),
  * then the photo and the copy are deleted. Resolves with the stored cover's URI.
  */
-export async function acceptCoverPhoto(db: Db, bookId: number): Promise<string> {
+export function acceptCoverPhoto(db: Db, bookId: number): Promise<string> {
+  // A second tap while the first is still making the cover waits for it.
+  let accepting = inProgress.get(bookId);
+  if (!accepting) {
+    accepting = accept(db, bookId).finally(() => inProgress.delete(bookId));
+    inProgress.set(bookId, accepting);
+  }
+  return accepting;
+}
+
+const inProgress = new Map<number, Promise<string>>();
+
+async function accept(db: Db, bookId: number): Promise<string> {
   const offer = offers.get(bookId);
   if (!offer) throw new Error(`No cover photo on offer for book ${bookId}`);
   const { uri, focus } = offer;

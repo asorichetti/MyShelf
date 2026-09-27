@@ -2,12 +2,18 @@ import { act, renderHook } from '@testing-library/react-native';
 
 import { makeCandidate } from '@/services/metadata/candidate';
 
-import { createSession } from '../sessionStore';
+import { createSession, getSession } from '../sessionStore';
+import { discardPhoto } from '../tempPhoto';
 import { addToTray, clearTray, dropTrayItem, getTray, isConfident, resolveTrayItem, useTray } from '../useBatchScan';
 
 const book = (title: string) => makeCandidate({ title, source: 'openlibrary', sourceId: title });
 
-beforeEach(() => clearTray());
+jest.mock('../tempPhoto', () => ({ discardPhoto: jest.fn() }));
+
+beforeEach(() => {
+  clearTray();
+  jest.mocked(discardPhoto).mockClear();
+});
 
 describe('the scan tray (P03-12)', () => {
   it('an ISBN with exactly one candidate goes in ready; a cover search or several candidates need a choice', () => {
@@ -27,6 +33,14 @@ describe('the scan tray (P03-12)', () => {
     expect(getTray()[0]).toMatchObject({ status: 'ready', label: 'B, 1990 Corgi', sessionId: null });
     dropTrayItem(item.id);
     expect(getTray()).toEqual([]);
+  });
+
+  it('dropping a book still waiting for its edition deletes its cover photo', () => {
+    const session = createSession({ source: 'cover', candidates: [book('B')], photoUri: 'file:///cache/Camera/cover.jpg' });
+    const item = addToTray(session);
+    dropTrayItem(item.id);
+    expect(getSession(session.id)).toBeNull();
+    expect(discardPhoto).toHaveBeenCalledWith('file:///cache/Camera/cover.jpg');
   });
 
   it('survives the screen that showed it (the Scan tab unmounts when you leave)', () => {

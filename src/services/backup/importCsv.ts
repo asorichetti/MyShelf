@@ -18,7 +18,7 @@ import {
 } from '@/domain';
 import { t } from '@/i18n';
 
-import { CsvParseError, detectDelimiter, parseCsv, type CsvDelimiter } from './csv';
+import { CsvParseError, detectDelimiter, parseCsv, unescapeFormula, type CsvDelimiter } from './csv';
 import { detectPreset, type ImportField, type PresetId } from './csvPresets';
 
 /** A CSV file read and split into its header and data rows. */
@@ -109,8 +109,15 @@ export function unwrapFormula(value: string): string {
   return (m ? m[1] : value).trim();
 }
 
+/**
+ * Composed Unicode ("é" as one character): some spreadsheets hold accents as
+ * a letter plus a combining mark, which looks the same but would not match
+ * the library's names, be found by search on the web, or sort by its letter.
+ */
+const composed = (v: string) => v.normalize('NFC');
+
 const clean = (v: string | undefined) => {
-  const s = unwrapFormula(v ?? '').replace(/\s+/g, ' ').trim();
+  const s = composed(unescapeFormula(unwrapFormula(v ?? ''))).replace(/\s+/g, ' ').trim();
   return s || null;
 };
 const splitList = (v: string | null, separator: RegExp) =>
@@ -124,6 +131,19 @@ const unique = (list: string[]) => {
     return true;
   });
 };
+
+/** An HTML tag ("<br/>", "</p>", "<a href=…>") or entity ("&amp;", "&#39;"): Goodreads writes reviews as HTML. */
+const HTML = /<\/?[a-z][a-z0-9]*(?:\s[^<>]*)?\/?>|&(?:#\d+|#x[0-9a-f]+|amp|lt|gt|quot|apos|nbsp);/i;
+
+/**
+ * A notes cell: HTML (a Goodreads review) becomes plain text; anything else,
+ * such as MyShelf's own export, is kept as it is ("a < b", "<3", blank
+ * lines and indents included), with line breaks as \n.
+ */
+function notesText(value: string | null): string | null {
+  if (!value) return null;
+  return HTML.test(value) ? stripHtml(value) : value.replace(/\r\n?/g, '\n');
+}
 
 /** Goodreads bindings and other spellings → MyShelf formats. */
 export function parseFormat(value: string | null): BookFormat | null {
@@ -159,17 +179,35 @@ export function parseImportRating(value: string | null): number | null | undefin
   return m ? Number(m[1]) : undefined;
 }
 
-/** "2023/01/15", "2023-01-15" or a full ISO timestamp → ISO-8601 UTC (midday for a plain date). */
+/** Midday UTC on a calendar date, or null when there is no such day. */
+function middayOn(y: number, mo: number, d: number): string | null {
+  const date = new Date(Date.UTC(y, mo - 1, d, 12));
+  return date.getUTCFullYear() === y && date.getUTCMonth() === mo - 1 && date.getUTCDate() === d ? date.toISOString() : null;
+}
+
+/**
+ * A "Date Added" cell → ISO-8601 UTC (midday for a plain date): Goodreads'
+ * "2023/01/15", "2023-01-15", a full ISO timestamp, and what a spreadsheet
+ * app makes of them when the file is saved again: "15/01/2023" or
+ * "1/15/2023" (whichever the numbers allow: "02/03/2023" could be either
+ * and is left out), "15.01.2023" (always day first) and "2023-01-15 09:30".
+ */
 export function parseAddedDate(value: string | null): string | null {
   if (!value) return null;
-  const m = /^(\d{4})[/-](\d{1,2})[/-](\d{1,2})$/.exec(value.trim());
+  const text = value.trim();
+  let m = /^(\d{4})[/.-](\d{1,2})[/.-](\d{1,2})(?:[ T]\d{1,2}:\d{2}(?::\d{2})?)?$/.exec(text);
+  if (m && !/T/.test(text)) return middayOn(Number(m[1]), Number(m[2]), Number(m[3]));
+  m = /^(\d{1,2})\.(\d{1,2})\.(\d{4})$/.exec(text);
+  if (m) return middayOn(Number(m[3]), Number(m[2]), Number(m[1]));
+  m = /^(\d{1,2})[/-](\d{1,2})[/-](\d{4})$/.exec(text);
   if (m) {
-    const [y, mo, d] = [Number(m[1]), Number(m[2]), Number(m[3])];
-    const date = new Date(Date.UTC(y, mo - 1, d, 12));
-    return date.getUTCMonth() === mo - 1 && date.getUTCDate() === d ? date.toISOString() : null;
+    const [a, b, y] = [Number(m[1]), Number(m[2]), Number(m[3])];
+    if (a > 12 && b <= 12) return middayOn(y, b, a);
+    if (b > 12 && a <= 12) return middayOn(y, a, b);
+    return null;
   }
-  const time = Date.parse(value);
-  return Number.isNaN(time) || !/^\d{4}-\d{2}-\d{2}T/.test(value.trim()) ? null : new Date(time).toISOString();
+  const time = Date.parse(text);
+  return Number.isNaN(time) || !/^\d{4}-\d{2}-\d{2}T/.test(text) ? null : new Date(time).toISOString();
 }
 
 /** "to-read" → "To read", "currently-reading" → "Currently reading", "favourites" → "Favourites". */
@@ -216,7 +254,7 @@ export function planImport(rows: readonly string[][], mapping: readonly ImportFi
   };
   const raw = (row: readonly string[], field: ImportField) => {
     const i = mapping.indexOf(field);
-    return i < 0 ? null : (row[i] ?? '').trim() || null;
+    return i < 0 ? null : composed(unescapeFormula((row[i] ?? '').trim())).trim() || null;
   };
 
   rows.forEach((row, index) => {
@@ -275,8 +313,12 @@ export function planImport(rows: readonly string[][], mapping: readonly ImportFi
     const rating = parseImportRating(ratingText);
     if (rating === undefined) warnings.push(t('importCsv.warnings.badRating', { value: ratingText ?? '' }));
 
-    const review = stripHtml(raw(row, 'notes'));
-    const privateNotes = stripHtml(raw(row, 'privateNotes'));
+    const addedText = col(row, 'added');
+    const addedAt = parseAddedDate(addedText);
+    if (addedText && !addedAt) warnings.push(t('importCsv.warnings.badAdded', { value: addedText }));
+
+    const review = notesText(raw(row, 'notes'));
+    const privateNotes = notesText(raw(row, 'privateNotes'));
     const notes = [review, privateNotes].filter(Boolean).join('\n\n') || null;
 
     const groups = shelvesAsGroups
@@ -307,7 +349,7 @@ export function planImport(rows: readonly string[][], mapping: readonly ImportFi
       genres: unique(splitList(col(row, 'genres'), /\s*;\s*/)),
       series,
       groups,
-      addedAt: parseAddedDate(col(row, 'added')),
+      addedAt,
       warnings,
     };
     plan.books.push(book);
@@ -335,8 +377,9 @@ export async function importPlannedBooks(db: Db, plan: ImportPlan): Promise<Impo
     const report: ImportReport = { imported: 0, bookIds: [], skipped: [...plan.skipped], groupsCreated: [] };
     const groups = new Map((await groupsRepo.listGroups(tx)).map((g) => [normaliseText(g.name, { dropArticle: false }), g.id]));
     const groupPositions = new Map<number, number>();
+    const seriesIdFor = await seriesRepo.seriesFinder(tx);
     for (const planned of plan.books) {
-      const seriesId = planned.series ? (await seriesRepo.findOrCreateSeries(tx, planned.series.name)).id : null;
+      const seriesId = planned.series ? await seriesIdFor(planned.series.name) : null;
       const book = await booksRepo.createBook(tx, { ...planned.book, seriesId, seriesPosition: planned.series?.position ?? null });
       if (planned.addedAt) await booksRepo.setAddedAt(tx, book.id, planned.addedAt);
       const links = [];

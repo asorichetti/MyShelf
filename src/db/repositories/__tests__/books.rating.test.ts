@@ -1,7 +1,7 @@
 /**
  * @jest-environment node
  */
-import { booksRepo, getSchemaVersion, LATEST_VERSION, migrate, migrations, shelfSectionsRepo, type Db } from '@/db';
+import { booksRepo, getSchemaVersion, migrate, migrations, shelfSectionsRepo, type Db } from '@/db';
 import { openNodeDatabase } from '@/db/node';
 import { draftFromDetail, noFilters, validateBookDraft, type ValidBookDraft } from '@/domain';
 import { createFtsTestDb, createTestDb } from '@/testing/createTestDb';
@@ -27,8 +27,8 @@ describe('migration 0007_book_rating', () => {
     await migrate(db, migrations.filter((m) => m.version <= 6));
     expect(await getSchemaVersion(db)).toBe(6);
     await db.run("INSERT INTO books (id, title, notes, created_at, updated_at) VALUES (1, 'Mort', 'Signed', '2020-01-01T00:00:00.000Z', '2020-01-01T00:00:00.000Z')");
-    const result = await migrate(db);
-    expect(result).toEqual({ from: 6, to: LATEST_VERSION, applied: [7] });
+    const result = await migrate(db, migrations.filter((m) => m.version <= 7));
+    expect(result).toEqual({ from: 6, to: 7, applied: [7] });
     const book = await booksRepo.getBook(db, 1);
     expect(book).toMatchObject({ title: 'Mort', notes: 'Signed', rating: null, updatedAt: '2020-01-01T00:00:00.000Z' });
     // The search index built by 0006 still finds it.

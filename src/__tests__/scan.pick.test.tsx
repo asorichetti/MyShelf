@@ -5,7 +5,8 @@ import { BookDetailScreen } from '@/features/book/BookDetailScreen';
 import { AddBookScreen } from '@/features/book/BookFormScreen';
 import { attachCoverFromCandidate } from '@/features/covers';
 import { EditionPickerScreen } from '@/features/scan/EditionPickerScreen';
-import { clearSessions, createSession } from '@/features/scan/sessionStore';
+import { clearSessions, createSession, getSession } from '@/features/scan/sessionStore';
+import { discardPhoto } from '@/features/scan/tempPhoto';
 import { OL_BOOKS } from '@/services/metadata/__fixtures__/openLibraryRoutes';
 import { createTestDb } from '@/testing/createTestDb';
 import { createFixtureMetadata, type FixtureMetadata } from '@/testing/fixtureMetadata';
@@ -18,6 +19,7 @@ jest.mock('@/features/lookup/metadataService', () => ({
   useMetadataService: () => mockMetadata.service,
   getLookupServices: () => ({ http: mockMetadata.http, metadata: mockMetadata.service }),
 }));
+jest.mock('@/features/scan/tempPhoto', () => ({ discardPhoto: jest.fn() }));
 jest.mock('@/features/covers', () => ({
   ...jest.requireActual('@/features/covers'),
   attachCoverFromCandidate: jest.fn(async () => ({ status: 'none', tried: [] })),
@@ -68,6 +70,18 @@ describe('Edition picker (P03-08) and saving (P03-09)', () => {
     const [book] = await booksRepo.listBooks(db);
     expect(r.getPathname()).toBe(`/book/${book.id}`);
     expect(book).toMatchObject({ title: 'The Colour of Magic', source: 'openlibrary' });
+    expect(attachCoverFromCandidate).toHaveBeenCalledTimes(1);
+  });
+
+  it('a double tap on "This is my edition" saves the book once', async () => {
+    const session = await isbnSession(OL_BOOKS.colourOfMagic);
+    await open(session.id);
+    await act(async () => {
+      fireEvent.press(screen.getByTestId(p.confirm));
+      fireEvent.press(screen.getByTestId(p.confirm));
+    });
+    await advance(0);
+    expect(await booksRepo.countBooks(db)).toBe(1);
     expect(attachCoverFromCandidate).toHaveBeenCalledTimes(1);
   });
 
@@ -154,6 +168,33 @@ describe('Edition picker (P03-08) and saving (P03-09)', () => {
     await advance(0);
     const [book] = await booksRepo.listBooks(db);
     expect(book).toMatchObject({ title: 'The Colour of Magic (mine)', source: 'openlibrary', sourceId: 'OL28477029M' });
+  });
+
+  it('"Review before saving" a book already on the shelf asks first, and Add another copy opens the form', async () => {
+    const session = await isbnSession(OL_BOOKS.prideAndPrejudice);
+    const r = await open(session.id, 'demo');
+    await press(p.review);
+    await press(p.confirm);
+    expect(screen.getByTestId(Testids.duplicate.sheet)).toHaveTextContent(/Already on your shelf/);
+    expect(r.getPathname()).toBe('/scan/pick');
+    await press(Testids.duplicate.addCopy);
+    expect(r.getPathname()).toBe('/book/new');
+    expect(screen.getByTestId(Testids.bookForm.title).props.value).toBe('Pride and Prejudice');
+    expect(await booksRepo.countBooks(db)).toBe(12);
+  });
+
+  it('leaving without saving deletes the cover photo taken for the search', async () => {
+    const { candidates } = await mockMetadata.service.search({ text: 'the colour of magic terry pratchett' });
+    const session = createSession({ source: 'cover', candidates, photoUri: 'file:///cache/Camera/cover.jpg' });
+    const r = await open(session.id);
+    jest.mocked(discardPhoto).mockClear();
+    await act(async () => {
+      fireEvent.press(screen.getByLabelText('Back to scanning'));
+    });
+    await advance(0);
+    expect(r.getPathname()).toBe('/scan');
+    expect(discardPhoto).toHaveBeenCalledWith('file:///cache/Camera/cover.jpg');
+    expect(getSession(session.id)).toBeNull();
   });
 
   it('a lost session (the app was reloaded) says so', async () => {

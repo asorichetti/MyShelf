@@ -1,6 +1,6 @@
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { router } from 'expo-router';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 
 import { candidateFacts } from '@/components/book/CandidateCard';
@@ -74,12 +74,16 @@ export function ScanReviewScreen() {
   const { emit } = useBooky();
   const { show } = useSnackbar();
   const [saving, setSaving] = useState(false);
+  // A second tap while saving must not save the tray again.
+  const busy = useRef(false);
   // Room for Booky's floating tip below the list.
   const { attach: attachRoom, onLayout: layoutRoom, clearance } = useFloatClearance();
   const ready = tray.filter((i): i is TrayItem & { candidate: NonNullable<TrayItem['candidate']> } => i.status === 'ready' && i.candidate !== null);
   const waiting = tray.length - ready.length;
 
   const saveAll = async () => {
+    if (busy.current) return;
+    busy.current = true;
     setSaving(true);
     const saved: string[] = [];
     let count = 0;
@@ -94,6 +98,7 @@ export function ScanReviewScreen() {
       show({ message: t('scanReview.saveFailed') });
     } finally {
       removeTrayItems(saved);
+      busy.current = false;
       setSaving(false);
     }
     if (saved.length) {

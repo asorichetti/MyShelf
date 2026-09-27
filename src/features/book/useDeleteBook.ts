@@ -2,9 +2,10 @@ import { useCallback } from 'react';
 
 import { useSnackbar } from '@/components/ui';
 import { booksRepo, useDatabase } from '@/db';
+import { deleteCoverOfDeletedBook } from '@/features/covers';
 import { emit } from '@/features/events';
 import { t } from '@/i18n';
-import { deleteCover, isLocalCover } from '@/services/covers';
+import { isLocalCover } from '@/services/covers';
 
 /** How long "Undo" is offered after a delete. */
 export const UNDO_WINDOW_MS = 6000;
@@ -49,7 +50,7 @@ export function useDeleteBook(): (book: { id: number; title: string }) => Promis
           },
         },
         onHide: (reason) => {
-          if (reason !== 'action' && isLocalCover(coverUri)) deleteCover(id);
+          if (reason !== 'action' && isLocalCover(coverUri)) void deleteCoverOfDeletedBook(db, id);
         },
       });
       return true;
