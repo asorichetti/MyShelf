@@ -114,6 +114,20 @@ describe('the cover photo when no online cover exists (P03-14)', () => {
       expect((await booksRepo.getBook(db, saved.id))?.coverUri).toBe(`file:///documents/covers/${saved.id}.jpg`);
     });
 
+    it('a double tap on "Use my photo" makes the cover once', async () => {
+      const saved = await saveWith({ status: 'none', tried: [] });
+      const { coverFromPhoto } = jest.requireMock<typeof import('@/services/recognition')>('@/services/recognition');
+      jest.mocked(coverFromPhoto).mockClear();
+      renderHost(saved.id);
+      await act(async () => {
+        fireEvent.press(screen.getByTestId(Testids.coverPhoto.use));
+        fireEvent.press(screen.getByTestId(Testids.coverPhoto.use));
+      });
+      await waitFor(() => expect(screen.queryByTestId(Testids.coverPhoto.offer)).toBeNull());
+      expect(coverFromPhoto).toHaveBeenCalledTimes(1);
+      expect((await booksRepo.getBook(db, saved.id))?.coverUri).toBe(`file:///documents/covers/${saved.id}.jpg`);
+    });
+
     it('"No thanks" dismisses it', async () => {
       const saved = await saveWith({ status: 'none', tried: [] });
       renderHost(saved.id);
