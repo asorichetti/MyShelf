@@ -18,5 +18,5 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true
   },
-  "include": ["src/**/*.ts", "src/**/*.json", "../../src/testing/testids.gen.ts", "../../src/theme/tokens.ts"]
+  "include": ["src/**/*.ts", "src/**/*.json", "../../src/testing/testids.gen.ts", "../../src/theme/tokens.ts", "../../src/features/e2e/mockApiFetch.ts"]
 }

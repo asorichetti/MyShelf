@@ -23,6 +23,19 @@ const publicEnv = Object.keys(process.env)
   .join('\n');
 config.cacheVersion = `${config.cacheVersion ?? ''}+env-${createHash('sha256').update(publicEnv).digest('hex').slice(0, 16)}`;
 
+// The recorded API responses (src/generated/e2eApiFixtures.json, read by
+// src/features/e2e/mockApi.ts) go only into the Android E2E build, made with
+// EXPO_PUBLIC_E2E_MOCK_API=1. Every other build resolves the file to an empty
+// module, so neither the fixtures nor their size reach a user's phone.
+const E2E_API_FIXTURES = /(^|[\\/])generated[\\/]e2eApiFixtures\.json$/;
+if (process.env.EXPO_PUBLIC_E2E_MOCK_API !== '1') {
+  const upstream = config.resolver.resolveRequest;
+  config.resolver.resolveRequest = (context, moduleName, platform) => {
+    if (E2E_API_FIXTURES.test(moduleName)) return { type: 'empty' };
+    return (upstream ?? context.resolveRequest)(context, moduleName, platform);
+  };
+}
+
 // expo-sqlite on web needs SharedArrayBuffer, which browsers only enable on
 // cross-origin isolated pages: the HTML document itself must be served with
 // COOP/COEP. The documented `server.enhanceMiddleware` hook only wraps Metro's

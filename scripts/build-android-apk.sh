@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Builds a release APK on this machine (docs/device-testing.md, docs/release.md).
 #
-#   scripts/build-android-apk.sh e2e         [out.apk]   fixture loader on, for Maestro only
+#   scripts/build-android-apk.sh e2e         [out.apk]   fixture loader and recorded API responses, for Maestro only
 #   scripts/build-android-apk.sh production  [out.apk]   what users install (no fixture loader)
 #
 # ABIS (default arm64-v8a, which every current phone and an Apple-silicon
@@ -23,9 +23,11 @@ out=${2:-$root/build/myshelf-$kind.apk}
 abis=${ABIS:-arm64-v8a}
 
 cd "$root"
-# Metro inlines EXPO_PUBLIC_* at build time (ADR 0015); set it explicitly so no
-# .env file decides whether the fixture loader is in the build.
+# Metro inlines EXPO_PUBLIC_* at build time (ADR 0015); set them explicitly so no
+# .env file decides whether the fixture loader, or the recorded API responses
+# (metro.config.js, src/features/e2e/mockApi.ts), are in the build.
 export EXPO_PUBLIC_E2E=$e2e
+export EXPO_PUBLIC_E2E_MOCK_API=$e2e
 
 EXPO_NO_GIT_STATUS=1 npx expo prebuild --platform android --clean --no-install
 
