@@ -5,6 +5,7 @@ import { booksRepo, StaticDatabaseProvider, type Db } from '@/db';
 import { setToday, today } from '@/domain';
 import { safeNextPath } from '@/features/e2e/e2eFlag';
 import { E2eScreen } from '@/features/e2e/E2eScreen';
+import { inFixtureVisit, resetFixtureVisit } from '@/features/e2e/fixtureVisit';
 import { NotFoundScreen } from '@/features/navigation/NotFoundScreen';
 import { createTestDb } from '@/testing/createTestDb';
 import { AppTestProviders } from '@/testing/render';
@@ -17,6 +18,7 @@ beforeEach(async () => {
 });
 afterEach(async () => {
   process.env.EXPO_PUBLIC_E2E = original;
+  resetFixtureVisit();
   setToday(null);
   await db.close();
 });
@@ -44,6 +46,7 @@ describe('/e2e fixture loader', () => {
     expect(screen.getByTestId(Testids.notFound.title)).toHaveTextContent('Page not found');
     expect(r.getPathname()).toBe('/e2e');
     expect(await booksRepo.countBooks(db)).toBe(1);
+    expect(inFixtureVisit()).toBe(false);
   });
 
   it('ignores any value other than "1"', () => {
@@ -60,6 +63,14 @@ describe('/e2e fixture loader', () => {
     await waitFor(() => expect(r.getPathname()).toBe('/book/3'));
     expect(await booksRepo.countBooks(db)).toBe(12);
     expect((await booksRepo.listBooks(db)).some((b) => b.title === 'Replaced')).toBe(false);
+  });
+
+  it('marks the visit as a fixture visit, so Booky’s start-up checks stay quiet on the fixture’s screen', async () => {
+    process.env.EXPO_PUBLIC_E2E = '1';
+    expect(inFixtureVisit()).toBe(false);
+    const r = renderRouter(routes, { initialUrl: '/e2e?fixture=demo&next=/', wrapper: Root });
+    await waitFor(() => expect(r.getPathname()).toBe('/'));
+    expect(inFixtureVisit()).toBe(true);
   });
 
   it('freezes today for the session when asked', async () => {

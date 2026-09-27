@@ -1,11 +1,12 @@
 import { router, Slot } from 'expo-router';
 import { act, fireEvent, renderRouter, screen } from 'expo-router/testing-library';
-import { Text, View } from 'react-native';
+import { AppState, Text, View, type AppStateStatus } from 'react-native';
 
 import { BookyOverlay, BookyProvider, emitBooky } from '@/components/booky';
 import { StaticDatabaseProvider, type Db } from '@/db';
 import { setToday } from '@/domain';
 import { settingsBookyStore } from '@/features/booky/bookyStore';
+import { beginFixtureVisit, resetFixtureVisit } from '@/features/e2e/fixtureVisit';
 import { useOverdueNudge } from '@/features/loans/useOverdueNudge';
 import { createTestDb } from '@/testing/createTestDb';
 import { loadFixture } from '@/testing/loadFixture';
@@ -19,6 +20,8 @@ beforeEach(async () => {
   await loadFixture(db, 'demo');
 });
 afterEach(async () => {
+  resetFixtureVisit();
+  jest.restoreAllMocks();
   setToday(null);
   await db.close();
 });
@@ -94,5 +97,30 @@ describe('useOverdueNudge (P05-10)', () => {
     start('/e2e');
     await settle();
     expect(screen.queryByTestId(Testids.booky.bubble)).toBeNull();
+  });
+
+  it('stays quiet on the fixture’s screen when the start-up event arrives after the loader has finished', async () => {
+    // A slow phone: the loader ran and moved on to the Shelf before the start-up event.
+    beginFixtureVisit();
+    start('/');
+    await settle();
+    expect(screen.getByText('shelf')).toBeOnTheScreen();
+    expect(screen.queryByTestId(Testids.booky.bubble)).toBeNull();
+  });
+
+  it('nudges again once the app has been in the background after a fixture visit', async () => {
+    let onChange: ((state: AppStateStatus) => void) | undefined;
+    jest.spyOn(AppState, 'addEventListener').mockImplementation((_type, handler) => {
+      onChange = handler as (state: AppStateStatus) => void;
+      return { remove: () => undefined };
+    });
+    beginFixtureVisit();
+    start('/');
+    await settle();
+    expect(screen.queryByTestId(Testids.booky.bubble)).toBeNull();
+    act(() => onChange?.('background'));
+    act(() => onChange?.('active'));
+    await settle();
+    expect(screen.getByTestId(Testids.booky.bubbleText)).toHaveTextContent('“The Murder of Roger Ackroyd” was due back from Priya 5 days ago.');
   });
 });

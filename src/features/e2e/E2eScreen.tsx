@@ -13,6 +13,7 @@ import { loadFixture } from '@/testing/loadFixture';
 
 import { armCrash } from './crashSwitch';
 import { isE2eEnabled, safeNextPath } from './e2eFlag';
+import { beginFixtureVisit } from './fixtureVisit';
 import { settleFixtureCovers } from './settleFixtureCovers';
 
 type Params = { fixture?: string; next?: string; today?: string; crash?: string };
@@ -38,6 +39,8 @@ function FixtureLoader() {
   useEffect(() => {
     if (problem || !isFixtureName(fixture)) return;
     let active = true;
+    // Booky's start-up checks stay quiet for this visit, however late the start-up events arrive.
+    beginFixtureVisit();
     if (frozen != null) setToday(frozen);
     loadFixture(db, fixture)
       .then(() => settleFixtureCovers(db))
