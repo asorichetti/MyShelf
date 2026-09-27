@@ -13,7 +13,7 @@ export { createGoogleBooks, isDailyQuotaError } from './googleBooks';
 export { emptyCoverRefs, makeCandidate } from './candidate';
 export { dedupeCandidates, mergeCandidates, mergeCoverRefs } from './merge';
 export { createOpenLibrary, type OpenLibraryProvider } from './openLibrary';
-export { rankCandidates, scoreCandidate } from './rank';
+export { EDITION_WEIGHTS, hasOwnCover, languageMatch, rankCandidates, rankEditions, scoreCandidate, scoreEdition, type RankEditionsOptions } from './rank';
 
 /** The text is not a valid ISBN-10 or ISBN-13. */
 export class InvalidIsbnError extends Error {

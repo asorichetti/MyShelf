@@ -9,7 +9,7 @@ import { olFixtures, openLibraryRoutes } from '../__fixtures__/openLibraryRoutes
 import { makeCandidate } from '../candidate';
 import { createDefaultMetadataService } from '../index';
 import { mapSearchDoc } from '../openLibraryMap';
-import { rankCandidates, RANK_WEIGHTS, scoreCandidate } from '../rank';
+import { languageMatch, rankCandidates, rankEditions, RANK_WEIGHTS, scoreCandidate } from '../rank';
 
 const base = (title: string, extra: Partial<Parameters<typeof makeCandidate>[0]> = {}) =>
   makeCandidate({ title, source: 'openlibrary', sourceId: title, ...extra });
@@ -80,5 +80,100 @@ describe('rankCandidates', () => {
       ['The Light Fantastic', 'googlebooks', '9780552166607'],
     ]);
     expect(candidates[0]).toMatchObject({ workKey: 'OL453657W', editionCount: 93, kind: 'edition' });
+  });
+});
+
+describe('language preference in search results', () => {
+  const en = { code: 'en', detected: true } as const;
+  const enLocale = { code: 'en', detected: false } as const;
+
+  it('matches a work when any of its editions is in the language, an edition by its own', () => {
+    expect(languageMatch(base('W', { kind: 'work', languages: ['en', 'nl'] }), 'en')).toBe(1);
+    expect(languageMatch(base('W', { kind: 'work', languages: ['es'] }), 'en')).toBe(0);
+    expect(languageMatch(base('E', { language: 'nl' }), 'nl')).toBe(1);
+    expect(languageMatch(base('E'), 'en')).toBe(0.5);
+  });
+
+  it('settles otherwise equal works: "Nobody\'s Girl" in English before the Spanish translation', () => {
+    const spanish = base("Nobody's Girl", { kind: 'work', languages: ['es'], authors: ['Virginia Roberts Giuffre'] });
+    const english = base("Nobody's Girl", { kind: 'work', languages: ['en'], authors: ['Virginia Roberts Giuffre'] });
+    const q = { title: "Nobody's Girl", author: 'Giuffre' };
+    expect(rankCandidates([spanish, english], q).map((c) => c.languages)).toEqual([['es'], ['en']]);
+    expect(rankCandidates([spanish, english], { ...q, language: en }).map((c) => c.languages)).toEqual([['en'], ['es']]);
+    expect(rankCandidates([spanish, english], { ...q, language: enLocale }).map((c) => c.languages)).toEqual([['en'], ['es']]);
+  });
+
+  it('never outweighs the title or the author', () => {
+    const right = base('Practical Magic', { kind: 'work', languages: ['nl'], authors: ['Alice Hoffman'] });
+    const wrong = base('Practical Guide', { kind: 'work', languages: ['en'], authors: ['Someone Else'] });
+    expect(rankCandidates([wrong, right], { title: 'Practical Magic', author: 'Hoffman', language: en })[0].title).toBe('Practical Magic');
+  });
+
+  it('counts in the confidence only when asked for', () => {
+    const perfect = base('Dune', { authors: ['Frank Herbert'], isbn13: '9780441172719', coverUrl: 'x', editionCount: 1e9, language: 'en' });
+    expect(rankCandidates([perfect], { title: 'Dune', author: 'Herbert', language: en })[0].confidence).toBe(1);
+    expect(rankCandidates([perfect], { title: 'Dune', author: 'Herbert' })[0].confidence).toBe(1);
+  });
+});
+
+describe('rankEditions', () => {
+  // The three editions of "Problematic Summer Romance" (OL43548572W), in Open Library's order, September 2026.
+  const covers = (id: number) => ({ olEditionCoverIds: [id], olWorkCoverIds: [], googleVolumeId: null, googleImageUrl: null });
+  const vanGoor = base('Problematic Summer Romance', {
+    subtitle: 'Soms wordt een cliché de allerbeste plottwist', publisher: 'Van Goor', publicationYear: 2025, isbn13: '9789000400973', language: 'nl', coverRefs: covers(15165839),
+  });
+  const littleBrown = base('Problematic Summer Romance', {
+    publisher: 'Little, Brown Book Group', publicationYear: 2025, isbn13: '9781408729885', language: 'en', coverRefs: covers(15165838),
+  });
+  const berkley = base('Problematic Summer Romance', {
+    publisher: 'Berkley', publicationYear: 2025, isbn13: '9798217188123', language: 'en', coverRefs: covers(15096054),
+  });
+  const olOrder = [vanGoor, littleBrown, berkley];
+  const title = 'Problematic Summer Romance';
+
+  it('puts the language read on the cover first: never the Dutch edition for an English cover', () => {
+    const ranked = rankEditions(olOrder, { language: { code: 'en', detected: true }, title });
+    expect(ranked.map((e) => e.language)).toEqual(['en', 'en', 'nl']);
+    expect(ranked[0]).toBe(littleBrown);
+  });
+
+  it("falls back on the app's language when the cover's is unknown", () => {
+    expect(rankEditions(olOrder, { language: { code: 'en', detected: false }, title })[0].language).toBe('en');
+  });
+
+  it('reads a Dutch cover as Dutch', () => {
+    expect(rankEditions(olOrder, { language: { code: 'nl', detected: true }, title })[0]).toBe(vanGoor);
+  });
+
+  it('keeps the provider order with nothing to go on', () => {
+    expect(rankEditions(olOrder)).toEqual(olOrder);
+  });
+
+  it('a detected language outranks everything; unknown languages come between', () => {
+    const bare = base('Problematic Summer Romance', { language: 'en' });
+    const unknown = base('Problematic Summer Romance', { publisher: 'X', publicationYear: 2025, isbn13: '9781408729885', coverRefs: covers(1) });
+    const ranked = rankEditions([vanGoor, unknown, bare], { language: { code: 'en', detected: true }, title });
+    expect(ranked).toEqual([bare, unknown, vanGoor]);
+  });
+
+  it("the app's language gives way to a much closer title (a Spanish cover read without a language)", () => {
+    const original = base('Cien años de soledad', { language: 'es', publisher: 'Debolsillo', publicationYear: 2003, coverRefs: covers(2) });
+    const translation = base('One Hundred Years of Solitude', { language: 'en', publisher: 'Harper', publicationYear: 2006, coverRefs: covers(3) });
+    expect(rankEditions([translation, original], { language: { code: 'en', detected: false }, title: 'Cien años de soledad' })[0]).toBe(original);
+  });
+
+  it('prefers the title asked for, a cover, a fuller record, then the newest', () => {
+    const guide = base('Lektürehilfen Der Vorleser', { language: 'de', publisher: 'Klett', publicationYear: 2005, coverRefs: covers(4) });
+    const novel = base('Der Vorleser', { language: 'de', publisher: 'Diogenes', publicationYear: 1997, coverRefs: covers(5) });
+    const bare = base('Der Vorleser', { language: 'de', publisher: 'Diogenes', publicationYear: 1997 });
+    const newer = base('Der Vorleser', { language: 'de', publisher: 'Diogenes', publicationYear: 2011, coverRefs: covers(6) });
+    const ranked = rankEditions([guide, bare, novel, newer], { language: { code: 'de', detected: true }, title: 'Der Vorleser' });
+    expect(ranked).toEqual([newer, novel, bare, guide]);
+  });
+
+  it('prefers an edition with a cover to one without (the 2023 "Practical Magic" had none)', () => {
+    const deluxe = base('Practical Magic', { language: 'en', publisher: 'Penguin Publishing Group', publicationYear: 2023, isbn13: '9780593718148' });
+    const vintage = base('Practical Magic', { language: 'en', publisher: 'Vintage Books', publicationYear: 2002, isbn13: '9780099429173', pageCount: 280, coverRefs: covers(14809819) });
+    expect(rankEditions([deluxe, vintage], { language: { code: 'en', detected: true }, title: 'Practical Magic' })[0]).toBe(vintage);
   });
 });

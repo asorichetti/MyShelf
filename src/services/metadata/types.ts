@@ -1,4 +1,4 @@
-import type { BookFormat } from '@/domain';
+import type { BookFormat, LanguagePreference } from '@/domain';
 
 /** Which provider a candidate (or a hint) came from. Matches `books.source`. */
 export type CandidateSource = 'openlibrary' | 'googlebooks';
@@ -29,6 +29,12 @@ export interface CoverRefs {
   olEditionCoverIds: number[];
   /** Open Library cover ids on the work record (a search result's `cover_i`). */
   olWorkCoverIds: number[];
+  /**
+   * Open Library cover ids of other editions of the same work, best first:
+   * a last resort for an edition with no cover of its own, and a different
+   * edition's art, so the cover chain tries them after everything else.
+   */
+  olOtherEditionCoverIds?: number[];
   /** Google Books volume id, when the candidate came from (or was merged with) Google Books. */
   googleVolumeId: string | null;
   /** Google Books `imageLinks.thumbnail` (else `smallThumbnail`) exactly as sent. */
@@ -63,6 +69,11 @@ export interface BookCandidate {
   edition: string | null;
   /** ISO 639-1 code, e.g. `en`. */
   language: string | null;
+  /**
+   * For a work: the languages its editions are in (ISO 639-1), when the
+   * provider lists them. `language` is set only when there is exactly one.
+   */
+  languages?: string[];
   format: BookFormat | null;
   /** Full description with HTML removed; shortened later with `briefSummary()`. */
   summary: string | null;
@@ -92,6 +103,8 @@ export interface SearchQuery {
   title?: string;
   author?: string;
   text?: string;
+  /** The language to prefer among equally good results (not sent to the providers). */
+  language?: LanguagePreference;
 }
 
 /** A metadata source such as Open Library or Google Books. */

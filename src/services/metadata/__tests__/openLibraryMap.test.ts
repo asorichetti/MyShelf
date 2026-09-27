@@ -303,4 +303,9 @@ describe('mapSearchDoc', () => {
     expect(mapSearchDoc({ key: '/works/OL1W', title: 'x', language: ['fre'] })?.language).toBe('fr');
     expect(mapSearchDoc({ key: '/works/OL1W', title: 'x', language: ['eng', 'fre'] })?.language).toBeNull();
   });
+
+  it('keeps every language of the work for ranking, as ISO 639-1 codes', () => {
+    expect(mapSearchDoc({ key: '/works/OL1W', title: 'x', language: ['eng', 'dut', 'eng'] })?.languages).toEqual(['en', 'nl']);
+    expect(mapSearchDoc({ key: '/works/OL1W', title: 'x' })?.languages).toEqual([]);
+  });
 });

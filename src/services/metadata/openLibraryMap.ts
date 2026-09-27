@@ -225,13 +225,14 @@ export function mapSearchDoc(doc: OlSearchDoc): BookCandidate | null {
   const workKey = olid(doc.key);
   const title = cleanText(doc.title);
   if (!workKey || !title) return null;
-  const languages = doc.language ?? [];
+  const languages = uniqueStrings((doc.language ?? []).map((l) => toIso6391(l)));
   return makeCandidate({
     kind: 'work',
     title,
     authors: uniqueStrings(doc.author_name ?? []),
     publicationYear: typeof doc.first_publish_year === 'number' ? doc.first_publish_year : null,
-    language: languages.length === 1 ? toIso6391(languages[0]) : null,
+    language: languages.length === 1 ? languages[0] : null,
+    languages,
     coverUrl: coverUrlFromId(doc.cover_i),
     coverRefs: { ...emptyCoverRefs(), olWorkCoverIds: coverIds(doc.cover_i === undefined ? [] : [doc.cover_i]) },
     subjects: uniqueStrings(doc.subject ?? []),
