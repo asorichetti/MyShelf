@@ -1,0 +1,20 @@
+# P06-06: a group's order by long-press drag on the phone. This flow opens
+# Holiday reads in Reorder mode; scripts/maestro-suite.sh then holds "Pride
+# and Prejudice" and drags it to the top with `adb shell input draganddrop`
+# (Maestro has no hold-and-drag), and hooks/group-drag-check.yaml checks the
+# new order, the announcement, and that it survives a restart. By hand: run
+# this flow, drag the third row above the first, then run the hook.
+appId: dev.asorichetti.myshelf
+name: Drag to reorder a group (set-up)
+tags: [hooked]
+---
+- runFlow:
+    file: common/open-fixture.yaml
+    env: { FIXTURE: demo, NEXT: /groups }
+- tapOn: { id: groups-card, text: 'Holiday reads,.*' }
+- extendedWaitUntil: { visible: { id: group-reorder }, timeout: 10000 }
+- tapOn: { id: group-reorder }
+- extendedWaitUntil: { visible: { id: group-reorder-row, text: 3. Pride and Prejudice }, timeout: 5000 }
+- assertVisible: { id: group-reorder-row, text: 1. Good Omens }
+- assertVisible: { text: 'Hold a book and drag it to its place, or use the arrows.' }
+- takeScreenshot: screenshots/group-drag-before

@@ -21,6 +21,11 @@
 #      dark-mode           in `cmd uimode night yes`
 #      font-scale          at font_scale 2.0
 #      offline-queue       in airplane mode, then hooks/offline-resume.yaml online
+#      group-drag-reorder  then holds and drags a row with `input draganddrop`
+#                          and runs hooks/group-drag-check.yaml
+#      db-export           after db-export-setup.yaml and the E2E fault marker,
+#                          then checks the shared copy is the library; needs
+#                          `adb root`
 # 4. With --production-apk, installs it and runs the `production` flows, then
 #    puts the E2E APK back.
 #
@@ -110,6 +115,14 @@ check() {
   fi
 }
 
+# The centre "x y" of the first on-screen element whose attributes match $1 (from uiautomator).
+centre_of() {
+  a shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1
+  a shell cat /sdcard/ui.xml | tr '>' '\n' | grep -F "$1" | head -1 |
+    sed -E 's/.*bounds="\[([0-9]+),([0-9]+)\]\[([0-9]+),([0-9]+)\]".*/\1 \2 \3 \4/' |
+    awk 'NF == 4 { print int(($1 + $3) / 2), int(($2 + $4) / 2) }'
+}
+
 wait_online() {
   for _ in $(seq 1 30); do
     a shell ping -c 1 -W 2 openlibrary.org > /dev/null 2>&1 && return 0
@@ -177,6 +190,34 @@ if run reminders "$flows/reminders.yaml"; then
       run reminder-open "$flows/hooks/reminder-open.yaml"
     fi
     reset_device
+  fi
+fi
+
+# Drag to reorder: Maestro cannot hold and then drag, `input draganddrop` does
+# (it waits the long-press timeout, 400 ms, longer than the app's 350 ms hold).
+if run group-drag-reorder "$flows/group-drag-reorder.yaml"; then
+  from=$(centre_of 'content-desc="3. Pride and Prejudice"')
+  to=$(centre_of 'content-desc="1. Good Omens"')
+  if [ -n "$from" ] && [ -n "$to" ]; then
+    # Drop a little above the first row's middle.
+    a shell input draganddrop $from "${to% *}" "$(( ${to#* } - 40 ))" 1500
+    run group-drag-check "$flows/hooks/group-drag-check.yaml"
+  else
+    check group-drag "false" "could not find the rows on screen"
+  fi
+fi
+
+# The recovery screen's database export: plant the migrate fault, save the file,
+# and check the copy handed to the share sheet is the whole library.
+if $has_root && run db-export-setup "$flows/db-export-setup.yaml"; then
+  files=/data/data/$APP/files
+  a shell "echo migrate > $files/e2e-db-fault && chown \$(stat -c %u:%g $files) $files/e2e-db-fault && chcon \$(stat -c %C $files) $files/e2e-db-fault"
+  a shell "rm -f /data/data/$APP/cache/myshelf-library-*.db"
+  if run db-export "$flows/db-export.yaml"; then
+    copy=$(a shell "ls /data/data/$APP/cache/ | grep '^myshelf-library-.*\.db$'" | tr -d '\r' | head -1)
+    books=$(a shell "sqlite3 /data/data/$APP/cache/$copy 'select count(*) from books'" 2> /dev/null | tr -d '\r')
+    [ "${books:-0}" = 12 ] && ok=true || ok=false
+    check db-export-copy "$ok" "shared copy ${copy:-none} holds ${books:-?} books"
   fi
 fi
 

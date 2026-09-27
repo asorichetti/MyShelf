@@ -1,0 +1,30 @@
+# P05-04: on the Loans tab a loan card swiped to the left opens the same
+# return sheet as its "Mark returned" button (which stays); the book comes
+# home and moves to History. The swipe gives way to scrolling the list.
+appId: dev.asorichetti.myshelf
+name: Swipe a loan to mark it returned
+tags: [core]
+---
+- runFlow:
+    file: common/open-fixture.yaml
+    env: { FIXTURE: demo, NEXT: /loans }
+- extendedWaitUntil: { visible: { id: loans-row-book, text: Open Dune }, timeout: 10000 }
+# A vertical scroll over the cards scrolls; it is not taken for a swipe.
+- swipe: { from: { id: loans-row-book, text: Open The Murder of Roger Ackroyd }, direction: UP }
+- assertNotVisible: { id: return-sheet }
+- scrollUntilVisible: { element: { id: loans-row-book, text: Open Dune }, direction: DOWN, centerElement: true }
+- swipe:
+    from: { id: loans-row, containsDescendants: [{ id: loans-row-book, text: Open Dune }] }
+    direction: LEFT
+    duration: 600
+- extendedWaitUntil: { visible: { id: return-sheet }, timeout: 5000 }
+- takeScreenshot: screenshots/swipe-return-sheet
+- tapOn: { id: return-confirm }
+- extendedWaitUntil: { visible: { text: 'Welcome home, “Dune”!.*' }, timeout: 10000 }
+- assertNotVisible: { id: loans-row-book, text: Open Dune }
+- assertVisible: { id: loans-row-book, text: Open The Murder of Roger Ackroyd }
+- assertVisible: { text: Mark The Murder of Roger Ackroyd returned }
+- takeScreenshot: screenshots/swipe-returned
+- tapOn: { id: loans-tab-history }
+- extendedWaitUntil: { visible: { id: loans-row-book, text: Open Dune }, timeout: 10000 }
+- takeScreenshot: screenshots/swipe-history
