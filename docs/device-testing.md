@@ -92,6 +92,35 @@ fail when either is down or rate-limits the runner; the optional
 photos are not there, so those three flows are skipped; the committed
 made-up cover still exercises on-device text recognition.
 
+What the first runs taught about the CI emulator (x86_64 on KVM with
+software rendering, `-gpu swiftshader_indirect`; noticeably slower to start
+the app than an arm64 emulator on an Apple-silicon Mac):
+
+- **Start-up is slow enough to reorder events.** Launching the fixture link,
+  the app's JavaScript starts before Android has resumed the activity, and
+  the first render keeps the JS thread busy for a second or more, so the
+  start-up timer and Android's resume can arrive *after* the fixture loader
+  has finished and gone to the Shelf. Booky's start-up checks used to look
+  only at the route at that moment, so the demo fixture's overdue loan got a
+  nudge over the list, and the flows' first tap on a book landed on the tip
+  (run 36317139740: book detail, process death, dark mode). The loader now
+  marks the visit (`src/features/e2e/fixtureVisit.ts`) and the checks stay
+  quiet until the app has been in the background. Reproduced locally on an
+  Android 15 arm64 emulator started with `-cores 1`.
+- **Metro's cache survives between the two builds when `CI` is set.** Expo
+  skips React Native's usual cache reset on CI, and `EXPO_PUBLIC_*` values are
+  written into the code as it is transformed, so the production APK (built
+  second) reused the E2E build's modules: the fixture loader was on and a
+  fresh install skipped the onboarding (the first-run flow failed on
+  "Welcome to MyShelf"). `metro.config.js` now keys the cache on a hash of the
+  public values. Reproduce with `CI=true scripts/build-android-apk.sh` for one
+  kind and then the other.
+- An action snackbar lasts 6 s. On a much slower emulator (one core), the
+  steps between an Undo appearing and the tap on it can take longer than
+  that, and the tap then lands on the Add book button, which drops back into
+  the snackbar's place. The CI emulator is fast enough; keep flows from
+  putting slow steps between a snackbar and its action.
+
 ## The flows
 
 | Flow | What it proves on the phone |
