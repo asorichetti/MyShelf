@@ -212,6 +212,11 @@ describe('normaliseGenres: non-fiction signals (real Open Library subjects, Sept
       'Romans, nouvelles, etc. pour la jeunesse', 'Epic poems', 'Fantasy', 'Literature',
     ],
     historicalNovel: ['Fiction', 'Historical fiction', 'History', 'Fiction, historical, general', 'World War, 1939-1945, fiction'],
+    // A picture book stays a children's book.
+    gruffalo: [
+      'Animals', 'Juvenile fiction', 'Fiction', 'Stories in rhyme', 'Mice', 'Children’s Picture Books', "Children's fiction", 'Mice, fiction',
+      'Monsters, fiction', 'Animals, fiction', 'juvenile literature',
+    ],
   };
 
   it.each<[string, string[]]>([
@@ -228,8 +233,14 @@ describe('normaliseGenres: non-fiction signals (real Open Library subjects, Sept
     ['problematicSummerRomance', ['Romance', 'Fiction']],
     ['cienAnos', ['Literary Fiction', 'Fantasy', 'Fiction']],
     ['historicalNovel', ['Historical Fiction', 'Fiction']],
+    ['gruffalo', ["Children's", 'Fiction']],
   ])('%s → %p', (book, genres) => {
     expect(normaliseGenres(books[book])).toEqual(genres);
+  });
+
+  it("a couple of children's tags on a much-tagged novel do not make it a children's book", () => {
+    // Open Library's search subjects for OL274505W also carry "Juvenile fiction" (a school edition).
+    expect(normaliseGenres([...books.cienAnos, 'Juvenile fiction'])).toEqual(['Literary Fiction', 'Fantasy', 'Fiction']);
   });
 
   it('never calls a book with non-fiction signals "Fiction" unless fiction outweighs them', () => {

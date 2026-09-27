@@ -266,9 +266,13 @@ export function normaliseGenres(subjects: readonly string[], { max = 3, minShare
     (s) => !GENERIC.has(s.genre) && !(nonFictionBook && (s.genre === "Children's" || s.genre === 'Young Adult') && s.score < nonFiction),
   );
   const top = specific[0]?.score ?? 0;
-  // Audience and form need more support than a subject genre, unless they are all there is.
-  const share = (g: CuratedGenre) => (AUDIENCE.has(g) && g !== specific[0]?.genre ? Math.max(minShare, AUDIENCE_SHARE) : minShare);
-  const chosen = specific.filter((s) => s.score >= top * share(s.genre) && s.score >= 0.5).map((s) => s.genre);
+  const fictionScore = scored.find((s) => GENERIC.has(s.genre))?.score ?? 0;
+  // Audience and form need more support than a subject genre, measured against the strongest genre or,
+  // when it is stronger, plain Fiction: two "pour la jeunesse" tags do not make "Cien años de soledad"
+  // a children's book when a dozen subjects call it fiction.
+  const enough = (s: GenreScore) =>
+    AUDIENCE.has(s.genre) ? s.score >= Math.max(top, fictionScore) * Math.max(minShare, AUDIENCE_SHARE) : s.score >= top * minShare;
+  const chosen = specific.filter((s) => enough(s) && s.score >= 0.5).map((s) => s.genre);
   const generic = nonFictionBook ? [] : scored.filter((s) => GENERIC.has(s.genre) && s.score > 0).map((s) => s.genre);
   return [...chosen, ...generic].slice(0, max);
 }
