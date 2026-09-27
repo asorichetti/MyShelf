@@ -1,4 +1,4 @@
-import { isbn10To13, isbn13To10, isValidIsbn10, isValidIsbn13, normalizeIsbn, type BookFormat } from '@/domain';
+import { EARLIEST_YEAR, isbn10To13, isbn13To10, isValidIsbn10, isValidIsbn13, normalizeIsbn, type BookFormat } from '@/domain';
 import { toIso6391 } from '@/domain/languages';
 import { parseSeriesString } from '@/domain/seriesParser';
 
@@ -129,11 +129,28 @@ export function coverIds(ids: readonly number[] | null | undefined): number[] {
   return (ids ?? []).filter((id) => Number.isInteger(id) && id > 0);
 }
 
+/** The most pages the book form accepts (`validateBookDraft`). */
+export const MAX_PAGE_COUNT = 100_000;
+
+/**
+ * A year the book form accepts (`validateBookDraft`: from printing to next
+ * year), else null. A provider's placeholder or misread year would otherwise
+ * be saved, and then block every edit of the book until it was fixed.
+ */
+export function plausibleYear(year: number | null | undefined, currentYear = new Date().getFullYear()): number | null {
+  return typeof year === 'number' && Number.isInteger(year) && year >= EARLIEST_YEAR && year <= currentYear + 1 ? year : null;
+}
+
+/** A page count the book form accepts, else null. */
+export function plausiblePageCount(pages: number | null | undefined): number | null {
+  return typeof pages === 'number' && Number.isInteger(pages) && pages > 0 && pages <= MAX_PAGE_COUNT ? pages : null;
+}
+
 /** First plausible 4-digit year in free text: "March 2007" → 2007, "Jul 12, 2019" → 2019. */
 export function parsePublishYear(text: string | null | undefined): number | null {
   if (!text) return null;
   const m = /(?:^|\D)(1[4-9]\d\d|20\d\d)(?!\d)/.exec(text);
-  return m ? Number(m[1]) : null;
+  return m ? plausibleYear(Number(m[1])) : null;
 }
 
 /** Plain text of an Open Library description, with its Markdown and trailing "see also" block removed. */
@@ -168,10 +185,9 @@ export function mapPhysicalFormat(text: string | null | undefined): BookFormat |
 
 /** Page count from `number_of_pages`, or the largest arabic number in `pagination` ("xlii, 435 p."). */
 export function mapPageCount(edition: Pick<OlEdition, 'number_of_pages' | 'pagination'>): number | null {
-  if (typeof edition.number_of_pages === 'number' && edition.number_of_pages > 0) return edition.number_of_pages;
+  if (typeof edition.number_of_pages === 'number' && edition.number_of_pages > 0) return plausiblePageCount(edition.number_of_pages);
   const numbers = (edition.pagination ?? '').match(/\d+/g)?.map(Number) ?? [];
-  const max = Math.max(0, ...numbers);
-  return max > 0 ? max : null;
+  return plausiblePageCount(Math.max(0, ...numbers));
 }
 
 function validIsbns(list: string[] | undefined, valid: (s: string) => boolean): string[] {
@@ -269,7 +285,7 @@ export function mapSearchDoc(doc: OlSearchDoc): BookCandidate | null {
     kind: 'work',
     title,
     authors: uniqueStrings(doc.author_name ?? []),
-    publicationYear: typeof doc.first_publish_year === 'number' ? doc.first_publish_year : null,
+    publicationYear: plausibleYear(doc.first_publish_year),
     language: languages.length === 1 ? languages[0] : null,
     languages,
     coverUrl: coverUrlFromId(doc.cover_i),

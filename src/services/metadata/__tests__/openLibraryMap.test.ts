@@ -29,6 +29,8 @@ describe('parsePublishYear', () => {
     ['[2003?]', 2003],
     ['May 01, 1985', 1985],
     ['12345', null],
+    ['1420', null], // before printing: a misread, and the book form would refuse it
+    ['2999', null], // a placeholder, far in the future
     ['n.d.', null],
     ['', null],
     [undefined, null],
@@ -118,6 +120,8 @@ describe('small helpers', () => {
     [{ pagination: '535 p. :' }, 535],
     [{ pagination: '495p. ;' }, 495],
     [{ number_of_pages: 0, pagination: '12 p.' }, 12],
+    [{ number_of_pages: 9780552166591 }, null], // an ISBN typed into the pages field
+    [{ pagination: 'ISBN 9780552166591' }, null],
     [{}, null],
   ])('page count from %p → %p', (edition, pages) => {
     expect(mapPageCount(edition)).toBe(pages);

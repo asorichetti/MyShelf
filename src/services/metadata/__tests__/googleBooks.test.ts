@@ -182,6 +182,8 @@ describe('Google Books mapping helpers', () => {
     ['2012-05-10', 2012],
     ['2007-03', 2007],
     ['1985', 1985],
+    ['0000', null],
+    ['2999-01-01', null],
     ['', null],
     [undefined, null],
   ])('publishedDate %p → %p', (date, year) => {
