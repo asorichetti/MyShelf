@@ -60,7 +60,8 @@ export function wantsLatinNames(language: string | null | undefined): boolean {
   return !language || !NON_LATIN_SCRIPT.has(language);
 }
 
-const latin = (s: string) => /\p{Script=Latin}/u.test(s) && !/[^\p{Script=Latin}\p{Script=Common}\p{Script=Inherited}]/u.test(s);
+/** Whether text is written in Latin letters only (digits and punctuation aside). */
+export const isLatinText = (s: string) => /\p{Script=Latin}/u.test(s) && !/[^\p{Script=Latin}\p{Script=Common}\p{Script=Inherited}]/u.test(s);
 
 /**
  * An author's display name for an edition. Open Library sometimes stores
@@ -72,14 +73,14 @@ const latin = (s: string) => /\p{Script=Latin}/u.test(s) && !/[^\p{Script=Latin}
  */
 export function authorDisplayName(author: OlAuthor | null | undefined, { latinScript = true }: { latinScript?: boolean } = {}): string | null {
   const name = cleanText(author?.name) ?? cleanText(author?.personal_name);
-  if (!name || !latinScript || latin(name)) return name;
+  if (!name || !latinScript || isLatinText(name)) return name;
   const personal = cleanText(author?.personal_name);
-  if (personal && latin(personal)) {
+  if (personal && isLatinText(personal)) {
     const [family, given] = personal.split(',').map((p) => p.trim());
     return given ? `${given} ${family}` : personal;
   }
   // "Haruki Murakami", not "HARUKI MURAKAMI", "Haruki MURAKAMI" or "Murakami, Haruki".
-  const alternates = (author?.alternate_names ?? []).map((a) => cleanText(a)).filter((a): a is string => !!a && latin(a));
+  const alternates = (author?.alternate_names ?? []).map((a) => cleanText(a)).filter((a): a is string => !!a && isLatinText(a));
   const shouting = (a: string) => a.split(/\s+/).some((w) => w.length > 1 && w === w.toUpperCase() && /\p{L}{2}/u.test(w));
   return alternates.find((a) => !shouting(a) && !a.includes(',')) ?? alternates[0] ?? name;
 }
@@ -95,6 +96,8 @@ export interface OlSearchDoc {
   cover_i?: number;
   subject?: string[];
   language?: string[];
+  /** Author keys, in `author_name` order. */
+  author_key?: string[];
 }
 
 export interface OlSearchResponse {

@@ -121,11 +121,11 @@
       "body": "openlibrary/author-OL79034A.json"
     },
     {
-      "url": "https://openlibrary.org/search.json?title=the%20colour%20of%20magic&author=pratchett&fields=key%2Ctitle%2Cauthor_name%2Cfirst_publish_year%2Cedition_count%2Cisbn%2Ccover_i%2Csubject%2Clanguage&limit=10",
+      "url": "https://openlibrary.org/search.json?title=the%20colour%20of%20magic&author=pratchett&fields=key%2Ctitle%2Cauthor_name%2Cfirst_publish_year%2Cedition_count%2Cisbn%2Ccover_i%2Csubject%2Clanguage%2Cauthor_key&limit=10",
       "body": "openlibrary/search-colour-of-magic.json"
     },
     {
-      "url": "https://openlibrary.org/search.json?q=dune%20frank%20herbert&fields=key%2Ctitle%2Cauthor_name%2Cfirst_publish_year%2Cedition_count%2Cisbn%2Ccover_i%2Csubject%2Clanguage&limit=10",
+      "url": "https://openlibrary.org/search.json?q=dune%20frank%20herbert&fields=key%2Ctitle%2Cauthor_name%2Cfirst_publish_year%2Cedition_count%2Cisbn%2Ccover_i%2Csubject%2Clanguage%2Cauthor_key&limit=10",
       "body": "openlibrary/search-q-dune.json"
     },
     {
@@ -188,11 +188,11 @@
       "body": "openlibrary/edition-OL17852114M.json"
     },
     {
-      "url": "https://openlibrary.org/search.json?q=colour%20of%20magic%20pratchett&fields=key%2Ctitle%2Cauthor_name%2Cfirst_publish_year%2Cedition_count%2Cisbn%2Ccover_i%2Csubject%2Clanguage&limit=10",
+      "url": "https://openlibrary.org/search.json?q=colour%20of%20magic%20pratchett&fields=key%2Ctitle%2Cauthor_name%2Cfirst_publish_year%2Cedition_count%2Cisbn%2Ccover_i%2Csubject%2Clanguage%2Cauthor_key&limit=10",
       "body": "openlibrary/search-colour-of-magic-pratchett.json"
     },
     {
-      "url": "https://openlibrary.org/search.json?q=the%20colour%20of%20magic%20terry%20pratchett&fields=key%2Ctitle%2Cauthor_name%2Cfirst_publish_year%2Cedition_count%2Cisbn%2Ccover_i%2Csubject%2Clanguage&limit=10",
+      "url": "https://openlibrary.org/search.json?q=the%20colour%20of%20magic%20terry%20pratchett&fields=key%2Ctitle%2Cauthor_name%2Cfirst_publish_year%2Cedition_count%2Cisbn%2Ccover_i%2Csubject%2Clanguage%2Cauthor_key&limit=10",
       "body": "openlibrary/search-the-colour-of-magic-terry-pratchett.json"
     },
     {
@@ -218,19 +218,19 @@
       "note": "the synthetic title/author search, reused for the free-text query"
     },
     {
-      "url": "https://openlibrary.org/search.json?title=problematic%20summer%20bromance&author=ali%20hazelwood&fields=key%2Ctitle%2Cauthor_name%2Cfirst_publish_year%2Cedition_count%2Cisbn%2Ccover_i%2Csubject%2Clanguage&limit=10",
+      "url": "https://openlibrary.org/search.json?title=problematic%20summer%20bromance&author=ali%20hazelwood&fields=key%2Ctitle%2Cauthor_name%2Cfirst_publish_year%2Cedition_count%2Cisbn%2Ccover_i%2Csubject%2Clanguage%2Cauthor_key&limit=10",
       "body": "openlibrary/search-problematic-summer-bromance-ali-hazelwood.json"
     },
     {
-      "url": "https://openlibrary.org/search.json?author=ali%20hazelwood&fields=key%2Ctitle%2Cauthor_name%2Cfirst_publish_year%2Cedition_count%2Cisbn%2Ccover_i%2Csubject%2Clanguage&limit=10",
+      "url": "https://openlibrary.org/search.json?author=ali%20hazelwood&fields=key%2Ctitle%2Cauthor_name%2Cfirst_publish_year%2Cedition_count%2Cisbn%2Ccover_i%2Csubject%2Clanguage%2Cauthor_key&limit=10",
       "body": "openlibrary/search-ali-hazelwood.json"
     },
     {
-      "url": "https://openlibrary.org/search.json?title=practical%20magic&author=alice%20hoffman&fields=key%2Ctitle%2Cauthor_name%2Cfirst_publish_year%2Cedition_count%2Cisbn%2Ccover_i%2Csubject%2Clanguage&limit=10",
+      "url": "https://openlibrary.org/search.json?title=practical%20magic&author=alice%20hoffman&fields=key%2Ctitle%2Cauthor_name%2Cfirst_publish_year%2Cedition_count%2Cisbn%2Ccover_i%2Csubject%2Clanguage%2Cauthor_key&limit=10",
       "body": "openlibrary/search-practical-magic-alice-hoffman.json"
     },
     {
-      "url": "https://openlibrary.org/search.json?title=nobody's%20girl&author=virginia%20roberts%20giuffre&fields=key%2Ctitle%2Cauthor_name%2Cfirst_publish_year%2Cedition_count%2Cisbn%2Ccover_i%2Csubject%2Clanguage&limit=10",
+      "url": "https://openlibrary.org/search.json?title=nobody's%20girl&author=virginia%20roberts%20giuffre&fields=key%2Ctitle%2Cauthor_name%2Cfirst_publish_year%2Cedition_count%2Cisbn%2Ccover_i%2Csubject%2Clanguage%2Cauthor_key&limit=10",
       "body": "openlibrary/search-nobody-s-girl-virginia-roberts-giuffre.json"
     },
     {
@@ -415,7 +415,7 @@
       "note": "the cover backfill's batch search (findCoverIdsByIsbn): one real answer (September 2026) for every ISBN recorded here, served for any batch; each book takes only the entries matching its own ISBN"
     },
     {
-      "url": "https://openlibrary.org/search.json?title=The%20Colour%20of%20Magic&author=Terry%20Pratchett&fields=key%2Ctitle%2Cauthor_name%2Cfirst_publish_year%2Cedition_count%2Cisbn%2Ccover_i%2Csubject%2Clanguage&limit=10",
+      "url": "https://openlibrary.org/search.json?title=The%20Colour%20of%20Magic&author=Terry%20Pratchett&fields=key%2Ctitle%2Cauthor_name%2Cfirst_publish_year%2Cedition_count%2Cisbn%2Ccover_i%2Csubject%2Clanguage%2Cauthor_key&limit=10",
       "body": "openlibrary/search-the-colour-of-magic-by-terry-pratchett.json"
     }
   ]

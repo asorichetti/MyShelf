@@ -48,7 +48,7 @@ import work_OL82563W from './openlibrary/work-OL82563W.json';
 import work_OL893414W from './openlibrary/work-OL893414W.json';
 
 const OL = 'https://openlibrary.org';
-const SEARCH_FIELDS = 'key,title,author_name,first_publish_year,edition_count,isbn,cover_i,subject,language';
+const SEARCH_FIELDS = 'key,title,author_name,first_publish_year,edition_count,isbn,cover_i,subject,language,author_key';
 
 /** The recorded books, by the ISBN-13 used to look them up. */
 export const OL_BOOKS = {

@@ -6,6 +6,7 @@ import {
   authorDisplayName,
   authorKeys,
   cleanText,
+  isLatinText,
   mapEdition,
   mapSearchDoc,
   olid,
@@ -20,7 +21,7 @@ import {
 import type { BookCandidate, MetadataProvider, SearchQuery } from './types';
 
 export const OPEN_LIBRARY_BASE = 'https://openlibrary.org';
-export const SEARCH_FIELDS = 'key,title,author_name,first_publish_year,edition_count,isbn,cover_i,subject,language';
+export const SEARCH_FIELDS = 'key,title,author_name,first_publish_year,edition_count,isbn,cover_i,subject,language,author_key';
 
 export interface OpenLibraryOptions {
   http: HttpClient;
@@ -107,7 +108,20 @@ export function createOpenLibrary({
       const params = title || author ? { title, author } : { q: text };
       const url = withQuery(`${baseUrl}/search.json`, { ...params, fields: SEARCH_FIELDS, limit: 10 });
       const response = await http.getJson<OlSearchResponse>(url, { signal, cacheTtl });
-      return (response.docs ?? []).map(mapSearchDoc).filter((c): c is BookCandidate => c !== null);
+      const out: BookCandidate[] = [];
+      for (const doc of response.docs ?? []) {
+        const candidate = mapSearchDoc(doc);
+        if (!candidate) continue;
+        // Search gives each author's stored name, sometimes in their own script ("村上春樹"): for a reader
+        // of a Latin-script language, look those authors up for a Latin form (rare, and cached).
+        const keys = doc.author_key ?? [];
+        const language = query.language?.code ?? null;
+        if (wantsLatinNames(language) && candidate.authors.some((a) => !isLatinText(a)) && keys.length === (doc.author_name ?? []).length) {
+          candidate.authors = await authorsFor(keys, language, signal);
+        }
+        out.push(candidate);
+      }
+      return out;
     },
 
     async editions(workKey, { signal, authors = [], limit = 50 } = {}) {
