@@ -257,6 +257,24 @@ export function searchTerms(query: string): string[] {
   return stripDiacritics(query).toLowerCase().split(/[^\p{L}\p{N}]+/u).filter(Boolean).slice(0, MAX_SEARCH_TERMS);
 }
 
+/**
+ * Each word of a search in the spellings it may be stored under: fully
+ * folded (`searchTerms`: "søren" → "soren", "straße" → "strasse") and with
+ * only the accents Unicode can take off a letter ("søren", "straße",
+ * "łodz"). The index folds the second kind itself but keeps letters such as
+ * ø, ł, đ, ß, æ, œ and þ, so a word typed as it is written must be looked
+ * for as written too. One entry per word; a word's spellings are
+ * alternatives.
+ */
+function searchWordSpellings(query: string): string[][] {
+  const words = query.normalize('NFC').split(/[^\p{L}\p{N}\p{M}]+/u).filter((w) => /[\p{L}\p{N}]/u.test(w));
+  return words.slice(0, MAX_SEARCH_TERMS).map((word) => {
+    const folded = searchTerms(word).join('');
+    const light = word.normalize('NFD').replace(/\p{M}/gu, '').normalize('NFC').toLowerCase();
+    return light === folded ? [folded] : [folded, light];
+  });
+}
+
 const searchIndexes = new WeakMap<Db, Promise<SearchIndexKind | null>>();
 
 /**
@@ -326,8 +344,13 @@ export function searchGlob(term: string): string {
  *   same: each word matches the start of a word in that same text, found
  *   with `instr` in rows that are all ASCII and with a GLOB pattern that
  *   folds case and accents in the rest. The two agree except for letters
- *   that fold to two ("ß" → "ss"), which neither folds the same way, and for
- *   words longer than FTS5 indexes.
+ *   that fold to two ("ß" → "ss"), which neither folds the same way, for
+ *   letters with a stroke or slash (ø, ł, đ), which only the plain index
+ *   finds from a plain "o", "l" or "d", and for words longer than FTS5
+ *   indexes.
+ * - Either way a word is also looked for as typed, less its accents
+ *   (`searchWordSpellings`), so "Søren", "Straße" or "Ælfric" typed as
+ *   written always finds the book.
  * - Without either (a database from before migration 0006), the old `LIKE`
  *   over title, subtitle, series and author names.
  *
@@ -338,18 +361,23 @@ export async function searchClause(db: Db, query: string): Promise<SqlClause | n
   const text = query.trim();
   if (!text) return null;
   const isbn = isbnFragment(text);
-  const terms = isbn ? [isbn.toLowerCase()] : searchTerms(text);
-  const kind = terms.length ? await searchIndexKind(db) : null;
+  const words = isbn ? [[isbn.toLowerCase()]] : searchWordSpellings(text);
+  const kind = words.length ? await searchIndexKind(db) : null;
   const alternatives: string[] = [];
   const params: (string | number)[] = [];
+  const isAscii = (t: string) => /^[\x20-\x7e]+$/.test(t);
   if (kind === 'fts5') {
     alternatives.push('b.id IN (SELECT rowid FROM books_fts WHERE books_fts MATCH ?)');
-    params.push(terms.map((t) => `"${t}"*`).join(' '));
+    // FTS5 takes no implicit AND after a bracket, so the words are joined with an explicit one.
+    params.push(words.map((spellings) => (spellings.length > 1 ? `(${spellings.map((t) => `"${t}"*`).join(' OR ')})` : `"${spellings[0]}"*`)).join(' AND '));
   } else if (kind === 'plain') {
     // ASCII text cannot hold an accent to fold: a plain substring search for " word" is enough, and fast.
-    const conditions = terms.map((t) => (/^[\x20-\x7e]+$/.test(t) ? '(CASE WHEN ascii THEN instr(body, ?) > 0 ELSE body GLOB ? END)' : 'body GLOB ?'));
+    const conditions = words.map((spellings) => {
+      const each = spellings.map((t) => (isAscii(t) ? '(CASE WHEN ascii THEN instr(body, ?) > 0 ELSE body GLOB ? END)' : 'body GLOB ?'));
+      return each.length > 1 ? `(${each.join(' OR ')})` : each[0];
+    });
     alternatives.push(`b.id IN (SELECT book_id FROM books_search WHERE ${conditions.join(' AND ')})`);
-    for (const t of terms) params.push(...(/^[\x20-\x7e]+$/.test(t) ? [` ${t}`, searchGlob(t)] : [searchGlob(t)]));
+    for (const t of words.flat()) params.push(...(isAscii(t) ? [` ${t}`, searchGlob(t)] : [searchGlob(t)]));
   } else {
     const like = `%${likeEscape(text)}%`;
     alternatives.push(
