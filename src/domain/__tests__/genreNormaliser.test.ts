@@ -52,6 +52,19 @@ describe('normaliseGenres: one subject at a time', () => {
     ['Discworld (imaginary place), fiction', ['Fiction']],
     ['History', ['History']],
     ['Philosophy', ['Philosophy']],
+    // "Nonfiction" is not a kind of fiction
+    ['Nonfiction', []],
+    ['Non-Fiction', []],
+    ['Adult Nonfiction', []],
+    ['Juvenile Nonfiction', ["Children's"]],
+    ['Biographical fiction', ['Historical Fiction']],
+    ['Autobiographical fiction', ['Literary Fiction']],
+    ['Algorithms', ['Science']],
+    ['Computer programming', ['Science']],
+    ['Romance literature', []],
+    // A path with nothing between its slashes.
+    ['/', []],
+    [' / / ', []],
     // Noise: dropped
     ['History and criticism', []],
     ['Criticism and interpretation', []],
@@ -85,7 +98,8 @@ describe('normaliseGenres: one subject at a time', () => {
     ['Young Adult Fiction / Romance / General', ['Young Adult', 'Romance']],
     ['Comics & Graphic Novels / Manga / General', ['Graphic Novel']],
     ['Biography & Autobiography / Personal Memoirs', ['Memoir']],
-    ['Biography & Autobiography / Historical', ['Memoir', 'Historical Fiction']],
+    // Under a non-fiction heading, "Historical" is the topic, not historical fiction.
+    ['Biography & Autobiography / Historical', ['Memoir']],
     ['Cooking / Regional & Ethnic / Italian', ['Cookery']],
     ['Self-Help / Personal Growth / General', ['Self-Help']],
     ['Business & Economics / Management', ['Business']],
@@ -144,6 +158,83 @@ describe('normaliseGenres: whole books from the recorded fixtures', () => {
     const everything = [...Object.keys(works)].flatMap((b) => subjectsOf(b as keyof typeof works));
     for (const genre of normaliseGenres(everything, { max: 99, minShare: 0 })) {
       expect(curatedGenres).toContain(genre);
+    }
+  });
+});
+
+describe('normaliseGenres: non-fiction signals (real Open Library subjects, September 2026)', () => {
+  // Work subjects as Open Library sends them (long lists trimmed to their first 25 or so).
+  const books: Record<string, string[]> = {
+    // OL44269610W: "Nonfiction" used to read as Fiction, so the memoir got "Fiction" and "FIC".
+    nobodysGirl: ['Memoir', 'Nonfiction', 'True Crime'],
+    // OL17930367W: the work folds in the young readers' edition ("…, juvenile literature").
+    becoming: [
+      'Presidentes', "Legislators' spouses", "Presidents' spouses", 'African American women lawyers', 'Biography', 'Biografía',
+      'biography & autobiography', 'women', 'state & local history', 'history', 'Personal Memoirs', 'Cultural, Ethnic & Regional',
+      'Obama, michelle, 1964-', 'Lawyers, illinois, biography', 'African americans, biography', 'Women, united states, biography',
+      'nyt:combined-print-and-e-book-nonfiction=2018-12-02', 'New York Times bestseller', 'BIOGRAPHY & AUTOBIOGRAPHY / Women',
+      'HISTORY / United States / State & Local / General', 'United states, history', 'Obama, michelle, 1964-, juvenile literature',
+      'African americans, biography, juvenile literature', 'Women, biography, juvenile literature',
+      'Presidents, united states, juvenile literature', 'African americans, juvenile literature', 'Women, biography', 'Juvenile literature',
+    ],
+    // OL17075811W: "Non-Fiction", and a comic adaptation folded into the work.
+    sapiens: [
+      'Technology and civilization', 'Human beings', 'Historical Chronology', 'Historia universal', 'Historia', 'Civilization',
+      'World history', 'History', 'Non-Fiction', 'Science', 'SCIENCE / Life Sciences / General', 'SCIENCE / General',
+      'SCIENCE / Life Sciences / Evolution', 'Civilization, history', 'Chronology, historical', 'Histoire', 'Life Sciences', 'Evolution',
+      'nyt:paperback-nonfiction=2018-06-03', 'Comics & graphic novels, adaptations', 'Psychology', 'Economic history', 'Anthropology',
+      'Comic books, strips',
+    ],
+    kitchenConfidential: ['New york (n.y.), biography', 'Gastronomy', 'Cooks, biography'],
+    atomicHabits: [
+      'Habit', 'Habit breaking', 'Behavior modification', 'Self-actualization (psychology)', 'Business', 'psychology', 'Personal Growth',
+      'New York Times bestseller', 'BUSINESS & ECONOMICS / Organizational Behavior', 'PSYCHOLOGY / Social Psychology',
+      'SELF-HELP / Personal Growth / General.',
+    ],
+    saltFatAcidHeat: ['Cooking', 'regional & ethnic cooking', 'cooking methods', 'reference', 'New York Times bestseller'],
+    introductionToAlgorithms: ['Computer programming', 'Computer algorithms', 'Algorithms', 'open_syllabus_project', 'Programming', 'Algorithmes'],
+    essays: ['Essays', 'American essays', 'Nonfiction', 'History'],
+    cookbook: ['Cookbooks', 'Cooking, Italian', 'Cooking / Regional & Ethnic / Italian'],
+    // Novels keep "Fiction", even when a stray topic tag says History or a record says "Epic poems".
+    practicalMagic: [
+      'Fiction', 'Women in fiction', 'Women', 'Witches', 'Witches in fiction', 'Massachusetts in fiction', 'Witchcraft', 'Fantasy fiction',
+      'Occult fiction', 'Witchcraft in fiction', 'Paranormal fiction', 'Large type books', 'Fiction, fantasy, paranormal',
+      'Fiction, occult & supernatural', 'Fiction, family life', 'Sisters, fiction', 'Massachusetts, fiction', 'Wiccans',
+    ],
+    problematicSummerRomance: [
+      'Romance', 'Contemporary', 'Summer', 'Contemporary Romance', 'Fiction', 'Adult', 'Fiction, romance, friends to lovers',
+      'Fiction, romance, contemporary',
+    ],
+    cienAnos: [
+      'Spanish language books', 'Fiction', 'Social conditions', 'Macondo (Imaginary place)', 'novel', 'magic realism', 'Novela',
+      'Literatura épica', 'Epic literature', 'Ficción', 'Latin American fiction', 'Spanish fiction', 'Colombian fiction',
+      'Magic realism (Literature)', 'Romans, nouvelles', 'Fiction, general', 'Spanish American fiction', 'Romance literature',
+      'Romans, nouvelles, etc. pour la jeunesse', 'Epic poems', 'Fantasy', 'Literature',
+    ],
+    historicalNovel: ['Fiction', 'Historical fiction', 'History', 'Fiction, historical, general', 'World War, 1939-1945, fiction'],
+  };
+
+  it.each<[string, string[]]>([
+    ['nobodysGirl', ['Memoir']],
+    ['becoming', ['Biography', 'Memoir', 'History']],
+    ['sapiens', ['Science', 'History']],
+    ['kitchenConfidential', ['Biography', 'Cookery']],
+    ['atomicHabits', ['Business', 'Self-Help']],
+    ['saltFatAcidHeat', ['Cookery', 'Reference']],
+    ['introductionToAlgorithms', ['Science']],
+    ['essays', ['History']],
+    ['cookbook', ['Cookery']],
+    ['practicalMagic', ['Fantasy', 'Horror', 'Fiction']],
+    ['problematicSummerRomance', ['Romance', 'Fiction']],
+    ['cienAnos', ['Literary Fiction', 'Fantasy', 'Fiction']],
+    ['historicalNovel', ['Historical Fiction', 'Fiction']],
+  ])('%s → %p', (book, genres) => {
+    expect(normaliseGenres(books[book])).toEqual(genres);
+  });
+
+  it('never calls a book with non-fiction signals "Fiction" unless fiction outweighs them', () => {
+    for (const book of ['nobodysGirl', 'becoming', 'sapiens', 'kitchenConfidential', 'atomicHabits', 'saltFatAcidHeat', 'essays', 'cookbook']) {
+      expect(normaliseGenres(books[book], { max: 99, minShare: 0 })).not.toContain('Fiction');
     }
   });
 });

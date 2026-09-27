@@ -11,6 +11,12 @@ import { stripDiacritics } from './text';
  * Fantasy") splits its vote. BISAC paths ("Fiction / Fantasy / Epic") count
  * double: they are curated categories, not free tags. Unknown subjects are
  * ignored, never turned into new genres.
+ *
+ * Non-fiction is weighed against fiction: memoir, biography, history,
+ * science, self-help, cookery and the like, plus plain signals ("Nonfiction",
+ * "True crime", "Essays"), drop the generic "Fiction" when they are at least
+ * twice as strong as the fiction genres, and a children's tag folded in from
+ * a young readers' edition does not outvote them.
  */
 
 /** Subjects that say nothing about genre. Matched against the normalised subject. */
@@ -37,7 +43,12 @@ const NOISE: RegExp[] = [
   /history and criticism/,
   /\((?:imaginary|fictitious|fictional)[^)]*\)$/,
   /^general$/,
+  // The Romance languages, not love stories.
+  /^romance (?:literature|languages?|philology)\b/,
 ];
+
+/** Share of the strongest genre that an audience or form genre (Children's, Graphic Novel, Poetry) needs to be kept. */
+const AUDIENCE_SHARE = 0.6;
 
 /** Longer than this is a detailed Library of Congress heading, not a genre. */
 const MAX_SUBJECT_LENGTH = 60;
@@ -51,6 +62,10 @@ type Rule = [RegExp, CuratedGenre[]];
  * do not turn a novel into non-fiction.
  */
 const RULES: Rule[] = [
+  // "Nonfiction" says what the book is not; it must never read as Fiction (the "/fiction/" rule below).
+  [/^(?:adult )?non-?fiction$/, []],
+  [/autobiographical (?:fiction|novels?)/, ['Literary Fiction']],
+  [/biographical (?:fiction|novels?)/, ['Historical Fiction']],
   [/science fiction and fantasy|sf and fantasy|fantasy and science fiction/, ['Science Fiction', 'Fantasy']],
   [/^science fiction,? fantasy,? (?:and )?horror$/, ['Science Fiction', 'Fantasy', 'Horror']],
   [/science[ -]?fiction|sci[ -]?fi\b|ciencia ficcion|fantascienza|^sf$/, ['Science Fiction']],
@@ -76,11 +91,33 @@ const RULES: Rule[] = [
   [/^travel(?: general| guidebooks)?$|guidebooks?$|^voyages/, ['Travel']],
   [/^art$|^art history$|^painting$|^arts$|^photography$/, ['Art']],
   [/^philosophy$|^philosophie$|^filosofia$|^ethics$/, ['Philosophy']],
-  [/^science$|^popular science$|^physics$|^biology$|^chemistry$|^astronomy$|^mathematics$|^nature$/, ['Science']],
+  [
+    /^science$|^popular science$|^physics$|^biology$|^chemistry$|^astronomy$|^mathematics$|^nature$|^computers?$|^computer (?:science|programming)$|^algorithms$|^programming$/,
+    ['Science'],
+  ],
   [/fiction|^novels?$|^novela$|^romans?$|^roman$|^ficcion$|^nouvelles$|^romans nouvelles/, ['Fiction']],
 ];
 
 const GENERIC: ReadonlySet<CuratedGenre> = new Set<CuratedGenre>(['Fiction']);
+
+/**
+ * Who a book is for, or its form, rather than what it is: a work record
+ * often gathers a young readers' edition ("Juvenile literature"), a comic
+ * adaptation ("Comics & graphic novels, adaptations") or a stray form tag
+ * ("Epic poems" on a novel), so these need more support than a subject
+ * genre to be kept, and count as neither fiction nor non-fiction.
+ */
+const AUDIENCE: ReadonlySet<CuratedGenre> = new Set<CuratedGenre>(["Children's", 'Young Adult', 'Graphic Novel', 'Poetry']);
+
+/** Subjects that say "not a novel" without naming a curated genre. Matched against the normalised subject. */
+const NON_FICTION_SIGNALS: RegExp[] = [
+  /(?:^|[ /,-])non-?fiction\b/,
+  /^true crime\b|\btrue crime$/,
+  /^essays?\b|\bessays$/,
+  /^personal narratives?\b|\bpersonal narratives?$/,
+  /^anecdotes$/,
+  /^cookbooks?$/,
+];
 
 function normalise(subject: string): string {
   return stripDiacritics(subject)
@@ -99,6 +136,11 @@ function genresOf(segment: string): CuratedGenre[] {
   return [];
 }
 
+/** Whether a normalised subject says the book is non-fiction without naming a genre ("Nonfiction", "True crime"). */
+function saysNonFiction(s: string): boolean {
+  return NON_FICTION_SIGNALS.some((re) => re.test(s));
+}
+
 /** One subject → the genres it names and the weight of its vote. */
 function votes(raw: string): { genres: CuratedGenre[]; weight: number } {
   const s = normalise(raw);
@@ -109,7 +151,12 @@ function votes(raw: string): { genres: CuratedGenre[]; weight: number } {
   const commaPath = /^(?:juvenile |young adult )?fiction,/.test(s);
   if (s.includes('/') || commaPath) {
     const parts = s.split(commaPath ? ',' : '/').map((p) => p.trim()).filter(Boolean);
-    return { genres: unique(parts.flatMap((p) => genresOf(p))), weight: 2 };
+    const [head = [], ...rest] = parts.map((p) => genresOf(p));
+    // Under a non-fiction heading ("Biography & Autobiography / Historical"), a later
+    // segment names the topic, not a kind of novel.
+    const nonFictionHead = head.length > 0 && head.every((g) => nonFictionGenres.has(g));
+    const tail = rest.flat().filter((g) => !nonFictionHead || nonFictionGenres.has(g) || AUDIENCE.has(g));
+    return { genres: unique([...head, ...tail]), weight: 2 };
   }
 
   // Library of Congress "Topic, fiction" (e.g. "Travel, fiction"): a novel about the topic.
@@ -147,12 +194,19 @@ export interface GenreScore {
 
 /** Every genre the subjects support, with its score, strongest first. For tests and tuning. */
 export function scoreGenres(subjects: readonly string[]): GenreScore[] {
+  return score(subjects).genres;
+}
+
+/** The genre scores, and how strongly the subjects say "non-fiction" without naming a genre. */
+function score(subjects: readonly string[]): { genres: GenreScore[]; nonFictionSignals: number } {
   const scores = new Map<CuratedGenre, { score: number; first: number }>();
   const seen = new Set<string>();
+  let nonFictionSignals = 0;
   subjects.forEach((subject, index) => {
     const key = normalise(subject);
     if (seen.has(key)) return;
     seen.add(key);
+    if (key.length <= MAX_SUBJECT_LENGTH && saysNonFiction(key)) nonFictionSignals += 1;
     const { genres, weight } = votes(subject);
     if (!genres.length) return;
     // A subject naming several specific genres splits its vote among them. Fiction is a
@@ -169,9 +223,21 @@ export function scoreGenres(subjects: readonly string[]): GenreScore[] {
   if (fictionEvidence >= 2) {
     for (const [genre, entry] of scores) if (nonFictionGenres.has(genre)) entry.score /= 2;
   }
-  return [...scores]
+  const genres = [...scores]
     .sort(([, a], [, b]) => b.score - a.score || a.first - b.first)
     .map(([genre, e]) => ({ genre, score: Math.round(e.score * 1000) / 1000 }));
+  return { genres, nonFictionSignals };
+}
+
+/**
+ * How strongly the subjects say non-fiction (non-fiction genres plus signals
+ * such as "Nonfiction", "True crime", "Essays") and fiction (the fiction
+ * genres, "Fiction" included). Audience and form genres (`AUDIENCE`) are neither.
+ */
+function evidence(genres: readonly GenreScore[], nonFictionSignals: number): { nonFiction: number; fiction: number } {
+  const nonFiction = genres.filter((g) => nonFictionGenres.has(g.genre)).reduce((sum, g) => sum + g.score, 0) + nonFictionSignals;
+  const fiction = genres.filter((g) => !nonFictionGenres.has(g.genre) && !AUDIENCE.has(g.genre)).reduce((sum, g) => sum + g.score, 0);
+  return { nonFiction, fiction };
 }
 
 export interface NormaliseGenresOptions {
@@ -190,10 +256,19 @@ export interface NormaliseGenresOptions {
  * At most three; unknown subjects are ignored.
  */
 export function normaliseGenres(subjects: readonly string[], { max = 3, minShare = 0.3 }: NormaliseGenresOptions = {}): CuratedGenre[] {
-  const scored = scoreGenres(subjects);
-  const specific = scored.filter((s) => !GENERIC.has(s.genre));
+  const { genres: scored, nonFictionSignals } = score(subjects);
+  const { nonFiction, fiction } = evidence(scored, nonFictionSignals);
+  // Non-fiction signals at least twice as strong as fiction ones: a memoir tagged "Nonfiction" and "Memoir" is not also "Fiction".
+  const nonFictionBook = nonFiction > 0 && nonFiction >= 2 * fiction;
+  const specific = scored.filter(
+    // A work record that folds in a young readers' edition ("Obama, Michelle -- Juvenile literature")
+    // is still an adult book when its adult non-fiction subjects outweigh the children's ones.
+    (s) => !GENERIC.has(s.genre) && !(nonFictionBook && (s.genre === "Children's" || s.genre === 'Young Adult') && s.score < nonFiction),
+  );
   const top = specific[0]?.score ?? 0;
-  const chosen = specific.filter((s) => s.score >= top * minShare && s.score >= 0.5).map((s) => s.genre);
-  const generic = scored.filter((s) => GENERIC.has(s.genre) && s.score > 0).map((s) => s.genre);
+  // Audience and form need more support than a subject genre, unless they are all there is.
+  const share = (g: CuratedGenre) => (AUDIENCE.has(g) && g !== specific[0]?.genre ? Math.max(minShare, AUDIENCE_SHARE) : minShare);
+  const chosen = specific.filter((s) => s.score >= top * share(s.genre) && s.score >= 0.5).map((s) => s.genre);
+  const generic = nonFictionBook ? [] : scored.filter((s) => GENERIC.has(s.genre) && s.score > 0).map((s) => s.genre);
   return [...chosen, ...generic].slice(0, max);
 }
