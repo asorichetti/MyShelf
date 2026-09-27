@@ -2,6 +2,7 @@
  * @jest-environment node
  */
 import { booksRepo, groupsRepo, libraryRepo, loansRepo, type Db } from '@/db';
+import { emptyDraft, validateBookDraft } from '@/domain';
 import { createTestDb } from '@/testing/createTestDb';
 import { loadFixture } from '@/testing/loadFixture';
 
@@ -76,6 +77,30 @@ describe('removeBook and restoreBook', () => {
     const counts = await libraryRepo.countRows(db);
     await expect(booksRepo.restoreBook(db, { ...snapshot!, loans: [{ ...snapshot!.loans[0], lent_on: null }] })).rejects.toThrow();
     expect(await libraryRepo.countRows(db)).toEqual(counts);
+  });
+
+  it('brings a book back under a new id when a book added since has taken its id', async () => {
+    // The newest book, with an author and an open loan: once it is gone, SQLite gives its id
+    // (and its loan's id) to the next book (and loan) added.
+    const borrower = (await loansRepo.listBorrowers(db))[0];
+    const draft = validateBookDraft({ ...emptyDraft(), title: 'Newest', authors: [{ name: 'Nova Author', role: 'author', sortName: null }] });
+    if (!draft.ok) throw new Error('invalid draft');
+    const id = await booksRepo.saveBookDraft(db, draft.value);
+    const lent = await loansRepo.lendBook(db, { bookId: id, borrowerId: borrower.id, lentOn: '2026-01-01' });
+    const snapshot = (await booksRepo.removeBook(db, id))!;
+
+    const newcomer = await booksRepo.createBook(db, { title: 'Newcomer' });
+    expect(newcomer.id).toBe(id);
+    const loan = await loansRepo.lendBook(db, { bookId: newcomer.id, borrowerId: borrower.id, lentOn: '2026-01-02' });
+    expect(loan.id).toBe(lent.id);
+
+    const restored = await booksRepo.restoreBook(db, snapshot);
+    expect(restored).not.toBe(id);
+    const detail = (await booksRepo.getBookDetail(db, restored))!;
+    expect(detail.title).toBe('Newest');
+    expect(detail.authors.map((a) => a.name)).toEqual(['Nova Author']);
+    expect(detail.openLoan).toMatchObject({ borrowerId: borrower.id, lentOn: '2026-01-01' });
+    expect((await booksRepo.getBookDetail(db, id))!).toMatchObject({ title: 'Newcomer', authors: [], openLoan: { id: loan.id, lentOn: '2026-01-02' } });
   });
 
   it('returns null for an unknown book', async () => {

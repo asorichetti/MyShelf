@@ -658,16 +658,29 @@ async function restoreEntity(db: Db, table: string, row: Row, key: string): Prom
   return (await db.get<{ id: number }>('SELECT last_insert_rowid() AS id'))!.id;
 }
 
+/** Inserts a row with its old id when that id is free, else as a new row. Returns the id it got. */
+async function insertWithId(db: Db, table: string, row: Row): Promise<number> {
+  if (!(await db.get(`SELECT 1 FROM ${table} WHERE id = ?`, [row.id]))) {
+    await insertRow(db, table, row);
+    return row.id as number;
+  }
+  const { id: _old, ...rest } = row;
+  await insertRow(db, table, rest);
+  return (await db.get<{ id: number }>('SELECT last_insert_rowid() AS id'))!.id;
+}
+
 /**
- * Undoes `removeBook`: re-inserts the book with the same id and every link
- * and loan, restoring authors, series, groups and borrowers that went
- * missing in the meantime. All or nothing.
+ * Undoes `removeBook`: re-inserts the book and every link and loan,
+ * restoring authors, series, groups and borrowers that went missing in the
+ * meantime. The book keeps its id unless a book added since has taken it
+ * (SQLite hands the highest id out again once it is free), in which case it
+ * comes back with a new one; the same goes for its loans. All or nothing.
+ * Returns the book's id.
  */
-export async function restoreBook(db: Db, snapshot: BookSnapshot): Promise<void> {
-  await db.transaction(async (tx) => {
+export async function restoreBook(db: Db, snapshot: BookSnapshot): Promise<number> {
+  return db.transaction(async (tx) => {
     const series = snapshot.series ? await restoreEntity(tx, 'series', snapshot.series, 'name') : null;
-    await insertRow(tx, 'books', { ...snapshot.book, series_id: series });
-    const bookId = snapshot.book.id as number;
+    const bookId = await insertWithId(tx, 'books', { ...snapshot.book, series_id: series });
 
     const authorIds = new Map<SqlValue, number>();
     for (const a of snapshot.authors) authorIds.set(a.id, await restoreEntity(tx, 'authors', a, 'name'));
@@ -691,7 +704,8 @@ export async function restoreBook(db: Db, snapshot: BookSnapshot): Promise<void>
     const borrowerIds = new Map<SqlValue, number>();
     for (const b of snapshot.borrowers) borrowerIds.set(b.id, await restoreEntity(tx, 'borrowers', b, 'name'));
     for (const loan of snapshot.loans) {
-      await insertRow(tx, 'loans', { ...loan, book_id: bookId, borrower_id: borrowerIds.get(loan.borrower_id) ?? loan.borrower_id });
+      await insertWithId(tx, 'loans', { ...loan, book_id: bookId, borrower_id: borrowerIds.get(loan.borrower_id) ?? loan.borrower_id });
     }
+    return bookId;
   });
 }
