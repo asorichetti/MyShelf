@@ -1,5 +1,6 @@
 import { bookMatchKey, type LanguagePreference } from '@/domain';
 import { rankEditions, type BookCandidate } from '@/services/metadata';
+import { coverUrlFromId } from '@/services/metadata/openLibraryMap';
 
 /** One work in the picker: the search result (or first volume) and the editions known for it. */
 export interface WorkGroup {
@@ -69,7 +70,8 @@ const firstCoverId = (c: BookCandidate) => c.coverRefs.olEditionCoverIds[0];
 /**
  * An edition picked from a work, with what the work and its other editions
  * know filled in: subjects, series hints, summary, key and authors where it
- * has none, and every cover the chain can fall back on. Editions from a
+ * has none, the work's cover to show where it has none, and every cover the
+ * chain can fall back on. Editions from a
  * work's `editions.json` come without the work, so on their own they know
  * only their own cover ids: the work's cover (the search result's `cover_i`)
  * is added, then the other editions' covers (in `siblings` order, the
@@ -99,6 +101,8 @@ export function enrichEdition(edition: BookCandidate, group: WorkGroup | null, s
     summary: edition.summary ?? others.find((c) => c.summary)?.summary ?? null,
     workKey: edition.workKey ?? group.work.workKey,
     authors: edition.authors.length ? edition.authors : group.work.authors,
+    // What "Review before saving" shows on the card: the work's cover when the edition has none.
+    coverUrl: edition.coverUrl ?? coverUrlFromId(workCoverIds[0]),
     coverRefs: {
       ...refs,
       olWorkCoverIds: workCoverIds,

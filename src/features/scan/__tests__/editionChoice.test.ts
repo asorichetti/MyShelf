@@ -91,6 +91,8 @@ describe('enrichEdition: covers for the chain', () => {
     const chosen = enrichEdition(deluxe, group, siblings);
     expect(chosen.coverRefs.olEditionCoverIds).toEqual([]);
     expect(chosen.coverRefs.olWorkCoverIds).toEqual([14810040]);
+    // "Review before saving" shows the work's cover on the card.
+    expect(chosen.coverUrl).toBe(`${OL}/id/14810040-L.jpg`);
     // Newest first among equals; the work's own cover (Putnam's) is not repeated; the Dutch art comes after every English one.
     expect(chosen.coverRefs.olOtherEditionCoverIds).toEqual([15126599, 14809819, 14810662]);
   });
