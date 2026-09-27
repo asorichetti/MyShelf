@@ -2,9 +2,12 @@
 
 On-device flows for what only the real Android app can prove: the native
 date picker, the camera permission, the share sheet and document picker,
-notifications, the back button, font scale, dark mode, offline behaviour and
-the release build's first run. How to run them, what each checks and the
-latest results are in [`docs/device-testing.md`](../docs/device-testing.md).
+notifications, the back button, font scale, dark mode, offline behaviour,
+reading a cover with on-device text recognition and the release build's
+first run. The cover-scan flows and their photos are described in
+[`cover-scan/README.md`](cover-scan/README.md). How to run the suite, what
+each flow checks and the latest results are in
+[`docs/device-testing.md`](../docs/device-testing.md).
 
 ## Run
 
@@ -36,7 +39,13 @@ One flow: `maestro --device emulator-5554 test .maestro/book-add-manual.yaml`.
 - Tags: `core` (the suite), `network` (needs the internet), `files` (needs
   the test files the script pushes to Downloads), `hooked` (the script runs
   it with its own set-up and checks), `production` (the release build),
-  `manual` (needs a person, e.g. a real book in front of the camera).
-- `common/` holds subflows and `hooks/` flows the script runs between steps;
-  neither is picked up by `maestro test .maestro/` (see `config.yaml`).
+  `cover-scan` (reads a cover), `needs-photos` (the developer's own cover
+  photos, never committed), `manual` (needs a person, e.g. a real book in
+  front of the camera).
+- `common/` and `cover-scan/` hold subflows, `hooks/` flows the script
+  runs between steps, and `cover-scan/photo-*.yaml` the flows that read the
+  developer's own cover photos; none is picked up by `maestro test .maestro/`
+  (see `config.yaml`). Maestro checks every `addMedia` file of every flow in
+  a folder before it runs any, even flows a tag excludes, so a flow whose
+  media may be missing must live in a subfolder.
 - Save screenshots under `screenshots/` with `takeScreenshot`, and look at them.

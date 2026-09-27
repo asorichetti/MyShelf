@@ -1,6 +1,6 @@
 // Converts a developer's photo of a book cover to a JPEG with no metadata
 // (no capture date, no location), for the Maestro cover-scan flows
-// (.maestro/cover-scan-*.yaml) and scripts/record-mlkit-fixture.mjs. Without
+// (.maestro/cover-scan/photo-*.yaml) and scripts/record-mlkit-fixture.mjs. Without
 // a capture date the phone's photo picker lists the photo first, as the newest,
 // which is where the flows tap. macOS only; run it by hand:
 //

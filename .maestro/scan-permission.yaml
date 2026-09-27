@@ -39,11 +39,10 @@ tags: [core]
 - extendedWaitUntil: { visible: { id: scan-camera }, timeout: 15000 }
 - assertVisible: { id: scan-torch }
 - takeScreenshot: screenshots/scan-camera
-# Switching to cover mode and back releases and reopens the camera cleanly.
-# (Cover mode is the typed fallback until on-device text recognition lands,
-# P03-05; then it shows its own camera.)
+# Switching to cover mode and back hands the camera over cleanly: the cover
+# camera with its shutter, then the barcode camera with its torch.
 - tapOn: { id: scan-mode-cover }
-- extendedWaitUntil: { notVisible: { id: scan-torch }, timeout: 10000 }
-- takeScreenshot: screenshots/scan-cover-mode
+- extendedWaitUntil: { visible: { id: scan-capture }, timeout: 15000 }
+- takeScreenshot: screenshots/scan-cover-camera
 - tapOn: { id: scan-mode-barcode }
 - extendedWaitUntil: { visible: { id: scan-torch }, timeout: 15000 }

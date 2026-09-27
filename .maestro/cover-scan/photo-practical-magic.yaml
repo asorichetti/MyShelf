@@ -8,9 +8,9 @@ tags:
   - network
 ---
 - addMedia:
-    - cover-scan/photos/practical-magic.jpg
+    - photos/practical-magic.jpg
 - runFlow:
-    file: cover-scan/read-photo.yaml
+    file: read-photo.yaml
     env:
       TITLE: "Practical Magic"
       SHOT: cover-scan-practical-magic

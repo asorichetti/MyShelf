@@ -1,0 +1,20 @@
+# Cover scan from a gallery photo (P03-05, P03-06) that needs no one's own
+# photos, so it runs in CI and in a fresh clone: a made-up cover lettered
+# "The Colour of Magic" by Terry Pratchett (ours, so it is committed:
+# cover-scan/synthetic-colour-of-magic.jpg, rendered by
+# scripts/make-synthetic-cover.mjs). ML Kit reads it on the device and the
+# catalogue search finds the book. Needs an E2E build and network access.
+appId: dev.asorichetti.myshelf
+tags:
+  - cover-scan
+  - network
+---
+- addMedia:
+    - cover-scan/synthetic-colour-of-magic.jpg
+- runFlow:
+    file: cover-scan/read-photo.yaml
+    env:
+      # The first edition of the work may be titled without "The" (edition
+      # order is the catalogue's).
+      TITLE: "(The )?Colour of Magic"
+      SHOT: cover-scan-synthetic

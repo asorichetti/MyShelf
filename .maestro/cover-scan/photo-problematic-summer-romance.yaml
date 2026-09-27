@@ -8,9 +8,9 @@ tags:
   - network
 ---
 - addMedia:
-    - cover-scan/photos/problematic-summer-romance.jpg
+    - photos/problematic-summer-romance.jpg
 - runFlow:
-    file: cover-scan/read-photo.yaml
+    file: read-photo.yaml
     env:
       TITLE: "Problematic Summer Romance"
       SHOT: cover-scan-problematic-summer-romance

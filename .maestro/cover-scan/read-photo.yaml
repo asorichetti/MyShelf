@@ -1,4 +1,4 @@
-# Subflow for the cover-scan-*.yaml flows (P03-05, P03-06): on a fresh, empty
+# Subflow for the photo-*.yaml and cover-scan-synthetic.yaml flows (P03-05, P03-06): on a fresh, empty
 # library, read the newest photo in the gallery in Scan → Cover, pick the first
 # edition and save it. Needs an E2E build (EXPO_PUBLIC_E2E=1). Env: TITLE (the
 # book the photo shows), SHOT (the screenshot name).
