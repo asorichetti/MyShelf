@@ -617,6 +617,15 @@ Re-export after changing app code: `--serve` tests whatever is in `dist/`.
      Before a reload that must read a save back, wait for the save's event
      with `waitForEvent(c, 'groups-changed', before)` (the web E2E build
      counts every library event on `window.__myshelfE2e.counts`).
+   - To check that something did *not* happen, wait for the decision instead
+     of for time to pass: the app notes decisions on
+     `window.__myshelfE2e.notes` (`noteForE2e`). `waitForBookyDecision(c,
+     'shelf-empty', before)` returns the tip Booky chose for an event (null:
+     it stayed quiet), and `waitForNote(c, 'onboarding-check', 0)` whether
+     start-up sent the user to the onboarding. The few fixed waits left are
+     short settles after an interaction (before a screenshot, or while a
+     tip slides into place), animation sampling, and two absences with no
+     decision to wait for; each says why.
    - `c.checkGates('/where')` runs the page gates on a screen reached by a
      click rather than by `c.goto`.
    - Use `c.snap('name')` for extra screenshots in the run directory.
