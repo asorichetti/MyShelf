@@ -138,7 +138,7 @@ All in suite `p08` (`npm run -s autotest -- journey --suite p08`), run with `--u
 | `.maestro/backup-share.yaml` | export opens the Android share sheet (assert sheet visible, then back) |
 | `.maestro/restore-from-file.yaml` | manual-assisted (tagged `manual`): pick a backup from Downloads via the system picker, restore |
 
-Not added: `.maestro/` does not exist yet (P00-18 is open and no emulator was available), so neither flow has been written or run.
+Written as one flow, `backup-restore.yaml`, which is not manual: `scripts/maestro-suite.sh` pushes a backup into Downloads, and the flow picks it in the system document picker. `csv-import-goodreads.yaml` does the same for the Goodreads export. Both pass on an Android 16 emulator ([`docs/device-testing.md`](../device-testing.md)).
 
 ## Risks
 

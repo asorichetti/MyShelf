@@ -81,13 +81,14 @@ Never lose a book to a friend again. The user records who borrowed a book and wh
 - **Tests:** `src/components/loans/__tests__/BookLoanHistory.test.tsx`.
 - **Delivered:** a collapsed disclosure (a button named "Lending history, 2 past loans", with `aria-expanded`) under the loan section; it lists returned loans only (borrower, "5 Jun 2026 – 26 Jun 2026", note), newest lent first, and renders nothing when there are none. `BookLoanSection` loads `listLoansForBook` and reloads on `loans-changed`, so a return appears at once.
 
-### P05-08 Due-date reminders (local notifications)
+### P05-08 Due-date reminders (local notifications) — done
 
 - **Description:** Optional, off by default. Settings toggle "Remind me when loans are due" → request notification permission (`expo-notifications`, installed with `npx expo install expo-notifications`) → schedule a **local** notification at 10:00 on the due date for each open loan with a due date; reschedule on lend/return/edit and on app start. No push service, no server. Tapping the notification opens the loan's book.
 - **Files:** `src/services/reminders/reminders.native.ts`, `src/services/reminders/reminders.web.ts` (no-op), `src/features/loans/useReminderSync.ts`, `app.json` (plugin).
 - **Acceptance:** scheduled set equals open loans with due dates (diffed by id); disabled toggle cancels all.
 - **Tests:** `src/services/reminders/__tests__/reminders.test.ts` (mocked module), `src/features/loans/__tests__/useReminderSync.test.tsx`.
 - **Partly delivered:** built and unit-tested; **delivery on a device is not verified** (no device or emulator was available, and the Maestro flow was not run). The service is `src/services/reminders/`: `plan.ts` (pure: `planReminders` gives one reminder per open loan with a due date whose 10:00 local time is still ahead, id `loan-due:<loanId>:<dueOn>`, so a changed due date is a new id; `diffReminders` diffs by id and touches only ids with that prefix), `sync.ts` (`syncReminders`: off, or no permission, cancels all of ours; otherwise cancel then schedule the difference), `reminders.ts` (expo-notifications: a `loan-reminders` Android channel, date triggers, the book's path in the notification data, `onOpen` for taps including the one that launched the app) and `reminders.web.ts` (a no-op, `supported: false`). There is a default `reminders.ts` plus `reminders.web.ts` rather than `.native.ts`, following the repo's platform-file convention. The setting is `loanReminders` (default false). `useReminderSync` (mounted once at the root by `LoanWatchers`) syncs on start, on return to the foreground and on `loans-changed` / `library-changed` / `settings-changed`, and opens `/book/<id>` when a reminder is tapped. Settings gains a "Lending" section with the `ReminderSwitch` (`role="switch"`): turning it on asks permission only then; a refusal keeps it off with a note, and on web it is disabled ("Reminders work in the Android app."). Jest uses an in-memory expo-notifications fake (`src/testing/mocks/expoNotifications.ts`, installed in `jest.setup.ts`). `app.json` gains the `expo-notifications` plugin.
+- *Update (P09-10):* verified on an Android 16 emulator with the release E2E build (`.maestro/reminders.yaml`, run by `scripts/maestro-suite.sh`): the switch asks for `POST_NOTIFICATIONS` only when turned on and stays on after a restart; the reminder for the demo's Dune is in Android's alarm list for 10:00 on its due date (an inexact alarm, so up to an hour late); with the app killed and the clock moved to that day, "“Dune” is due back today / Sam has it. A gentle reminder, no rush." is posted in the `loan-reminders` channel, and tapping it opens Dune (`hooks/reminder-open.yaml`). A force stop cancels Android's alarm, and the next launch schedules it again. The notification now has its own icon (Booky, rendered from the monochrome layer) instead of a blank circle.
 
 ### P05-09 Loan badges on the Shelf — done
 
@@ -154,6 +155,8 @@ Each journey is added by the card that builds its screen. Suite `core` journeys 
 |---|---|
 | `.maestro/loan-lend-return.yaml` | device: lend with the native date picker, return, verify stamps |
 | `.maestro/loan-reminder.yaml` | enable reminders → grant notification permission → verify toggle state persists (notification delivery checked manually; tagged `manual` for the delivery step) |
+
+Written as `loan-lend-return.yaml` and `reminders.yaml`. The delivery step is automated after all: `scripts/maestro-suite.sh` checks the alarm, moves the emulator's clock to the due date with the app killed, waits for the notification and taps it (`hooks/reminder-open.yaml`). Both pass on an Android 16 emulator ([`docs/device-testing.md`](../device-testing.md)).
 
 ## Risks
 

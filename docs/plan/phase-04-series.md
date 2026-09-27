@@ -115,7 +115,7 @@ All in suite `p04` (`npm run -s autotest -- journey --suite p04`), in `tools/aut
 
 | Flow | Checks |
 |---|---|
-| `.maestro/series-browse.yaml` | fixture `demo` via deep link; open series from book detail; scroll the spine shelf; TalkBack-readable labels present. **Not written yet:** `.maestro/` does not exist until P00-18. |
+| `.maestro/series-detail.yaml` | fixture `demo` via deep link; Discworld's spine shelf with the dashed gap, the progress line, "Add #3" opens the form with the series and number filled in. Passes on an Android 16 emulator (P09-10), which found and fixed "missing" breaking mid-word in the gap. |
 
 ## Risks
 

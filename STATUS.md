@@ -2,25 +2,25 @@
 
 Checklist of every task card in [`docs/plan/`](docs/plan/). Tick a card (`[x]`) in the same pull request that completes it, and only when it meets the [definition of done](PLAN.md#12-definition-of-done). Cards are ticked only once the work is on `main`.
 
-On `main`: the scaffold (P00-01 to P00-07), the design system, Booky, tabs, database layer and domain (P00-08 to P00-14), the auto test suite (P00-15 to P00-17), CI (P00-19), linting (P00-20), and the follow-ups P00-21 to P00-29 (`--serve`, commit-message and all-journeys CI, touch targets, gate self-tests, Booky and theme journeys). Still open in Phase 00: Maestro (P00-18, needs an Android emulator). Phase 01 (library core) is complete.
+On `main`: the scaffold (P00-01 to P00-07), the design system, Booky, tabs, database layer and domain (P00-08 to P00-14), the auto test suite (P00-15 to P00-17), CI (P00-19), linting (P00-20), and the follow-ups P00-21 to P00-29 (`--serve`, commit-message and all-journeys CI, touch targets, gate self-tests, Booky and theme journeys). Phase 00 is complete: Maestro (P00-18) came with the device regression (P09-10), whose flows, scripts and results are in [`docs/device-testing.md`](docs/device-testing.md). Phase 01 (library core) is complete.
 
 ## Summary
 
 | Phase | Name | Done |
 |---|---|---|
-| [Phase 00](docs/plan/phase-00-foundation.md) | Foundation | 29 / 30 |
+| [Phase 00](docs/plan/phase-00-foundation.md) | Foundation | 30 / 30 |
 | [Phase 01](docs/plan/phase-01-library-core.md) | Library core: CRUD and book detail | 12 / 12 |
 | [Phase 02](docs/plan/phase-02-metadata-providers.md) | Metadata providers | 16 / 16 |
 | [Phase 03](docs/plan/phase-03-scanning.md) | Scanning: barcode, OCR and edition picker | 13 / 14 |
 | [Phase 04](docs/plan/phase-04-series.md) | Series | 8 / 8 |
-| [Phase 05](docs/plan/phase-05-lending.md) | Lending | 8 / 10 |
-| [Phase 06](docs/plan/phase-06-grouping-and-shelf-views.md) | Grouping and shelf views | 9 / 11 |
+| [Phase 05](docs/plan/phase-05-lending.md) | Lending | 9 / 10 |
+| [Phase 06](docs/plan/phase-06-grouping-and-shelf-views.md) | Grouping and shelf views | 10 / 11 |
 | [Phase 07](docs/plan/phase-07-booky-assistant.md) | Booky assistant | 8 / 9 |
 | [Phase 08](docs/plan/phase-08-settings-backup.md) | Settings, backup, export and import | 8 / 10 |
-| [Phase 09](docs/plan/phase-09-polish-a11y-release.md) | Polish, accessibility and release | 6 / 12 |
+| [Phase 09](docs/plan/phase-09-polish-a11y-release.md) | Polish, accessibility and release | 7 / 12 |
 | [Phase 10](docs/plan/phase-10-ratings.md) | Ratings | 9 / 9 |
 | [Phase 11](docs/plan/phase-11-sorting.md) | Sorting | 7 / 7 |
-| **Total** | | **133 / 148** |
+| **Total** | | **137 / 148** |
 
 ## Phase 00 — Foundation
 
@@ -43,7 +43,7 @@ On `main`: the scaffold (P00-01 to P00-07), the design system, Booky, tabs, data
 - [x] P00-15 Auto test suite core
 - [x] P00-16 Auto test suite UX gates
 - [x] P00-17 Auto test suite commands, journeys and package scripts
-- [ ] P00-18 Maestro setup
+- [x] P00-18 Maestro setup
 - [x] P00-19 GitHub Actions CI
 - [x] P00-20 Linting
 - [x] P00-21 `--serve <dir>` for the exported web build
@@ -138,7 +138,7 @@ On `main`: the scaffold (P00-01 to P00-07), the design system, Booky, tabs, data
 - [x] P05-05 Loans tab
 - [x] P05-06 Borrower detail
 - [x] P05-07 Loan history on book detail
-- [ ] P05-08 Due-date reminders (local notifications)
+- [x] P05-08 Due-date reminders (local notifications)
 - [x] P05-09 Loan badges on the Shelf
 - [x] P05-10 Overdue Booky nudge
 
@@ -153,7 +153,7 @@ On `main`: the scaffold (P00-01 to P00-07), the design system, Booky, tabs, data
 - [x] P06-05 Groups tab
 - [ ] P06-06 Group detail and ordering
 - [x] P06-07 Multi-select and add to group
-- [ ] P06-08 Shelf display modes
+- [x] P06-08 Shelf display modes
 - [x] P06-09 Persist shelf preferences
 - [x] P06-10 Shelf filters
 - [x] P06-11 Browse hub
@@ -200,7 +200,7 @@ On `main`: the scaffold (P00-01 to P00-07), the design system, Booky, tabs, data
 - [ ] P09-07 CI release workflow
 - [ ] P09-08 Screenshots and README media
 - [x] P09-09 Privacy policy
-- [ ] P09-10 Final device regression
+- [x] P09-10 Final device regression
 - [x] P09-11 Localisation readiness
 - [ ] P09-12 v1.0 release
 

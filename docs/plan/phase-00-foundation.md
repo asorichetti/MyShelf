@@ -30,7 +30,7 @@ Everything later phases build on: the Expo app skeleton with routing and a web t
 
 Most of this phase is on `main`: the scaffold (P00-01…P00-07), the design system, Booky, tabs and database layer (P00-08…P00-14), the auto test suite (P00-15…P00-17), CI (P00-19) and the follow-ups P00-24…P00-26. Their cards below describe what was delivered, with the real file names; the code is the source of truth. The auto test suite was first built in Go and then ported to TypeScript ([ADR 0013](../adr/0013-typescript-auto-test-suite.md)); [`tools/auto-test-suite/README.md`](../../tools/auto-test-suite/README.md) is the reference for its flags, gates and journeys.
 
-Still to do: Maestro (P00-18), linting (P00-20), the auto test suite follow-ups P00-21…P00-23 and P00-27…P00-29, and the remaining UI primitives (P00-30). If the code differs from a path or API named in a card here or in a later phase, update the docs in the same pull request.
+Still to do (at the time; all done since): Maestro (P00-18), linting (P00-20), the auto test suite follow-ups P00-21…P00-23 and P00-27…P00-29, and the remaining UI primitives (P00-30). If the code differs from a path or API named in a card here or in a later phase, update the docs in the same pull request.
 
 Decisions made while building the foundation, all described in `PLAN.md`:
 
@@ -175,12 +175,13 @@ Decisions made while building the foundation, all described in `PLAN.md`:
   - With the web server running (`CI=1 npx expo start --web --port 8081`), `npm run -s autotest:smoke` and `npm run -s autotest:journeys -- --ux-gates fail` pass (today 3/3 and 4/4).
 - **Tests:** unit tests for the registry (sorted, `core` suite non-empty, duplicate names rejected) and the assertion message format; the journeys themselves.
 
-### P00-18 Maestro setup
+### P00-18 Maestro setup — done
 
 - **Description:** `.maestro/config.yaml`, a shared `appId: dev.asorichetti.myshelf`, and a `launch.yaml` flow that launches the app, asserts each tab by id and taps through them. Document how to run on an emulator in `.maestro/README.md` (development build from P03-01; until then, a local `npx expo run:android` build).
 - **Files:** `.maestro/config.yaml`, `.maestro/launch.yaml`, `.maestro/README.md`.
 - **Acceptance:** `maestro test .maestro/launch.yaml` passes on an Android emulator.
 - **Tests:** the flow itself.
+- **Delivered:** with P09-10, against release builds rather than a development build: `scripts/build-android-apk.sh e2e|production` builds the E2E APK (fixture loader on, `EXPO_PUBLIC_E2E=1`) or the production one locally, no EAS. `.maestro/config.yaml` runs every top-level flow except `manual` ones (subflows in `common/`, `hooks/` and `cover-scan/` are not picked up); `common/open-fixture.yaml` clears the app and cold-starts it on the fixture link, so no screen from before the load can satisfy a wait. `launch.yaml` cold-starts a cleared app, skips the onboarding, taps every tab by id and checks Android back from the Shelf leaves the app. `.maestro/README.md` covers writing flows; [`docs/device-testing.md`](../device-testing.md) running them (`scripts/maestro-suite.sh`, which also sets the device up for the flows that need it) locally and in CI (`.github/workflows/android-e2e.yml`). Passes on an Android 16 emulator (Pixel 7, API 36) with the rest of the suite.
 
 ### P00-19 GitHub Actions CI — done
 

@@ -191,6 +191,8 @@ All of these are in `tools/auto-test-suite/src/journeys/shelf.journey.ts` and `b
 | `.maestro/book-add-manual.yaml` | on device: add a book by hand using the Android keyboard, save, see it on Shelf |
 | `.maestro/book-form-back-guard.yaml` | Android hardware back on a dirty form shows the discard dialog |
 
+Both written and passing on an Android 16 emulator (P00-18, P09-10; [`docs/device-testing.md`](../device-testing.md)); `book-detail.yaml` adds rate, edit and delete with Undo on the phone.
+
 ## Risks
 
 | Risk | Mitigation |

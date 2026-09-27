@@ -194,6 +194,8 @@ Each journey is added by the card that builds its screen. Suite `core` journeys 
 | `.maestro/lookup-isbn-online.yaml` | on device with network: type a known ISBN, get details, save (tagged `network`; skipped offline) |
 | `.maestro/lookup-offline-queue.yaml` | airplane mode on → lookup queues with banner → airplane mode off → app foreground → details arrive |
 
+Written as `lookup-isbn-online.yaml` (tags `network`, `hooked`; `scripts/maestro-suite.sh` also checks the cover is stored as a `file://` path) and `offline-queue.yaml` with `hooks/offline-resume.yaml` (the script switches airplane mode); both pass on an Android 16 emulator ([`docs/device-testing.md`](../device-testing.md)). The add form's lookup offline says it cannot reach the catalogues; the queue is fed by a scanned ISBN.
+
 ## Risks
 
 | Risk | Mitigation |

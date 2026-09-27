@@ -81,13 +81,13 @@ Let the user browse the collection the way they think about it: by genre, series
 - **Tests:** `src/features/shelf/__tests__/useSelection.test.tsx`, `src/components/groups/__tests__/GroupPickerSheet.test.tsx`.
 - **Delivered:** selection works in all three display modes (items become checkboxes); the count is in `SelectionBar` at the bottom of the screen. Delete removes the books in one transaction with six seconds of Undo (`useDeleteBooks`). The book page's "Groups" section is `src/features/groups/BookGroupsSection.tsx` (group chips open the group). Android back is covered by `useSelection.test.tsx` through `BackHandler`; the Maestro flow waits for `.maestro/` (P00-18).
 
-### P06-08 Shelf display modes
+### P06-08 Shelf display modes — done
 
 - **Description:** Toggle between **List** (catalogue cards), **Covers** (grid, 3 columns on phones), **Spines** (horizontal shelves of vertical spines with titles in Lora rotated 90°, colour from `hashColour`, brass shelf edges). All modes support group-by sections and selection.
 - **Files:** `src/components/book/CoverGrid.tsx`, `src/components/book/SpineShelf.tsx`, `src/features/shelf/ShelfScreen.tsx`.
 - **Acceptance:** each mode renders `demo` without overflow at the `mobile` viewport (390 px wide) and at 200 % font scale (spines truncate with ellipsis and full title in accessible label).
 - **Tests:** `src/components/book/__tests__/CoverGrid.test.tsx`, `src/components/book/__tests__/SpineShelf.test.tsx`.
-- **Partly delivered:** List, Covers (3 columns on phones, real covers via `CoverImage`'s new `width`, the generated cover only as a fallback) and Spines (48–60 dp wide by title hash, Lora title turned 90° with an ellipsis, cover-palette colours, brass shelf edge) all support sections and selection, and pass the render gate at 390 px with `demo` (`shelf-view-modes`). **Remaining:** the 200 % font scale check on a device; the web build cannot scale fonts, and Jest only proves the one-line ellipsis and the full-title label.
+- **Partly delivered:** List, Covers (3 columns on phones, real covers via `CoverImage`'s new `width`, the generated cover only as a fallback) and Spines (48–60 dp wide by title hash, Lora title turned 90° with an ellipsis, cover-palette colours, brass shelf edge) all support sections and selection, and pass the render gate at 390 px with `demo` (`shelf-view-modes`). **Remaining:** the 200 % font scale check on a device; the web build cannot scale fonts, and Jest only proves the one-line ellipsis and the full-title label. *Update (P09-10):* checked on an Android 16 emulator at `font_scale` 2.0 (`.maestro/font-scale.yaml`): List, Covers and Spines lay out without clipping or overlap, spine titles keep one line with an ellipsis, and the screenshots were reviewed; `shelf-spines-scroll.yaml` scrolls the spines and covers with the `large` fixture.
 
 ### P06-09 Persist shelf preferences — done
 
@@ -167,6 +167,8 @@ All nine are in suite `p06` (the two planned for `core` too, so the regression g
 |---|---|
 | `.maestro/groups-multiselect.yaml` | long-press selection, add to group, Android back exits selection |
 | `.maestro/shelf-spines-scroll.yaml` | spines view scrolls smoothly with `large` fixture (no ANR), screenshot for review |
+
+Both pass on an Android 16 emulator ([`docs/device-testing.md`](../device-testing.md)); `sort-filter.yaml` adds the Sort sheet's Library order and the On loan filter, and `font-scale.yaml` the three views at 200 % text.
 
 ## Risks
 
