@@ -20,7 +20,8 @@ export interface SeriesNeighbours<B = PositionedBook> {
   next: SeriesNeighbour<B> | null;
 }
 
-const numbered = (p: number | null): p is number => p != null && Number.isFinite(p) && p > 0;
+/** 0 (a prequel, #0) comes before #1; a missing #0 is never named, as the main sequence starts at 1. */
+const numbered = (p: number | null): p is number => p != null && Number.isFinite(p) && p >= 0;
 
 /**
  * Neighbours of `bookId` among `books` (any order). `length` is the series'

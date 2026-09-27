@@ -38,6 +38,14 @@ describe('neighboursInSeries', () => {
     expect(shape(neighboursInSeries([b(5, 0.5), b(1, 1)], 1, 1))).toEqual({ previous: 'book 5', next: null });
   });
 
+  it('puts a #0 prequel before #1, and never names a missing #0', () => {
+    const wot = [b(10, 0, 'New Spring'), b(1, 1), b(2, 2)];
+    expect(shape(neighboursInSeries(wot, 10, 14))).toEqual({ previous: null, next: 'book 1' });
+    expect(shape(neighboursInSeries(wot, 1, 14))).toEqual({ previous: 'book 10', next: 'book 2' });
+    expect(shape(neighboursInSeries([b(10, 0), b(2, 2)], 10, 14))).toEqual({ previous: null, next: 'missing 1' });
+    expect(shape(neighboursInSeries([b(1, 1), b(2, 2)], 1, 14))).toEqual({ previous: null, next: 'book 2' });
+  });
+
   it('gives an unnumbered or unknown book no neighbours', () => {
     expect(neighboursInSeries([...discworld, b(9, null)], 9, 4)).toEqual({ previous: null, next: null });
     expect(neighboursInSeries(discworld, 99, 4)).toEqual({ previous: null, next: null });

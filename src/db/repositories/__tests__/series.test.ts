@@ -219,3 +219,22 @@ describe('seriesGapsFor', () => {
     expect(await repo.seriesGapsFor(db, 999)).toEqual([]);
   });
 });
+
+describe('a #0 prequel', () => {
+  it('comes first in reading order and on the Shelf, and the gaps still start at 1', async () => {
+    const wot = await repo.createSeries(db, 'The Wheel of Time', 4);
+    await book('The Great Hunt', wot.id, 2);
+    await book('New Spring', wot.id, 0);
+    await book('The Eye of the World', wot.id, 1);
+    expect(titles(await repo.listBooksInSeries(db, wot.id))).toEqual(['New Spring', 'The Eye of the World', 'The Great Hunt']);
+    expect(await repo.seriesGapsFor(db, wot.id)).toEqual([3, 4]);
+    const [summary] = await repo.listSeriesWithStats(db);
+    expect(summary).toMatchObject({ owned: 2, total: 4, missing: 2, gaps: [3, 4], maxPosition: 2 });
+    const shelf = await booksRepo.listBookItems(db, { sort: { levels: [{ key: 'series', direction: 'asc' }, { key: 'seriesPosition', direction: 'asc' }] } });
+    expect(shelf.map((b) => b.title)).toEqual(['New Spring', 'The Eye of the World', 'The Great Hunt']);
+    expect((await repo.neighbours(db, (await booksRepo.listBooks(db)).find((b) => b.title === 'The Eye of the World')!.id))?.neighbours.previous).toMatchObject({
+      kind: 'owned',
+      book: { title: 'New Spring' },
+    });
+  });
+});

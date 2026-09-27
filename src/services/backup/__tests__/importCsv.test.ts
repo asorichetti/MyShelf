@@ -12,6 +12,7 @@ import {
   importPlannedBooks,
   mappingFor,
   parseAddedDate,
+  parseCsv,
   parseFormat,
   parseImportRating,
   planImport,
@@ -198,6 +199,28 @@ describe('decomposed accents', () => {
     expect((await booksRepo.listBookItems(db, { query: 'emile' })).map((b) => b.title)).toEqual(['Émile']);
     expect((await authorsRepo.listBooksByAuthor(db, marquez.id)).map((b) => [b.title, b.notes])).toEqual([['Cien años de soledad', 'Notas: añejo']]);
     expect((await authorsRepo.listAuthors(db)).map((a) => a.name)).toEqual(['Gabriel García Márquez', 'Rousseau']);
+  });
+});
+
+describe('series numbered from 0', () => {
+  it('keeps a #0 prequel, from the title or a column, and exports it as 0', async () => {
+    const rows = [
+      ['New Spring (The Wheel of Time, #0)', 'Robert Jordan', '', ''],
+      ['The Eye of the World', 'Robert Jordan', 'The Wheel of Time', '1'],
+      ['Prequel', 'Someone', 'Saga', '0'],
+    ];
+    const plan = planImport(rows, ['title', 'authors', 'series', 'seriesPosition']);
+    expect(plan.books.map((b) => [b.book.title, b.series])).toEqual([
+      ['New Spring', { name: 'The Wheel of Time', position: 0 }],
+      ['The Eye of the World', { name: 'The Wheel of Time', position: 1 }],
+      ['Prequel', { name: 'Saga', position: 0 }],
+    ]);
+    await importPlannedBooks(db, plan);
+    const newSpring = (await booksRepo.listBooks(db)).find((b) => b.title === 'New Spring')!;
+    expect(newSpring.seriesPosition).toBe(0);
+    const { text } = await exportCsv(db);
+    const [header, ...out] = parseCsv(text);
+    expect(out.find((r) => r[0] === 'New Spring')![header.indexOf('Series position')]).toBe('0');
   });
 });
 

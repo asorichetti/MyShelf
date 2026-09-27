@@ -62,7 +62,8 @@ export function parsePosition(text: string | null | undefined): number | null {
   const s = text.trim().replace(/^#\s*/, '').replace(/\.$/, '');
   if (/^\d+(?:[.,]\d+)?$/.test(s)) {
     const n = Number(s.replace(',', '.'));
-    return n > 0 && n < 10_000 ? n : null;
+    // 0 is a prequel numbered before the first book (The Wheel of Time #0, New Spring).
+    return n >= 0 && n < 10_000 ? n : null;
   }
   const word = WORD_NUMBERS[s.toLowerCase()];
   if (word) return word;

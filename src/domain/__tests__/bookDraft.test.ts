@@ -113,10 +113,13 @@ describe('series', () => {
     expect(valueOf({ seriesName: 'Discworld', seriesPosition: 'Book 3' }).series).toEqual({ name: 'Discworld', position: 3 });
     expect(valueOf({ seriesName: 'Discworld', seriesPosition: 'III' }).series).toEqual({ name: 'Discworld', position: 3 });
     expect(valueOf({ seriesName: 'Discworld' }).series).toEqual({ name: 'Discworld', position: null });
+    // A prequel numbered before the first book: New Spring is The Wheel of Time #0.
+    expect(valueOf({ seriesName: 'The Wheel of Time', seriesPosition: '0' }).series).toEqual({ name: 'The Wheel of Time', position: 0 });
+    expect(valueOf({ seriesName: 'The Wheel of Time', seriesPosition: '#0' }).series).toEqual({ name: 'The Wheel of Time', position: 0 });
   });
 
-  it('rejects positions that are not a positive number', () => {
-    for (const bad of ['0', '-1', 'soon']) {
+  it('rejects positions that are not a number from 0 up', () => {
+    for (const bad of ['-1', '-0.5', 'soon']) {
       expect(errorOf({ seriesName: 'Discworld', seriesPosition: bad }, 'seriesPosition')).toMatch(/like 3, or 2.5/);
     }
   });

@@ -11,7 +11,7 @@ import { parsePosition, POSITION_KEYWORD } from './seriesParser';
  * Two", "#3 of 9", "2½").
  */
 
-/** Positions are positive and below this (matches `parsePosition`). */
+/** Positions are 0 (a prequel, The Wheel of Time #0) or more, and below this (matches `parsePosition`). */
 export const MAX_SERIES_POSITION = 10_000;
 
 const PREFIX = new RegExp(String.raw`^(?:${POSITION_KEYWORD}(?!\p{L})\s*)?#?\s*`, 'iu');
@@ -32,7 +32,7 @@ export function parseSeriesPosition(text: string | null | undefined): number | n
 }
 
 export function isValidSeriesPosition(value: number | null | undefined): value is number {
-  return value != null && Number.isFinite(value) && value > 0 && value < MAX_SERIES_POSITION;
+  return value != null && Number.isFinite(value) && value >= 0 && value < MAX_SERIES_POSITION;
 }
 
 /** 5 → "5", 2.5 → "2.5", 2.50000001 → "2.5"; "" for no position. Round-trips through `parseSeriesPosition`. */

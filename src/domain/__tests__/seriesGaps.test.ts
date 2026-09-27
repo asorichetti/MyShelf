@@ -19,7 +19,9 @@ describe('seriesGaps', () => {
     ['fractional novella implies its whole number', shape([1, 2.5]), [2]],
     ['fractional beyond total extends the run', shape([1, 2, 3.5], 2), [3]],
     ['fractional below 1 is ignored', shape([0.5, 1, 2]), []],
-    ['zero and negative positions are ignored', shape([0, -1, 2]), [1]],
+    ['a #0 prequel neither fills nor starts the run; negatives are ignored', shape([0, -1, 2]), [1]],
+    ['a #0 prequel alone has no run', shape([0]), []],
+    ['a #0 prequel with a known total', shape([0, 1], 3), [2, 3]],
     ['non-finite positions are ignored', shape([Number.NaN, Number.POSITIVE_INFINITY, 2]), [1]],
     ['unnumbered books alongside numbered', shape([null, 1, 3, null], 4), [2, 4]],
   ])('%s', (_, input, expected) => {
@@ -50,6 +52,8 @@ describe('seriesProgress', () => {
     ['duplicates count once', shape([1, 1, 2], 2), { owned: 2, total: 2, gaps: [], maxPosition: 2, complete: true }],
     ['complete with bonus novella', shape([1, 2, 2.5, 3], 3), { owned: 3, total: 3, gaps: [], maxPosition: 3, complete: true }],
     ['fractional max position reported as is', shape([1, 2.5]), { owned: 1, total: 2, gaps: [2], maxPosition: 2.5, complete: false }],
+    ['a #0 prequel is kept but not counted as owned', shape([0, 1, 2], 2), { owned: 2, total: 2, gaps: [], maxPosition: 2, complete: true }],
+    ['only a #0 prequel', shape([0]), { owned: 0, total: null, gaps: [], maxPosition: 0, complete: false }],
     ['unnumbered books do not count', shape([null, null], 2), { owned: 0, total: 2, gaps: [1, 2], maxPosition: null, complete: false }],
   ])('%s', (_, input, expected) => {
     expect(seriesProgress(input)).toEqual(expected);
