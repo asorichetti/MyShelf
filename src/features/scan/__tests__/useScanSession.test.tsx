@@ -43,6 +43,27 @@ async function settle() {
 }
 
 describe('useScanSession: barcodes (P03-03)', () => {
+  it('a barcode held in view is read once, however long it stays there (Scan several)', async () => {
+    const { result, onFound, lookup } = render();
+    let now = 1_000_000;
+    const clock = jest.spyOn(Date, 'now').mockImplementation(() => now);
+    // The camera reports the code about every half second while the book stays in front of it.
+    for (let i = 0; i < 20; i++) {
+      act(() => result.current.onBarcode({ type: 'ean13', data: OL_BOOKS.colourOfMagic }));
+      await settle();
+      now += 500;
+    }
+    expect(lookup).toHaveBeenCalledTimes(1);
+    expect(onFound).toHaveBeenCalledTimes(1);
+    // Taken away for longer than the window and shown again: a second copy, on purpose.
+    now += 3500;
+    act(() => result.current.onBarcode({ type: 'ean13', data: OL_BOOKS.colourOfMagic }));
+    await settle();
+    expect(onFound).toHaveBeenCalledTimes(2);
+    clock.mockRestore();
+    jest.requireMock('../haptics').tick.mockClear();
+  });
+
   it('a valid ISBN triggers exactly one lookup, even when the camera reports it many times', async () => {
     const { result, onFound, lookup } = render();
     const { tick } = jest.requireMock('../haptics');
