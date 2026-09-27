@@ -1,6 +1,6 @@
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import { router, useLocalSearchParams } from 'expo-router';
-import { useRef, useState } from 'react';
+import { router, useLocalSearchParams, useNavigation } from 'expo-router';
+import { useEffect, useRef, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 
 import { formatLabels } from '@/components/book/BookForm';
@@ -48,6 +48,15 @@ export function EditionPickerScreen() {
   const [shown, setShown] = useState<Record<string, number>>({});
   // A second tap while the first is still checking or saving must not save the book twice.
   const busy = useRef(false);
+  const navigation = useNavigation();
+  // Leaving without saving (Back, Android back): the scan is over, and its cover photo goes with it.
+  // Saving or "None of these" end the session themselves; a tray item keeps its scan for later.
+  useEffect(() => {
+    if (!session || session.trayItemId) return;
+    return navigation.addListener('beforeRemove', () => {
+      if (getSession(session.id)) endSession(session.id);
+    });
+  }, [navigation, session]);
   // Booky's help tip sits above the bottom bar, never over "This is my edition" (P07-07).
   const { attach: attachBar, onLayout: layoutBar } = useBottomObstacle(session != null);
   // Room for Booky's floating tip below the list.

@@ -3,7 +3,7 @@ import { useSyncExternalStore } from 'react';
 import { t } from '@/i18n';
 import type { BookCandidate } from '@/services/metadata';
 
-import type { ScanSession } from './sessionStore';
+import { endSession, type ScanSession } from './sessionStore';
 
 /**
  * The "Scan several" review tray (P03-12): books recognised but not yet
@@ -56,8 +56,11 @@ export function resolveTrayItem(id: string, candidate: BookCandidate): void {
   set(items.map((i) => (i.id === id ? { ...i, status: 'ready', candidate, sessionId: null, label: candidate.title } : i)));
 }
 
+/** Drops a book from the tray; one still waiting for its edition takes its scan (and cover photo) with it. */
 export function dropTrayItem(id: string): void {
+  const sessionId = items.find((i) => i.id === id)?.sessionId;
   set(items.filter((i) => i.id !== id));
+  if (sessionId) endSession(sessionId);
 }
 
 export function removeTrayItems(ids: readonly string[]): void {
