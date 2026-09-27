@@ -38,5 +38,8 @@ it('uses the theme primaries in app.json', () => {
   const plugins = require('../../app.json').expo.plugins;
   const entry = plugins.find((p) => Array.isArray(p) && p[0] === './plugins/withAndroidAccent');
   expect(entry[1]).toEqual({ light: lightColors.primary, dark: darkColors.primary });
+  // The loan reminders' notification: a tinted-alpha icon and the same accent.
+  const notifications = plugins.find((p) => Array.isArray(p) && p[0] === 'expo-notifications');
+  expect(notifications[1]).toEqual({ icon: './assets/notification-icon.png', color: lightColors.primary });
   expect(require('../../app.json').expo.primaryColor).toBe(lightColors.primary);
 });

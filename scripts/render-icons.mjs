@@ -1,7 +1,8 @@
 #!/usr/bin/env node
-// Renders the app icon, adaptive icon layers, splash image, favicon and Play
-// Store graphics from the SVG sources in assets/source/ (P09-05), so every
-// PNG in assets/ can be rebuilt from something reviewable.
+// Renders the app icon, adaptive icon layers, splash image, favicon,
+// notification icon and Play Store graphics from the SVG sources in
+// assets/source/ (P09-05), so every PNG in assets/ can be rebuilt from
+// something reviewable.
 //
 //   npm run icons:render                     writes the PNGs listed below
 //   npm run icons:render -- --preview <dir>  also writes review sheets: the
@@ -28,6 +29,7 @@ const outputs = [
   { src: 'adaptive-monochrome.svg', out: 'assets/android-icon-monochrome.png', width: 1024, height: 1024 },
   { src: 'splash.svg', out: 'assets/splash-icon.png', width: 1024, height: 1024 },
   { src: 'favicon.svg', out: 'assets/favicon.png', width: 48, height: 48 },
+  { src: 'notification-icon.svg', out: 'assets/notification-icon.png', width: 96, height: 96 },
   { src: 'icon.svg', out: 'assets/store/icon-512.png', width: 512, height: 512 },
   { src: 'feature-graphic.svg', out: 'assets/store/feature-graphic.png', width: 1024, height: 500 },
 ];
