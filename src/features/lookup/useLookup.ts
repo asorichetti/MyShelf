@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { normalizeIsbn } from '@/domain';
+import { bookLanguagePreference, detectTextLanguage, normalizeIsbn } from '@/domain';
 import { t } from '@/i18n';
 import { isAbortError, OfflineError, RateLimitedError } from '@/services/http';
 import { InvalidIsbnError, toIsbn13, type BookCandidate, type MetadataService, type ProviderWarning } from '@/services/metadata';
@@ -127,7 +127,9 @@ export function useLookup({ service: injected }: UseLookupOptions = {}): Lookup 
       }
       // An ISBN typed into the search box is looked up as one.
       if (toIsbn13(query)) return run('isbn', query, (signal) => service.lookupIsbn(query, { signal }));
-      await run('search', query, (signal) => service.search({ text: query.toLowerCase() }, { signal }));
+      // Results in the language of the words typed (else the app's) come first among equals.
+      const language = bookLanguagePreference(detectTextLanguage(query));
+      await run('search', query, (signal) => service.search({ text: query.toLowerCase(), language }, { signal }));
     },
     [run, service],
   );

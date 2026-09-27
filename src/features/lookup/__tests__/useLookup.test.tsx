@@ -52,6 +52,16 @@ describe('useLookup', () => {
     expect(state.candidates[0].title).toBe('The Colour of Magic');
   });
 
+  it('prefers the language of the words typed, else the app\'s', async () => {
+    const { service } = createFixtureMetadata();
+    const search = jest.spyOn(service, 'search').mockResolvedValue({ candidates: [], warnings: [] });
+    const { result } = render(service);
+    await act(() => result.current.search('Cien años de soledad'));
+    expect(search).toHaveBeenLastCalledWith({ text: 'cien años de soledad', language: { code: 'es', detected: true } }, expect.anything());
+    await act(() => result.current.search('Mort Pratchett'));
+    expect(search).toHaveBeenLastCalledWith({ text: 'mort pratchett', language: { code: 'en', detected: false } }, expect.anything());
+  });
+
   it('treats an ISBN typed into the search box as an ISBN lookup', async () => {
     const { service } = createFixtureMetadata();
     const { result } = render(service);

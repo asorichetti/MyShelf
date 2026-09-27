@@ -108,7 +108,7 @@ export const EDITION_WEIGHTS = {
   detectedLanguage: 3,
   /** Times the square of the title's similarity to the one wanted (0–1), so a partial match counts for little. */
   title: 6,
-  /** The app's language (when the cover's is unknown); a cover's detected language outranks every score. */
+  /** Times the language match when the language is the app's (the cover's was not read). */
   localeLanguage: 2,
   cover: 2,
   isbn: 0.5,
