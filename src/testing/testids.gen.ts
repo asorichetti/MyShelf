@@ -211,6 +211,8 @@ export const Testids = {
     root: 'db-error-root',
     title: 'db-error-title',
     retry: 'db-error-retry',
+    export: 'db-error-export',
+    exportStatus: 'db-error-export-status',
   },
   emptyState: {
     root: 'empty-state',

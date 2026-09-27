@@ -184,7 +184,7 @@
   },
   "notFound": { "root": "not-found-root", "title": "not-found-title", "homeLink": "not-found-home-link" },
   "loading": { "root": "loading-root", "title": "loading-title" },
-  "dbError": { "root": "db-error-root", "title": "db-error-title", "retry": "db-error-retry" },
+  "dbError": { "root": "db-error-root", "title": "db-error-title", "retry": "db-error-retry", "export": "db-error-export", "exportStatus": "db-error-export-status" },
   "emptyState": { "root": "empty-state", "action": "empty-state-action" },
   "booky": {
     "avatar": "booky-avatar",

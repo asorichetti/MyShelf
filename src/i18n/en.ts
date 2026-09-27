@@ -124,6 +124,17 @@ export const en = {
     databaseError: {
       title: "I couldn't open your library",
       message: "Something went wrong opening the catalogue on this device. Your books are safe; let's try again.",
+      exportHint: "If trying again doesn't help, save a copy of your library's database file and keep it somewhere safe. It holds your whole catalogue.",
+      export: 'Save a copy of the library file',
+      /** The Android share sheet's title. */
+      shareDialogTitle: 'Save your library file',
+      /** {fileName} is like "myshelf-library-2026-06-15.db". */
+      shared: '{fileName} is ready. Keep it somewhere safe.',
+      /** Web: the browser downloaded the file. */
+      downloaded: 'Downloaded {fileName}.',
+      noFile: "There's no library file on this device yet, so there's nothing to save.",
+      cantShare: "This device can't share files, so the copy couldn't be saved.",
+      exportFailed: "I couldn't save a copy of the library file.",
     },
     notFound: {
       /** The browser tab's title for an unknown address. */

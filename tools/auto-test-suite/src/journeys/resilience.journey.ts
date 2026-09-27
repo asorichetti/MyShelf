@@ -3,8 +3,12 @@
 // on /e2e makes that screen throw while rendering until its error boundary has
 // caught it, and `?e2e-db-fault=open|migrate` makes the first attempt to open
 // the database fail.
+import { readFile } from 'node:fs/promises';
+import { join } from 'node:path';
+import { DatabaseSync } from 'node:sqlite';
+
 import { Testids, tid } from '../selectors.ts';
-import { waitForCount, waitForPath, waitVisible } from './helpers.ts';
+import { openFixture, waitForCount, waitForPath, waitVisible } from './helpers.ts';
 import { expect, q, register, type Context } from './registry.ts';
 
 const EB = Testids.errorBoundary;
@@ -127,6 +131,63 @@ register({
       expect((await c.page.locator(tid(Testids.dbError.root)).count()) === 0, `${where}: expected the error screen gone after Try again`);
     }
     await c.checkGates('/ (after recovering)');
+    onlyPlanted();
+  },
+});
+
+register({
+  name: 'db-export-file',
+  suite: 'p09',
+  desc: 'The recovery screen\'s "Save a copy of the library file": with no library yet it says there is nothing to save; after loading "demo", a failed migration still lets the raw database be downloaded as myshelf-library-<date>.db, a real SQLite file holding the 12 books, and Try again opens the same library',
+  async run(c) {
+    const onlyPlanted = allowOnlyPlantedErrors(c);
+    const D = Testids.dbError;
+
+    // A browser that has never stored a library has nothing to save.
+    await c.page.goto(c.url('/?e2e-db-fault=open'), { waitUntil: 'load' });
+    await waitVisible(c, tid(D.root), '/?e2e-db-fault=open');
+    const button = c.page.locator(tid(D.export));
+    const name = (await button.getAttribute('aria-label')) ?? (await button.innerText());
+    expect(name.trim() === 'Save a copy of the library file', `/?e2e-db-fault=open: expected the button ${q('Save a copy of the library file')}, found ${q(name)}`);
+    await button.click();
+    await waitVisible(c, tid(D.exportStatus), '/?e2e-db-fault=open (export)');
+    const none = await c.page.locator(tid(D.exportStatus)).innerText();
+    expect(none.includes("There's no library file on this device yet"), `/?e2e-db-fault=open: expected ${q('nothing to save')}, found ${q(none)}`);
+
+    // A library that will not migrate can still be saved, whole.
+    await openFixture(c, 'demo', '/');
+    await waitForCount(c, tid(Testids.home.row), 12, '/ (demo)');
+    const where = '/?e2e-db-fault=migrate';
+    await c.page.goto(c.url(where), { waitUntil: 'load' });
+    await waitVisible(c, tid(D.root), where);
+    await c.checkGates(`${where} (recovery screen)`);
+    const pending = c.page.waitForEvent('download', { timeout: 15_000 });
+    await c.page.locator(tid(D.export)).click();
+    let file;
+    try {
+      file = await pending;
+    } catch {
+      expect(false, `${where}: expected a download after "Save a copy of the library file", none came`);
+    }
+    const fileName = file.suggestedFilename();
+    expect(/^myshelf-library-\d{4}-\d{2}-\d{2}\.db$/.test(fileName), `${where}: expected myshelf-library-YYYY-MM-DD.db, found ${q(fileName)}`);
+    const path = join(c.runDir, fileName);
+    await file.saveAs(path);
+    const head = (await readFile(path)).subarray(0, 16).toString('latin1');
+    expect(head === 'SQLite format 3\0', `${where}: expected a SQLite file, found the header ${q(head)}`);
+    const db = new DatabaseSync(path, { readOnly: true });
+    const books = (db.prepare('SELECT count(*) AS n FROM books').get() as { n: number }).n;
+    const dune = db.prepare("SELECT count(*) AS n FROM books WHERE title = 'Dune'").get() as { n: number };
+    db.close();
+    expect(books === 12 && dune.n === 1, `${where}: expected the file to hold the 12 books with Dune, found ${books} books`);
+    await waitVisible(c, tid(D.exportStatus), `${where} (exported)`);
+    const status = await c.page.locator(tid(D.exportStatus)).innerText();
+    expect(status.includes(`Downloaded ${fileName}.`), `${where}: expected ${q(`Downloaded ${fileName}.`)}, found ${q(status)}`);
+    await c.checkGates(`${where} (exported)`);
+    await c.snap('db-exported');
+
+    await c.page.locator(tid(D.retry)).click();
+    await waitForCount(c, tid(Testids.home.row), 12, `${where} -> Try again`);
     onlyPlanted();
   },
 });
