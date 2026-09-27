@@ -26,7 +26,7 @@ export interface AttachCoverOptions {
 export type AttachCoverResult =
   /** A real cover was found, stored and set as `cover_uri`. */
   | { status: 'attached'; coverUri: string; cover: Omit<ResolvedCover, 'bytes'> }
-  /** The book already has a cover and `replace` was not set. */
+  /** The book already has a cover and `replace` was not set, or the user changed its cover while the search ran. */
   | { status: 'kept' }
   /** No source has a usable cover; recorded, so the backfill waits before trying again. */
   | { status: 'none'; tried: CoverTrial[] }
@@ -67,6 +67,11 @@ export async function attachBestCover(db: Db, bookId: number, source: CoverSourc
       await record('none');
       return { status: 'none', tried };
     }
+    // The search took a while: the user may have chosen a cover of their own (stored under the
+    // same file name) or deleted the book meanwhile. Neither may be overwritten or brought back.
+    const current = await booksRepo.getBook(db, bookId);
+    if (!current) return { status: 'failed', error: `No book ${bookId}` };
+    if ((current.coverUri ?? '') !== (book.coverUri ?? '')) return { status: 'kept' };
     const { bytes, ...found } = cover;
     // Hand the bytes we already have to the downloader instead of fetching them again.
     const reuse: AttachCoverOptions['http'] = {
