@@ -108,9 +108,9 @@ describe('Deleting a book', () => {
     await booksRepo.updateBook(db, newest.id, { coverUri: `file:///covers/${newest.id}.jpg` });
     await askToDelete(newest.title);
     await press(Testids.dialog.confirm);
-    // A book added while Undo is on offer is given the free id, and its cover the same file name.
-    const added = await booksRepo.createBook(db, { title: 'Added meanwhile', coverUri: `file:///covers/${newest.id}.jpg` });
-    expect(added.id).toBe(newest.id);
+    // New books never get a deleted book's id (migration 0008), but one can still hold it, from a
+    // restored backup say, and its cover the same file name.
+    await db.run('INSERT INTO books (id, title, cover_uri) VALUES (?, ?, ?)', [newest.id, 'Added meanwhile', `file:///covers/${newest.id}.jpg`]);
     await advance(UNDO_WINDOW_MS);
     await advance(0);
     expect(deleteCover).not.toHaveBeenCalled();

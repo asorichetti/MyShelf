@@ -700,10 +700,10 @@ async function insertWithId(db: Db, table: string, row: Row): Promise<number> {
 /**
  * Undoes `removeBook`: re-inserts the book and every link and loan,
  * restoring authors, series, groups and borrowers that went missing in the
- * meantime. The book keeps its id unless a book added since has taken it
- * (SQLite hands the highest id out again once it is free), in which case it
- * comes back with a new one; the same goes for its loans. All or nothing.
- * Returns the book's id.
+ * meantime. The book keeps its id: new books and loans never reuse one
+ * (migration 0008). Should a book hold it all the same (a backup restored
+ * meanwhile, with its own ids), the book comes back with a new id; the same
+ * goes for its loans. All or nothing. Returns the book's id.
  */
 export async function restoreBook(db: Db, snapshot: BookSnapshot): Promise<number> {
   return db.transaction(async (tx) => {

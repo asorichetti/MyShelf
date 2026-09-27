@@ -11,6 +11,8 @@ const LIBRARY_TABLES = ['loans', 'group_books', 'book_genres', 'book_authors', '
 export async function wipeLibrary(db: Db): Promise<void> {
   await db.transaction(async (tx) => {
     for (const table of LIBRARY_TABLES) await tx.run(`DELETE FROM ${table}`);
+    // A fixture starts from book 1 and loan 1 again (ids are otherwise never reused: migration 0008).
+    if (await tx.get("SELECT 1 FROM sqlite_master WHERE name = 'sqlite_sequence'")) await tx.run("DELETE FROM sqlite_sequence WHERE name IN ('books', 'loans')");
   });
 }
 

@@ -35,9 +35,9 @@ export async function attachCoverFromCandidate(
 
 /**
  * Deletes the stored cover file of a book that was deleted (once Undo is no
- * longer offered). Covers are stored by book id and SQLite gives a new book
- * the highest free id, so a book added meanwhile may own that file now: it
- * is kept then. Never throws.
+ * longer offered). Covers are stored by book id; new books never reuse one
+ * (migration 0008), but a book restored from a backup meanwhile may own
+ * that file now: it is kept then. Never throws.
  */
 export async function deleteCoverOfDeletedBook(db: Db, bookId: number): Promise<boolean> {
   try {
