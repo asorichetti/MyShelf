@@ -17,7 +17,8 @@ export function containsAll(s: string, ...subs: string[]): boolean {
 /**
  * Loads an E2E fixture (`empty`, `demo`, `large`) through the app's /e2e route
  * and waits until it has redirected to `next`. The page gates run on the
- * landing screen. `today` (YYYY-MM-DD) freezes the app's clock, so loan
+ * landing screen, and it waits for that screen's content (or error) page
+ * state as well, gates or not. `today` (YYYY-MM-DD) freezes the app's clock, so loan
  * dates in the fixture are fixed.
  */
 export async function openFixture(c: Context, fixture: string, next = '/', today?: string): Promise<void> {
@@ -27,6 +28,14 @@ export async function openFixture(c: Context, fixture: string, next = '/', today
     await c.page.waitForURL((u) => u.pathname === next, { timeout: 15_000 });
   } catch {
     expect(false, `${path}: expected to land on ${q(next)}, stayed on ${q(new URL(c.page.url()).pathname)}`);
+  }
+  // Landed is not loaded: a screen says it is ready (or failed) with its page-state marker. Without
+  // gates nothing else waits for it, and a step that starts earlier races the screen's first answer.
+  const ready = `${tid(Testids.pageState.content)}:visible, ${tid(Testids.pageState.error)}:visible`;
+  try {
+    await c.page.locator(ready).first().waitFor({ state: 'visible', timeout: 15_000 });
+  } catch {
+    expect(false, `${path}: ${q(next)} never showed its content (or error) page state`);
   }
 }
 
