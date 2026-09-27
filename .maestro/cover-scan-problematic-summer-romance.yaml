@@ -1,0 +1,16 @@
+# Cover scan from a gallery photo (P03-05, P03-06): "Problematic Summer Romance". Needs an E2E build,
+# network access, and the photo at assets/test-images/problematic-summer-romance.jpg, made with
+# scripts/prepare-test-photo.swift (git-ignored; see .maestro/cover-scan/README.md).
+appId: dev.asorichetti.myshelf
+tags:
+  - cover-scan
+  - needs-photos
+  - network
+---
+- addMedia:
+    - ../assets/test-images/problematic-summer-romance.jpg
+- runFlow:
+    file: cover-scan/read-photo.yaml
+    env:
+      TITLE: "Problematic Summer Romance"
+      SHOT: cover-scan-problematic-summer-romance

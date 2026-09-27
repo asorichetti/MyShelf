@@ -1,0 +1,85 @@
+# Cover mode with the camera (P03-02, P03-05) on an emulator's virtual scene
+# camera: refusing the camera leaves "Choose from your photos" working and ends
+# at "Open settings"; once allowed, a photo is taken, checked and read on the
+# device without crashing (the virtual scene has no cover, so Booky explains).
+# Needs an E2E build.
+appId: dev.asorichetti.myshelf
+tags:
+  - cover-scan
+---
+- launchApp:
+    clearState: true
+    permissions:
+      camera: deny
+# Let the app finish starting, or it drops the link.
+- extendedWaitUntil:
+    visible:
+      id: page-content
+    timeout: 20000
+- openLink: myshelf://e2e?fixture=empty&next=/scan
+- extendedWaitUntil:
+    visible:
+      id: scan-mode-cover
+    timeout: 20000
+- tapOn:
+    id: scan-mode-cover
+- assertVisible:
+    id: scan-permission-prompt
+- assertVisible:
+    id: scan-choose-photo
+# Refuse twice: Android stops asking, and the prompt points at the settings.
+- repeat:
+    times: 2
+    commands:
+      - runFlow:
+          when:
+            visible:
+              id: scan-permission-allow
+          commands:
+            - tapOn:
+                id: scan-permission-allow
+            - tapOn: "Don.t allow"
+- extendedWaitUntil:
+    visible:
+      id: scan-permission-denied
+    timeout: 10000
+- assertVisible:
+    id: scan-open-settings
+- assertVisible:
+    id: scan-choose-photo
+- takeScreenshot: cover-scan-camera-denied
+# Allowed: the camera, a photo, "Use this photo", then back to the camera with Booky's message.
+- launchApp:
+    stopApp: true
+    permissions:
+      camera: allow
+- extendedWaitUntil:
+    visible:
+      id: page-content
+    timeout: 20000
+- openLink: myshelf://e2e?fixture=empty&next=/scan
+- extendedWaitUntil:
+    visible:
+      id: scan-mode-cover
+    timeout: 20000
+- tapOn:
+    id: scan-mode-cover
+- extendedWaitUntil:
+    visible:
+      id: scan-camera
+    timeout: 10000
+- takeScreenshot: cover-scan-camera-aim
+- tapOn:
+    id: scan-capture
+- extendedWaitUntil:
+    visible:
+      id: scan-use-photo
+    timeout: 15000
+- takeScreenshot: cover-scan-camera-review
+- tapOn:
+    id: scan-use-photo
+- extendedWaitUntil:
+    visible:
+      id: scan-camera
+    timeout: 60000
+- takeScreenshot: cover-scan-camera-read

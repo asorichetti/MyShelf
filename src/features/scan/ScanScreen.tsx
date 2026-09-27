@@ -110,32 +110,27 @@ export function ScanScreen() {
   const notice = trayNotice ?? scan.notice;
   const needsChoice = tray.filter((i) => i.status === 'needs-choice').length;
 
-  return (
-    <Screen testID={Testids.scan.root}>
-      <View style={[styles.titleRow, { gap: spacing.sm }]}>
-        <Heading level={1} testID={Testids.scan.title} style={styles.fill}>
-          {t('scan.screen.title')}
-        </Heading>
-        <HelpButton screen="scan" onMore={() => setHelp(true)} />
-      </View>
-      <ScanModeSwitch mode={mode} onChange={setMode} />
-
-      <ScannerHost
-        mode={mode}
-        paused={scan.paused}
-        permission={{ state: permission.state, request: () => void permission.request(), openSettings: permission.openSettings }}
-        recognize={recognizeText}
-        ocrAvailable={ocrAvailable}
-        onBarcode={scan.onBarcode}
-        onIsbnText={submitIsbn}
-        onCoverText={submitCoverText}
-        onOcr={onOcr}
-        onModeChange={setMode}
-        choosePhoto={choosePhoto}
-        typedCover={typedCover}
-        onTypedCoverDone={() => setTypedCover(null)}
-      />
-
+  const scanner = (
+    <ScannerHost
+      mode={mode}
+      paused={scan.paused}
+      permission={{ state: permission.state, request: () => void permission.request(), openSettings: permission.openSettings }}
+      recognize={recognizeText}
+      ocrAvailable={ocrAvailable}
+      onBarcode={scan.onBarcode}
+      onIsbnText={submitIsbn}
+      onCoverText={submitCoverText}
+      onOcr={onOcr}
+      onModeChange={setMode}
+      choosePhoto={choosePhoto}
+      typedCover={typedCover}
+      onTypedCoverDone={() => setTypedCover(null)}
+    />
+  );
+  // Booky's answer for a cover photo shows above the tall cover camera, where it is seen.
+  const resultsFirst = mode === 'cover' && ocrAvailable;
+  const results = (
+    <>
       {state.phase === 'looking-up' ? (
         <BookyBubble
           testID={Testids.scan.lookupSheet}
@@ -180,12 +175,37 @@ export function ScanScreen() {
             expression="concerned"
             message={state.message}
             actions={[
-              ...(state.typed != null ? [{ label: t('scan.screen.typeWords'), onPress: () => typeWords(state.typed ?? ''), testID: Testids.scan.typeWords }] : []),
+              ...(state.typed != null
+                ? [
+                    {
+                      label: state.typed ? t('scan.screen.typeWords') : t('scan.permission.typeCoverText'),
+                      onPress: () => typeWords(state.typed ?? ''),
+                      testID: Testids.scan.typeWords,
+                    },
+                  ]
+                : []),
               { label: t('common.tryAgain'), onPress: resume, testID: Testids.scan.resume },
             ]}
           />
         </View>
       ) : null}
+    </>
+  );
+
+  return (
+    <Screen testID={Testids.scan.root}>
+      <View style={[styles.titleRow, { gap: spacing.sm }]}>
+        <Heading level={1} testID={Testids.scan.title} style={styles.fill}>
+          {t('scan.screen.title')}
+        </Heading>
+        <HelpButton screen="scan" onMore={() => setHelp(true)} />
+      </View>
+      <ScanModeSwitch mode={mode} onChange={setMode} />
+
+      {resultsFirst ? results : null}
+      {scanner}
+      {resultsFirst ? null : results}
+
       {notice && state.phase === 'ready' ? (
         <View testID={Testids.scan.notice}>
           <BookyBubble

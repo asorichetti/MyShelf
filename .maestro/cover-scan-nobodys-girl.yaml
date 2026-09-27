@@ -1,0 +1,16 @@
+# Cover scan from a gallery photo (P03-05, P03-06): "Nobody's Girl". Needs an E2E build,
+# network access, and the photo at assets/test-images/nobodys-girl.jpg, made with
+# scripts/prepare-test-photo.swift (git-ignored; see .maestro/cover-scan/README.md).
+appId: dev.asorichetti.myshelf
+tags:
+  - cover-scan
+  - needs-photos
+  - network
+---
+- addMedia:
+    - ../assets/test-images/nobodys-girl.jpg
+- runFlow:
+    file: cover-scan/read-photo.yaml
+    env:
+      TITLE: "Nobody.s Girl"
+      SHOT: cover-scan-nobodys-girl

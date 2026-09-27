@@ -1,0 +1,73 @@
+# Subflow for the cover-scan-*.yaml flows (P03-05, P03-06): on a fresh, empty
+# library, read the newest photo in the gallery in Scan → Cover, pick the first
+# edition and save it. Needs an E2E build (EXPO_PUBLIC_E2E=1). Env: TITLE (the
+# book the photo shows), SHOT (the screenshot name).
+appId: dev.asorichetti.myshelf
+---
+- openLink: myshelf://e2e?fixture=empty&next=/scan
+- extendedWaitUntil:
+    visible:
+      id: scan-mode-cover
+    timeout: 20000
+- tapOn:
+    id: scan-mode-cover
+# The photo picker needs no camera permission: the button is there whether the camera is allowed or not.
+- tapOn:
+    id: scan-choose-photo
+# The system photo picker: the newest photo first (the flow's, added without a capture date).
+- extendedWaitUntil:
+    visible: "Photo taken on.*"
+    timeout: 15000
+- tapOn:
+    text: "Photo taken on.*"
+    index: 0
+# On-device OCR, then up to five catalogue searches: the edition picker opens on the book.
+- extendedWaitUntil:
+    visible:
+      id: picker-root
+    timeout: 60000
+- assertVisible: "${TITLE}"
+- takeScreenshot: ${SHOT}-picker
+- runFlow:
+    when:
+      notVisible:
+        id: picker-edition
+    commands:
+      - tapOn:
+          id: picker-work
+          index: 0
+- extendedWaitUntil:
+    visible:
+      id: picker-edition
+    timeout: 30000
+- tapOn:
+    id: picker-edition
+    index: 0
+- tapOn:
+    id: picker-confirm
+- extendedWaitUntil:
+    visible:
+      id: book-detail-title
+    timeout: 20000
+- assertVisible:
+    id: book-detail-title
+    text: "${TITLE}.*"
+# The cover search runs after the save: either a real cover arrives, or Booky
+# offers the photo (P03-14), which the flow accepts.
+- extendedWaitUntil:
+    visible:
+      id: cover-photo-offer
+    timeout: 8000
+    optional: true
+- runFlow:
+    when:
+      visible:
+        id: cover-photo-offer
+    commands:
+      - tapOn:
+          id: cover-photo-use
+      - extendedWaitUntil:
+          notVisible:
+            id: cover-photo-offer
+          timeout: 10000
+- takeScreenshot: ${SHOT}-detail
