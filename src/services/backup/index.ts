@@ -38,5 +38,6 @@ export {
   type RowOutcome,
   type SkippedRow,
 } from './importCsv';
+export { decodeText, decodeUtf8 } from './decodeText';
 export { CSV_MIME, JSON_MIME, type OutgoingFile, type PickedFile, type ShareOutcome } from './fileTypes';
 export { eraseAll, type EraseAllOptions, type EraseAllResult } from './eraseAll';
