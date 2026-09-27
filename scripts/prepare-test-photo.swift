@@ -4,9 +4,9 @@
 // a capture date the phone's photo picker lists the photo first, as the newest,
 // which is where the flows tap. macOS only; run it by hand:
 //
-//   swift scripts/prepare-test-photo.swift <photo.png|jpg|heic> assets/test-images/<book>.jpg
+//   swift scripts/prepare-test-photo.swift <photo.png|jpg|heic> .maestro/cover-scan/photos/<book>.jpg
 //
-// assets/test-images/ is git-ignored: never commit the photos (the cover art is not ours).
+// .maestro/cover-scan/photos/ is git-ignored: never commit the photos (the cover art is not ours).
 import Foundation
 import ImageIO
 

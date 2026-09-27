@@ -11,10 +11,30 @@ appId: dev.asorichetti.myshelf
     timeout: 20000
 - tapOn:
     id: scan-mode-cover
-# The photo picker needs no camera permission: the button is there whether the camera is allowed or not.
+# The photo picker needs no camera permission: the button is there whether the camera is allowed or not
+# (below the camera when it is).
+- scrollUntilVisible:
+    element:
+      id: scan-choose-photo
+    direction: DOWN
+    timeout: 10000
+# The system photo picker keeps its own index of the gallery, which catches up with a photo just
+# added a few seconds later: open it once to start that, back out (nothing is chosen), then again.
 - tapOn:
     id: scan-choose-photo
-# The system photo picker: the newest photo first (the flow's, added without a capture date).
+- extendedWaitUntil:
+    visible: "Albums"
+    timeout: 15000
+- back
+- extendedWaitUntil:
+    visible:
+      id: scan-choose-photo
+    timeout: 10000
+- waitForAnimationToEnd:
+    timeout: 3000
+- tapOn:
+    id: scan-choose-photo
+# The newest photo comes first: the flow's, added without a capture date.
 - extendedWaitUntil:
     visible: "Photo taken on.*"
     timeout: 15000

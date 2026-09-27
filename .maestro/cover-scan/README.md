@@ -13,11 +13,12 @@ emulator or phone, and network access for the catalogue searches.
 ## The photos
 
 The cover photos are the developer's and are **never committed** (the cover art
-is not ours). Put JPEGs at `assets/test-images/<book>.jpg` (git-ignored), made
-from the originals with:
+is not ours). Put JPEGs at `.maestro/cover-scan/photos/<book>.jpg` (git-ignored;
+Maestro only adds media from inside the `.maestro` folder), made from the
+originals (the developer keeps them in `assets/test-images/`, also git-ignored) with:
 
 ```bash
-swift scripts/prepare-test-photo.swift <original.png> assets/test-images/practical-magic.jpg
+swift scripts/prepare-test-photo.swift assets/test-images/<original>.png .maestro/cover-scan/photos/practical-magic.jpg
 ```
 
 The script writes the pixels only: no capture date (so the photo picker lists
@@ -31,6 +32,8 @@ maestro --device emulator-5556 test --include-tags cover-scan .maestro/
 ```
 
 Each photo flow adds its photo to the gallery again (Maestro `addMedia`); clear
-the emulator's `Pictures` folder now and then. To record what ML Kit read as an
+the emulator's `Pictures` folder now and then. The system photo picker indexes a
+new photo a few seconds late, so the flows open it once, back out, then open it
+again before tapping the newest photo. To record what ML Kit read as an
 OCR fixture, run `node scripts/record-mlkit-fixture.mjs` straight after a flow
 (see the script's header).

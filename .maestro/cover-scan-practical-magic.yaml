@@ -1,5 +1,5 @@
 # Cover scan from a gallery photo (P03-05, P03-06): "Practical Magic". Needs an E2E build,
-# network access, and the photo at assets/test-images/practical-magic.jpg, made with
+# network access, and the photo at .maestro/cover-scan/photos/practical-magic.jpg, made with
 # scripts/prepare-test-photo.swift (git-ignored; see .maestro/cover-scan/README.md).
 appId: dev.asorichetti.myshelf
 tags:
@@ -8,7 +8,7 @@ tags:
   - network
 ---
 - addMedia:
-    - ../assets/test-images/practical-magic.jpg
+    - cover-scan/photos/practical-magic.jpg
 - runFlow:
     file: cover-scan/read-photo.yaml
     env:

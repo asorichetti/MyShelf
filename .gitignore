@@ -53,6 +53,7 @@ yarn-error.*
 # Developer photos of real book covers used to record OCR fixtures: large, and
 # the cover art is not ours to publish. Only the recognised text is committed.
 /assets/test-images/
+/.maestro/cover-scan/photos/
 
 # Release signing: EAS local credentials point at the upload key. Never commit
 # a keystore, its passwords or its base64 form (docs/release.md).
