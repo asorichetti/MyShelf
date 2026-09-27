@@ -31,8 +31,9 @@ describe('migration 0007_book_rating', () => {
     expect(result).toEqual({ from: 6, to: 7, applied: [7] });
     const book = await booksRepo.getBook(db, 1);
     expect(book).toMatchObject({ title: 'Mort', notes: 'Signed', rating: null, updatedAt: '2020-01-01T00:00:00.000Z' });
-    // The search index built by 0006 still finds it.
-    expect((await booksRepo.listBookItems(db, { query: 'signed' })).map((b) => b.title)).toEqual(['Mort']);
+    // The search index built by 0006 still finds it (the Shelf's list itself needs migration 0010's sort keys).
+    const search = (await booksRepo.searchClause(db, 'signed'))!;
+    expect(await db.all(`SELECT b.title FROM books b WHERE ${search.sql}`, search.params)).toEqual([{ title: 'Mort' }]);
     await db.close();
   });
 
@@ -108,7 +109,7 @@ describe('form saves and refreshes', () => {
       ...draftFromDetail({
         id: 0, title: 'Dune', subtitle: null, isbn13: null, isbn10: null, edition: null, publisher: null, publicationYear: null, pageCount: null,
         summary: null, coverUri: null, language: null, format: null, seriesId: null, seriesPosition: null, source: null, sourceId: null, notes: null,
-        rating: null, createdAt: '', updatedAt: '', authors: [], genres: [], series: null, openLoan: null,
+        rating: null, createdAt: '', updatedAt: '', authors: [], genres: [], series: null, openLoan: null, callNumber: 'GEN DUN',
       }),
     });
     if (!v.ok) throw new Error('invalid');

@@ -104,11 +104,14 @@ describe('listBookItems rows', () => {
     expect(items.filter((b) => b.onLoan).map((b) => b.title).sort()).toEqual(['Dune', 'The Murder of Roger Ackroyd']);
   });
 
-  it('are loaded with exactly two queries (no N+1)', async () => {
-    const spy = jest.spyOn(db, 'all');
+  it('are loaded with one query, plus one to check the stored sort keys are up to date (no N+1)', async () => {
     await booksRepo.listBookItems(db);
-    expect(spy).toHaveBeenCalledTimes(2);
-    spy.mockRestore();
+    const all = jest.spyOn(db, 'all');
+    const get = jest.spyOn(db, 'get');
+    await booksRepo.listBookItems(db);
+    expect(all.mock.calls.length + get.mock.calls.length).toBe(2);
+    all.mockRestore();
+    get.mockRestore();
   });
 });
 

@@ -15,6 +15,7 @@ const EXPECTED_TABLES = [
   'backup_snapshots',
   'book_authors',
   'book_genres',
+  'book_sort_keys',
   'books',
   'books_search',
   'borrowers',

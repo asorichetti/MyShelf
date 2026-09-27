@@ -1,7 +1,7 @@
 import { StyleSheet, View } from 'react-native';
 
 import { CatalogueCard, Text } from '@/components/ui';
-import { callNumber, joinNames, languageName, type BookDetail } from '@/domain';
+import { joinNames, languageName, type BookDetail } from '@/domain';
 import { t } from '@/i18n';
 import { Testids } from '@/testing/testids.gen';
 import { useFontScale, useTheme } from '@/theme';
@@ -38,13 +38,6 @@ export function BookHeader({ book }: { book: BookDetail }) {
   // Two facts side by side at 100 % text; one per line once a larger font would split their words.
   const factWidth = FACT_WIDTH * useFontScale();
   const credits = creditLine(book.authors);
-  const first = book.authors[0];
-  const call = callNumber({
-    genres: book.genres.map((g) => g.name),
-    author: first ? (first.sortName ?? first.name) : null,
-    title: book.title,
-    year: book.publicationYear,
-  });
   const facts = bookFacts(book);
   return (
     <CatalogueCard
@@ -58,7 +51,7 @@ export function BookHeader({ book }: { book: BookDetail }) {
       cover={<CoverImage uri={book.coverUri} title={book.title} author={credits} size="medium" />}
       meta={
         <View style={{ marginTop: spacing.sm }}>
-          <CallNumber value={call} testID={Testids.bookDetail.callNumber} />
+          <CallNumber value={book.callNumber} testID={Testids.bookDetail.callNumber} />
         </View>
       }
     >

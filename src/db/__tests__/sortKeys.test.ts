@@ -86,13 +86,13 @@ describe('the key registry', () => {
   });
 
   it('puts unknown values last in both directions without evaluating the value twice', () => {
-    const def = sortKeyRegistry.author;
+    const def = sortKeyRegistry.group;
     const ctx = { seed: 1, bind: () => '?' };
     const asc = orderTerm(def, 'asc', ctx);
     const desc = orderTerm(def, 'desc', ctx);
     // One copy of the correlated subquery per term.
-    expect(asc.split('FROM book_authors').length - 1).toBe(1);
-    expect(desc.split('FROM book_authors').length - 1).toBe(1);
+    expect(asc.split('FROM group_books').length - 1).toBe(1);
+    expect(desc.split('FROM group_books').length - 1).toBe(1);
     expect(asc).toMatch(/COALESCE\(.*x'FFFFFFFF'\) COLLATE NOCASE ASC$/s);
     expect(desc).toMatch(/ COLLATE NOCASE DESC$/);
   });
@@ -408,10 +408,15 @@ describe('computed ranks with sparse ids', () => {
 });
 
 describe('queries stay bounded', () => {
-  it('a four-level sort with computed keys is still two queries for the rows plus one per computed key', async () => {
-    const spy = jest.spyOn(db, 'all');
-    await booksRepo.listBookItems(db, { sort: { levels: [{ key: 'callNumber', direction: 'asc' }, { key: 'colour', direction: 'asc' }, { key: 'genre', direction: 'asc' }, { key: 'author', direction: 'asc' }] } });
-    expect(spy).toHaveBeenCalledTimes(4);
-    spy.mockRestore();
+  it('a four-level sort with computed keys is still one query for the rows, one for the stored keys and one per key computed in TypeScript', async () => {
+    const sort = { levels: [{ key: 'callNumber', direction: 'asc' }, { key: 'colour', direction: 'asc' }, { key: 'genre', direction: 'asc' }, { key: 'author', direction: 'asc' }] } as const;
+    await booksRepo.listBookItems(db, { sort: { levels: [...sort.levels] } });
+    const all = jest.spyOn(db, 'all');
+    const get = jest.spyOn(db, 'get');
+    await booksRepo.listBookItems(db, { sort: { levels: [...sort.levels] } });
+    // Rows, the stored keys' check, the spine colours.
+    expect(all.mock.calls.length + get.mock.calls.length).toBe(3);
+    all.mockRestore();
+    get.mockRestore();
   });
 });

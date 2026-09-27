@@ -66,6 +66,15 @@ function classFor(genres: readonly string[]): string {
   return (own && letters(own).slice(0, 3)) || 'GEN';
 }
 
+/**
+ * Which version of the rules below made a call number. The database keeps
+ * each book's call number (`book_sort_keys`, filled in by
+ * src/db/callNumbers.ts) so the Shelf can sort by it: bump this whenever
+ * `callNumber` would print something different for the same book, and every
+ * stored call number is worked out again before it is next read.
+ */
+export const CALL_NUMBER_RULES = 1;
+
 export interface CallNumberInput {
   genres: readonly string[];
   /** The first author's sort name ("Pratchett, Terry") or name. */

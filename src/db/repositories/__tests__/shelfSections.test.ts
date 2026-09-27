@@ -124,9 +124,13 @@ describe('listShelfSections', () => {
   });
 
   it('uses a bounded number of queries', async () => {
-    const spy = jest.spyOn(db, 'all');
     await list('author');
-    // Books, their authors, the memberships.
-    expect(spy).toHaveBeenCalledTimes(3);
+    const all = jest.spyOn(db, 'all');
+    const get = jest.spyOn(db, 'get');
+    await list('author');
+    // The stored sort keys' check, the books (with their authors), the memberships.
+    expect(all.mock.calls.length + get.mock.calls.length).toBe(3);
+    all.mockRestore();
+    get.mockRestore();
   });
 });

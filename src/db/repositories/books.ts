@@ -1,5 +1,6 @@
 import {
   bookFormats,
+  callNumber,
   normalizeIsbn,
   type BookFormat,
   type Book,
@@ -18,6 +19,7 @@ import {
 
 
 import { buildSortSql, SORT_JOINS, SORT_TITLE_SQL } from '../sortKeys';
+import { ensureSortKeys, getCallNumber } from '../sortKeyStore';
 import { deleteOrphanAuthors, findOrCreateAuthor, listAuthorsForBook, setBookAuthors, updateAuthor } from './authors';
 import { findOrCreateGenre, listGenresForBook, setBookGenres } from './genres';
 import { findOrCreateSeries, getSeries } from './series';
@@ -144,11 +146,13 @@ export async function deleteBook(db: Db, id: number): Promise<boolean> {
 // ---- Shelf list ----
 
 /**
- * Who has the book and when it is due, for the Shelf's loan stamp (P05-09):
- * one join, since a book has at most one open loan (`loans_one_open_per_book`).
- * The series and open-loan joins are the ones the sort keys read (`SORT_JOINS`).
+ * The stored sort keys (with each book's author names, migration 0010), the
+ * series name, and who has the book and when it is due, for the Shelf's
+ * loan stamp (P05-09): one join each, since a book has at most one open loan
+ * (`loans_one_open_per_book`). These are the joins the sort keys read
+ * (`SORT_JOINS`).
  */
-const BASE_JOINS = `${SORT_JOINS.series} ${SORT_JOINS.openLoan}`;
+const BASE_JOINS = `${SORT_JOINS.keys} ${SORT_JOINS.series} ${SORT_JOINS.openLoan}`;
 
 export interface ListBookItemsOptions {
   /** Full-text search: every word must match the title, subtitle, authors, series, genres, notes or ISBN (see `searchClause`). */
@@ -232,7 +236,11 @@ interface ListRow {
   loan_borrower: string | null;
   loan_due_on: string | null;
   rating: number | null;
+  author_names: string | null;
 }
+
+/** Separates a book's author names in `book_sort_keys.author_names` (char 31). */
+const NAME_SEPARATOR = '\u001f';
 
 const likeEscape = (text: string) => text.replace(/[\\%_]/g, (c) => `\\${c}`);
 
@@ -399,8 +407,9 @@ export async function searchClause(db: Db, query: string): Promise<(SqlClause & 
 }
 
 /**
- * The Shelf list: one query for the rows (sorted and filtered in SQL) plus
- * one for their authors, whatever the number of books.
+ * The Shelf list: one query for the rows (sorted and filtered in SQL, with
+ * each book's author names from its stored sort keys), whatever the number
+ * of books.
  */
 export async function listBookItems(db: Db, options: ListBookItemsOptions = {}): Promise<BookListItem[]> {
   const { sort = defaultShelfSort, limit, offset = 0, scope = {} } = options;
@@ -430,24 +439,23 @@ export async function listBookItems(db: Db, options: ListBookItemsOptions = {}):
     where.push(search.sql);
     params.push(...search.params);
   }
+  await ensureSortKeys(db);
   const groupOrder = scope.groupId != null && options.groupOrder;
   const order = groupOrder ? { orderBy: `gb.position, ${SORT_TITLE_SQL} COLLATE NOCASE, b.id`, params: [] } : await buildSortSql(db, sort, { coverOrder: options.coverOrder });
   const rows = await db.all<ListRow>(
     `SELECT b.id, b.title, b.subtitle, b.cover_uri, b.publication_year, b.series_id, s.name AS series_name, b.series_position,
-       ol.id IS NOT NULL AS on_loan, olp.name AS loan_borrower, ol.due_on AS loan_due_on, b.rating
+       ol.id IS NOT NULL AS on_loan, olp.name AS loan_borrower, ol.due_on AS loan_due_on, b.rating, k.author_names
      FROM books b ${joins.join(' ')} ${BASE_JOINS}
      ${where.length ? `WHERE ${where.join(' AND ')}` : ''}
      ORDER BY ${search?.rank ? `${search.rank.sql}, ` : ''}${order.orderBy}
      ${limit != null ? 'LIMIT ? OFFSET ?' : ''}`,
     [...params, ...(search?.rank?.params ?? []), ...order.params, ...(limit != null ? [limit, offset] : [])],
   );
-
-  const names = await authorNamesFor(db, rows.map((r) => r.id));
   return rows.map((r) => ({
     id: r.id,
     title: r.title,
     subtitle: r.subtitle,
-    authors: names.get(r.id) ?? [],
+    authors: r.author_names ? r.author_names.split(NAME_SEPARATOR) : [],
     coverUri: r.cover_uri,
     publicationYear: r.publication_year,
     seriesId: r.series_id,
@@ -493,38 +501,11 @@ export async function listFilterOptions(db: Db): Promise<FilterOptions> {
   };
 }
 
-/** Above this many books, reading every author link at once beats asking for each chunk of ids. */
-const ALL_AUTHORS_ABOVE = 1000;
-
-/** Credited author names per book, in order: one query per 500 books, or one for the whole library for long lists. */
-async function authorNamesFor(db: Db, bookIds: number[]): Promise<Map<number, string[]>> {
-  const out = new Map<number, string[]>();
-  const add = (rows: { book_id: number; name: string }[], wanted?: Set<number>) => {
-    for (const r of rows) {
-      if (wanted && !wanted.has(r.book_id)) continue;
-      const list = out.get(r.book_id);
-      if (list) list.push(r.name);
-      else out.set(r.book_id, [r.name]);
-    }
-  };
-  const sql = (where: string) =>
-    `SELECT ba.book_id, a.name FROM book_authors ba JOIN authors a ON a.id = ba.author_id ${where} ORDER BY ba.book_id, ba.position, a.id`;
-  if (bookIds.length > ALL_AUTHORS_ABOVE) {
-    add(await db.all<{ book_id: number; name: string }>(sql('')), new Set(bookIds));
-    return out;
-  }
-  for (let i = 0; i < bookIds.length; i += 500) {
-    const ids = bookIds.slice(i, i + 500);
-    add(await db.all<{ book_id: number; name: string }>(sql(`WHERE ba.book_id IN (${ids.map(() => '?').join(', ')})`), ids));
-  }
-  return out;
-}
-
 /** A book with its authors (in order), genres, series and open loan; null if there is no such book. */
 export async function getBookDetail(db: Db, id: number): Promise<BookDetail | null> {
   const book = await getBook(db, id);
   if (!book) return null;
-  const [authors, genres, series, loan] = await Promise.all([
+  const [authors, genres, series, loan, call] = await Promise.all([
     listAuthorsForBook(db, id),
     listGenresForBook(db, id),
     book.seriesId != null ? getSeries(db, book.seriesId) : Promise.resolve(null),
@@ -533,6 +514,7 @@ export async function getBookDetail(db: Db, id: number): Promise<BookDetail | nu
        FROM loans l JOIN borrowers p ON p.id = l.borrower_id WHERE l.book_id = ? AND l.returned_on IS NULL`,
       [id],
     ),
+    getCallNumber(db, id),
   ]);
   return {
     ...book,
@@ -551,6 +533,9 @@ export async function getBookDetail(db: Db, id: number): Promise<BookDetail | nu
           borrowerName: loan.borrower_name,
         }
       : null,
+    // The stored call number is the Shelf's sort key too. Every book has one (migration 0010's triggers); should a row
+    // ever be missing, the same function makes it from the same data.
+    callNumber: call ?? callNumber({ genres: genres.map((g) => g.name), author: authors[0] ? (authors[0].sortName ?? authors[0].name) : null, title: book.title, year: book.publicationYear }),
   };
 }
 

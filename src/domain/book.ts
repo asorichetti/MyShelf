@@ -79,6 +79,8 @@ export interface BookDetail extends Book {
   genres: BookGenre[];
   series: Series | null;
   openLoan: (Loan & { borrowerName: string }) | null;
+  /** The call number the page prints ("FIC PRA 1987"): the one stored for the Shelf's sort, so the two always agree. */
+  callNumber: string;
 }
 
 const LEADING_ARTICLE = /^(the|a|an)\s+(?=\S)/i;

@@ -128,7 +128,7 @@ describe('large text', () => {
   });
 
   it('puts one book fact per line at 200 % text, two side by side at 100 %', () => {
-    const book = { id: 1, title: 'Mort', subtitle: null, authors: [], genres: [], publisher: 'Corgi', publicationYear: 1987 } as unknown as BookDetail;
+    const book = { id: 1, title: 'Mort', subtitle: null, authors: [], genres: [], publisher: 'Corgi', publicationYear: 1987, callNumber: 'GEN MOR 1987' } as unknown as BookDetail;
     const firstFact = () => {
       const facts = screen.getByTestId(Testids.bookDetail.facts);
       return facts.findAll((n) => typeof n.type === 'string' && n !== facts)[0]!;

@@ -1,5 +1,4 @@
 import {
-  callNumber,
   defaultShelfSort,
   hashColour,
   languages,
@@ -25,21 +24,28 @@ import type { Db, SqlValue } from './types';
  * or An. Title, then id, break whatever tie is left, so the order is always
  * the same for the same library.
  *
- * Two keys are worked out in TypeScript, because they are what the app
- * draws rather than what the database stores: the call number (the same
- * `callNumber()` the book page prints) and the spine colour (the generated
- * binding `hashColour()` picks, placed round the colour wheel by the order
- * the caller passes from the theme, `SortOptions.coverOrder`). Each is
- * computed for the whole library just before the query and handed to it as
- * one BLOB of three-byte ranks indexed by book id, which SQLite reads with
- * `substr` (`packRanks`: the ids in runs, so a backup's huge ids cost no memory).
+ * The keys that need a join and a fold per book (title, author, genre,
+ * series) and the call number read `book_sort_keys` (migration 0010), one
+ * row per book, so a Shelf query sorts 10,000 books by stored values instead
+ * of working them out each time. The rows are made from the folds below and
+ * from `callNumber()` (the call number the book page prints), and brought up
+ * to date before a list is read (`ensureSortKeys`, src/db/sortKeyStore.ts).
+ *
+ * The spine colour is worked out in TypeScript, because it is what the app
+ * draws rather than what the database stores: the generated binding
+ * `hashColour()` picks, placed round the colour wheel by the order the
+ * caller passes from the theme, `SortOptions.coverOrder`. It is computed for
+ * the whole library just before the query and handed to it as one BLOB of
+ * three-byte ranks indexed by book id, which SQLite reads with `substr`
+ * (`packRanks`: the ids in runs, so a backup's huge ids cost no memory).
  */
 
 /** A join the base Shelf query may need to have for a key's SQL. */
-export type SortJoin = 'series' | 'openLoan';
+export type SortJoin = 'keys' | 'series' | 'openLoan';
 
-/** The SQL each join adds (aliases `s`, `ol`, `olp` are what the keys refer to). */
+/** The SQL each join adds (aliases `k`, `s`, `ol`, `olp` are what the keys refer to). */
 export const SORT_JOINS: Record<SortJoin, string> = {
+  keys: 'LEFT JOIN book_sort_keys k ON k.book_id = b.id',
   series: 'LEFT JOIN series s ON s.id = b.series_id',
   openLoan: 'LEFT JOIN loans ol ON ol.book_id = b.id AND ol.returned_on IS NULL LEFT JOIN borrowers olp ON olp.id = ol.borrower_id',
 };
@@ -109,7 +115,8 @@ export const foldedLetters: readonly (readonly [string, string])[] = FOLDS;
  * `expr` with accents folded, for sorting. SQLite's own NOCASE folds only
  * ASCII, so accented letters are replaced first — but only in values that
  * have any non-ASCII character (the GLOB), which in most libraries is a few
- * titles in a hundred, so plain ASCII values cost one GLOB each.
+ * titles in a hundred, so plain ASCII values cost one GLOB each. Migration
+ * 0010 stores the title, author, genre and series keys folded the same way.
  */
 export function foldSql(expr: string): string {
   let out = expr;
@@ -124,20 +131,19 @@ export const SORT_TITLE_SQL = `CASE
   WHEN b.title LIKE 'an %' THEN ltrim(substr(b.title, 4))
   ELSE b.title END`;
 
-const TITLE_KEY = foldSql(`(${SORT_TITLE_SQL})`);
+/** The title with a leading article dropped, folded: stored (`book_sort_keys.title`). */
+const TITLE_KEY = 'k.title';
 
-/** The first credited author's sort name ("Pratchett, Terry"), folded. */
-const FIRST_AUTHOR = `(SELECT ${foldSql('COALESCE(a.sort_name, a.name)')} FROM book_authors ba JOIN authors a ON a.id = ba.author_id
-  WHERE ba.book_id = b.id ORDER BY ba.position, a.id LIMIT 1)`;
+/** The first credited author's sort name ("Pratchett, Terry"), folded: stored. */
+const FIRST_AUTHOR = 'k.author';
 
 /**
  * A book's primary genre: the first of its genres in alphabetical order
- * (ignoring case) — the order the book page lists them in. Books have no
- * "main" genre of their own; alphabetical is stable and needs nothing new
- * stored. (The call number's class weighs all the genres: `callNumberRanks`.)
+ * (ignoring case) — the order the book page lists them in — folded, stored.
+ * Books have no "main" genre of their own; alphabetical is stable. (The call
+ * number's class weighs all the genres: `callNumber()`.)
  */
-const PRIMARY_GENRE = `(SELECT ${foldSql('g.name')} FROM book_genres bg JOIN genres g ON g.id = bg.genre_id
-  WHERE bg.book_id = b.id ORDER BY g.name COLLATE NOCASE, g.id LIMIT 1)`;
+const PRIMARY_GENRE = 'k.genre';
 
 /** The first of the user groups the book is in, alphabetically. */
 const FIRST_GROUP = `(SELECT ${foldSql('g.name')} FROM group_books gb JOIN groups g ON g.id = gb.group_id
@@ -247,18 +253,6 @@ function rankTerm(ctx: TermContext): string {
   return `substr(${ctx.bind(blob)}, ${rankOffsetSql(runs)} + 1, ${RANK_BYTES})`;
 }
 
-/** Dense ranks for values sorted by `compare`: equal values share a rank. */
-function denseRanks<T>(entries: [number, T][], compare: (a: T, b: T) => number): Map<number, number> {
-  const sorted = [...entries].sort((a, b) => compare(a[1], b[1]));
-  const out = new Map<number, number>();
-  let rank = 0;
-  sorted.forEach(([id, value], i) => {
-    if (i > 0 && compare(sorted[i - 1][1], value) !== 0) rank++;
-    out.set(id, rank);
-  });
-  return out;
-}
-
 /** Title -> generated binding (per palette size): a title's colour never changes, so it is worked out once. */
 const bindingByTitle = new Map<string, number>();
 const MAX_REMEMBERED_TITLES = 50_000;
@@ -281,39 +275,6 @@ async function colourRanks(db: Db, { coverOrder = PALETTE_ORDER }: SortOptions):
   return out;
 }
 
-/** Call number parts: class, author mark, year (none last). */
-type CallParts = [string, string, number];
-const compareCall = (a: CallParts, b: CallParts) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : a[1] < b[1] ? -1 : a[1] > b[1] ? 1 : a[2] - b[2]);
-
-/** Separates a book's genre names in one column (a control character no name contains). */
-const GENRE_SEPARATOR = '\u001f';
-
-/** Each book's call number ("FIC PRA 1983"), exactly as the book page prints it, in shelf order. */
-async function callNumberRanks(db: Db): Promise<Map<number, number>> {
-  // The class depends on all of a book's genres (a memoir also tagged "Fiction" is BIO), so fetch them all.
-  const rows = await db.all<{ id: number; title: string; year: number | null; genre: string | null; author: string | null }>(
-    `SELECT b.id, b.title, b.publication_year AS year,
-       (SELECT group_concat(name, char(31)) FROM (SELECT g.name FROM book_genres bg JOIN genres g ON g.id = bg.genre_id
-          WHERE bg.book_id = b.id ORDER BY g.name, g.id)) AS genre,
-       (SELECT COALESCE(a.sort_name, a.name) FROM book_authors ba JOIN authors a ON a.id = ba.author_id WHERE ba.book_id = b.id ORDER BY ba.position, a.id LIMIT 1) AS author
-     FROM books b`,
-  );
-  // Books by the same author in the same genre and year share a call number: work each one out once.
-  const seen = new Map<string, CallParts>();
-  const parts = rows.map((r): [number, CallParts] => {
-    const key = `${r.genre ?? ''}\u0000${r.author != null ? `a${r.author}` : `t${r.title}`}\u0000${r.year ?? ''}`;
-    let call = seen.get(key);
-    if (!call) {
-      const genres = r.genre ? r.genre.split(GENRE_SEPARATOR) : [];
-      const [cls, mark, year] = callNumber({ genres, author: r.author, title: r.title, year: r.year }).split(' ');
-      call = [cls, mark, year ? Number(year) : Number.MAX_SAFE_INTEGER];
-      seen.set(key, call);
-    }
-    return [r.id, call];
-  });
-  return denseRanks(parts, compareCall);
-}
-
 // ---- The registry ----
 
 const AZ = { asc: 'sort.direction.aToZ', desc: 'sort.direction.zToA' } as const;
@@ -326,7 +287,7 @@ const defs: Defs = {
     hint: 'sort.keys.title.hint',
     defaultDirection: 'asc',
     directionLabels: AZ,
-    joins: [],
+    joins: ['keys'],
     text: true,
     value: () => TITLE_KEY,
   },
@@ -335,7 +296,7 @@ const defs: Defs = {
     hint: 'sort.keys.author.hint',
     defaultDirection: 'asc',
     directionLabels: AZ,
-    joins: [],
+    joins: ['keys'],
     text: true,
     value: () => FIRST_AUTHOR,
   },
@@ -344,9 +305,9 @@ const defs: Defs = {
     hint: 'sort.keys.series.hint',
     defaultDirection: 'asc',
     directionLabels: AZ,
-    joins: ['series'],
+    joins: ['keys'],
     text: true,
-    value: () => foldSql('s.name'),
+    value: () => 'k.series',
   },
   seriesPosition: {
     label: 'sort.keys.seriesPosition.label',
@@ -361,7 +322,7 @@ const defs: Defs = {
     hint: 'sort.keys.genre.hint',
     defaultDirection: 'asc',
     directionLabels: AZ,
-    joins: [],
+    joins: ['keys'],
     text: true,
     value: () => PRIMARY_GENRE,
   },
@@ -473,9 +434,9 @@ const defs: Defs = {
     hint: 'sort.keys.callNumber.hint',
     defaultDirection: 'asc',
     directionLabels: AZ,
-    joins: [],
-    rank: callNumberRanks,
-    value: rankTerm,
+    joins: ['keys'],
+    // Class, author mark, year (none last): `callNumberSortKey` in src/db/sortKeyStore.ts.
+    value: () => 'k.call_key',
   },
   rating: {
     label: 'sort.keys.rating.label',
@@ -535,12 +496,13 @@ export interface SortSql {
 
 /**
  * The ORDER BY for a sort: its levels, then title, then id. Keys worked out
- * in TypeScript (call number, spine colour) are computed first, for the
- * whole library.
+ * in TypeScript (spine colour) are computed first, for the whole library.
+ * Stored keys (`k`) must be up to date: `ensureSortKeys`.
  */
 export async function buildSortSql(db: Db, sort: ShelfSort = defaultShelfSort, options: SortOptions = {}): Promise<SortSql> {
   const params: SqlValue[] = [];
-  const joins = new Set<SortJoin>();
+  // Title breaks every tie, and it is stored.
+  const joins = new Set<SortJoin>(['keys']);
   const terms: string[] = [];
   const seed = sort.seed ?? 1;
   for (const level of sort.levels) {

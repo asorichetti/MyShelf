@@ -208,6 +208,7 @@ describe('cleaning and helpers', () => {
       genres: [{ id: 1, name: 'Fantasy', userEdited: true }],
       series: { id: 3, name: 'Discworld', totalCount: null },
       openLoan: null,
+      callNumber: 'FIC PRA 1987',
     } satisfies BookDetail;
     const d = draftFromDetail(detail);
     expect(d).toMatchObject({ isbn: '9780552131063', year: '1987', pages: '272', seriesName: 'Discworld', seriesPosition: '4', genres: ['Fantasy'], rating: 4 });
