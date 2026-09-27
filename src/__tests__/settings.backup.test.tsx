@@ -10,7 +10,7 @@ import { pickTextFile } from '@/services/backup/pickFile';
 import { shareFile } from '@/services/backup/shareFile';
 import { createTestDb } from '@/testing/createTestDb';
 import { loadFixture } from '@/testing/loadFixture';
-import { renderApp } from '@/testing/renderApp';
+import { pressWhenShown, renderApp } from '@/testing/renderApp';
 import { Testids } from '@/testing/testids.gen';
 
 jest.mock('@/services/backup/shareFile', () => ({ shareFile: jest.fn(async () => 'shared') }));
@@ -75,7 +75,7 @@ describe('Restore from a backup', () => {
   it('shows the file, waits for REPLACE, restores, and can undo', async () => {
     pick.mockResolvedValueOnce({ name: 'myshelf-backup-2026-06-01.json', text: await backupText() });
     renderApp(db, '/settings/restore', { 'settings/restore': RestoreScreen });
-    await act(async () => fireEvent.press(await screen.findByTestId(R.pick)));
+    await pressWhenShown(R.pick);
     await waitFor(() => expect(screen.getByTestId(R.file)).toHaveTextContent(/myshelf-backup-2026-06-01\.json/));
     const confirm = screen.getByTestId(R.confirm);
     expect(confirm.props.accessibilityState.disabled).toBe(true);
@@ -85,15 +85,15 @@ describe('Restore from a backup', () => {
     const restored = await booksRepo.countBooks(db);
     expect(restored).not.toBe(12);
 
-    await act(async () => fireEvent.press(await screen.findByTestId(R.undo)));
+    await pressWhenShown(R.undo);
     await waitFor(async () => expect(await booksRepo.countBooks(db)).toBe(12));
   });
 
   it('merges without a typed confirmation', async () => {
     pick.mockResolvedValueOnce({ name: 'b.json', text: await backupText() });
     renderApp(db, '/settings/restore', { 'settings/restore': RestoreScreen });
-    await act(async () => fireEvent.press(await screen.findByTestId(R.pick)));
-    await act(async () => fireEvent.press(await screen.findByTestId(R.modeMerge)));
+    await pressWhenShown(R.pick);
+    await pressWhenShown(R.modeMerge);
     expect(screen.queryByTestId(R.confirmInput)).toBeNull();
     await act(async () => fireEvent.press(screen.getByTestId(R.confirm)));
     await waitFor(() => expect(screen.getByTestId(R.summary)).toHaveTextContent(/Books added/));
@@ -103,7 +103,7 @@ describe('Restore from a backup', () => {
   it('explains a broken file and changes nothing', async () => {
     pick.mockResolvedValueOnce({ name: 'broken.json', text: '{"format":"myshelf-backup","formatVersion":1,' });
     renderApp(db, '/settings/restore', { 'settings/restore': RestoreScreen });
-    await act(async () => fireEvent.press(await screen.findByTestId(R.pick)));
+    await pressWhenShown(R.pick);
     await waitFor(() => expect(screen.getByTestId(R.error)).toHaveTextContent(/may be incomplete/));
     expect(screen.queryByTestId(R.confirm)).toBeNull();
     expect(await booksRepo.countBooks(db)).toBe(12);
@@ -112,7 +112,7 @@ describe('Restore from a backup', () => {
   it('does nothing when the picker is cancelled', async () => {
     pick.mockResolvedValueOnce(null);
     renderApp(db, '/settings/restore', { 'settings/restore': RestoreScreen });
-    await act(async () => fireEvent.press(await screen.findByTestId(R.pick)));
+    await pressWhenShown(R.pick);
     expect(screen.queryByTestId(R.error)).toBeNull();
     expect(screen.queryByTestId(R.file)).toBeNull();
   });
@@ -121,7 +121,7 @@ describe('Restore from a backup', () => {
 describe('Export as a spreadsheet', () => {
   it('shares a CSV without loans, then with them when asked', async () => {
     renderApp(db, '/settings/export-csv', { 'settings/export-csv': ExportCsvScreen });
-    await act(async () => fireEvent.press(await screen.findByTestId(Testids.csvExport.export)));
+    await pressWhenShown(Testids.csvExport.export);
     await waitFor(() => expect(screen.getByTestId(Testids.csvExport.status)).toHaveTextContent(/with 12 books/));
     const plain = share.mock.calls[0][0] as OutgoingFile;
     expect(plain.fileName).toMatch(/^myshelf-books-.*\.csv$/);

@@ -1,4 +1,4 @@
-import { render, type RenderOptions } from '@testing-library/react-native';
+import { act, render, type RenderOptions } from '@testing-library/react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { SnackbarProvider } from '@/components/ui/Snackbar';
@@ -33,4 +33,14 @@ export function hostsWithRole(root: ReactTestInstance, role: string): ReactTestI
 /** Renders inside the same theme and safe-area providers the app uses. */
 export function renderWithTheme(ui: ReactElement, options?: Omit<RenderOptions, 'wrapper'>) {
   return render(ui, { wrapper: AppTestProviders, ...options });
+}
+
+/**
+ * Lets work a component started on mount and finishes on a resolved promise
+ * land inside act(): the OS's reduce-motion answer (Booky, covers, sheets and
+ * dialogs wait for it) or a first database read. Await it after a render when
+ * the test would otherwise end with that update still pending.
+ */
+export async function settle(): Promise<void> {
+  await act(async () => {});
 }

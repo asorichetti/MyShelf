@@ -39,8 +39,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 23
           cache: npm
@@ -50,7 +50,7 @@ jobs:
         id: playwright
         run: echo "version=$(node -p "require('playwright/package.json').version")" >> "$GITHUB_OUTPUT"
       - name: Cache Playwright browsers
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-${{ steps.playwright.outputs.version }}
@@ -81,7 +81,7 @@ jobs:
         run: npm run -s autotest -- journey --all --exclude-suite core --exclude-suite live --exclude-suite perf --serve dist --ux-gates fail --headless=true
       - name: Upload evidence bundles
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: release-checks-screenshots
           path: |
@@ -103,7 +103,7 @@ jobs:
       # Optional build-time Google Books key (docs/release.md). Empty = keyless.
       EXPO_PUBLIC_GOOGLE_BOOKS_API_KEY: ${{ secrets.GOOGLE_BOOKS_API_KEY }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       # The Android build (four ABIs, NDK, Gradle caches) needs more disk than
       # a fresh runner has spare; these toolchains are not used here.
@@ -112,20 +112,20 @@ jobs:
           sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/.ghcup /usr/share/swift /usr/local/share/boost
           df -h /
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 23
           cache: npm
       - run: npm ci
 
       # React Native 0.86's Gradle plugin is built with a Java 17 toolchain.
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: '17'
 
       # Caches ~/.gradle (dependencies, wrapper) between runs.
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@v5
 
       - name: Version
         id: version
@@ -230,21 +230,21 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload APKs
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ steps.collect.outputs.name }}-apks
           path: release/${{ steps.collect.outputs.name }}-*.apk
           if-no-files-found: error
           retention-days: 30
       - name: Upload AAB
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ steps.collect.outputs.name }}.aab
           path: release/${{ steps.collect.outputs.name }}.aab
           if-no-files-found: error
           retention-days: 30
       - name: Upload checksums
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ steps.collect.outputs.name }}.sha256
           path: release/${{ steps.collect.outputs.name }}.sha256
@@ -264,9 +264,9 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Download the builds
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           path: release
           merge-multiple: true

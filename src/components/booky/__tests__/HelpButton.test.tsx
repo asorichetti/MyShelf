@@ -3,7 +3,7 @@ import { act, fireEvent, renderRouter, screen } from 'expo-router/testing-librar
 import { Pressable, View } from 'react-native';
 
 import { BookyOverlay, BookyProvider, HelpButton, useBooky } from '@/components/booky';
-import { AppTestProviders, renderWithTheme } from '@/testing/render';
+import { AppTestProviders, renderWithTheme, settle } from '@/testing/render';
 import { Testids } from '@/testing/testids.gen';
 
 import type { HelpScreen } from '../tips';
@@ -46,8 +46,9 @@ function renderHelp(screenId: HelpScreen, onMore?: () => void) {
 const press = (el: Parameters<typeof fireEvent.press>[0]) => act(async () => fireEvent.press(el));
 
 describe('HelpButton (P07-05)', () => {
-  it('is a labelled, full-size button', () => {
+  it('is a labelled, full-size button', async () => {
     renderHelp('shelf');
+    await settle();
     const button = screen.getByRole('button', { name: 'Help with this screen' });
     expect(button).toHaveStyle({ width: 48, height: 48 });
     expect(button.props.testID).toBe(Testids.booky.helpButton);

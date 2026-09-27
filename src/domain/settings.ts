@@ -91,8 +91,3 @@ export const settingDefaults: Readonly<AppSettings> = Object.freeze<AppSettings>
   'backup.reminderShownAt': null,
   'backup.snoozedUntil': null,
 });
-
-/** Whether `key` is a setting this app knows. */
-export function isSettingKey(key: string): key is SettingKey {
-  return Object.prototype.hasOwnProperty.call(settingDefaults, key);
-}

@@ -242,10 +242,12 @@ async function expectRealGoodreadsCovers(c: Context, since: number, shot: string
   await c.snap(`${shot}-grid`);
   for (const part of ['2', '3']) {
     await c.page.mouse.wheel(0, 500);
+    // A settle after scrolling, for the screenshot: smooth scrolling and the covers it brings in.
     await c.page.waitForTimeout(400);
     await c.snap(`${shot}-grid-${part}`);
   }
   await c.page.mouse.wheel(0, 5000);
+  // As above: a settle after scrolling, for the screenshot.
   await c.page.waitForTimeout(400);
   await c.snap(`${shot}-grid-end`);
   await c.page.mouse.wheel(0, -5000);

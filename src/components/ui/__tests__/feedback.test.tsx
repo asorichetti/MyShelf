@@ -11,15 +11,16 @@ import {
   useSnackbar,
   type SnackbarOptions,
 } from '@/components/ui';
-import { renderWithTheme } from '@/testing/render';
+import { renderWithTheme, settle } from '@/testing/render';
 import { Testids } from '@/testing/testids.gen';
 import { lightTheme } from '@/theme';
 
 describe('ConfirmDialog', () => {
   const base = { title: 'Remove this book?', message: 'Loan history for it will be removed too.' };
 
-  it('renders nothing while hidden', () => {
+  it('renders nothing while hidden', async () => {
     renderWithTheme(<ConfirmDialog {...base} visible={false} onConfirm={() => {}} onCancel={() => {}} />);
+    await settle();
     expect(screen.queryByTestId(Testids.dialog.root)).toBeNull();
   });
 
@@ -190,8 +191,6 @@ describe('SnackbarProvider and SnackbarHost', () => {
   });
 
   it('throws a helpful error outside the provider', () => {
-    const spy = jest.spyOn(console, 'error').mockImplementation(() => {});
     expect(() => render(<Trigger options={{ message: 'x' }} />)).toThrow(/SnackbarProvider/);
-    spy.mockRestore();
   });
 });

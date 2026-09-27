@@ -161,6 +161,8 @@ describe('useFetchDetails', () => {
     const hook = await render();
     const state = hook.result.current.state;
     expect(state.status === 'review' && state.counts).toEqual({ found: 1, upToDate: 0, notFound: 1, failed: 1 });
+    expect(warn).toHaveBeenCalledTimes(1);
+    expect(warn).toHaveBeenCalledWith(expect.stringMatching(/^Could not look up book \d+ for missing details$/), expect.objectContaining({ message: '500 from the catalogue' }));
     warn.mockRestore();
   });
 

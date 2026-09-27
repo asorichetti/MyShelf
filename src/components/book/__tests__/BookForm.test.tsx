@@ -3,7 +3,7 @@ import { createRef } from 'react';
 
 import { BookForm, errorSummary, type BookFormHandle, type BookFormProps } from '@/components/book/BookForm';
 import { emptyDraft } from '@/domain';
-import { renderWithTheme } from '@/testing/render';
+import { renderWithTheme, settle } from '@/testing/render';
 import { Testids } from '@/testing/testids.gen';
 
 function renderForm(props: Partial<BookFormProps> = {}) {
@@ -36,8 +36,9 @@ function renderForm(props: Partial<BookFormProps> = {}) {
 }
 
 describe('BookForm', () => {
-  it('has one h1 and labelled fields in catalogue order', () => {
+  it('has one h1 and labelled fields in catalogue order', async () => {
     renderForm();
+    await settle();
     const h1 = screen.getAllByRole('heading').filter((h) => h.props['aria-level'] === 1);
     expect(h1.map((h) => h.props.children)).toEqual(['Add a book']);
     for (const id of [

@@ -198,8 +198,8 @@ describe('t', () => {
     try {
       (Intl as { PluralRules?: unknown }).PluralRules = undefined;
       setCatalogue(en as Catalogue);
-      expect(t('common.days', { count: 1 })).toBe('1 day');
-      expect(t('common.days', { count: 5 })).toBe('5 days');
+      expect(t('common.books', { count: 1 })).toBe('1 book');
+      expect(t('common.books', { count: 5 })).toBe('5 books');
     } finally {
       (Intl as { PluralRules?: unknown }).PluralRules = PluralRules;
     }
@@ -211,7 +211,7 @@ describe('t', () => {
   });
 
   it('takes a key held in data through translate', () => {
-    expect(translate('common.days', { count: 2 })).toBe('2 days');
+    expect(translate('common.books', { count: 2 })).toBe('2 books');
   });
 
   it('switches to another catalogue, with its own plural rules', () => {

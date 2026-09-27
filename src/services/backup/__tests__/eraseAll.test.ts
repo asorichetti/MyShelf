@@ -53,6 +53,7 @@ describe('eraseAll', () => {
       }),
     ).resolves.toEqual({ coverFilesDeleted: 0 });
     expect(await booksRepo.countBooks(db)).toBe(0);
+    expect(warn).toHaveBeenCalledWith('Could not delete every cover file', expect.objectContaining({ message: 'busy' }));
     warn.mockRestore();
   });
 });

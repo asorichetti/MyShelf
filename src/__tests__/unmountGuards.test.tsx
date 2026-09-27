@@ -51,7 +51,7 @@ async function bookId(title: string) {
 function hold(name: 'refreshBook' | 'saveBookDraft') {
   let release!: () => void;
   const gate = new Promise<void>((resolve) => (release = resolve));
-  // refreshBook lives in bookLookups (books re-exports it).
+  // refreshBook lives in bookLookups (booksRepo re-exports both modules).
   const mod = (name === 'refreshBook' ? bookLookups : books) as unknown as Record<string, (...args: unknown[]) => Promise<unknown>>;
   const real = mod[name]!;
   jest.spyOn(mod, name).mockImplementation((async (...args: unknown[]) => {

@@ -65,7 +65,8 @@ describe('formatTip', () => {
   it('drops a missing value rather than showing the placeholder', () => {
     const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
     expect(formatTip('Hello {name}, welcome.', {})).toBe('Hello , welcome.');
-    expect(warn).toHaveBeenCalled();
+    expect(warn).toHaveBeenCalledTimes(1);
+    expect(String(warn.mock.calls[0][0])).toContain('name');
     warn.mockRestore();
   });
 

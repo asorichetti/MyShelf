@@ -7,7 +7,7 @@
 // every tab and on the book and series pages, and the backup reminder; at
 // 100 % and 200 % text, in the light and the dark theme.
 import { Testids, tid } from '../selectors.ts';
-import { openBigFixture, openFixture, waitForCount, waitForPath, waitVisible } from './helpers.ts';
+import { openBigFixture, openFixture, waitForBookyDecision, waitForCount, waitForPath, waitVisible } from './helpers.ts';
 import { openFirstRun } from './onboarding.journey.ts';
 import { expect, q, register, type Context } from './registry.ts';
 import { expectTipCoversNothing } from './tipCover.ts';
@@ -56,7 +56,9 @@ async function overdueAt(c: Context, scale: 1 | 2): Promise<void> {
   const summary = (await c.page.locator(vis(tid(Testids.bookLoan.summary))).first().innerText()).trim();
   expect(/It was due back on .* \(5 days ago\)\./.test(summary), `${OVERDUE_BOOK} ${at}: expected the Loan section to say it is overdue, found ${q(summary)}`);
   // The app has just started (Booky's overdue check runs now): it must stay quiet on this page.
-  await c.page.waitForTimeout(1_500);
+  // The page shows the loan, so the nudge is kept for later rather than floated here.
+  await waitForBookyDecision(c, 'loan-overdue', 0, `${OVERDUE_BOOK} ${at}`);
+  await c.settle();
   expect((await c.page.locator(bubble).count()) === 0, `${OVERDUE_BOOK} ${at}: expected no overdue nudge over the overdue book's own page, found ${q(await c.page.locator(bubbleText).allInnerTexts())}`);
   await c.snap(`clear-overdue-book-${scale * 100}`);
 

@@ -18,8 +18,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 23
           cache: npm
@@ -30,7 +30,7 @@ jobs:
         run: npm run test:live
       - name: Upload the chosen covers
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: live-covers
           path: live-covers/
@@ -42,8 +42,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 23
           cache: npm
@@ -58,7 +58,7 @@ jobs:
         run: npm run -s autotest -- journey --suite live --serve dist --ux-gates fail --headless=true
       - name: Upload the screenshots
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: live-journey-screenshots
           path: screenshots/
@@ -70,8 +70,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 23
           cache: npm
@@ -89,7 +89,7 @@ jobs:
         run: npm run -s autotest -- journey --suite perf --serve dist --ux-gates fail --headless=true
       - name: Upload the timings and screenshots
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: performance-journeys
           path: screenshots/

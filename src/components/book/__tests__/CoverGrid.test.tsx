@@ -2,7 +2,7 @@ import { fireEvent, screen } from '@testing-library/react-native';
 
 import { chunk, CoverGridRow, coverColumns } from '@/components/book/CoverGrid';
 import type { BookListItem } from '@/domain';
-import { renderWithTheme } from '@/testing/render';
+import { renderWithTheme, settle } from '@/testing/render';
 import { Testids } from '@/testing/testids.gen';
 
 const book = (id: number, title: string, extra: Partial<BookListItem> = {}): BookListItem => ({
@@ -19,8 +19,9 @@ const book = (id: number, title: string, extra: Partial<BookListItem> = {}): Boo
 });
 
 describe('CoverGrid', () => {
-  it('names and shows a rated book’s stars under its title', () => {
+  it('names and shows a rated book’s stars under its title', async () => {
     renderWithTheme(<CoverGridRow items={[book(1, 'Mort', { rating: 5 })]} columns={3} width={354} onPress={jest.fn()} />);
+    await settle();
     expect(screen.getByRole('button', { name: 'Mort, by Terry Pratchett, 1987, rated 5 out of 5' })).toBeOnTheScreen();
     expect(screen.getByTestId(Testids.rating.display, { includeHiddenElements: true })).toBeTruthy();
   });

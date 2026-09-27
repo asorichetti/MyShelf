@@ -2,7 +2,7 @@ import { router, Stack } from 'expo-router';
 import { act, fireEvent, renderRouter, screen } from 'expo-router/testing-library';
 import { Pressable, Text, View } from 'react-native';
 
-import { BookyOverlay, BookyProvider, emitBooky, useBooky, type BookyStore, type BookyStoreData } from '@/components/booky';
+import { BookyOverlay, BookyProvider, emitBooky, useBooky, type BookyDecision, type BookyStore, type BookyStoreData } from '@/components/booky';
 import { AppTestProviders } from '@/testing/render';
 import { Testids } from '@/testing/testids.gen';
 
@@ -34,7 +34,7 @@ function Controls() {
   );
 }
 
-function renderBooky(store?: BookyStore, now = () => 1_000_000) {
+function renderBooky(store?: BookyStore, now = () => 1_000_000, onDecision?: (decision: BookyDecision) => void) {
   function Layout() {
     return (
       <View style={{ flex: 1 }}>
@@ -50,7 +50,7 @@ function renderBooky(store?: BookyStore, now = () => 1_000_000) {
       initialUrl: '/',
       wrapper: ({ children }) => (
         <AppTestProviders>
-          <BookyProvider store={store} now={now} today={() => '2026-06-15'}>
+          <BookyProvider store={store} now={now} today={() => '2026-06-15'} onDecision={onDecision}>
             {children}
           </BookyProvider>
         </AppTestProviders>
@@ -153,6 +153,20 @@ describe('BookyProvider and the overlay', () => {
     expect(screen.queryByTestId(Testids.booky.bubble)).toBeNull();
   });
 
+  it('reports every decision, including staying quiet', async () => {
+    const decisions: BookyDecision[] = [];
+    renderBooky(memoryStore({ muted: ['book-added'] }), undefined, (d) => decisions.push(d));
+    await settle();
+    await send({ type: 'book-added', vars: { books: '2 books' } });
+    await send(gap);
+    await act(async () => emitBooky([complete, gap]));
+    expect(decisions).toEqual([
+      { triggers: ['book-added'], tip: null },
+      { triggers: ['series-gap'], tip: 'series-gap' },
+      { triggers: ['series-complete', 'series-gap'], tip: 'series-complete' },
+    ]);
+  });
+
   it('works without a store (nothing is remembered)', async () => {
     renderBooky();
     await settle();
@@ -161,12 +175,10 @@ describe('BookyProvider and the overlay', () => {
   });
 
   it('throws outside a provider', () => {
-    const spy = jest.spyOn(console, 'error').mockImplementation(() => {});
     function Naked() {
       useBooky();
       return null;
     }
     expect(() => renderRouter({ index: Naked }, { initialUrl: '/' })).toThrow(/BookyProvider/);
-    spy.mockRestore();
   });
 });

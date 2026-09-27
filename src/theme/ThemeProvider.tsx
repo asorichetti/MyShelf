@@ -8,8 +8,6 @@ import { scaleTheme, themes, type ColorSchemeName, type Theme } from './themes';
 /** Light, dark, or whatever the phone (or browser) is set to. */
 export type ThemePreference = 'system' | ColorSchemeName;
 
-export const themePreferences: readonly ThemePreference[] = ['system', 'light', 'dark'];
-
 interface ThemePreferenceState {
   preference: ThemePreference;
   setPreference: (preference: ThemePreference) => void;

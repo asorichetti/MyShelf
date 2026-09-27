@@ -26,14 +26,14 @@ Use `npx`, not `bunx` (this project uses npm; there is no `bun.lock`).
 | `npm run web` | run the web build (http://localhost:8081); for the auto test suite use `CI=1 npx expo start --web --port 8081` (no file watcher; restart after adding a route) | available |
 | `npm run export:web` | static web build into `dist/`; test it with any auto test suite command plus `--serve dist` (no dev server needed) | available |
 | `npm run typecheck` | `tsc --noEmit`; route strings (`href`, `router.navigate`) are checked strictly only while `.expo/types/router.d.ts` exists, which only the dev server generates, so CI starts it briefly in the auto test suite job and runs the typecheck again | available |
-| `npm test` | Jest | available |
+| `npm test` | Jest; a test fails if it writes to the console without spying on it and checking what was logged (`src/testing/jest.consoleGuard.ts`) | available |
 | `npm run selectors:gen` | regenerate test ids from `src/testing/selectors.json` | available |
 | `npm run selectors:check` | fail if the generated test id file is stale | available |
 | `npm run licences:gen` | regenerate `src/generated/licences.json` (every production package and its licence, for the About screen) from `package-lock.json`; run after adding a dependency | available |
 | `npm run licences:check` | fail if `licences.json` is stale | available |
 | `npm run icons:render` | render the icon, adaptive icon layers, splash, favicon and store graphics from `assets/source/*.svg` (`-- --preview <dir>` for mask review sheets); see [`docs/release.md`](docs/release.md) | available |
 | `npm run check` | `selectors:check` + `licences:check` + `lint` + `typecheck` + `test --ci` | available |
-| `npm run lint` | ESLint (Expo config + import order + hooks rules) | available |
+| `npm run lint` | ESLint (Expo config + import order + hooks rules); any warning fails it | available |
 | `npm run autotest:install-browser` | one time: Chromium for the auto test suite | available |
 | `npm run -s autotest -- <command> [flags]` | run any auto test suite command (`navigate`, `journey`, `smoke`, `screenshot`, `interact`); see [its README](tools/auto-test-suite/README.md) | available |
 | `npm run -s autotest:smoke` | `smoke`: core journeys, gates set to fail; needs the web server on 8081 | available |
@@ -53,7 +53,7 @@ Use `npx`, not `bunx` (this project uses npm; there is no `bun.lock`).
 
 - **Routes only in `src/app/`** (Expo Router: every file is a route; `_layout.tsx` defines navigators). Route files are one-line re-exports of a screen from `src/features` (e.g. `src/app/(tabs)/index.tsx` exports `ShelfScreen`); keep components, hooks and logic out of `src/app/`.
 - `src/components/ui` — themed primitives; `src/components/booky` — Booky; `src/components/<feature>` — feature components.
-- `src/features/<feature>` — screens (`ShelfScreen.tsx`) and the hooks that connect them to repositories/services (`useBookCount.ts`); `src/features/navigation` holds the tab layout and the loading, database-error and not-found screens.
+- `src/features/<feature>` — screens (`ShelfScreen.tsx`) and the hooks that connect them to repositories/services (`useShelfPrefs.ts`); `src/features/navigation` holds the tab layout and the loading, database-error and not-found screens.
 - `src/hooks` — small shared hooks with no feature of their own (`useReducedMotion`).
 - `src/services` — network, recognition, backup (no React, no SQL; created in Phase 02).
 - `modules/<name>` — the app's own Expo modules (native code, found by autolinking), such as `modules/text-recognition` (ML Kit OCR, Kotlin). Import their JavaScript side with `@modules/<name>`, only from `src/services`.
@@ -85,6 +85,7 @@ Use `npx`, not `bunx` (this project uses npm; there is no `bun.lock`).
 - Add packages with `npx expo install <package>` so versions match Expo SDK 57. Prefer Expo modules over third-party libraries.
 - Libraries with native code (for example ML Kit OCR) need a development build (`npx expo run:android` or `eas build --profile development`); they do not run in Expo Go.
 - `android/` and `ios/` are generated (Continuous Native Generation) and git-ignored. Never create or edit them by hand — configure native behaviour through `app.json` and config plugins.
+- `npm audit`: the `overrides` in `package.json` lift `xcode`'s `uuid` to 11.1.1 (GHSA-w5hq-g745-h8pq; `xcode` only runs during iOS prebuild, and 11 keeps the CommonJS `v4()` it calls). Drop the override once `@expo/config-plugins` no longer brings uuid 7. The one finding left, reported three times, is `decode-uri-component` 0.2.2 (GHSA-vcc3-ghjq-m6fr, moderate) under `query-string` 7 under `expo-router`: no release fixes it inside SDK 57 (`npm audit fix --force` would install expo-router 5), and it is only reachable through a malformed link the user opens, where it costs the app its own time. Check again at each SDK upgrade.
 
 ### Accessibility and UX
 
@@ -96,7 +97,7 @@ Use `npx`, not `bunx` (this project uses npm; there is no `bun.lock`).
 
 Every card lists the tests it adds. Three levels (details in `PLAN.md` §10):
 
-- **Jest** for every module. Repository tests use `@jest-environment node` and a real in-memory SQLite database. Network is always mocked with recorded fixtures.
+- **Jest** for every module. Repository tests use `@jest-environment node` and a real in-memory SQLite database. Network is always mocked with recorded fixtures. The output stays clean: a test that logs on purpose spies on the console and asserts on it, and one that renders something finishing on a promise awaits it (`settle()` from `src/testing/render.tsx`) rather than leaving an act() warning.
 - **Auto test suite** (`tools/auto-test-suite`, TypeScript + Playwright; reference in [its README](tools/auto-test-suite/README.md)) drives the web build: `navigate`, `journey`, `smoke`, `screenshot`, `interact`. Each command prints one JSON document and writes an evidence bundle (`screenshot.png`, `page.html`, `console.json`, `network.json`, `uxgates.json`) under `screenshots/` (git-ignored). UX gates (`pagestate`, `render`, `console`, `network`, `a11y`) run alongside assertions; exemptions need a written reason (`gates.config.json`, the console allowlist, or a per-journey waiver). Journeys self-register in `tools/auto-test-suite/src/journeys/` with a name, suite and description, and run in a fresh browser each; from P01-01 they start from a fixture via `/e2e?fixture=<name>&next=<route>`.
 - **Maestro** flows in `.maestro/` for camera, OCR and other native-only behaviour, run on an emulator or device with `scripts/maestro-suite.sh` ([`docs/device-testing.md`](docs/device-testing.md)); CI runs them weekly and on demand (`.github/workflows/android-e2e.yml`).
 

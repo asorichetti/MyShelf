@@ -33,9 +33,6 @@ export function formatShortDate(value: IsoDate, today?: IsoDate): string {
   return formatDay(d, { year: !(today != null && today.slice(0, 4) === value.slice(0, 4)) });
 }
 
-/** "1 day", "3 days". */
-export const dayCount = (n: number) => t('common.days', { count: n });
-
 type StampLoan = Pick<Loan, 'dueOn' | 'returnedOn'>;
 
 /**

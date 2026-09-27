@@ -2,7 +2,7 @@
 // the series on a book's page, confirming a guessed series, Booky's gap tip
 // and the completion celebration.
 import { Testids, tid } from '../selectors.ts';
-import { openFixture, waitForCount, waitForPath, waitVisible } from './helpers.ts';
+import { openFixture, waitForBookyDecision, waitForCount, waitForPath, waitVisible } from './helpers.ts';
 import { expect, q, register, type Context } from './registry.ts';
 
 const si = Testids.seriesInput;
@@ -234,6 +234,9 @@ register({
     await waitGone(c, tid(Testids.bookDetail.series), `${wind} (Not a series)`);
     await c.goto(wind);
     await waitVisible(c, vis(tid(Testids.bookDetail.title)), `${wind} (reloaded)`);
+    // An absence: the series section reads its place in the series after the book, so give a
+    // series that wrongly came back a moment to draw. ("Not a series" committed before the
+    // section went away above: its write emits library-changed, which removed it.)
     await c.page.waitForTimeout(500);
     expect((await count(c, tid(Testids.bookDetail.series))) === 0, `${wind}: the series came back after "Not a series"`);
   },
@@ -269,7 +272,9 @@ register({
     await click(c, tid(Testids.bookForm.save));
     const second = await waitForPath(c, /^\/book\/\d+$/, '/book/new (second) -> save');
     await waitVisible(c, vis(tid(bs.place)), second);
-    await c.page.waitForTimeout(1_000);
+    const shown = await waitForBookyDecision(c, 'series-gap', 0, second);
+    expect(shown === null, `${second}: Booky chose ${q(shown)} for Discworld's gap again`);
+    await c.settle();
     expect((await count(c, tid(Testids.seriesTip.root))) === 0, `${second}: the gap tip showed twice for Discworld`);
   },
 });
@@ -305,6 +310,7 @@ register({
     expect(pieces > 0, `${book}: expected falling bookmarks, found ${pieces}`);
     const hidden = await c.page.locator(tid(Testids.seriesCelebration.confetti)).getAttribute('aria-hidden');
     expect(hidden === 'true', `${book}: expected the confetti hidden from assistive tech, found aria-hidden=${q(hidden)}`);
+    // A settle for the screenshot: let the bookmarks fall into view.
     await c.page.waitForTimeout(700);
     await c.snap('series-celebration');
     await c.checkGates(`${book} (celebration)`);
@@ -323,6 +329,7 @@ register({
   async run(c) {
     await c.page.emulateMedia({ reducedMotion: 'reduce' });
     const book = await completeEarthsea(c);
+    // An absence: confetti would start as the bubble shows, so give it a moment to (not) appear.
     await c.page.waitForTimeout(800);
     const pieces = await c.page.locator(tid(Testids.seriesCelebration.confetti)).count();
     expect(pieces === 0, `${book}: expected no confetti with reduced motion, found ${pieces}`);

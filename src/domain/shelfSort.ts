@@ -68,9 +68,6 @@ export interface SortKeyInfo {
 /** Every key's words, by id (the registry's `sortKeyRegistry`). */
 export type SortKeyTable = Readonly<Record<SortKeyId, SortKeyInfo>>;
 
-/** "Author". */
-export const sortKeyLabel = (keys: SortKeyTable, key: SortKeyId): string => translate(keys[key].label);
-
 /** "A to Z", "Newest first". */
 export const sortDirectionLabel = (keys: SortKeyTable, level: SortLevel): string => translate(keys[level.key].directionLabels[level.direction]);
 

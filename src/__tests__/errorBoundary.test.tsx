@@ -5,7 +5,7 @@ import { type Db } from '@/db';
 import { armCrash } from '@/features/e2e/crashSwitch';
 import { SettingsScreen } from '@/features/settings/SettingsScreen';
 import { createTestDb } from '@/testing/createTestDb';
-import { renderApp } from '@/testing/renderApp';
+import { pressWhenShown, renderApp } from '@/testing/renderApp';
 import { Testids } from '@/testing/testids.gen';
 
 const T = Testids.errorBoundary;
@@ -29,7 +29,10 @@ beforeEach(async () => {
   consoleError = jest.spyOn(console, 'error').mockImplementation(() => {});
 });
 afterEach(async () => {
+  // Nothing but React's report of each error a boundary caught.
+  const unrelated = consoleError.mock.calls.filter((call) => !call.some((arg: unknown) => typeof arg === 'string' && arg.startsWith('The above error occurred in the <')));
   consoleError.mockRestore();
+  expect(unrelated).toEqual([]);
   process.env.EXPO_PUBLIC_E2E = originalE2e;
   await db.close();
 });
@@ -68,7 +71,7 @@ describe('screen error boundaries (P09-04)', () => {
   it('copies the error details (the share sheet on a phone), and says so', async () => {
     const share = jest.spyOn(Share, 'share').mockResolvedValue({ action: 'sharedAction' });
     renderApp(db, '/loans', { '(tabs)/loans': LoansThatThrow });
-    await act(async () => fireEvent.press(await screen.findByTestId(T.copy)));
+    await pressWhenShown(T.copy);
     expect(share).toHaveBeenCalledTimes(1);
     const text = share.mock.calls[0][0].message ?? '';
     expect(text).toMatch(/^MyShelf \d+\.\d+\.\d+/);

@@ -63,7 +63,7 @@ Let people sort the Shelf however they actually want to: by genre, then author, 
   - A caption under the toolbar (`home.sortSummary`) says "Sorted by Genre, then Author, then Series, then Number in series". A direction other than a key's natural one is named: "Date added (Oldest first)".
   - Each level is a list item named "Level 2: Then by Author, Z to A". The key button opens an inline radio group of the keys not used by another level. After a move, focus follows the level (the other arrow at an end), and a polite live region says "Author moved to level 1 of 3". "Add a level" stops at four. The last level cannot be removed. A shuffle has no direction button, and "Shuffle again" appears instead.
   - Title is always the final tiebreaker, and the sheet says so ("Books still tied after the last level go by title.").
-  - Every word is in the catalogue under `sort.` (`src/i18n/en.ts`): the sheet, its announcements, the summary pieces, each key's label and hint, the direction names and the preset names. The registry and the presets hold catalogue keys, translated when shown (`describeSort`, `sortKeyLabel`, `sortDirectionLabel` and `presetName` in `src/domain/shelfSort.ts`). A saved preset's name is the user's own text.
+  - Every word is in the catalogue under `sort.` (`src/i18n/en.ts`): the sheet, its announcements, the summary pieces, each key's label and hint, the direction names and the preset names. The registry and the presets hold catalogue keys, translated when shown (`describeSort`, `sortDirectionLabel` and `presetName` in `src/domain/shelfSort.ts`). A saved preset's name is the user's own text.
 
 ### P11-04 Presets and saved presets — done
 

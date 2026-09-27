@@ -14,7 +14,10 @@ export interface E2eWindowHook {
   counts: Partial<Record<LibraryEvent, number>>;
   /**
    * Values the app notes for journeys, oldest first, per key (`noteForE2e`):
-   * `backup-check` gets whether each start-up backup check found one due.
+   * `backup-check` gets whether each start-up backup check found one due,
+   * `onboarding-check` whether each check sent the user to the onboarding,
+   * and `booky` each of Booky's decisions (`{ triggers, tip }`, tip null
+   * when it stayed quiet).
    */
   notes: Record<string, unknown[]>;
 }

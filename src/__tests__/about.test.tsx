@@ -6,7 +6,7 @@ import { Linking } from 'react-native';
 
 import { AboutScreen, licenceSummary } from '@/features/settings/AboutScreen';
 import licences from '@/generated/licences.json';
-import { renderWithTheme } from '@/testing/render';
+import { renderWithTheme, settle } from '@/testing/render';
 import { Testids } from '@/testing/testids.gen';
 
 jest.mock('expo-router', () => ({ router: { back: jest.fn(), canGoBack: () => true, replace: jest.fn() } }));
@@ -20,8 +20,9 @@ describe('About screen', () => {
   });
   afterEach(() => jest.restoreAllMocks());
 
-  it('shows the version, the credits, the licence and one h1', () => {
+  it('shows the version, the credits, the licence and one h1', async () => {
     renderWithTheme(<AboutScreen />);
+    await settle();
     expect(screen.getAllByRole('heading').filter((h) => h.props['aria-level'] === 1).map((h) => h.props.children)).toEqual(['About MyShelf']);
     expect(screen.getByTestId(A.version).props.children).toMatch(/^Version \d+\.\d+\.\d+ · /);
     expect(screen.getByText('Book data from Open Library (Internet Archive) and Google Books.')).toBeOnTheScreen();

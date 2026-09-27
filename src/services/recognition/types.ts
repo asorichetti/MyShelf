@@ -1,6 +1,6 @@
 import type { OcrResult } from '@/domain';
 
-export type { OcrBlock, OcrFrame, OcrLine, OcrResult } from '@/domain';
+export type { OcrResult } from '@/domain';
 
 /** Reads the text on a photo (a `file://` or `content://` URI) on the device. */
 export type RecognizeText = (uri: string) => Promise<OcrResult>;

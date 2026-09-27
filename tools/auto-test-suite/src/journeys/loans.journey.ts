@@ -1,5 +1,5 @@
 import { Testids, tid } from '../selectors.ts';
-import { coverState, openFixture, rowNames, waitForCount, waitForPath, waitVisible } from './helpers.ts';
+import { coverState, openFixture, rowNames, waitForBookyDecision, waitForCount, waitForPath, waitVisible } from './helpers.ts';
 import { expect, q, register, type Context } from './registry.ts';
 
 // Loan dates in the demo fixture are relative to today; freeze it so stamps are exact.
@@ -359,7 +359,9 @@ register({
     // Once a day per loan: starting again today says nothing.
     await c.page.goto(c.url('/'));
     await waitForCount(c, shelfRow, 12, '/ (second start)');
-    await c.page.waitForTimeout(1_000);
+    const shown = await waitForBookyDecision(c, 'loan-overdue', 0, '/ (second start)');
+    expect(shown === null, `/ (second start): Booky chose ${q(shown)} for a loan it already nudged about today`);
+    await c.settle();
     expect((await c.page.locator(bubble).count()) === 0, '/ (second start): expected no second nudge for the same loan today');
   },
 });

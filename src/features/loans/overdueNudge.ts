@@ -9,9 +9,6 @@ import { t } from '@/i18n';
  * the engine's (P07-02). This module turns overdue loans into events.
  */
 
-/** Booky's tip id; muting it ("Don't show tips like this") turns the nudge off. */
-export const OVERDUE_NUDGE_KIND = 'loan-overdue';
-
 /** "yesterday", "3 days ago". */
 export function overdueWhen(loan: Pick<LoanWithDetails, 'dueOn' | 'returnedOn'>, today: IsoDate): string {
   const days = daysOverdue(loan, today);

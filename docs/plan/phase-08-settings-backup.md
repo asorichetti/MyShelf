@@ -111,7 +111,7 @@ Give the user control and peace of mind: sensible preferences, a full backup the
 
 ## Test ids to add to `selectors.json`
 
-Added as planned, with a few changes the screens needed (the code is the reference: `src/testing/selectors.json`): `settings` gained `section`, `googleBooksNote`, `lastBackup`, `sort`, `groupBy`, `viewMode`, `loanLengthCustom` and `dateExample` (and has no `row` or `booky` yet: the Booky track adds its own); new groups `preferences`, `backup` (`export`, `contents`, `status`), `restore` (plus `file` and `undo`), `csvExport` (`includeLoans`, `export`, `status`), `csvImport` (plus `file`, `error`, `mapField`, `shelvesToggle`, `previewRow`, `skipped`, `done`), `erase` (plus `backupFirst`, `next`), `about` (plus `privacyLink`, `attribution`, `licencesToggle`, `licenceRow`), `borrowers` and `pendingList` (the Settings lists; `pending` was already the Shelf banner's group). Every screen group has a `back`.
+Added as planned, with a few changes the screens needed (the code is the reference: `src/testing/selectors.json`): `settings` gained `section`, `lastBackup`, `sort`, `groupBy`, `viewMode`, `loanLengthCustom` and `dateExample` (and has no `row` or `booky` yet: the Booky track adds its own); new groups `preferences`, `backup` (`export`, `contents`, `status`), `restore` (plus `file` and `undo`), `csvExport` (`includeLoans`, `export`, `status`), `csvImport` (plus `file`, `error`, `mapField`, `shelvesToggle`, `previewRow`, `skipped`, `done`), `erase` (plus `backupFirst`, `next`), `about` (plus `privacyLink`, `attribution`, `licencesToggle`, `licenceRow`), `borrowers` and `pendingList` (the Settings lists; `pending` was already the Shelf banner's group). Every screen group has a `back`.
 
 ## Auto test suite journeys
 

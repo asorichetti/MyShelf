@@ -106,13 +106,15 @@ describe('LendSheet', () => {
   });
 
   it('says so when saving fails, and Cancel closes', async () => {
-    jest.spyOn(console, 'error').mockImplementation(() => {});
+    const error = jest.spyOn(console, 'error').mockImplementation(() => {});
     const { onClose } = await renderSheet(async () => {
       throw new Error('disk full');
     });
     await pickSam();
     await save();
     expect(screen.getByTestId(Testids.lend.error)).toHaveTextContent('Sorry, I couldn’t save that loan. Please try again.');
+    expect(error).toHaveBeenCalledWith('Could not lend the book', expect.objectContaining({ message: 'disk full' }));
+    error.mockRestore();
     fireEvent.press(screen.getByTestId(Testids.lend.cancel));
     expect(onClose).toHaveBeenCalled();
   });
