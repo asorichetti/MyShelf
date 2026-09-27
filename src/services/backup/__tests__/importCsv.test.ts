@@ -5,6 +5,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { authorsRepo, booksRepo, groupsRepo, seriesRepo, type Db } from '@/db';
+import { draftFromDetail, validateBookDraft } from '@/domain';
 import {
   CsvImportError,
   existingBookKeys,
@@ -199,6 +200,33 @@ describe('decomposed accents', () => {
     expect((await booksRepo.listBookItems(db, { query: 'emile' })).map((b) => b.title)).toEqual(['Émile']);
     expect((await authorsRepo.listBooksByAuthor(db, marquez.id)).map((b) => [b.title, b.notes])).toEqual([['Cien años de soledad', 'Notas: añejo']]);
     expect((await authorsRepo.listAuthors(db)).map((a) => a.name)).toEqual(['Gabriel García Márquez', 'Rousseau']);
+  });
+});
+
+describe('very long titles and names', () => {
+  it('keeps them up to 1000 characters and shortens longer ones with a warning, so the book can be edited', async () => {
+    const title500 = `A ${'very '.repeat(99)}long title`;
+    const endless = 'word '.repeat(400).trim();
+    const name = 'Committee '.repeat(150).trim();
+    const plan = planImport(
+      [
+        [title500, 'Anon'],
+        [endless, name],
+      ],
+      ['title', 'authors'],
+    );
+    expect(plan.books[0].book.title).toBe(title500);
+    expect(plan.books[0].warnings).toEqual([]);
+    const [long] = plan.books.slice(1);
+    expect(long.book.title.length).toBeLessThanOrEqual(1000);
+    expect(long.book.title.endsWith('word…')).toBe(true);
+    expect(long.authors[0].length).toBeLessThanOrEqual(1000);
+    expect(long.warnings).toEqual(['The title or an author’s name was over 1000 characters, so it was shortened.']);
+    await importPlannedBooks(db, plan);
+    for (const b of await booksRepo.listBooks(db)) {
+      const detail = (await booksRepo.getBookDetail(db, b.id))!;
+      expect(validateBookDraft(draftFromDetail(detail)).ok).toBe(true);
+    }
   });
 });
 

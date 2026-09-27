@@ -1,4 +1,5 @@
 import {
+  AUTHOR_NAME_MAX,
   BACKUP_FORMAT,
   BACKUP_FORMAT_VERSION,
   backupColumnsAt,
@@ -7,6 +8,7 @@ import {
   backupTableNames,
   backupTablesAt,
   joinNames,
+  TITLE_MAX,
   type BackupColumn,
   type BackupFile,
   type BackupRow,
@@ -104,6 +106,10 @@ function checkRow(spec: BackupTableSpec, columns: readonly BackupColumn[], raw: 
     if (!typeOk(col, v)) throw new BackupError('bad-row', t('restore.errors.unexpectedField', { row, field: col.name }));
     if (col.type === 'text' && !col.nullable && (col.name === 'title' || col.name === 'name') && !(v as string).trim()) {
       throw new BackupError('bad-row', t('restore.errors.emptyField', { row, field: col.name }));
+    }
+    // Longer than the book form takes: the book could not be edited (the app shortens such text on the way in).
+    if (typeof v === 'string' && ((spec.name === 'books' && col.name === 'title' && v.length > TITLE_MAX) || (spec.name === 'authors' && col.name === 'name' && v.length > AUTHOR_NAME_MAX))) {
+      throw new BackupError('bad-row', t('restore.errors.unexpectedField', { row, field: col.name }));
     }
     if (spec.name === 'books' && col.name === 'rating' && v !== null && !isRating(v)) {
       throw new BackupError('bad-row', t('restore.errors.badRating', { row, value: String(v) }));

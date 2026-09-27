@@ -32,6 +32,26 @@ export function normaliseText(text: string, { dropArticle = true }: { dropArticl
   return s;
 }
 
+/**
+ * `text` cut to at most `max` characters (UTF-16 units, as `length` counts
+ * them) for data past any sane limit: at the last word boundary when one is
+ * near the end (within 30 characters and in the second half), else inside
+ * the word, trailing spaces and separators dropped, and an ellipsis added.
+ * Text within the limit comes back unchanged. Never splits a surrogate pair.
+ */
+export function clampText(text: string, max: number): string {
+  if (text.length <= max) return text;
+  let cut = Math.max(0, max - 1);
+  const code = text.charCodeAt(cut);
+  if (code >= 0xdc00 && code <= 0xdfff) cut--;
+  let head = text.slice(0, cut);
+  if (!/\s/.test(text.charAt(cut))) {
+    const space = head.search(/\s\S*$/);
+    if (space >= cut / 2 && cut - space <= 30) head = head.slice(0, space);
+  }
+  return `${head.replace(/[\s,;:–—-]+$/u, '')}…`;
+}
+
 /** Title key: the main title (before a `:` subtitle), normalised. */
 export function titleKey(title: string): string {
   const main = title.split(/\s*:\s+|\s+[-–—]\s+/)[0] || title;

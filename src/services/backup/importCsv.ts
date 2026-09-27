@@ -1,6 +1,8 @@
 import { authorsRepo, bookExportRepo, booksRepo, genresRepo, groupsRepo, seriesRepo, type Db } from '@/db';
 import {
+  AUTHOR_NAME_MAX,
   authorKey,
+  clampText,
   isbn10To13,
   isbn13To10,
   isLanguageCode,
@@ -11,6 +13,7 @@ import {
   parsePosition,
   parseSeriesFromTitle,
   stripHtml,
+  TITLE_MAX,
   titleKey,
   toIso6391,
   type BookFormat,
@@ -263,7 +266,7 @@ export function planImport(rows: readonly string[][], mapping: readonly ImportFi
     const rawTitle = col(row, 'title');
     const primary = splitList(col(row, 'authors'), /\s*(?:;|\s&\s)\s*/);
     const additional = splitList(col(row, 'additionalAuthors'), /\s*[,;]\s*/);
-    const authors = unique([...primary, ...additional]);
+    let authors = unique([...primary, ...additional]);
     if (!rawTitle) {
       const reason = row.every((c) => !c.trim()) ? t('importCsv.reasons.emptyRow') : t('importCsv.reasons.noTitle');
       plan.skipped.push({ line, title: null, reason });
@@ -274,7 +277,11 @@ export function planImport(rows: readonly string[][], mapping: readonly ImportFi
     const explicitSeries = col(row, 'series');
     const split = explicitSeries ? { title: rawTitle, series: null } : splitSeriesFromTitle(rawTitle);
     const series = explicitSeries ? { name: explicitSeries, position: parsePosition(col(row, 'seriesPosition')) } : split.series;
-    const title = split.title;
+    // Past what the book form takes (broken data): shortened at a word, with a warning.
+    const title = clampText(split.title, TITLE_MAX);
+    const shortened = title !== split.title || authors.some((a) => a.length > AUTHOR_NAME_MAX);
+    authors = authors.map((a) => clampText(a, AUTHOR_NAME_MAX));
+    if (shortened) warnings.push(t('importCsv.warnings.shortened', { max: TITLE_MAX }));
 
     // ISBNs: ISBN-13 wins; a valid ISBN-10 fills in the 13 when it is missing.
     let isbn13: string | null = null;

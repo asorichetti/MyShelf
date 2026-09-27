@@ -30,9 +30,21 @@ describe('title', () => {
     expect(valueOf({ title: '  Dune  ' }).title).toBe('Dune');
   });
 
-  it('is at most 300 characters', () => {
-    expect(valueOf({ title: 'x'.repeat(300) }).title).toHaveLength(300);
-    expect(errorOf({ title: 'x'.repeat(301) }, 'title')).toMatch(/under 300 characters/);
+  it('takes the longest titles real catalogues hold (500 characters and more), up to 1000', () => {
+    expect(valueOf({ title: 'x'.repeat(500) }).title).toHaveLength(500);
+    expect(valueOf({ title: 'x'.repeat(1000) }).title).toHaveLength(1000);
+    expect(errorOf({ title: 'x'.repeat(1001) }, 'title')).toMatch(/under 1000 characters/);
+  });
+});
+
+describe('authors', () => {
+  it('take names up to 1000 characters (corporate authors run past 200)', () => {
+    const committee = 'United States. Congress. Senate. Committee on Governmental Affairs. Subcommittee on Oversight of Government Management, the Federal Workforce, and the District of Columbia';
+    const long = `${committee}. ${committee}`;
+    expect(long.length).toBeGreaterThan(300);
+    expect(valueOf({ authors: [{ name: long, role: 'author', sortName: null }] }).authors.map((a) => a.name)).toEqual([long]);
+    expect(valueOf({ authors: [{ name: 'y'.repeat(1000), role: 'author', sortName: null }] }).authors).toHaveLength(1);
+    expect(errorOf({ authors: [{ name: 'y'.repeat(1001), role: 'author', sortName: null }] }, 'authors')).toBeTruthy();
   });
 });
 

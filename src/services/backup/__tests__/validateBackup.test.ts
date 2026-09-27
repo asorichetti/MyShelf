@@ -147,6 +147,22 @@ describe('validateBackup', () => {
     expect(check(fine)).toBe('accepted');
   });
 
+  it('refuses titles and names longer than the book form takes, and accepts long real ones', () => {
+    const cases: [string, (b: BackupFile) => void][] = [
+      ['a title of 1001 characters', (b) => (b.tables.books![0].title = 'x'.repeat(1001))],
+      ['an author of 1001 characters', (b) => (b.tables.authors![0].name = 'y'.repeat(1001))],
+    ];
+    for (const [what, tamper] of cases) {
+      const doc = clone();
+      tamper(doc);
+      expect({ what, code: check(doc) }).toEqual({ what, code: 'bad-row' });
+    }
+    const fine = clone();
+    fine.tables.books![0].title = 'x'.repeat(1000);
+    fine.tables.authors![0].name = 'y'.repeat(600);
+    expect(check(fine)).toBe('accepted');
+  });
+
   it('refuses ids no library reaches, which only a hand-made file has', () => {
     const cases: [string, (b: BackupFile) => void][] = [
       ['book id in the trillions', (b) => (b.tables.books![0].id = 4_000_000_000_000)],

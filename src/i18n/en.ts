@@ -2007,6 +2007,7 @@ export const en = {
       badPages: 'The page count “{value}” wasn’t understood.',
       badRating: 'The rating “{value}” wasn’t understood, so it was left out.',
       badAdded: 'The date added “{value}” wasn’t understood, so the book is dated today.',
+      shortened: 'The title or an author’s name was over {max} characters, so it was shortened.',
     },
     errors: {
       empty: 'That file is empty. Choose a spreadsheet saved as CSV.',

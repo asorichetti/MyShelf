@@ -1,4 +1,31 @@
-import { authorKey, bookMatchKey, normaliseText, sameAuthor, stripDiacritics, stripHtml, titleKey } from '../text';
+import { authorKey, bookMatchKey, clampText, normaliseText, sameAuthor, stripDiacritics, stripHtml, titleKey } from '../text';
+
+describe('clampText', () => {
+  it('leaves text within the limit alone', () => {
+    expect(clampText('Mort', 10)).toBe('Mort');
+    expect(clampText('x'.repeat(10), 10)).toBe('x'.repeat(10));
+  });
+
+  it('cuts longer text at a word boundary and adds an ellipsis, within the limit', () => {
+    expect(clampText('The Life and Strange Surprizing Adventures', 20)).toBe('The Life and…');
+    expect(clampText('Robinson Crusoe, of York, Mariner', 26)).toBe('Robinson Crusoe, of York…');
+    const long = 'word '.repeat(400).trim();
+    const out = clampText(long, 1000);
+    expect(out.length).toBeLessThanOrEqual(1000);
+    expect(out.endsWith('word…')).toBe(true);
+  });
+
+  it('cuts inside a word only when there is no space near the end', () => {
+    expect(clampText('x'.repeat(50), 10)).toBe(`${'x'.repeat(9)}…`);
+    expect(clampText(`a ${'x'.repeat(50)}`, 20)).toBe(`a ${'x'.repeat(17)}…`);
+  });
+
+  it('never splits a surrogate pair', () => {
+    const out = clampText('📚'.repeat(20), 11);
+    expect(out.length).toBeLessThanOrEqual(11);
+    expect(out).toBe(`${'📚'.repeat(5)}…`);
+  });
+});
 
 describe('normaliseText', () => {
   it.each([

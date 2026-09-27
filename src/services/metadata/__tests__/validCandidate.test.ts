@@ -30,6 +30,37 @@ describe('a mapped candidate makes a valid book draft', () => {
   });
 });
 
+describe('very long titles and names', () => {
+  // Measured (September 2026): the longest title in a live Open Library sample of 2,500 was 498 characters, the
+  // longest corporate author 154; the recorded fixtures stop at 101 and 25. Anything past 1000 is broken data.
+  const crusoe =
+    "The Life and Strange Surprizing Adventures of Robinson Crusoe, of York, Mariner: Who lived Eight and Twenty Years, all alone in an un-inhabited Island on the Coast of America, near the Mouth of the Great River of Oroonoque; Having been cast on Shore by Shipwreck, wherein all the Men perished but himself. With An Account how he was at last as strangely deliver'd by Pyrates. Written by Himself.";
+  const committee = 'Great Britain. Parliament. House of Commons. Expenditure Committee. Social Services and Employment Sub-Committee'.repeat(3);
+
+  it('are kept whole when a real catalogue could hold them', () => {
+    expect(crusoe.length).toBeGreaterThan(300);
+    expect(committee.length).toBeGreaterThan(200);
+    const ol = mapEdition({ key: '/books/OL1M', title: crusoe }, { authors: [committee] });
+    expect(ol.title).toBe(crusoe);
+    expect(ol.authors).toEqual([committee]);
+    expect(validateBookDraft(candidateToDraft(ol)).ok).toBe(true);
+  });
+
+  it('are shortened at a word, with an ellipsis, past 1000 characters, so the book can still be edited', () => {
+    const endless = `${crusoe} `.repeat(5);
+    const name = `${committee} `.repeat(5);
+    const ol = mapEdition({ key: '/books/OL1M', title: endless }, { authors: [name] });
+    const gb = mapVolume({ id: 'v1', volumeInfo: { title: endless, authors: [name] } })!;
+    for (const candidate of [ol, gb]) {
+      expect(candidate.title.length).toBeLessThanOrEqual(1000);
+      expect(candidate.title.endsWith('…')).toBe(true);
+      expect(endless.startsWith(candidate.title.slice(0, -1).trimEnd())).toBe(true);
+      expect(candidate.authors[0].length).toBeLessThanOrEqual(1000);
+      expect(validateBookDraft(candidateToDraft(candidate)).ok).toBe(true);
+    }
+  });
+});
+
 describe('every recorded answer makes a valid book draft', () => {
   it('for each ISBN lookup and edition list in the fixtures', async () => {
     const { service } = createFixtureMetadata();
