@@ -1412,6 +1412,26 @@
    "license": "MIT"
   },
   {
+   "name": "expo-dev-client",
+   "version": "57.0.19",
+   "license": "MIT"
+  },
+  {
+   "name": "expo-dev-launcher",
+   "version": "57.0.20",
+   "license": "MIT"
+  },
+  {
+   "name": "expo-dev-menu",
+   "version": "57.0.18",
+   "license": "MIT"
+  },
+  {
+   "name": "expo-dev-menu-interface",
+   "version": "57.0.0",
+   "license": "MIT"
+  },
+  {
    "name": "expo-document-picker",
    "version": "57.0.2",
    "license": "MIT"
@@ -1452,6 +1472,11 @@
    "license": "MIT"
   },
   {
+   "name": "expo-json-utils",
+   "version": "57.0.2",
+   "license": "MIT"
+  },
+  {
    "name": "expo-keep-awake",
    "version": "57.0.2",
    "license": "MIT"
@@ -1459,6 +1484,11 @@
   {
    "name": "expo-linking",
    "version": "57.0.11",
+   "license": "MIT"
+  },
+  {
+   "name": "expo-manifests",
+   "version": "57.0.2",
    "license": "MIT"
   },
   {
@@ -1519,6 +1549,11 @@
   {
    "name": "expo-symbols",
    "version": "57.0.3",
+   "license": "MIT"
+  },
+  {
+   "name": "expo-updates-interface",
+   "version": "57.0.2",
    "license": "MIT"
   },
   {
