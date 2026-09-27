@@ -7,6 +7,15 @@ export interface OutgoingFile {
   dialogTitle?: string;
 }
 
+/** A binary file to hand to the user (the raw database file). */
+export interface OutgoingBinaryFile {
+  fileName: string;
+  mimeType: string;
+  bytes: Uint8Array;
+  /** The share sheet's title on Android. */
+  dialogTitle?: string;
+}
+
 export type ShareOutcome =
   /** The share sheet opened (and closed); the user chose where the file went. */
   | 'shared'
@@ -23,3 +32,5 @@ export interface PickedFile {
 
 export const JSON_MIME = 'application/json';
 export const CSV_MIME = 'text/csv';
+/** A SQLite database file (IANA). */
+export const SQLITE_MIME = 'application/vnd.sqlite3';

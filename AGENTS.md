@@ -22,7 +22,7 @@ Use `npx`, not `bunx` (this project uses npm; there is no `bun.lock`).
 | `npm install` | install dependencies | available |
 | `npx expo install <package>` | **always** use this to add a dependency — it resolves the SDK-compatible version | available |
 | `npm start` / `npx expo start` | Metro dev server | available |
-| `npm run android` | `expo run:android`: build a development build, install it on a connected device or emulator and start Metro. Expo Go cannot run the app (it has its own native module); needs JDK 17 and the Android SDK | available |
+| `npm run android` | `expo run:android`: build a development build (with `expo-dev-client`: the developer menu and a launcher that picks a Metro server), install it on a connected device or emulator and start Metro. Expo Go cannot run the app (it has its own native module); needs JDK 17 and the Android SDK. With several devices: `npx expo run:android --device <avd-name>`; another Metro port: `--port 8090` | available |
 | `npm run web` | run the web build (http://localhost:8081); for the auto test suite use `CI=1 npx expo start --web --port 8081` (no file watcher; restart after adding a route) | available |
 | `npm run export:web` | static web build into `dist/`; test it with any auto test suite command plus `--serve dist` (no dev server needed) | available |
 | `npm run typecheck` | `tsc --noEmit`; route strings (`href`, `router.navigate`) are checked strictly only while `.expo/types/router.d.ts` exists, which only the dev server generates, so CI starts it briefly in the auto test suite job and runs the typecheck again | available |
@@ -43,6 +43,7 @@ Use `npx`, not `bunx` (this project uses npm; there is no `bun.lock`).
 | `scripts/build-android-apk.sh e2e\|production` | release APK into `build/`: `e2e` has the fixture loader for Maestro, `production` is what users install ([`docs/device-testing.md`](docs/device-testing.md)) | available |
 | `scripts/maestro-suite.sh --e2e-apk build/myshelf-e2e.apk [--production-apk …]` | the whole Maestro suite on an emulator or phone, with the device set up for each flow; one flow: `maestro test .maestro/<flow>.yaml` | available |
 | `npx expo run:android` | the same as `npm run android` | available |
+| `npx eas-cli@latest build --local --profile development\|e2e\|preview -p android` | the `eas.json` profiles built on this machine: `development` (development build, internal APK, fixture loader on), `e2e` (release APK with the fixture loader, for Maestro), `preview` (release APK without it), `production` (AAB). Needs an Expo account (`eas login`); `scripts/build-android-apk.sh` builds the E2E and production APKs without one | needs an Expo login |
 | `npx expo-doctor` | diagnose dependency/config issues | available |
 | `npx expo install --fix` | fix incompatible package versions | available |
 

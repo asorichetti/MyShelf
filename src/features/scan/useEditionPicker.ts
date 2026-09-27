@@ -5,17 +5,37 @@ import { useMetadataService } from '@/features/lookup/metadataService';
 import { isAbortError } from '@/services/http';
 import type { BookCandidate, MetadataService } from '@/services/metadata';
 
-import { enrichEdition, groupByWork, orderEditions, type WorkGroup } from './editionChoice';
+import { editionMatches, enrichEdition, groupByWork, orderEditionPages, type WorkGroup } from './editionChoice';
 
 import type { ScanSession } from './sessionStore';
 
 export { enrichEdition, groupByWork, type WorkGroup } from './editionChoice';
 
-export type EditionsLoad = { status: 'idle' } | { status: 'loading' } | { status: 'ready'; editions: BookCandidate[] } | { status: 'error' };
+export type EditionsLoad =
+  | { status: 'idle' }
+  | { status: 'loading' }
+  | {
+      status: 'ready';
+      /** Every edition loaded so far, page after page. */
+      editions: BookCandidate[];
+      /** The pages as they came (`EDITIONS_PAGE` at a time). */
+      pages: BookCandidate[][];
+      /** Editions loaded. */
+      loaded: number;
+      /** Editions Open Library has for the work, when known. */
+      total: number | null;
+      /** Where the next page starts; null when all are loaded. */
+      nextOffset: number | null;
+      /** "Show more editions": the next page's state. */
+      more: 'idle' | 'loading' | 'error';
+    }
+  | { status: 'error' };
 
 export interface EditionFilters {
   format: BookFormat | null;
   language: string | null;
+  /** Year, publisher or ISBN typed to find an edition among those loaded (`editionMatches`). */
+  text: string;
 }
 
 export interface EditionPicker {
@@ -33,6 +53,10 @@ export interface EditionPicker {
   editionsOf: (key: string) => BookCandidate[];
   filters: EditionFilters;
   setFilters: (f: Partial<EditionFilters>) => void;
+  /** Whether a work has editions not loaded yet. */
+  hasMore: (key: string) => boolean;
+  /** Loads a work's next page of editions ("Show more editions"). */
+  loadMore: (key: string) => void;
   /** Formats and languages present among the editions loaded so far; the preferred language first. */
   available: { formats: BookFormat[]; languages: string[] };
   selected: BookCandidate | null;
@@ -59,7 +83,7 @@ export function useEditionPicker(session: ScanSession | null, { service: injecte
   // One work: open it straight away.
   const [expanded, setExpanded] = useState<ReadonlySet<string>>(() => new Set(groups.length === 1 ? [groups[0].key] : []));
   const [fetched, setFetched] = useState<Record<string, EditionsLoad>>({});
-  const [filters, setFilterState] = useState<EditionFilters>({ format: null, language: null });
+  const [filters, setFilterState] = useState<EditionFilters>({ format: null, language: null, text: '' });
   const [selected, setSelected] = useState<BookCandidate | null>(single);
   const controllers = useRef(new Map<string, AbortController>());
 
@@ -67,6 +91,11 @@ export function useEditionPicker(session: ScanSession | null, { service: injecte
     const all = controllers.current;
     return () => all.forEach((c) => c.abort());
   }, []);
+  // What is loaded now, for `loadMore` (state lags a render).
+  const fetchedNow = useRef(fetched);
+  useEffect(() => {
+    fetchedNow.current = fetched;
+  }, [fetched]);
 
   /** Open Library works list their editions; anything else has only the editions that came with it. */
   const loadable = useCallback((g: WorkGroup) => Boolean(g.work.workKey && g.work.source === 'openlibrary'), []);
@@ -78,19 +107,63 @@ export function useEditionPicker(session: ScanSession | null, { service: injecte
       const abort = new AbortController();
       controllers.current.set(group.key, abort);
       service
-        .editions(group.work.workKey!, { signal: abort.signal, authors: group.work.authors })
-        .then((editions) => !abort.signal.aborted && setFetched((l) => ({ ...l, [group.key]: { status: 'ready', editions } })))
+        .editionsPage(group.work.workKey!, { signal: abort.signal, authors: group.work.authors })
+        .then(
+          (page) =>
+            !abort.signal.aborted &&
+            setFetched((l) => ({
+              ...l,
+              [group.key]: { status: 'ready', editions: page.editions, pages: [page.editions], loaded: page.editions.length, total: page.total, nextOffset: page.nextOffset, more: 'idle' },
+            })),
+        )
         .catch((error) => {
           if (!abort.signal.aborted && !isAbortError(error)) setFetched((l) => ({ ...l, [group.key]: { status: 'error' } }));
         });
     }
   }, [expanded, groups, loadable, service]);
 
+  const loadMore = useCallback(
+    (key: string) => {
+      const group = groups.find((g) => g.key === key);
+      const load = fetchedNow.current[key];
+      const abort = controllers.current.get(key);
+      if (!group || !abort || load?.status !== 'ready' || load.nextOffset == null || load.more === 'loading') return;
+      const offset = load.nextOffset;
+      const update = (change: (current: Extract<EditionsLoad, { status: 'ready' }>) => EditionsLoad) =>
+        setFetched((l) => {
+          const current = l[key];
+          const next = current?.status === 'ready' ? { ...l, [key]: change(current) } : l;
+          fetchedNow.current = next;
+          return next;
+        });
+      update((current) => ({ ...current, more: 'loading' }));
+      fetchedNow.current = { ...fetchedNow.current, [key]: { ...load, more: 'loading' } };
+      service
+        .editionsPage(group.work.workKey!, { signal: abort.signal, authors: group.work.authors, offset })
+        .then((page) => {
+          if (abort.signal.aborted) return;
+          update((current) => {
+            const pages = [...current.pages, page.editions];
+            return { ...current, pages, editions: pages.flat(), loaded: current.loaded + page.editions.length, total: page.total, nextOffset: page.nextOffset, more: 'idle' };
+          });
+        })
+        .catch((error) => {
+          if (!abort.signal.aborted && !isAbortError(error)) update((current) => ({ ...current, more: 'error' }));
+        });
+    },
+    [groups, service],
+  );
+
+  const hasMore = useCallback((key: string) => {
+    const load = fetched[key];
+    return load?.status === 'ready' && load.nextOffset != null;
+  }, [fetched]);
+
   const loads = useMemo(() => {
     const out: Record<string, EditionsLoad> = {};
     for (const g of groups) {
       out[g.key] = !loadable(g)
-        ? { status: 'ready', editions: [] }
+        ? { status: 'ready', editions: [], pages: [], loaded: 0, total: 0, nextOffset: null, more: 'idle' }
         : (fetched[g.key] ?? (expanded.has(g.key) ? { status: 'loading' } : { status: 'idle' }));
     }
     return out;
@@ -110,8 +183,8 @@ export function useEditionPicker(session: ScanSession | null, { service: injecte
       const group = groups.find((g) => g.key === key);
       if (!group) return [];
       const load = loads[key];
-      const loaded = load?.status === 'ready' ? load.editions : [];
-      const list = orderEditions(group, loaded, { language, title: wantedTitle });
+      const pages = load?.status === 'ready' ? load.pages : [];
+      const list = orderEditionPages(group, pages, { language, title: wantedTitle });
       // A work with no editions to show can be chosen itself.
       return list.length || load?.status === 'loading' || load?.status === 'idle' ? list : [group.work];
     },
@@ -121,7 +194,8 @@ export function useEditionPicker(session: ScanSession | null, { service: injecte
   const editionsOf = useCallback(
     (key: string) =>
       allEditionsOf(key).filter(
-        (c) => (!filters.format || c.format === filters.format) && (!filters.language || c.language === filters.language),
+        (c) =>
+          (!filters.format || c.format === filters.format) && (!filters.language || c.language === filters.language) && editionMatches(c, filters.text),
       ),
     [allEditionsOf, filters],
   );
@@ -152,6 +226,8 @@ export function useEditionPicker(session: ScanSession | null, { service: injecte
     editionsOf,
     filters,
     setFilters: (f) => setFilterState((current) => ({ ...current, ...f })),
+    hasMore,
+    loadMore,
     available,
     selected,
     select: setSelected,

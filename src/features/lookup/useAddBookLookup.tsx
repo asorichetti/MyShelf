@@ -134,38 +134,53 @@ export function useAddBookLookup(
     requestAnimationFrame(() => focusField('title'));
   }, [focusField]);
 
+  // "Find a cover online" runs one search at a time, cancelled when the form goes.
+  const coverSearch = useRef<AbortController | null>(null);
+  useEffect(() => () => coverSearch.current?.abort(), []);
+
   const findCoverOnline = useCallback(async () => {
-    const { draft, setField } = formRef.current;
+    const { draft } = formRef.current;
     const author = draft.authors[0]?.name;
     const isbn = toIsbn13(draft.isbn);
     if (!isbn && !(draft.title.trim() && author)) {
       show({ message: t('lookup.cover.needDetails') });
       return;
     }
+    coverSearch.current?.abort();
+    const abort = new AbortController();
+    coverSearch.current = abort;
+    const { signal } = abort;
+    // The cover on the card when the search started: a photo picked (or a cover removed) meanwhile is newer and stays.
+    const before = draft.coverUri;
+    const stale = () => signal.aborted || formRef.current.draft.coverUri !== before;
     try {
       let source: CoverSource = origin.current ? coverSourceFromCandidate(origin.current) : { isbn13: isbn };
       if (isbn) {
-        const [candidate] = (await service.lookupIsbn(isbn)).candidates;
+        const [candidate] = (await service.lookupIsbn(isbn, { signal })).candidates;
         if (candidate) source = combineCoverSources(source, coverSourceFromCandidate(candidate));
       } else if (author) {
-        const { candidates } = await service.search({ title: draft.title.trim(), author });
+        const { candidates } = await service.search({ title: draft.title.trim(), author }, { signal });
         const match = candidates.find((c) => c.authors[0] && bookMatchKey(c.title, c.authors[0]) === bookMatchKey(draft.title, author));
         if (match) source = combineCoverSources(source, coverSourceFromCandidate(match));
       }
+      if (stale()) return;
       const { http } = getLookupServices(db);
-      const { cover } = await resolveCover(source, { http, includeGoogle: await includeGoogleCovers(db) });
+      const { cover } = await resolveCover(source, { http, signal, includeGoogle: await includeGoogleCovers(db) });
+      if (stale()) return;
       if (!cover) {
         show({ message: t('lookup.cover.notFound') });
         return;
       }
-      setField('coverUri', cover.url);
+      formRef.current.setField('coverUri', cover.url);
       onlineCover.current = { url: cover.url, source };
       show({ message: t('lookup.cover.found') });
     } catch (error) {
-      if (isAbortError(error)) return;
+      if (isAbortError(error) || stale()) return;
       show({
         message: error instanceof OfflineError ? t('lookup.cover.offline') : t('lookup.cover.failed'),
       });
+    } finally {
+      if (coverSearch.current === abort) coverSearch.current = null;
     }
   }, [db, service, show]);
 

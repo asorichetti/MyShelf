@@ -2,10 +2,9 @@ import { useCallback } from 'react';
 
 import { useSnackbar } from '@/components/ui';
 import { booksRepo, useDatabase } from '@/db';
-import { deleteCoverOfDeletedBook } from '@/features/covers';
+import { holdCover, releaseCoverOfDeletedBook, unholdCover } from '@/features/covers';
 import { emit } from '@/features/events';
 import { t } from '@/i18n';
-import { isLocalCover } from '@/services/covers';
 
 /** How long "Undo" is offered after a delete. */
 export const UNDO_WINDOW_MS = 6000;
@@ -19,8 +18,8 @@ function announceChanges() {
 /**
  * Deletes a book in one transaction and offers Undo in a snackbar for six
  * seconds, which puts the whole book back (authors, genres, series, groups
- * and loans, same id). A downloaded cover file is only deleted once Undo is
- * no longer on offer.
+ * and loans, same id). Its cover file is held while Undo is on offer, then
+ * deleted unless something else names it (`releaseCover`).
  */
 export function useDeleteBook(): (book: { id: number; title: string }) => Promise<boolean> {
   const db = useDatabase();
@@ -31,6 +30,7 @@ export function useDeleteBook(): (book: { id: number; title: string }) => Promis
       if (!snapshot) return false;
       announceChanges();
       const coverUri = snapshot.book.cover_uri as string | null;
+      holdCover(coverUri);
       show({
         message: t('bookDetail.undoDelete.removed', { title }),
         duration: UNDO_WINDOW_MS,
@@ -50,7 +50,9 @@ export function useDeleteBook(): (book: { id: number; title: string }) => Promis
           },
         },
         onHide: (reason) => {
-          if (reason !== 'action' && isLocalCover(coverUri)) void deleteCoverOfDeletedBook(db, id);
+          // Undo puts the book back, naming its cover again; otherwise the file goes if nothing else names it.
+          if (reason === 'action') unholdCover(coverUri);
+          else void releaseCoverOfDeletedBook(db, coverUri);
         },
       });
       return true;

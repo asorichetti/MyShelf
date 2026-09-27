@@ -26,7 +26,8 @@ export interface SeriesProgress {
   complete: boolean;
 }
 
-const isPosition = (p: number | null): p is number => p != null && Number.isFinite(p) && p > 0;
+/** A place in the series: 0 is a prequel (#0), before the main sequence 1…N, like a 0.5. */
+const isPosition = (p: number | null): p is number => p != null && Number.isFinite(p) && p >= 0;
 
 /** The main sequence's known length: max(total_count, highest position owned, rounded down). */
 export function seriesLength({ positions, totalCount }: SeriesShape): number | null {

@@ -3,9 +3,12 @@ import { useEffect, useRef } from 'react';
 
 import { onBookyEvent, useBooky } from '@/components/booky';
 import { libraryRepo, settingsRepo, useDatabase, type Db } from '@/db';
+import { noteForE2e } from '@/features/e2e/eventHook';
 import { inFixtureVisit } from '@/features/e2e/fixtureVisit';
+import { emit as emitLibraryEvent } from '@/features/events';
 
 import { isBackupDue, snoozeUntil } from './backupReminder';
+
 
 /** Whether a backup reminder is due now (P08-06's rule: 10+ books, no backup in 30 days, at most weekly, not snoozed). */
 export async function backupReminderDue(db: Db, now: Date = new Date()): Promise<boolean> {
@@ -49,10 +52,21 @@ export function useBackupReminder(): void {
         const now = new Date();
         backupReminderDue(db, now)
           .then(async (due) => {
-            if (!due || inFixtureVisit()) return;
-            const later = () => void settingsRepo.setSetting(db, 'backup.snoozedUntil', snoozeUntil(new Date())).catch(() => undefined);
+            // A fixture was loaded while the library was read: that visit stays quiet.
+            if (inFixtureVisit()) return;
+            // The web E2E build notes each answer, so a journey knows the check has run.
+            noteForE2e('backup-check', due);
+            if (!due) return;
+            const later = () =>
+              void settingsRepo
+                .setSetting(db, 'backup.snoozedUntil', snoozeUntil(new Date()))
+                .then(() => emitLibraryEvent('settings-changed'))
+                .catch(() => undefined);
             const shown = await emit({ type: 'backup-due', handlers: { 'backup-later': later } });
-            if (shown) await settingsRepo.setSetting(db, 'backup.reminderShownAt', now.toISOString());
+            if (shown) {
+              await settingsRepo.setSetting(db, 'backup.reminderShownAt', now.toISOString());
+              emitLibraryEvent('settings-changed');
+            }
           })
           .catch((e) => console.warn('Could not check whether a backup is due', e))
           .finally(() => {

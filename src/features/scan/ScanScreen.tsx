@@ -20,8 +20,9 @@ import { choosePhoto } from './choosePhoto';
 import { logOcrResult } from './ocrLog';
 import { prefillFromScan, putPrefill } from './prefill';
 import { onInjectedScan, takeInjectedScan } from './scanInjector';
+import { endSession } from './sessionStore';
 import { discardPhoto } from './tempPhoto';
-import { addToTray, useTray } from './useBatchScan';
+import { addToTray, addTrayCopy, trayBookCount, trayItemFor, useTray } from './useBatchScan';
 import { usePermission } from './usePermission';
 import { resetLastFound, scanMessages, useScanSession, type ScanNotice } from './useScanSession';
 
@@ -67,6 +68,26 @@ export function ScanScreen() {
   };
 
   const onFound = useCallback((session: ScanSession) => {
+    // The same ISBN again: a second copy is added only when the user says so.
+    const repeat = trayItemFor(session);
+    if (repeat) {
+      endSession(session.id);
+      const title = repeat.candidate?.title ?? repeat.label;
+      setTrayNotice({
+        expression: 'thinking',
+        message: t('scan.screen.alreadyInTray', { title }),
+        action: {
+          label: t('scan.screen.addCopy'),
+          accessibilityLabel: t('scan.screen.addCopyLabel', { title }),
+          testID: Testids.scan.addCopy,
+          onPress: () => {
+            addTrayCopy(repeat.id);
+            setTrayNotice({ expression: 'excited', message: t('scan.screen.addedToTray', { title }) });
+          },
+        },
+      });
+      return;
+    }
     const item = addToTray(session);
     setTrayNotice({
       expression: 'excited',
@@ -213,6 +234,7 @@ export function ScanScreen() {
           <BookyBubble
             expression={notice.expression}
             message={notice.message}
+            actions={notice.action ? [notice.action] : undefined}
             onDismiss={() => {
               setTrayNotice(null);
               scan.dismissNotice();
@@ -230,7 +252,7 @@ export function ScanScreen() {
           testID={Testids.scan.batchToggle}
           accessibilityLabel={t('scan.screen.scanSeveralLabel')}
         />
-        {batch || tray.length ? <ScanTray count={tray.length} needsChoice={needsChoice} onReview={() => router.navigate('/scan/review')} /> : null}
+        {batch || tray.length ? <ScanTray count={trayBookCount(tray)} needsChoice={needsChoice} onReview={() => router.navigate('/scan/review')} /> : null}
       </View>
 
       {scan.lastFound && !batch ? (

@@ -3,10 +3,9 @@ import { useCallback } from 'react';
 import { useSnackbar } from '@/components/ui';
 import { booksRepo, useDatabase } from '@/db';
 import { UNDO_WINDOW_MS } from '@/features/book/useDeleteBook';
-import { deleteCoverOfDeletedBook } from '@/features/covers';
+import { holdCover, releaseCoverOfDeletedBook, unholdCover } from '@/features/covers';
 import { emit } from '@/features/events';
 import { t } from '@/i18n';
-import { isLocalCover } from '@/services/covers';
 
 function announceChanges() {
   emit('library-changed');
@@ -34,6 +33,8 @@ export function useDeleteBooks(): (ids: readonly number[]) => Promise<number> {
       });
       if (!snapshots.length) return 0;
       announceChanges();
+      const covers = snapshots.map((s) => s.book.cover_uri as string | null);
+      covers.forEach(holdCover);
       show({
         message: t('shelf.removed.message', { count: snapshots.length }),
         duration: UNDO_WINDOW_MS,
@@ -54,8 +55,8 @@ export function useDeleteBooks(): (ids: readonly number[]) => Promise<number> {
           },
         },
         onHide: (reason) => {
-          if (reason === 'action') return;
-          for (const s of snapshots) if (isLocalCover(s.book.cover_uri as string | null)) void deleteCoverOfDeletedBook(db, s.book.id as number);
+          if (reason === 'action') covers.forEach(unholdCover);
+          else for (const uri of covers) void releaseCoverOfDeletedBook(db, uri);
         },
       });
       return snapshots.length;

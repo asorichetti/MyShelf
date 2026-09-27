@@ -135,6 +135,45 @@ describe.each([
     }
   });
 
+  it('finds those letters from the plain letters people type for them (soren, lodz, strasse, aelfric)', async () => {
+    const titles = ['Søren Kierkegaard', 'Łódź nocą', 'Đuro Daničić', 'Straße der Besten', 'Ælfric’s Colloquy', 'Œuvres complètes', 'Þórr og Loki', 'Ðóra'];
+    for (const title of titles) await booksRepo.createBook(db, { title });
+    const author = await authorsRepo.findOrCreateAuthor(db, 'Jørgen Møller');
+    await authorsRepo.setBookAuthors(db, ids.get('Mort')!, [{ authorId: author.id, role: 'author' }]);
+    for (const [query, title] of [
+      ['soren', 'Søren Kierkegaard'],
+      ['SOREN kierkegaard', 'Søren Kierkegaard'],
+      ['lodz', 'Łódź nocą'],
+      ['lodz noca', 'Łódź nocą'],
+      ['duro danicic', 'Đuro Daničić'],
+      ['strasse', 'Straße der Besten'],
+      ['aelfric', 'Ælfric’s Colloquy'],
+      ['oeuvres', 'Œuvres complètes'],
+      ['thorr', 'Þórr og Loki'],
+      ['dora', 'Ðóra'],
+      ['moller', 'Mort'],
+      ['jorgen moll', 'Mort'],
+    ]) {
+      expect({ query, found: await search(db, query) }).toEqual({ query, found: [title] });
+    }
+    // Renaming the author keeps the index in step.
+    await authorsRepo.updateAuthor(db, author.id, { name: 'Bjørn Ødegård' });
+    expect(await search(db, 'odegard')).toEqual(['Mort']);
+    expect(await search(db, 'moller')).toEqual([]);
+  });
+
+  it('puts books with the number in their title above books that only have it in their ISBN', async () => {
+    await booksRepo.createBook(db, { title: '1984', isbn13: '9780451524935' });
+    await booksRepo.createBook(db, { title: 'Zebra Crossings', isbn13: '9781984801258' });
+    await booksRepo.createBook(db, { title: 'Apple 1984 Edition' });
+    await booksRepo.createBook(db, { title: 'Yonder', isbn10: '1984801252' });
+    // By title, Z to A: the ISBN-only matches would come first without the ranking.
+    expect(await search(db, '1984', { sort: oneKey('title', 'desc') })).toEqual(['Apple 1984 Edition', '1984', 'Zebra Crossings', 'Yonder']);
+    expect(await search(db, '1984', { sort: oneKey('title', 'asc') })).toEqual(['1984', 'Apple 1984 Edition', 'Yonder', 'Zebra Crossings']);
+    // A word search is ordered by the sort alone.
+    expect(await search(db, 'zebra yonder')).toEqual([]);
+  });
+
   it('finds ISBNs typed with or without hyphens, and parts of them', async () => {
     expect(await search(db, '9780552166591')).toEqual(['The Colour of Magic']);
     expect(await search(db, '978-0-552')).toEqual(['The Colour of Magic']);

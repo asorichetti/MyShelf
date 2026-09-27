@@ -4,7 +4,7 @@ import { booksRepo, type Db } from '@/db';
 import { BookDetailScreen } from '@/features/book/BookDetailScreen';
 import { AddBookScreen, EditBookScreen } from '@/features/book/BookFormScreen';
 import { pickCover } from '@/features/book/pickCover';
-import { storeCoverFile } from '@/services/covers';
+import { deleteCoverFile, storeCoverFile } from '@/services/covers';
 import { createTestDb } from '@/testing/createTestDb';
 import { loadFixture } from '@/testing/loadFixture';
 import { advance, renderApp } from '@/testing/renderApp';
@@ -13,8 +13,9 @@ import { Testids } from '@/testing/testids.gen';
 jest.mock('@/features/book/pickCover', () => ({ pickCover: jest.fn() }));
 jest.mock('@/services/covers', () => ({
   ...jest.requireActual('@/services/covers'),
-  isStoredCover: jest.fn((id: number, uri: string) => uri === `file:///docs/covers/${id}.jpg`),
-  storeCoverFile: jest.fn((id: number) => `file:///docs/covers/${id}.jpg`),
+  isStoredCover: jest.fn((uri: string) => uri.startsWith('file:///docs/covers/')),
+  storeCoverFile: jest.fn((_uri: string, { bookId }: { bookId?: number } = {}) => `file:///docs/covers/${bookId ?? 'book'}-1.jpg`),
+  deleteCoverFile: jest.fn(() => true),
 }));
 
 let db: Db;
@@ -93,8 +94,49 @@ describe('Choosing a cover', () => {
     expect(pickCover).toHaveBeenCalledWith('library');
     await press(Testids.bookForm.save);
     const [book] = await booksRepo.listBooks(db);
-    expect(storeCoverFile).toHaveBeenCalledWith(book.id, 'file:///cache/picker/photo.jpg');
-    expect(book.coverUri).toBe(`file:///docs/covers/${book.id}.jpg`);
+    // Copied before the book is saved (a new book has no id yet), so the book never names the temporary file.
+    expect(storeCoverFile).toHaveBeenCalledWith('file:///cache/picker/photo.jpg', { bookId: undefined });
+    expect(book.coverUri).toBe('file:///docs/covers/book-1.jpg');
+  });
+
+  it('replacing a photo: the new copy first, then the book names it, then the old file goes', async () => {
+    await loadFixture(db, 'demo');
+    const [mort] = await booksRepo.findBooksByIsbn(db, '9780552131063');
+    await booksRepo.updateBook(db, mort.id, { coverUri: 'file:///docs/covers/old.jpg' });
+    jest.mocked(deleteCoverFile).mockClear();
+    jest.mocked(pickCover).mockResolvedValueOnce({ status: 'picked', uri: 'file:///cache/picker/photo.jpg' });
+    renderApp(db, `/book/${mort.id}/edit`, routes);
+    await advance(0);
+    await press(Testids.bookForm.coverPick);
+    await press(Testids.bookForm.save);
+    await advance(0);
+    expect(storeCoverFile).toHaveBeenLastCalledWith('file:///cache/picker/photo.jpg', { bookId: mort.id });
+    expect((await booksRepo.getBook(db, mort.id))!.coverUri).toBe(`file:///docs/covers/${mort.id}-1.jpg`);
+    expect(deleteCoverFile).toHaveBeenCalledWith('file:///docs/covers/old.jpg');
+  });
+
+  it('a photo that cannot be copied fails the save, and the book keeps the cover it had', async () => {
+    await loadFixture(db, 'demo');
+    const [mort] = await booksRepo.findBooksByIsbn(db, '9780552131063');
+    await booksRepo.updateBook(db, mort.id, { coverUri: 'file:///docs/covers/old.jpg' });
+    jest.mocked(deleteCoverFile).mockClear();
+    jest.mocked(pickCover).mockResolvedValueOnce({ status: 'picked', uri: 'file:///cache/picker/gone.jpg' });
+    jest.mocked(storeCoverFile).mockImplementationOnce(() => {
+      throw new Error('No space left on device');
+    });
+    jest.spyOn(console, 'error').mockImplementation(() => undefined);
+    renderApp(db, `/book/${mort.id}/edit`, routes);
+    await advance(0);
+    fireEvent.changeText(screen.getByTestId(Testids.bookForm.title), 'Mort (signed)');
+    await press(Testids.bookForm.coverPick);
+    await press(Testids.bookForm.save);
+    await advance(0);
+    expect(screen.getByTestId(Testids.snackbar.root)).toHaveTextContent(/couldn’t save/i);
+    const book = (await booksRepo.getBook(db, mort.id))!;
+    expect(book.coverUri).toBe('file:///docs/covers/old.jpg');
+    expect(book.title).toBe('Mort');
+    expect(deleteCoverFile).not.toHaveBeenCalled();
+    jest.mocked(console.error).mockRestore();
   });
 
   it('explains when the camera is not allowed', async () => {

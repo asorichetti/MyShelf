@@ -7,7 +7,7 @@ import { readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import { Testids, tid } from '../selectors.ts';
-import { coverState, GOODREADS_CSV, openFixture, PHONE_COVERS_BACKUP, rowNames, SCHEMA1_BACKUP, upload, waitForCount, waitForGridCovers, waitForPath, waitVisible } from './helpers.ts';
+import { coverState, eventCount, GOODREADS_CSV, openFixture, PHONE_COVERS_BACKUP, rowNames, SCHEMA1_BACKUP, upload, waitForCount, waitForEvent, waitForGridCovers, waitForPath, waitVisible } from './helpers.ts';
 import { expect, q, register, type Context } from './registry.ts';
 
 const S = Testids.settings;
@@ -299,6 +299,149 @@ register({
     const withLoans = await download(c, tid(Testids.csvExport.export), '/settings/export-csv (with loans)');
     expect(withLoans.text.split('\r\n')[0].endsWith('Groups,Rating,On loan to,Lent on,Due on,Notes,Added'), `csv: expected the loan columns, found ${q(withLoans.text.split('\r\n')[0])}`);
     expect(/\r\nDune,[^\r\n]*,Sam,2026-/.test(withLoans.text), 'csv: expected Dune on loan to Sam');
+  },
+});
+
+/** The review's rows for one book: each change's accessible name and whether it is ticked. */
+async function fetchedRows(c: Context, title: string): Promise<{ label: string; checked: boolean }[]> {
+  const book = c.page.locator(tid(Testids.fetchDetails.book)).filter({ has: c.page.getByRole('heading', { name: title, exact: true }) });
+  return book.locator(tid(Testids.refresh.fieldToggle)).evaluateAll((els) =>
+    els.map((el) => ({ label: el.getAttribute('aria-label') ?? '', checked: el.getAttribute('aria-checked') === 'true' })),
+  );
+}
+
+register({
+  name: 'csv-import-fetch-details',
+  suite: 'p08',
+  desc: 'Fixture "empty": import the Goodreads export, then "Fetch missing details" looks the 20 books up (through the mocked Open Library; Google Books off), reports what it found and lists each book\'s missing details ticked, never the file\'s own publisher or pages; unticking one and adding the rest fills in the summary while the rating, notes and publisher from the file stay',
+  async run(c) {
+    await openFixture(c, 'empty', '/settings', TODAY);
+    await c.page.locator(tid(S.googleBooksToggle)).click();
+    await openSetting(c, S.importCsv, '/settings/import-csv');
+    await upload(c, tid(Testids.csvImport.pick), GOODREADS_CSV, '/settings/import-csv');
+    await waitVisible(c, tid(Testids.csvImport.preview), '/settings/import-csv (file chosen)');
+    await c.page.locator(tid(Testids.csvImport.confirm)).click();
+    await waitForText(c, tid(Testids.csvImport.report), /Imported 20 books/, '/settings/import-csv (import)');
+
+    await c.page.locator(tid(Testids.csvImport.fetchDetails)).click();
+    const where = '/settings/fetch-details';
+    await waitForPath(c, where, '/settings/import-csv -> Fetch missing details');
+    const F = Testids.fetchDetails;
+    await waitVisible(c, tid(F.progress), `${where} (checking)`);
+    const progress = await text(c, tid(F.progress));
+    expect(/Looking up \d+ of 20 books/.test(progress), `${where}: expected the progress, found ${q(progress)}`);
+    await c.checkGates(`${where} (checking)`);
+    try {
+      await c.page.locator(tid(F.summary)).waitFor({ state: 'visible', timeout: 120_000 });
+    } catch {
+      expect(false, `${where}: the lookups never finished; last progress ${q(await text(c, tid(F.progress)).catch(() => ''))}`);
+    }
+    const summary = await text(c, tid(F.summary));
+    expect(summary === '20 books have something to add.', `${where}: expected every book to have something to add, found ${q(summary)}`);
+    expect((await c.page.locator(tid(F.book)).count()) === 20, `${where}: expected 20 books listed`);
+    await c.checkGates(`${where} (review)`);
+    await c.snap('fetch-details-review');
+
+    // Good Omens: the file gave its publisher (HarperTorch), pages (432) and rating (5); only the rest is offered.
+    const omens = 'Good Omens: The Nice and Accurate Prophecies of Agnes Nutter, Witch';
+    const rows = await fetchedRows(c, omens);
+    const labels = rows.map((r) => r.label);
+    expect(labels.some((l) => l.startsWith('Summary: add Armageddon only happens once')), `${where}: expected Good Omens' summary offered, found ${q(labels)}`);
+    expect(labels.some((l) => l === 'Genres: add Fantasy, Fiction'), `${where}: expected Good Omens' genres offered, found ${q(labels)}`);
+    expect(!labels.some((l) => /^(Publisher|Pages|Year|Title|Authors)/.test(l)), `${where}: expected nothing the file held to be offered, found ${q(labels)}`);
+    expect(rows.every((r) => r.checked), `${where}: expected every offered detail ticked, found ${q(rows)}`);
+
+    // Untick Good Omens' genres, add the rest.
+    const book = c.page.locator(tid(F.book)).filter({ has: c.page.getByRole('heading', { name: omens, exact: true }) });
+    await book.getByRole('checkbox', { name: 'Genres: add Fantasy, Fiction' }).click();
+    const apply = await text(c, tid(F.apply));
+    expect(/^Add \d+ details$/.test(apply), `${where}: expected "Add N details", found ${q(apply)}`);
+    await c.page.locator(tid(F.apply)).click();
+    await waitForText(c, tid(F.saved), /Added details to 20 books\./, `${where} (saved)`);
+    await c.checkGates(`${where} (saved)`);
+
+    await c.page.locator(tid(F.done)).click();
+    await waitForPath(c, '/', `${where} -> shelf`);
+    await c.page.locator(`${row}[aria-label^="Good Omens"]`).click();
+    const bookPath = await waitForPath(c, /^\/book\/\d+$/, '/ -> Good Omens');
+    await waitVisible(c, tid(Testids.bookDetail.summary), `${bookPath} (summary)`);
+    const bookSummary = await text(c, tid(Testids.bookDetail.summary));
+    expect(bookSummary.includes('Armageddon only happens once'), `${bookPath}: expected the fetched summary, found ${q(bookSummary.slice(0, 120))}`);
+    const facts = await text(c, tid(Testids.bookDetail.facts));
+    expect(facts.includes('HarperTorch') && facts.includes('432'), `${bookPath}: expected the file's publisher and pages kept, found ${q(facts)}`);
+    const rating = await c.page.locator(`${tid(Testids.bookDetail.rating)} [aria-valuenow]`).first().getAttribute('aria-valuetext');
+    expect(rating === '5 out of 5 stars', `${bookPath}: expected the rating of 5 kept, found ${q(rating)}`);
+    const page = await text(c, tid(Testids.bookDetail.root));
+    expect(!page.includes('Fantasy'), `${bookPath}: expected the unticked genres left out`);
+    await c.snap('fetch-details-book');
+  },
+});
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+/**
+ * Moves the browser's clock to `days` after `start`, reloads `path` and waits
+ * for the app's start-up backup check (the web E2E build notes each answer on
+ * `window.__myshelfE2e.notes['backup-check']`); returns whether it found a
+ * backup due.
+ */
+async function backupCheckOn(c: Context, start: number, days: number, path: string): Promise<boolean> {
+  await c.page.clock.setSystemTime(new Date(start + days * DAY_MS));
+  await c.goto(path);
+  const checks = () => c.page.evaluate(() => ((window as unknown as { __myshelfE2e?: { notes?: Record<string, unknown[]> } }).__myshelfE2e?.notes?.['backup-check'] ?? []) as boolean[]);
+  try {
+    await c.page.waitForFunction(() => ((window as unknown as { __myshelfE2e?: { notes?: Record<string, unknown[]> } }).__myshelfE2e?.notes?.['backup-check']?.length ?? 0) > 0, undefined, { timeout: 15_000 });
+  } catch {
+    expect(false, `${path} +${days} days: the backup check never ran`);
+  }
+  return (await checks()).at(-1) === true;
+}
+
+register({
+  name: 'backup-reminder',
+  suite: 'p08',
+  desc: 'Fixture "demo" (12 books, never backed up) with the browser clock moved on: 40 days later Booky suggests a backup with Back up and Later; the same day and a week later it keeps quiet or asks again as the weekly rule says; Later snoozes it for 30 days; Back up opens the backup screen, and after a backup it is quiet until 30 days have passed',
+  async run(c) {
+    const start = Date.now();
+    await openFixture(c, 'demo', '/loans');
+    // The Loans tab lists every overdue loan itself, so the overdue nudge does not float over it.
+    const at = (days: number) => `/loans +${days} days`;
+    const bubbleSel = tid(Testids.booky.bubble);
+
+    expect(await backupCheckOn(c, start, 40, '/loans'), `${at(40)}: expected a backup to be due`);
+    await waitVisible(c, bubbleSel, `${at(40)} (reminder)`);
+    const words = await text(c, tid(Testids.booky.bubbleText));
+    expect(words.includes('It’s been a while since your last backup — save one now?'), `${at(40)}: expected the reminder, found ${q(words)}`);
+    const bubble = c.page.locator(bubbleSel);
+    expect((await bubble.getByRole('button', { name: 'Back up' }).count()) === 1 && (await bubble.getByRole('button', { name: 'Later' }).count()) === 1, `${at(40)}: expected Back up and Later`);
+    await c.checkGates(`${at(40)} (reminder)`);
+    await c.snap('backup-reminder');
+    // It is recorded as shown once it shows.
+    await waitForEvent(c, 'settings-changed', 0, `${at(40)} (shown recorded)`);
+
+    // At most once a week.
+    expect(!(await backupCheckOn(c, start, 41, '/loans')), `${at(41)}: expected no reminder a day after the last`);
+    expect((await c.page.locator(bubbleSel).count()) === 0, `${at(41)}: expected no bubble`);
+
+    // A week on it asks again; Later snoozes it for 30 days.
+    expect(await backupCheckOn(c, start, 48, '/loans'), `${at(48)}: expected the reminder a week later`);
+    await waitVisible(c, bubbleSel, `${at(48)} (reminder)`);
+    await waitForEvent(c, 'settings-changed', 0, `${at(48)} (shown recorded)`);
+    await c.page.locator(bubbleSel).getByRole('button', { name: 'Later' }).click();
+    await waitForEvent(c, 'settings-changed', 1, `${at(48)} (snoozed)`);
+    expect(!(await backupCheckOn(c, start, 70, '/loans')), `${at(70)}: expected the snooze to hold`);
+    expect((await c.page.locator(bubbleSel).count()) === 0, `${at(70)}: expected no bubble while snoozed`);
+
+    // After the snooze: Back up opens the backup screen; a backup quiets it for 30 days.
+    expect(await backupCheckOn(c, start, 80, '/loans'), `${at(80)}: expected the reminder after the snooze`);
+    await waitVisible(c, bubbleSel, `${at(80)} (reminder)`);
+    await c.page.locator(bubbleSel).getByRole('button', { name: 'Back up' }).click();
+    await waitForPath(c, '/settings/backup', `${at(80)} -> Back up`);
+    const saves = await eventCount(c, 'settings-changed');
+    await download(c, tid(Testids.backup.export), '/settings/backup');
+    await waitForEvent(c, 'settings-changed', saves, '/settings/backup (backup recorded)');
+    expect(!(await backupCheckOn(c, start, 100, '/loans')), `${at(100)}: expected no reminder 20 days after a backup`);
+    expect(await backupCheckOn(c, start, 111, '/loans'), `${at(111)}: expected the reminder 31 days after the backup`);
+    await waitVisible(c, bubbleSel, `${at(111)} (reminder)`);
   },
 });
 

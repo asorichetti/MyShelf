@@ -10,6 +10,10 @@ describe('parseSeriesPosition', () => {
     ['3.5', 3.5],
     ['3,5', 3.5],
     ['0.5', 0.5],
+    // a prequel numbered before the first book (The Wheel of Time #0)
+    ['0', 0],
+    ['#0', 0],
+    ['Book 0', 0],
     ['2½', 2.5],
     ['2 ½', 2.5],
     // hash and keywords
@@ -54,8 +58,8 @@ describe('parseSeriesPosition', () => {
     ['   ', null],
     ['Book', null],
     ['#', null],
-    ['0', null],
     ['-1', null],
+    ['-0.5', null],
     ['10000', null],
     ['IIII', null],
     ['D', null],
@@ -91,7 +95,7 @@ describe('formatSeriesPosition', () => {
     expect(formatSeriesPosition(value)).toBe(expected);
   });
 
-  it.each([1, 2, 2.5, 3.75, 10, 0.5, 42, 9999])('round-trips %p', (n) => {
+  it.each([0, 1, 2, 2.5, 3.75, 10, 0.5, 42, 9999])('round-trips %p', (n) => {
     expect(parseSeriesPosition(formatSeriesPosition(n))).toBe(n);
   });
 });
@@ -101,6 +105,7 @@ describe('formatSeriesLabel', () => {
     ['Discworld', 5, 'Discworld #5'],
     ['The Expanse', 2.5, 'The Expanse #2.5'],
     ['Discworld', null, 'Discworld'],
+    ['The Wheel of Time', 0, 'The Wheel of Time #0'],
   ])('%p %p → %p', (name, pos, expected) => {
     expect(formatSeriesLabel(name, pos)).toBe(expected);
   });
@@ -111,8 +116,9 @@ describe('isValidSeriesPosition', () => {
     [1, true],
     [2.5, true],
     [9999, true],
-    [0, false],
+    [0, true],
     [-1, false],
+    [-0.5, false],
     [10000, false],
     [Number.NaN, false],
     [Number.POSITIVE_INFINITY, false],

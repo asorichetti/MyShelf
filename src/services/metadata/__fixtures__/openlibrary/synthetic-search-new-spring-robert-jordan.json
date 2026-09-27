@@ -1,0 +1,26 @@
+{
+ "numFound": 1,
+ "start": 0,
+ "numFoundExact": true,
+ "q": "new spring robert jordan",
+ "docs": [
+  {
+   "key": "/works/OL99999W",
+   "title": "New Spring",
+   "author_name": [
+    "Robert Jordan"
+   ],
+   "first_publish_year": 1998,
+   "edition_count": 130,
+   "language": [
+    "eng",
+    "spa",
+    "ger",
+    "fre"
+   ],
+   "author_key": [
+    "OL234664A"
+   ]
+  }
+ ]
+}

@@ -11,6 +11,7 @@ import {
   type SeriesState,
 } from '@/domain';
 
+import { forgetEntities } from './settings';
 import { BOOK_COLUMNS, foldBookGroups, NOW_SQL, toBook, type BookRow } from './shared';
 
 import type { Db } from '../types';
@@ -119,13 +120,18 @@ export async function mergeSeries(db: Db, sourceId: number, targetId: number): P
     const totalCount = target.totalCount ?? source.totalCount;
     if (totalCount !== target.totalCount) await tx.run('UPDATE series SET total_count = ? WHERE id = ?', [totalCount, targetId]);
     await tx.run('DELETE FROM series WHERE id = ?', [sourceId]);
+    await forgetEntities(tx, 'series', [sourceId]);
     return { ...target, totalCount };
   });
 }
 
-/** Deletes a series; its books stay in the catalogue as standalones. */
+/** Deletes a series; its books stay in the catalogue as standalones, and Booky forgets its tips. */
 export async function deleteSeries(db: Db, id: number): Promise<boolean> {
-  return (await db.run('DELETE FROM series WHERE id = ?', [id])).changes > 0;
+  return db.transaction(async (tx) => {
+    const deleted = (await tx.run('DELETE FROM series WHERE id = ?', [id])).changes > 0;
+    if (deleted) await forgetEntities(tx, 'series', [id]);
+    return deleted;
+  });
 }
 
 export interface SeriesSummary extends Series {

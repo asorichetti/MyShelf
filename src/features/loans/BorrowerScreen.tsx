@@ -7,6 +7,7 @@ import { LoanRow } from '@/components/loans/LoanRow';
 import { Button, ConfirmDialog, EmptyState, Heading, IconButton, Screen, Sheet, Text, TextField, useSnackbar } from '@/components/ui';
 import { formatDate, today as todayOf, type Borrower } from '@/domain';
 import { parseBookId } from '@/features/book/useBook';
+import { useMounted } from '@/hooks/useMounted';
 import { t } from '@/i18n';
 import { Testids } from '@/testing/testids.gen';
 import { useTheme } from '@/theme';
@@ -86,6 +87,7 @@ export function BorrowerEditSheet({
 function BorrowerContent({ detail, hooks }: { detail: BorrowerDetail; hooks: ReturnType<typeof useBorrower> }) {
   const { colors, spacing, radii } = useTheme();
   const { show } = useSnackbar();
+  const mounted = useMounted();
   const [editing, setEditing] = useState(false);
   const [confirming, setConfirming] = useState(false);
   const [blocked, setBlocked] = useState(false);
@@ -112,7 +114,7 @@ function BorrowerContent({ detail, hooks }: { detail: BorrowerDetail; hooks: Ret
         return;
       }
       show({ message: t('borrowers.remove.removed', { name: borrower.name }) });
-      goBackOrLoans();
+      if (mounted.current) goBackOrLoans();
     } catch (e) {
       console.error('Could not remove the borrower', e);
       setDeleting(false);

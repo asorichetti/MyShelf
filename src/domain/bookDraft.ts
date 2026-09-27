@@ -89,7 +89,15 @@ export const draftFieldOrder: readonly BookDraftField[] = [
   'notes',
 ];
 
-export const TITLE_MAX = 300;
+/**
+ * The longest title and author name a book may have. Real catalogues run long
+ * (measured September 2026: titles to about 500 characters in a live Open
+ * Library sample, corporate authors past 150), so these only stop broken
+ * data; lookups, refreshes and imports shorten anything longer with
+ * `clampText`, so they never produce a book the form refuses.
+ */
+export const TITLE_MAX = 1000;
+export const AUTHOR_NAME_MAX = 1000;
 export const EARLIEST_YEAR = 1450;
 
 export function emptyDraft(): BookDraft {
@@ -217,7 +225,7 @@ export function validateBookDraft(draft: BookDraft, { currentYear = new Date().g
     draft.authors.map((a) => ({ ...a, name: a.name.trim().replace(/\s+/g, ' '), sortName: a.sortName?.trim() || null })),
     (a) => a.name,
   );
-  if (authors.some((a) => a.name.length > 200)) errors.authors = t('draft.errors.authorTooLong');
+  if (authors.some((a) => a.name.length > AUTHOR_NAME_MAX)) errors.authors = t('draft.errors.authorTooLong');
   const genres = uniqueNames(
     draft.genres.map((g) => g.trim().replace(/\s+/g, ' ')),
     (g) => g,

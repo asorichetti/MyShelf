@@ -4,6 +4,7 @@
 import { booksRepo, type Db } from '@/db';
 import { setToday } from '@/domain';
 import { csvFileName, exportCsv, parseCsv } from '@/services/backup';
+import { parseAddedDate } from '@/services/backup/importCsv';
 import { createTestDb } from '@/testing/createTestDb';
 import { loadFixture } from '@/testing/loadFixture';
 
@@ -41,6 +42,20 @@ describe('exportCsv', () => {
     expect(t.get('Mort', 'ISBN-13')).toBe('9780552131063');
     expect(t.get('Good Omens', 'Genres')).toBe('Fantasy');
     expect(t.get('Good Omens', 'Added')).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+  });
+
+  it('writes the Added date on the reader’s calendar, not in UTC, and reads it back as that date', async () => {
+    const books = await booksRepo.listBooks(db);
+    const mort = books.find((b) => b.title === 'Mort')!;
+    const good = books.find((b) => b.title === 'Good Omens')!;
+    // Half an hour after local midnight and half an hour before the next: away from UTC, one of them is on another UTC date.
+    await booksRepo.setAddedAt(db, mort.id, new Date(2026, 5, 19, 0, 30).toISOString());
+    await booksRepo.setAddedAt(db, good.id, new Date(2026, 5, 19, 23, 30).toISOString());
+    const t = await table();
+    expect(t.get('Mort', 'Added')).toBe('2026-06-19');
+    expect(t.get('Good Omens', 'Added')).toBe('2026-06-19');
+    // The import reads a plain date as midday UTC: the same calendar date anywhere from UTC-11 to UTC+11.
+    expect(parseAddedDate(t.get('Mort', 'Added'))).toBe('2026-06-19T12:00:00.000Z');
   });
 
   it('writes the reader’s rating, blank when not rated', async () => {

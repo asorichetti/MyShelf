@@ -8,11 +8,12 @@ import { Booky, HelpButton } from '@/components/booky';
 import { DuplicateSheet } from '@/components/scan/DuplicateSheet';
 import { EditionRow } from '@/components/scan/EditionRow';
 import { WorkGroup } from '@/components/scan/WorkGroup';
-import { Button, Chip, EmptyState, Heading, Screen, Text, TopBar, useFloatClearance, useSnackbar } from '@/components/ui';
+import { Button, Chip, EmptyState, Heading, Screen, Text, TextField, TopBar, useFloatClearance, useSnackbar } from '@/components/ui';
 import { useBottomObstacle } from '@/components/ui/layers';
 import { genresRepo, useDatabase } from '@/db';
 import { languageName, type BookDetail } from '@/domain';
 import { goBackOr } from '@/features/navigation/goBack';
+import { useMounted } from '@/hooks/useMounted';
 import { t } from '@/i18n';
 import type { BookCandidate } from '@/services/metadata';
 import { Testids } from '@/testing/testids.gen';
@@ -40,6 +41,7 @@ export function EditionPickerScreen() {
   const theme = useTheme();
   const { colors, spacing, sizes, radii } = theme;
   const { show } = useSnackbar();
+  const mounted = useMounted();
   const { check } = useDuplicateCheck();
   const { save } = useSaveCandidate();
   const [review, setReview] = useState(false);
@@ -88,7 +90,7 @@ export function EditionPickerScreen() {
       endSession(session.id, { keepPhoto: session.photoUri != null });
       offerPhotoIfNoCover(saved, session.photoUri, session.photoFocus);
       setDuplicates(null);
-      router.replace({ pathname: '/book/[id]', params: { id: String(saved.id) } });
+      if (mounted.current) router.replace({ pathname: '/book/[id]', params: { id: String(saved.id) } });
     } catch (e) {
       console.error('Could not save the book', e);
       show({ message: t('common.saveFailed') });
@@ -104,6 +106,7 @@ export function EditionPickerScreen() {
     busy.current = true;
     try {
       const genres = (await genresRepo.listGenres(db)).map((g) => g.name);
+      if (!mounted.current) return;
       const id = putPrefill(prefillFromCandidate(candidate, genres));
       setDuplicates(null);
       endSession(session.id);
@@ -130,6 +133,8 @@ export function EditionPickerScreen() {
     } finally {
       busy.current = false;
     }
+    // Left during the duplicate check: nothing was confirmed, so nothing is saved.
+    if (!mounted.current) return;
     if (existing.length) {
       setDuplicates({ existing, candidate });
       return;
@@ -144,6 +149,11 @@ export function EditionPickerScreen() {
   };
 
   const { single, groups, available, filters } = picker;
+  // Many editions to look through: a box to find yours by what the copyright page says.
+  const manyEditions = groups.some((g) => {
+    const load = picker.loads[g.key];
+    return picker.expanded.has(g.key) && load?.status === 'ready' && (load.loaded > SHOWN || load.nextOffset != null);
+  });
   const intro = single
     ? t('editions.picker.introSingle')
     : t('editions.picker.introMany', { count: groups.length });
@@ -191,6 +201,19 @@ export function EditionPickerScreen() {
           </View>
         ) : null}
 
+        {!single && (manyEditions || filters.text) ? (
+          <TextField
+            label={t('editions.picker.findEdition')}
+            placeholder={t('editions.picker.findEditionPlaceholder')}
+            helperText={t('editions.picker.findEditionHelp')}
+            value={filters.text}
+            onChangeText={(text) => picker.setFilters({ text })}
+            autoCorrect={false}
+            autoCapitalize="none"
+            testID={Testids.picker.findEdition}
+          />
+        ) : null}
+
         {single ? (
           <View role="radiogroup" aria-label={t('editions.picker.yourBook')}>
             <EditionRow edition={single} selected={picker.selected === single} onSelect={() => picker.select(single)} />
@@ -200,11 +223,15 @@ export function EditionPickerScreen() {
             const load = picker.loads[g.key];
             const editions = picker.editionsOf(g.key);
             const limit = shown[g.key] ?? SHOWN;
+            const ready = load?.status === 'ready' ? load : null;
+            const more = ready?.nextOffset != null;
             const message =
               load?.status === 'error'
                 ? t('editions.picker.loadFailed')
-                : load?.status === 'ready' && !editions.length
-                  ? t('editions.picker.noMatch')
+                : ready && !editions.length
+                  ? more
+                    ? t('editions.picker.noMatchYet', { loaded: ready.loaded })
+                    : t('editions.picker.noMatch')
                   : null;
             return (
               <WorkGroup key={g.key} work={g.work} expanded={picker.expanded.has(g.key)} onToggle={() => picker.toggle(g.key)} loading={load?.status === 'loading'} message={message}>
@@ -213,6 +240,28 @@ export function EditionPickerScreen() {
                 ))}
                 {editions.length > limit ? (
                   <Button variant="ghost" label={t('editions.picker.showMore', { count: Math.min(SHOWN, editions.length - limit) })} onPress={() => setShown((s) => ({ ...s, [g.key]: limit + SHOWN }))} />
+                ) : ready && more ? (
+                  <View style={{ gap: spacing.xs }}>
+                    {ready.more === 'error' ? (
+                      <Text variant="caption" color="danger" role="alert">
+                        {t('editions.picker.loadMoreFailed')}
+                      </Text>
+                    ) : null}
+                    <Text variant="caption" color="inkMuted">
+                      {t('editions.picker.loadedOf', { loaded: ready.loaded, total: ready.total ?? ready.loaded })}
+                    </Text>
+                    <Button
+                      variant="secondary"
+                      label={t('editions.picker.loadMore')}
+                      accessibilityLabel={t('editions.picker.loadMoreLabel', { loaded: ready.loaded, total: ready.total ?? ready.loaded })}
+                      loading={ready.more === 'loading'}
+                      onPress={() => {
+                        picker.loadMore(g.key);
+                        setShown((s) => ({ ...s, [g.key]: limit + SHOWN }));
+                      }}
+                      testID={Testids.picker.loadMore}
+                    />
+                  </View>
                 ) : null}
               </WorkGroup>
             );

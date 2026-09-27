@@ -1,0 +1,22 @@
+# After scripts/maestro-suite.sh dragged "Pride and Prejudice" to the top of
+# Holiday reads (group-drag-reorder.yaml): the rows are renumbered, the move
+# was announced, and the order is still there after the app restarts.
+appId: dev.asorichetti.myshelf
+name: Drag to reorder a group (check)
+tags: [hooked]
+---
+- extendedWaitUntil: { visible: { id: group-reorder-row, text: 1. Pride and Prejudice }, timeout: 5000 }
+- assertVisible: { id: group-reorder-row, text: 2. Good Omens }
+- assertVisible: { id: group-reorder-row, text: 3. Murder on the Orient Express }
+- assertVisible: { text: Pride and Prejudice moved to 1 of 3 }
+- takeScreenshot: screenshots/group-drag-after
+- tapOn: { id: group-reorder-done }
+- stopApp
+- launchApp
+- tapOn: { id: tab-groups }
+- tapOn: { id: groups-card, text: 'Holiday reads,.*' }
+- extendedWaitUntil: { visible: { id: group-reorder }, timeout: 10000 }
+- tapOn: { id: group-reorder }
+- extendedWaitUntil: { visible: { id: group-reorder-row, text: 1. Pride and Prejudice }, timeout: 5000 }
+- assertVisible: { id: group-reorder-row, text: 3. Murder on the Orient Express }
+- takeScreenshot: screenshots/group-drag-restarted

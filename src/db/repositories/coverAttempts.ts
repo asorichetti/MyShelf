@@ -56,7 +56,10 @@ export async function get(db: Db, bookId: number): Promise<CoverAttempt | null> 
  * `retry_after`. Never-searched books come first (newest first: most likely
  * what the user just added), then the longest-waiting.
  */
-export async function listBooksNeedingCover(db: Db, { now, limit }: { now: string; limit: number }): Promise<BookNeedingCover[]> {
+export async function listBooksNeedingCover(
+  db: Db,
+  { now, limit, skipFixtureBooks = false }: { now: string; limit: number; /** E2E builds: leave out books marked by `markFixtureBook`. */ skipFixtureBooks?: boolean },
+): Promise<BookNeedingCover[]> {
   return db.all<BookNeedingCover>(
     `SELECT b.id, b.title, b.isbn13, b.isbn10, b.source, b.source_id AS sourceId,
        (SELECT a.name FROM book_authors ba JOIN authors a ON a.id = ba.author_id
@@ -66,9 +69,30 @@ export async function listBooksNeedingCover(db: Db, { now, limit }: { now: strin
      LEFT JOIN cover_attempts ca ON ca.book_id = b.id
      WHERE (b.cover_uri IS NULL OR trim(b.cover_uri) = '')
        AND (ca.book_id IS NULL OR ca.retry_after <= ?)
+       AND NOT (? AND ca.last_error IS '${FIXTURE_MARK}')
      ORDER BY ca.book_id IS NOT NULL, ca.retry_after, b.created_at DESC, b.id DESC
      LIMIT ?`,
-    [now, limit],
+    [now, skipFixtureBooks ? 1 : 0, limit],
+  );
+}
+
+/** `last_error` of a book that came with an E2E fixture (`markFixtureBook`). */
+const FIXTURE_MARK = 'e2e-fixture';
+
+/**
+ * E2E builds: marks a book that came with a fixture, which is a library in a
+ * steady state, so the backfill leaves it alone for good when asked to
+ * (`skipFixtureBooks`) however far a journey moves the clock. Recorded as
+ * one empty search; any real search afterwards replaces the mark. Cleared
+ * with the rest of the table by a restore.
+ */
+export async function markFixtureBook(db: Db, bookId: number, now = Date.now()): Promise<void> {
+  const at = new Date(now).toISOString();
+  await db.run(
+    `INSERT INTO cover_attempts (book_id, attempts, last_attempt_at, retry_after, last_result, last_error)
+     VALUES (?, 1, ?, ?, 'none', '${FIXTURE_MARK}')
+     ON CONFLICT (book_id) DO UPDATE SET last_error = excluded.last_error`,
+    [bookId, at, at],
   );
 }
 

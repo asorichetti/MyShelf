@@ -6,12 +6,12 @@ const FOLD: Record<string, string> = { ß: 'ss', æ: 'ae', œ: 'oe', ø: 'o', ł
 /** Leading articles dropped for matching (English, French, Spanish, Italian, German, Dutch). */
 const LEADING_ARTICLE = /^(?:the|a|an|le|la|les|el|los|las|il|lo|gli|un|une|una|uno|der|die|das|ein|eine|het)\s+(?=\S)/;
 
-/** "Éric" → "Eric", "Łódź" → "Lodz". */
+/** "Éric" → "Eric", "Łódź" → "Lodz", "Æsop" → "Aesop", "Straße" → "Strasse". */
 export function stripDiacritics(text: string): string {
   return text
     .normalize('NFD')
     .replace(/[̀-ͯ]/g, '')
-    .replace(/[ßæœøłđðþı]/gi, (c) => {
+    .replace(/[ßẞæœøłđðþı]/gi, (c) => {
       const lower = FOLD[c.toLowerCase()];
       return c === c.toLowerCase() ? lower : lower.charAt(0).toUpperCase() + lower.slice(1);
     });
@@ -30,6 +30,26 @@ export function normaliseText(text: string, { dropArticle = true }: { dropArticl
   s = s.replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
   if (dropArticle) s = s.replace(LEADING_ARTICLE, '');
   return s;
+}
+
+/**
+ * `text` cut to at most `max` characters (UTF-16 units, as `length` counts
+ * them) for data past any sane limit: at the last word boundary when one is
+ * near the end (within 30 characters and in the second half), else inside
+ * the word, trailing spaces and separators dropped, and an ellipsis added.
+ * Text within the limit comes back unchanged. Never splits a surrogate pair.
+ */
+export function clampText(text: string, max: number): string {
+  if (text.length <= max) return text;
+  let cut = Math.max(0, max - 1);
+  const code = text.charCodeAt(cut);
+  if (code >= 0xdc00 && code <= 0xdfff) cut--;
+  let head = text.slice(0, cut);
+  if (!/\s/.test(text.charAt(cut))) {
+    const space = head.search(/\s\S*$/);
+    if (space >= cut / 2 && cut - space <= 30) head = head.slice(0, space);
+  }
+  return `${head.replace(/[\s,;:–—-]+$/u, '')}…`;
 }
 
 /** Title key: the main title (before a `:` subtitle), normalised. */

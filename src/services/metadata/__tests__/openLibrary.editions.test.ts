@@ -17,7 +17,7 @@ describe('openLibrary.editions', () => {
   it("lists a work's editions with ISBNs, publishers, years and formats", async () => {
     const { ol, fixtures } = setup();
     const editions = await ol.editions('/works/OL453657W', { authors: ['Terry Pratchett'] });
-    expect(fixtures.calls).toEqual(['https://openlibrary.org/works/OL453657W/editions.json?limit=50']);
+    expect(fixtures.calls).toEqual(['https://openlibrary.org/works/OL453657W/editions.json?limit=100']);
     expect(editions).toHaveLength(13);
     const rows = editions.map((e) => [e.isbn13, e.publisher, e.publicationYear, e.format, e.language]);
     expect(rows).toEqual([
@@ -48,9 +48,41 @@ describe('openLibrary.editions', () => {
   it('returns [] for an unknown work', async () => {
     const { ol } = setup();
     // No fixture: the fetch answers 501, which is not a 404 — so check a 404 explicitly.
-    const fixtures = createFixtureFetch({ 'https://openlibrary.org/works/OL1W/editions.json?limit=50': { status: 404, text: '' } });
+    const fixtures = createFixtureFetch({ 'https://openlibrary.org/works/OL1W/editions.json?limit=100': { status: 404, text: '' } });
     const http = createHttpClient({ fetch: fixtures.fetch, limiter: createRateLimiter({ minIntervalMs: 0 }) });
     await expect(createOpenLibrary({ http }).editions('OL1W')).resolves.toEqual([]);
     await expect(ol.editions('')).resolves.toEqual([]);
+  });
+
+  it('pages through a work with more editions than one page, 100 at a time', async () => {
+    const { ol, fixtures } = setup();
+    const first = await ol.editionsPage('OL99999W', { authors: ['Robert Jordan'] });
+    expect(first.editions).toHaveLength(100);
+    expect(first.total).toBe(130);
+    expect(first.nextOffset).toBe(100);
+    const second = await ol.editionsPage('OL99999W', { authors: ['Robert Jordan'], offset: first.nextOffset! });
+    expect(second.editions).toHaveLength(30);
+    expect(second.total).toBe(130);
+    expect(second.nextOffset).toBeNull();
+    expect(second.editions.find((e) => e.subtitle === 'The Graphic Novel')?.isbn13).toBe('9781606902080');
+    expect(fixtures.calls).toEqual([
+      'https://openlibrary.org/works/OL99999W/editions.json?limit=100',
+      'https://openlibrary.org/works/OL99999W/editions.json?limit=100&offset=100',
+    ]);
+    // The first page is what `editions` returns.
+    expect((await ol.editions('OL99999W')).map((e) => e.sourceId)).toEqual(first.editions.map((e) => e.sourceId));
+  });
+
+  it('has no next page when the work has one page, or a page comes back empty', async () => {
+    const { ol } = setup();
+    expect(await ol.editionsPage('OL1W').catch(() => null)).toBeNull();
+    const fixtures = createFixtureFetch({
+      'https://openlibrary.org/works/OL2W/editions.json?limit=100': { body: { size: 2, entries: [{ key: '/books/OL1M', title: 'A' }, { key: '/books/OL2M', title: 'B' }] } },
+      'https://openlibrary.org/works/OL3W/editions.json?limit=100&offset=100': { body: { size: 500, entries: [] } },
+    });
+    const http = createHttpClient({ fetch: fixtures.fetch, limiter: createRateLimiter({ minIntervalMs: 0 }) });
+    const other = createOpenLibrary({ http });
+    await expect(other.editionsPage('OL2W')).resolves.toMatchObject({ total: 2, nextOffset: null });
+    await expect(other.editionsPage('OL3W', { offset: 100 })).resolves.toMatchObject({ editions: [], nextOffset: null });
   });
 });

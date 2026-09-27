@@ -3,7 +3,7 @@ import { useImperativeHandle, useRef, type Ref } from 'react';
 import { ScrollView, StyleSheet, View, type TextInput } from 'react-native';
 
 import { Button, Chip, Heading, SelectField, StarRating, Text, TextField } from '@/components/ui';
-import { bookFormats, joinNames, languages, type BookDraft, type BookDraftErrors, type BookDraftField, type BookFormat } from '@/domain';
+import { bookFormats, joinNames, languages, TITLE_MAX, type BookDraft, type BookDraftErrors, type BookDraftField, type BookFormat } from '@/domain';
 import { t, translate, type MessageKey } from '@/i18n';
 import { Testids } from '@/testing/testids.gen';
 import { useTheme } from '@/theme';
@@ -250,7 +250,7 @@ export function BookForm({
         </Section>
 
         <Section title={t('bookForm.sections.theBook')}>
-          <TextField label={t('bookForm.fields.titleRequired')} ref={titleRef} value={draft.title} onChangeText={(v) => onChange('title', v)} errorText={errors.title} testID={Testids.bookForm.title} autoCapitalize="words" maxLength={400} />
+          <TextField label={t('bookForm.fields.titleRequired')} ref={titleRef} value={draft.title} onChangeText={(v) => onChange('title', v)} errorText={errors.title} testID={Testids.bookForm.title} autoCapitalize="words" maxLength={TITLE_MAX} />
           <TextField label={t('bookFields.subtitle')} ref={subtitleRef} value={draft.subtitle} onChangeText={(v) => onChange('subtitle', v)} errorText={errors.subtitle} testID={Testids.bookForm.subtitle} />
           <AuthorsInput
             authors={draft.authors}

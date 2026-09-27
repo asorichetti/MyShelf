@@ -3,7 +3,7 @@ import { isAbortError, OfflineError, RateLimitedError, systemClock, type HttpCli
 
 import { createGoogleBooks } from './googleBooks';
 import { dedupeCandidates } from './merge';
-import { createOpenLibrary, type EditionsOptions, type OpenLibraryProvider } from './openLibrary';
+import { createOpenLibrary, type EditionsOptions, type EditionsPage, type OpenLibraryProvider } from './openLibrary';
 import { rankCandidates } from './rank';
 
 import type { BookCandidate, MetadataProvider, MetadataResult, ProviderWarning, SearchQuery } from './types';
@@ -12,7 +12,7 @@ export type { BookCandidate, CandidateSource, CoverRefs, MetadataProvider, Metad
 export { createGoogleBooks, isDailyQuotaError } from './googleBooks';
 export { emptyCoverRefs, makeCandidate } from './candidate';
 export { dedupeCandidates, mergeCandidates, mergeCoverRefs } from './merge';
-export { createOpenLibrary, type OpenLibraryProvider } from './openLibrary';
+export { createOpenLibrary, EDITIONS_PAGE, type EditionsPage, type OpenLibraryProvider } from './openLibrary';
 export { EDITION_WEIGHTS, hasOwnCover, languageMatch, rankCandidates, rankEditions, scoreCandidate, scoreEdition, type RankEditionsOptions } from './rank';
 
 /** The text is not a valid ISBN-10 or ISBN-13. */
@@ -48,8 +48,10 @@ export interface MetadataService {
   lookupIsbn(isbn: string, options?: RequestOptions): Promise<MetadataResult>;
   /** Merged, de-duplicated and ranked candidates from both providers, with the same failure rules. */
   search(query: SearchQuery, options?: RequestOptions): Promise<MetadataResult>;
-  /** Editions of an Open Library work, for the edition picker (P03-08). */
+  /** The first page of an Open Library work's editions, for the edition picker (P03-08). */
   editions(workKey: string, options?: EditionsOptions): Promise<BookCandidate[]>;
+  /** One page of a work's editions (`EDITIONS_PAGE` at a time), and where the next starts. */
+  editionsPage(workKey: string, options?: EditionsOptions): Promise<EditionsPage>;
 }
 
 /** ISBN-13 for any valid ISBN-10/13 input, or null. */
@@ -133,6 +135,7 @@ export function createMetadataService(options: MetadataServiceOptions): Metadata
     },
 
     editions: (workKey, editionOptions) => openLibrary.editions(workKey, editionOptions),
+    editionsPage: (workKey, editionOptions) => openLibrary.editionsPage(workKey, editionOptions),
   };
 }
 

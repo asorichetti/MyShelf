@@ -23,6 +23,14 @@ scripts/maestro-suite.sh --e2e-apk build/myshelf-e2e.apk \
 up by hand as described at the top of each file, so prefer the script.
 One flow: `maestro --device emulator-5554 test .maestro/book-add-manual.yaml`.
 
+The flows target the E2E build (a release APK with the fixture loader).
+While writing a flow, a development build is quicker to iterate with: it
+loads the JavaScript from Metro, so a change needs no rebuild. `npm run
+android` (`expo run:android`) builds and installs one; it has the fixture
+loader too (`.env.development`). `eas build --local --profile e2e -p android`
+builds the E2E APK through EAS instead of `scripts/build-android-apk.sh`
+(it needs an Expo login).
+
 ## Writing a flow
 
 - Target elements by `id:` with the test ids from `src/testing/selectors.json`

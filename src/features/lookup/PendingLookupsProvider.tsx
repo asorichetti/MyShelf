@@ -56,7 +56,7 @@ export function ShelfPendingBanner() {
   return (
     <>
       {first ? <ArrivedBanner count={pending.results.length} isbn={formatIsbn13(first.isbn13)} onReview={review} /> : null}
-      <PendingBanner count={pending.pending.length} retrying={pending.retrying} onRetry={() => void pending.retryNow()} />
+      <PendingBanner count={pending.pending.length} retrying={pending.retrying} onRetry={() => pending.retryNow().catch((error) => console.warn('Could not retry the pending lookups', error))} />
       {failed.length ? (
         // Booky says this in a tip too; it stays here, in the screen, until the user has read it (P07-09).
         <View style={styles.row}>

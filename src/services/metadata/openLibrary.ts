@@ -30,18 +30,34 @@ export interface OpenLibraryOptions {
   cacheTtlMs?: number;
 }
 
+/** Editions the picker loads at a time: a work with more has "Show more editions" (P03-08). */
+export const EDITIONS_PAGE = 100;
+
 export interface EditionsOptions {
   signal?: AbortSignal;
   /** The work's authors, when known (edition entries rarely carry resolvable names). */
   authors?: string[];
-  /** Default 50, the most Open Library returns per page. */
+  /** Editions per page. Default `EDITIONS_PAGE`. */
   limit?: number;
+  /** Editions to skip: a page's `nextOffset`. Default 0. */
+  offset?: number;
+}
+
+/** One page of a work's editions. */
+export interface EditionsPage {
+  editions: BookCandidate[];
+  /** How many editions Open Library has for the work in all. */
+  total: number;
+  /** Where the next page starts, or null after the last. */
+  nextOffset: number | null;
 }
 
 export interface OpenLibraryProvider extends MetadataProvider {
   id: 'openlibrary';
-  /** Editions of a work (`OL453657W` or `/works/OL453657W`), for the edition picker. */
+  /** The first page of a work's editions (`OL453657W` or `/works/OL453657W`), for the edition picker. */
   editions(workKey: string, options?: EditionsOptions): Promise<BookCandidate[]>;
+  /** One page of a work's editions, and where the next starts. */
+  editionsPage(workKey: string, options?: EditionsOptions): Promise<EditionsPage>;
 }
 
 /** Resolves to null for a 404 and rethrows everything else (offline, rate limits, aborts). */
@@ -105,7 +121,7 @@ export function createOpenLibrary({
     return names;
   }
 
-  return {
+  const provider: OpenLibraryProvider = {
     id: 'openlibrary',
 
     async lookupIsbn(isbn13, signal) {
@@ -142,14 +158,25 @@ export function createOpenLibrary({
       return out;
     },
 
-    async editions(workKey, { signal, authors = [], limit = 50 } = {}) {
+    async editions(workKey, options = {}) {
+      return (await provider.editionsPage(workKey, { ...options, offset: 0 })).editions;
+    },
+
+    async editionsPage(workKey, { signal, authors = [], limit = EDITIONS_PAGE, offset = 0 } = {}) {
       const id = olid(workKey);
-      if (!id) return [];
-      const url = withQuery(`${baseUrl}/works/${id}/editions.json`, { limit });
+      if (!id) return { editions: [], total: 0, nextOffset: null };
+      // Each page is cached like any other answer, so paging back through a work costs nothing.
+      const url = withQuery(`${baseUrl}/works/${id}/editions.json`, { limit, offset: offset || null });
       const response = await orNull(http.getJson<OlEditionsResponse>(url, { signal, cacheTtl }));
-      return (response?.entries ?? [])
-        .filter((e) => cleanText(e.title))
-        .map((e) => mapEdition(e, { authors, confidence: 0.5 }));
+      const entries = response?.entries ?? [];
+      const total = typeof response?.size === 'number' ? response.size : offset + entries.length;
+      const next = offset + entries.length;
+      return {
+        editions: entries.filter((e) => cleanText(e.title)).map((e) => mapEdition(e, { authors, confidence: 0.5 })),
+        total,
+        nextOffset: entries.length && next < total ? next : null,
+      };
     },
   };
+  return provider;
 }

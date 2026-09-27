@@ -3,6 +3,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { CoverImage } from '@/components/book/CoverImage';
 import { Button, Text } from '@/components/ui';
+import { SwipeAction } from '@/components/ui/SwipeAction';
 import { formatDate, type IsoDate, type LoanWithDetails } from '@/domain';
 import { t } from '@/i18n';
 import { Testids } from '@/testing/testids.gen';
@@ -25,6 +26,10 @@ export interface LoanRowProps {
  * when, the due-date stamp, and "Mark returned" while it is out. The title
  * and the borrower's name are separate buttons (to the book and to the
  * borrower), so the card itself is not one.
+ *
+ * While the book is out, swiping the card to the left is a shortcut for
+ * "Mark returned" (the button stays), and the title button carries the same
+ * action for TalkBack's actions menu.
  */
 export const LoanRow = memo(function LoanRow({ loan, today, onOpenBook, onOpenBorrower, onReturn }: LoanRowProps) {
   const theme = useTheme();
@@ -34,7 +39,10 @@ export const LoanRow = memo(function LoanRow({ loan, today, onOpenBook, onOpenBo
     ? t('loans.row.lent', { date: formatDate(loan.lentOn) })
     : t('loans.row.lentAndBack', { lent: formatDate(loan.lentOn), back: formatDate(loan.returnedOn!) });
 
-  return (
+  const returnable = open && onReturn != null;
+  const returnIt = () => onReturn?.(loan);
+
+  const card = (
     <View
       testID={Testids.loans.row}
       style={[
@@ -51,6 +59,8 @@ export const LoanRow = memo(function LoanRow({ loan, today, onOpenBook, onOpenBo
             role="button"
             accessibilityLabel={t('loans.row.openBook', { title: loan.bookTitle })}
             onPress={() => onOpenBook(loan.bookId)}
+            accessibilityActions={returnable ? [{ name: 'markReturned', label: t('loans.markReturned') }] : undefined}
+            onAccessibilityAction={returnable ? (e) => e.nativeEvent.actionName === 'markReturned' && returnIt() : undefined}
             testID={Testids.loans.rowBook}
             style={({ pressed }) => [
               styles.link,
@@ -93,18 +103,25 @@ export const LoanRow = memo(function LoanRow({ loan, today, onOpenBook, onOpenBo
           <LoanStamp loan={loan} today={today} rotate={-3} testID={Testids.loans.stamp} style={{ marginTop: spacing.xs }} />
         </View>
       </View>
-      {open && onReturn ? (
+      {returnable ? (
         <View style={[styles.actions, { paddingHorizontal: spacing.md, paddingBottom: spacing.md }]}>
           <Button
             label={t('loans.markReturned')}
             variant="secondary"
             accessibilityLabel={t('loans.row.markReturnedLabel', { title: loan.bookTitle })}
-            onPress={() => onReturn(loan)}
+            onPress={returnIt}
             testID={Testids.loans.rowReturn}
           />
         </View>
       ) : null}
     </View>
+  );
+
+  if (!returnable) return card;
+  return (
+    <SwipeAction label={t('loans.markReturned')} icon="book-arrow-left-outline" onAction={returnIt} testID={Testids.loans.rowSwipe} panelTestID={Testids.loans.rowSwipePanel}>
+      {card}
+    </SwipeAction>
   );
 });
 

@@ -1,4 +1,5 @@
 import { bookExportRepo, type Db, type ExportBook } from '@/db';
+import { toIsoDate } from '@/domain';
 
 import { toCsv } from './csv';
 
@@ -78,7 +79,8 @@ const value = (b: ExportBook, c: Column): string | number | null => {
     case 'notes':
       return b.notes;
     case 'added':
-      return b.createdAt.slice(0, 10);
+      // The day on the reader's calendar: a book added late in the evening west of Greenwich is already "tomorrow" in UTC.
+      return toIsoDate(new Date(b.createdAt));
   }
 };
 

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { Booky } from '@/components/booky';
@@ -48,10 +48,19 @@ export function PendingLookupsScreen() {
   const { show } = useSnackbar();
   const [list, setList] = useState<PendingLookup[] | null>(null);
 
+  // Only the latest answer is shown (reloads can overlap), and none once the screen has gone.
+  const asked = useRef(0);
+  useEffect(
+    () => () => {
+      asked.current += 1;
+    },
+    [],
+  );
   const load = useCallback(() => {
+    const ask = ++asked.current;
     pendingLookupsRepo
       .list(db)
-      .then(setList)
+      .then((next) => ask === asked.current && setList(next))
       .catch((e) => console.error('Could not list pending lookups', e));
   }, [db]);
   useEffect(load, [load]);

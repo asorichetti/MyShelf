@@ -261,10 +261,10 @@ export function searchTerms(query: string): string[] {
  * Each word of a search in the spellings it may be stored under: fully
  * folded (`searchTerms`: "søren" → "soren", "straße" → "strasse") and with
  * only the accents Unicode can take off a letter ("søren", "straße",
- * "łodz"). The index folds the second kind itself but keeps letters such as
- * ø, ł, đ, ß, æ, œ and þ, so a word typed as it is written must be looked
- * for as written too. One entry per word; a word's spellings are
- * alternatives.
+ * "łodz"). Since migration 0009 both indexes hold a folded copy of the text
+ * (ø, ł, đ, ß, æ, œ, þ spelt o, l, d, ss, ae, oe, th), which the first kind
+ * matches; FTS5 also keeps the text as written, which the second matches.
+ * One entry per word; a word's spellings are alternatives.
  */
 function searchWordSpellings(query: string): string[][] {
   const words = query.normalize('NFC').split(/[^\p{L}\p{N}\p{M}]+/u).filter((w) => /[\p{L}\p{N}]/u.test(w));
@@ -343,21 +343,23 @@ export function searchGlob(term: string): string {
  * - With the plain index (`books_search`; web and Node have no FTS5), the
  *   same: each word matches the start of a word in that same text, found
  *   with `instr` in rows that are all ASCII and with a GLOB pattern that
- *   folds case and accents in the rest. The two agree except for letters
- *   that fold to two ("ß" → "ss"), which neither folds the same way, for
- *   letters with a stroke or slash (ø, ł, đ), which only the plain index
- *   finds from a plain "o", "l" or "d", and for words longer than FTS5
- *   indexes.
- * - Either way a word is also looked for as typed, less its accents
- *   (`searchWordSpellings`), so "Søren", "Straße" or "Ælfric" typed as
- *   written always finds the book.
+ *   folds case and accents in the rest. The two agree except for words
+ *   longer than FTS5 indexes.
+ * - Letters with no accent to take off (ø, ł, đ, ß, æ, œ, þ) are found
+ *   from the letters people type for them ("soren", "lodz", "strasse",
+ *   "aelfric"): since migration 0009 both indexes hold the text with them
+ *   folded, as `searchTerms` folds each word. A word is also looked for as
+ *   typed, less its accents (`searchWordSpellings`), so "Søren", "Straße"
+ *   or "Ælfric" typed as written finds the book too.
  * - Without either (a database from before migration 0006), the old `LIKE`
  *   over title, subtitle, series and author names.
  *
- * A digit-ish query ("978-0-441") is one word, its ISBN digits, and also
- * matches the ISBN columns anywhere. Returns null for a blank query.
+ * A digit-ish query ("978-0-441", "1984") is one word, its ISBN digits, and
+ * also matches the ISBN columns anywhere; its `rank` puts books with those
+ * digits in the title or subtitle first, before books that match only
+ * through an ISBN. Returns null for a blank query.
  */
-export async function searchClause(db: Db, query: string): Promise<SqlClause | null> {
+export async function searchClause(db: Db, query: string): Promise<(SqlClause & { rank?: SqlClause }) | null> {
   const text = query.trim();
   if (!text) return null;
   const isbn = isbnFragment(text);
@@ -391,6 +393,9 @@ export async function searchClause(db: Db, query: string): Promise<SqlClause | n
   if (isbn) {
     alternatives.push('b.isbn13 LIKE ?', 'b.isbn10 LIKE ?');
     params.push(`%${isbn}%`, `%${isbn}%`);
+    // "1984" is a title as much as ISBN digits: books with it in the title or subtitle go before those that only have it in an ISBN.
+    const rank = { sql: "CASE WHEN b.title LIKE ? OR b.subtitle LIKE ? THEN 0 ELSE 1 END", params: [`%${isbn}%`, `%${isbn}%`] };
+    return { sql: `(${alternatives.join(' OR ')})`, params, rank };
   }
   return { sql: `(${alternatives.join(' OR ')})`, params };
 }
@@ -434,9 +439,9 @@ export async function listBookItems(db: Db, options: ListBookItemsOptions = {}):
        ol.id IS NOT NULL AS on_loan, olp.name AS loan_borrower, ol.due_on AS loan_due_on, b.rating
      FROM books b ${joins.join(' ')} ${BASE_JOINS}
      ${where.length ? `WHERE ${where.join(' AND ')}` : ''}
-     ORDER BY ${order.orderBy}
+     ORDER BY ${search?.rank ? `${search.rank.sql}, ` : ''}${order.orderBy}
      ${limit != null ? 'LIMIT ? OFFSET ?' : ''}`,
-    [...params, ...order.params, ...(limit != null ? [limit, offset] : [])],
+    [...params, ...(search?.rank?.params ?? []), ...order.params, ...(limit != null ? [limit, offset] : [])],
   );
 
   const names = await authorNamesFor(db, rows.map((r) => r.id));
@@ -605,6 +610,24 @@ export async function saveBookDraft(db: Db, draft: ValidBookDraft, id?: number):
     await deleteOrphanAuthors(tx);
     return bookId;
   });
+}
+
+/**
+ * Whether anything still names the cover file `uri`: a book, or the safety
+ * copy of the library a restore keeps for "Undo restore" (a JSON document,
+ * searched for the URI as JSON writes it). A file is deleted only when not.
+ */
+export async function coverInUse(db: Db, uri: string): Promise<boolean> {
+  const row = await db.get<{ used: number }>(
+    `SELECT EXISTS (SELECT 1 FROM books WHERE cover_uri = ?) OR EXISTS (SELECT 1 FROM backup_snapshots WHERE instr(body, ?) > 0) AS used`,
+    [uri, JSON.stringify(uri)],
+  );
+  return row?.used === 1;
+}
+
+/** The cover URIs stored on the device (`file:`) that books name now, for releasing them after the library is replaced. */
+export async function listLocalCoverUris(db: Db): Promise<string[]> {
+  return (await db.all<{ cover_uri: string }>("SELECT DISTINCT cover_uri FROM books WHERE cover_uri LIKE 'file:%'")).map((r) => r.cover_uri);
 }
 
 // ---- Delete with undo ----

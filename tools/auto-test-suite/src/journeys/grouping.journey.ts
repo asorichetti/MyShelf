@@ -1,7 +1,7 @@
 // Phase 06: grouping, display modes, filters, preferences, genres, authors,
 // user groups and the browse hub.
 import { Testids, tid } from '../selectors.ts';
-import { openFixture, rowNames, waitForCount, waitForPath, waitVisible } from './helpers.ts';
+import { eventCount, openFixture, rowNames, waitForCount, waitForEvent, waitForPath, waitVisible } from './helpers.ts';
 import { expect, q, register, type Context } from './registry.ts';
 
 const row = tid(Testids.home.row);
@@ -313,6 +313,7 @@ register({
 
     await c.page.locator(tid(g.reorder)).click();
     await waitForCount(c, tid(g.reorderRow), 3, `${path} reorder`);
+    const saves = await eventCount(c, 'groups-changed');
     const up = c.page.locator(`${tid(g.moveUp)}[aria-label="Move Pride and Prejudice up"]`);
     // First move by keyboard: focus the button and press Enter; focus must stay with the book.
     await up.focus();
@@ -329,6 +330,8 @@ register({
     expect(await c.page.locator(`${tid(g.moveUp)}[aria-label="Move Pride and Prejudice up"]`).isDisabled().catch(() => false) || (await c.page.locator(`${tid(g.moveUp)}[aria-label="Move Pride and Prejudice up"]`).getAttribute('aria-disabled')) === 'true', `${path}: the first book's Move up should be disabled`);
     await c.checkGates(`${path} (reordering)`);
     await c.snap('reorder');
+    // Both moves have been saved before the reload reads them back.
+    await waitForEvent(c, 'groups-changed', saves + 1, `${path} (moves saved)`);
     await c.page.locator(tid(g.reorderDone)).click();
 
     await c.page.reload();
@@ -350,6 +353,87 @@ register({
     await waitForCount(c, row, 4, `${path} after adding Mort`);
     const last = (await rowNames(c)).at(-1) ?? '';
     expect(last.startsWith('Mort,'), `${path}: expected Mort added at the end, found ${q(last)}`);
+  },
+});
+
+/** The reorder rows' names ("1. Good Omens"), top to bottom. */
+async function reorderNames(c: Context): Promise<string[]> {
+  return c.page.locator(tid(g.reorderRow)).evaluateAll((els) => els.map((el) => el.getAttribute('aria-label') ?? ''));
+}
+
+register({
+  name: 'group-drag-reorder',
+  suite: 'p06',
+  desc: 'Holiday reads -> Reorder: a quick drag moves nothing; holding Pride and Prejudice lifts it, dragging it to the top makes room, the move is announced and saved, and the order survives a reload',
+  async run(c) {
+    await openFixture(c, 'demo', '/groups');
+    await c.page.locator(`${tid(g.card)}[aria-label^="Holiday reads,"]`).click();
+    const path = await waitForPath(c, /^\/group\/\d+$/, '/groups -> Holiday reads');
+    await waitForCount(c, row, 3, path);
+    await c.page.locator(tid(g.reorder)).click();
+    await waitForCount(c, tid(g.reorderRow), 3, `${path} reorder`);
+    const start = ['1. Good Omens', '2. Murder on the Orient Express', '3. Pride and Prejudice'];
+    expect(q(await reorderNames(c)) === q(start), `${path}: unexpected starting order ${q(await reorderNames(c))}`);
+
+    const pride = c.page.locator(`${tid(g.reorderRow)}[aria-label="3. Pride and Prejudice"]`);
+    const box = await pride.boundingBox();
+    const first = await c.page.locator(tid(g.reorderRow)).first().boundingBox();
+    expect(box != null && first != null, `${path}: expected the rows to have boxes`);
+    // Hold on the title, not the arrow buttons.
+    const x = box.x + box.width * 0.45;
+    const y = box.y + box.height / 2;
+
+    // A drag without the hold is not a reorder.
+    await c.page.mouse.move(x, y);
+    await c.page.mouse.down();
+    for (let i = 1; i <= 8; i++) await c.page.mouse.move(x, y - (y - first.y) * (i / 8));
+    await c.page.mouse.up();
+    expect(q(await reorderNames(c)) === q(start), `${path}: expected a quick drag to move nothing, found ${q(await reorderNames(c))}`);
+
+    // Hold until the row lifts (its border turns to the primary colour), then drag it above the first row.
+    const saves = await eventCount(c, 'groups-changed');
+    await c.page.mouse.move(x, y);
+    await c.page.mouse.down();
+    await c.page
+      .waitForFunction((label) => {
+        const el = document.querySelector(`[aria-label="${label}"]`);
+        return el != null && getComputedStyle(el).borderTopColor === 'rgb(107, 63, 168)';
+      }, '3. Pride and Prejudice', { timeout: 5_000 })
+      .catch(() => expect(false, `${path}: expected Pride and Prejudice to lift when held`));
+    const target = first.y + first.height * 0.25;
+    for (let i = 1; i <= 12; i++) await c.page.mouse.move(x, y - (y - target) * (i / 12));
+    // The other rows have made room: Good Omens has moved down.
+    const shifted = await c.page.locator(`${tid(g.reorderRow)}[aria-label="1. Good Omens"]`).boundingBox();
+    await c.page
+      .waitForFunction(
+        ([label, top]) => (document.querySelector(`[aria-label="${label}"]`)?.getBoundingClientRect().top ?? 0) > (top as number) + 20,
+        ['1. Good Omens', first.y] as const,
+        { timeout: 5_000 },
+      )
+      .catch(() => expect(false, `${path}: expected Good Omens to make room, found top ${q(shifted?.y)} from ${q(first.y)}`));
+    await c.snap('drag-in-progress');
+    await c.page.mouse.up();
+
+    const want = ['1. Pride and Prejudice', '2. Good Omens', '3. Murder on the Orient Express'];
+    await c.page
+      .waitForFunction(([sel, w]) => JSON.stringify([...document.querySelectorAll(sel as string)].map((el) => el.getAttribute('aria-label'))) === JSON.stringify(w), [tid(g.reorderRow), want] as const, {
+        timeout: 5_000,
+      })
+      .catch(async () => expect(false, `${path}: expected ${q(want)} after the drag, found ${q(await reorderNames(c))}`));
+    const status = await c.page.locator('[role="status"]').first().innerText();
+    expect(status.includes('Pride and Prejudice moved to 1 of 3'), `${path}: expected the move to be announced, found ${q(status)}`);
+    // Every row is back in its own place, none left shifted.
+    const tops = await c.page.locator(tid(g.reorderRow)).evaluateAll((els) => els.map((el) => getComputedStyle(el).transform));
+    expect(tops.every((t) => t === 'none' || /matrix\(1, 0, 0, 1, 0, 0\)/.test(t)), `${path}: expected no row left moved, found ${q(tops)}`);
+    await c.checkGates(`${path} (after a drag)`);
+    await c.snap('dragged');
+
+    await waitForEvent(c, 'groups-changed', saves, `${path} (drag saved)`);
+    await c.page.locator(tid(g.reorderDone)).click();
+    await c.page.reload();
+    await waitForCount(c, row, 3, `${path} after reload`);
+    const after = (await rowNames(c)).map((n) => n.split(',')[0]);
+    expect(q(after) === q(['Pride and Prejudice', 'Good Omens', 'Murder on the Orient Express']), `${path} after reload: expected the dragged order, found ${q(after)}`);
   },
 });
 

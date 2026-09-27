@@ -39,3 +39,4 @@ export * from './shelfView';
 export * from './summary';
 export * from './text';
 export * from './titleMatch';
+export * from './missingDetails';

@@ -1,0 +1,27 @@
+# P09-04: the recovery screen on a phone. scripts/maestro-suite.sh (with
+# `adb root`) loads "demo" (db-export-setup.yaml), leaves the E2E marker
+# `files/e2e-db-fault` holding `migrate`, and runs this flow: the app starts
+# on "I couldn't open your library", "Save a copy of the library file" opens
+# the Android share sheet with myshelf-library-<date>.db, and Try again opens
+# the untouched library. The script then checks the shared copy is the
+# library (a SQLite file with the 12 books).
+appId: dev.asorichetti.myshelf
+name: Save the database file from the recovery screen
+tags: [hooked]
+---
+- launchApp
+- extendedWaitUntil: { visible: { id: db-error-root }, timeout: 30000 }
+- assertVisible: { text: E2E. a simulated migration failure }
+- scrollUntilVisible: { element: { id: db-error-export }, direction: DOWN }
+- takeScreenshot: screenshots/db-error
+- tapOn: { id: db-error-export }
+- extendedWaitUntil: { visible: 'Sharing.*|Save your library file|myshelf-library-.*', timeout: 10000 }
+- takeScreenshot: screenshots/db-export-share-sheet
+- back
+- extendedWaitUntil: { visible: { id: db-error-export-status }, timeout: 10000 }
+- assertVisible: { text: 'myshelf-library-.*\.db is ready\. Keep it somewhere safe\.' }
+- takeScreenshot: screenshots/db-export-ready
+- scrollUntilVisible: { element: { id: db-error-retry }, direction: UP }
+- tapOn: { id: db-error-retry }
+- extendedWaitUntil: { visible: { id: home-title }, timeout: 20000 }
+- assertVisible: { id: home-row, text: 'Dune,.*' }

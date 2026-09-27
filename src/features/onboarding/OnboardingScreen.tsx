@@ -1,9 +1,10 @@
 import { router, type Href } from 'expo-router';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { OnboardingCard } from '@/components/booky/OnboardingCard';
 import { Button, Screen } from '@/components/ui';
+import { useMounted } from '@/hooks/useMounted';
 import { t } from '@/i18n';
 import { Testids } from '@/testing/testids.gen';
 import { useTheme } from '@/theme';
@@ -20,18 +21,23 @@ import { useFinishOnboarding } from './useOnboarding';
 export function OnboardingScreen() {
   const { spacing } = useTheme();
   const finish = useFinishOnboarding();
+  const mounted = useMounted();
+  const leaving = useRef(false);
   const [page, setPage] = useState(0);
   const pages = onboardingPages();
   const card = pages[page];
   const last = page === pages.length - 1;
 
   const leave = async (to: Href) => {
+    // One way out: a second tap while the first is saving does nothing.
+    if (leaving.current) return;
+    leaving.current = true;
     try {
       await finish();
     } catch (e) {
       console.warn('Could not remember the onboarding was done', e);
     }
-    router.replace(to);
+    if (mounted.current) router.replace(to);
   };
 
   return (

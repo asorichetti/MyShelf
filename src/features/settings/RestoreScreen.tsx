@@ -6,7 +6,7 @@ import { ChoiceGroup, SettingsNotice } from '@/components/settings/SettingsContr
 import { Button, Card, Text, TextField, useSnackbar } from '@/components/ui';
 import { backupRepo, LATEST_VERSION, useDatabase, type SnapshotInfo } from '@/db';
 import { describeCounts, formatDate, toIsoDate, type BackupFile, type BackupTableName } from '@/domain';
-import { drainCoverBackfill } from '@/features/covers';
+import { drainCoverBackfill, replacingLibrary } from '@/features/covers';
 import { emit } from '@/features/events';
 import { t } from '@/i18n';
 import { BackupError, JSON_MIME, parseBackup, restoreBackup, undoRestore, type RestoreMode, type RestoreResult } from '@/services/backup';
@@ -96,7 +96,8 @@ export function RestoreScreen() {
     const { picked } = stage;
     setStage({ kind: 'restoring', picked });
     try {
-      const result = await restoreBackup(db, picked.backup, { mode, openScratch: openScratchDatabase, appVersion: appVersion() });
+      // The covers the replaced safety copy alone named go; the library's own stay with the new one.
+      const result = await replacingLibrary(db, () => restoreBackup(db, picked.backup, { mode, openScratch: openScratchDatabase, appVersion: appVersion() }));
       announceLibraryReplaced();
       // Books whose covers lived on the old phone get real ones again, in the background.
       void drainCoverBackfill(db, { onAttached: () => emit('library-changed') });
@@ -111,7 +112,8 @@ export function RestoreScreen() {
     if (!safety) return;
     setUndoing(true);
     try {
-      const ok = await undoRestore(db, safety.id, { openScratch: openScratchDatabase });
+      // The covers fetched for the restored books go; the original library's come back with it.
+      const ok = await replacingLibrary(db, () => undoRestore(db, safety.id, { openScratch: openScratchDatabase }));
       announceLibraryReplaced();
       show({ message: ok ? t('restore.undo.done') : t('restore.undo.nothingToUndo') });
       setSafety(null);

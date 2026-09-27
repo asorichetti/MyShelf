@@ -15,6 +15,8 @@ import type { BookyExpression } from './expressions';
 
 export interface BookyAction {
   label: string;
+  /** When the label alone does not say what it acts on ("+1 copy"). */
+  accessibilityLabel?: string;
   onPress: () => void;
   testID?: string;
   /** Default: the first action is secondary, the rest ghost. */
@@ -120,6 +122,7 @@ export function BookyBubble({
         <Button
           key={a.label}
           label={a.label}
+          accessibilityLabel={a.accessibilityLabel}
           onPress={a.onPress}
           testID={a.testID}
           variant={a.variant ?? (i === 0 ? 'secondary' : 'ghost')}

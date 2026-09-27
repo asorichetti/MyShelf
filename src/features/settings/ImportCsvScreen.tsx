@@ -1,4 +1,5 @@
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { router } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
@@ -165,6 +166,18 @@ export function ImportCsvScreen() {
                 <Text key={s.line} role="listitem">{s.title ? t('importCsv.report.skippedLineWithTitle', { line: s.line, title: s.title, reason: s.reason }) : t('importCsv.report.skippedLine', { line: s.line, reason: s.reason })}</Text>
               ))}
             </View>
+          </View>
+        ) : null}
+        {report.imported ? (
+          <View style={{ gap: spacing.sm }}>
+            <Text color="inkMuted">{t('importCsv.report.fetchDetailsHint')}</Text>
+            <Button
+              label={t('importCsv.report.fetchDetails')}
+              variant="secondary"
+              block
+              onPress={() => router.push({ pathname: '/settings/fetch-details', params: { ids: report.bookIds.join(',') } })}
+              testID={T.fetchDetails}
+            />
           </View>
         ) : null}
         <Button label={t('importCsv.report.seeShelf')} block onPress={goToShelf} testID={T.done} />

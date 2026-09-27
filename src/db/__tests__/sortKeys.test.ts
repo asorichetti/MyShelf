@@ -2,7 +2,7 @@
  * @jest-environment node
  */
 import { booksRepo, type Db } from '@/db';
-import { foldedLetters, foldSql, orderTerm, shuffleSql, sortKeyList, sortKeyRegistry } from '@/db/sortKeys';
+import { foldedLetters, foldSql, orderTerm, packRanks, shuffleSql, sortKeyList, sortKeyRegistry } from '@/db/sortKeys';
 import {
   callNumber,
   hashColour,
@@ -214,10 +214,10 @@ describe('each key on its own', () => {
     expect((await titles('language', 'desc')).slice(0, 3)).toEqual(['Ezra', 'Eagle', 'Émile']);
   });
 
-  it('format: hardback, paperback, e-book, audiobook; "other" and none last both ways', async () => {
-    const rest = ['Ålborg Diaries', 'An Apple a Day', ...SAGAS_BY_TITLE, 'Untitled Notes'];
-    expect(await titles('format')).toEqual(['The Hobbit', 'Émile', 'Eagle', 'Ezra', ...rest]);
-    expect(await titles('format', 'desc')).toEqual(['Ezra', 'Eagle', 'Émile', 'The Hobbit', ...rest]);
+  it('format: hardback, paperback, e-book, audiobook; then "other", then none, both ways', async () => {
+    const unknown = ['Ålborg Diaries', ...SAGAS_BY_TITLE, 'Untitled Notes'];
+    expect(await titles('format')).toEqual(['The Hobbit', 'Émile', 'Eagle', 'Ezra', 'An Apple a Day', ...unknown]);
+    expect(await titles('format', 'desc')).toEqual(['Ezra', 'Eagle', 'Émile', 'The Hobbit', 'An Apple a Day', ...unknown]);
   });
 
   it('on loan: lent books first (a returned loan does not count), then the rest', async () => {
@@ -312,6 +312,25 @@ describe('each key on its own', () => {
     }
   });
 
+  it('call number: files Øster under O and Æsop under AE, as the book page prints them', async () => {
+    const small = await createTestDb();
+    try {
+      await loadFixture(small, {
+        books: [
+          { title: 'Zebra', authors: ['Pia Pedersen'], genres: ['Fiction'] },
+          { title: 'Fables', authors: ['Æsop'], genres: ['Fiction'] },
+          { title: 'Fjord', authors: ['Lise Øster'], genres: ['Fiction'] },
+          { title: 'Nordic', authors: ['Ole Nygaard'], genres: ['Fiction'] },
+        ],
+      });
+      const got = (await booksRepo.listBookItems(small, { sort: oneKey('callNumber', 'asc'), coverOrder })).map((b) => b.title);
+      // FIC AES, FIC NYG, FIC OST, FIC PED.
+      expect(got).toEqual(['Fables', 'Nordic', 'Fjord', 'Zebra']);
+    } finally {
+      await small.close();
+    }
+  });
+
   it('surprise me: the same seed gives the same order, another seed another; SQL and TypeScript agree', async () => {
     const a = await titles('shuffle', 'asc', 12345);
     expect(await titles('shuffle', 'asc', 12345)).toEqual(a);
@@ -345,6 +364,44 @@ describe('a book added after a computed key’s ranks were worked out', () => {
       expect(got.at(-1)).toBe('Zzz Late Arrival');
     } finally {
       spy.mockRestore();
+      await tmp.close();
+    }
+  });
+});
+
+describe('computed ranks with sparse ids', () => {
+  it('pack in memory proportional to the books, not to the largest id', () => {
+    const packed = packRanks(new Map([[1, 7], [2, 3], [1_000_000_000_000, 1], [1_000_000_000_001, 9], [4_000_000_000_000, 2]]));
+    expect(packed.blob.length).toBeLessThan(100);
+    const dense = packRanks(new Map(Array.from({ length: 1000 }, (_, i) => [i + 1, i] as [number, number])));
+    // One run for a library whose ids have no big gaps: as compact as before.
+    expect(dense.runs).toHaveLength(1);
+    expect(dense.blob.length).toBe(3000);
+  });
+
+  it('still sort a library restored with huge, scattered ids', async () => {
+    const tmp = await createTestDb();
+    try {
+      const ids = [3, 70_000_000, 2_000_000_000, 5_000, 1_234_567_890];
+      const titles = ['Delta', 'Alpha', 'Echo', 'Charlie', 'Bravo'];
+      for (let i = 0; i < ids.length; i++) await tmp.run('INSERT INTO books (id, title) VALUES (?, ?)', [ids[i], titles[i]]);
+      const spy = jest.spyOn(sortKeyRegistry.colour, 'rank').mockImplementation(async (d: Db) => {
+        const rows = await d.all<{ id: number; title: string }>('SELECT id, title FROM books');
+        // Rank by title, backwards: the order must come from the ranks, not from the title tie-break.
+        const sorted = [...rows].sort((a, b) => b.title.localeCompare(a.title));
+        return new Map(sorted.map((r, i) => [r.id, i]));
+      });
+      try {
+        const got = (await booksRepo.listBookItems(tmp, { sort: oneKey('colour') })).map((b) => b.title);
+        expect(got).toEqual(['Echo', 'Delta', 'Charlie', 'Bravo', 'Alpha']);
+        const desc = (await booksRepo.listBookItems(tmp, { sort: oneKey('colour', 'desc') })).map((b) => b.title);
+        expect(desc).toEqual(['Alpha', 'Bravo', 'Charlie', 'Delta', 'Echo']);
+      } finally {
+        spy.mockRestore();
+      }
+      // The real call-number ranks too: every book gets its place.
+      expect((await booksRepo.listBookItems(tmp, { sort: oneKey('callNumber') })).map((b) => b.title)).toEqual(['Alpha', 'Bravo', 'Charlie', 'Delta', 'Echo']);
+    } finally {
       await tmp.close();
     }
   });

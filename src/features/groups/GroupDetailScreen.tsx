@@ -15,6 +15,7 @@ import { LoadingPage } from '@/features/navigation/LoadingPage';
 import { MissingScreen } from '@/features/navigation/MissingScreen';
 import { parseId } from '@/features/navigation/parseId';
 import { useSelection } from '@/features/shelf/useSelection';
+import { useMounted } from '@/hooks/useMounted';
 import { t } from '@/i18n';
 import { Testids } from '@/testing/testids.gen';
 import { groupSwatch, useTheme } from '@/theme';
@@ -38,6 +39,7 @@ export function GroupDetailScreen() {
   const theme = useTheme();
   const { colors, spacing, radii, sizes } = theme;
   const { show } = useSnackbar();
+  const mounted = useMounted();
   const selection = useSelection();
   const [reordering, setReordering] = useState(false);
   const [editing, setEditing] = useState(false);
@@ -68,8 +70,9 @@ export function GroupDetailScreen() {
 
   const deleteGroup = async () => {
     await remove(group.id);
-    setConfirmingDelete(false);
     show({ message: t('groups.detail.deleted', { name: group.name }) });
+    if (!mounted.current) return;
+    setConfirmingDelete(false);
     goBackOr('/groups');
   };
 

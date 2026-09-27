@@ -132,3 +132,64 @@ describe('Scan several, then review (P03-12)', () => {
     expect(screen.getByTestId(Testids.scanReview.saveAll)).toHaveTextContent(/Save 1 book/);
   });
 });
+
+describe('books already on the shelf, and the same book scanned twice', () => {
+  it('flags a book already on the shelf, and saves it only when the user keeps it', async () => {
+    await booksRepo.createBook(db, { title: 'The Colour of Magic', isbn13: OL_BOOKS.colourOfMagic });
+    await scanSeveral([OL_BOOKS.colourOfMagic, OL_BOOKS.theMartian]);
+    await press(Testids.scan.reviewOpen);
+    await advance(0);
+    const flags = screen.getAllByTestId(Testids.scanReview.onShelf);
+    expect(flags).toHaveLength(1);
+    expect(flags[0]).toHaveTextContent(/Already on your shelf/);
+    // Only The Martian is ready until the user decides.
+    expect(screen.getByTestId(Testids.scanReview.saveAll)).toHaveTextContent(/Save 1 book$/);
+    expect(screen.getByText(/1 book is already on your shelf/)).toBeOnTheScreen();
+    await press(Testids.scanReview.keep);
+    expect(screen.queryByTestId(Testids.scanReview.keep)).toBeNull();
+    expect(screen.getByTestId(Testids.scanReview.saveAll)).toHaveTextContent(/Save 2 books/);
+    await press(Testids.scanReview.saveAll);
+    await advance(0);
+    expect((await booksRepo.findBooksByIsbn(db, OL_BOOKS.colourOfMagic)).length).toBe(2);
+    expect(await booksRepo.countBooks(db)).toBe(3);
+  });
+
+  it('skipping a book already on the shelf drops it from the tray', async () => {
+    await booksRepo.createBook(db, { title: 'The Martian', isbn13: OL_BOOKS.theMartian });
+    await scanSeveral([OL_BOOKS.theMartian]);
+    await press(Testids.scan.reviewOpen);
+    await advance(0);
+    expect(screen.getByTestId(Testids.scanReview.saveAll)).toHaveTextContent(/Nothing ready to save/);
+    await press(Testids.scanReview.drop);
+    expect(getTray()).toEqual([]);
+    expect(await booksRepo.countBooks(db)).toBe(1);
+  });
+
+  it('scanning the same ISBN again asks before adding a second copy', async () => {
+    await scanSeveral([OL_BOOKS.colourOfMagic, OL_BOOKS.theMartian, OL_BOOKS.colourOfMagic]);
+    expect(screen.getByTestId(Testids.scan.trayCount)).toHaveTextContent('2');
+    expect(getTray()).toHaveLength(2);
+    expect(screen.getByTestId(Testids.scan.notice)).toHaveTextContent(/already in the tray/);
+    await press(Testids.scan.addCopy);
+    expect(getTray()[0].copies).toBe(2);
+    expect(screen.getByTestId(Testids.scan.trayCount)).toHaveTextContent('3');
+    await press(Testids.scan.reviewOpen);
+    expect(screen.getByTestId(Testids.scanReview.copies)).toHaveTextContent('2 copies');
+    expect(screen.getByTestId(Testids.scanReview.saveAll)).toHaveTextContent(/Save 3 books/);
+    // One copy too many: take it back off.
+    await press(Testids.scanReview.removeCopy);
+    expect(screen.queryByTestId(Testids.scanReview.copies)).toBeNull();
+    expect(screen.getByTestId(Testids.scanReview.saveAll)).toHaveTextContent(/Save 2 books/);
+  });
+
+  it('saves every copy asked for', async () => {
+    await scanSeveral([OL_BOOKS.colourOfMagic, OL_BOOKS.colourOfMagic]);
+    await press(Testids.scan.addCopy);
+    await press(Testids.scan.reviewOpen);
+    await press(Testids.scanReview.saveAll);
+    await advance(0);
+    expect((await booksRepo.findBooksByIsbn(db, OL_BOOKS.colourOfMagic)).length).toBe(2);
+    expect(getTray()).toEqual([]);
+  });
+});
+

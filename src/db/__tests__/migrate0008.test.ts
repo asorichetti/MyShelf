@@ -1,7 +1,7 @@
 /**
  * @jest-environment node
  */
-import { booksRepo, getSchemaVersion, loansRepo, migrate, MigrationError, migrations, type Db, type Migration } from '@/db';
+import { booksRepo, getSchemaVersion, LATEST_VERSION, loansRepo, migrate, MigrationError, migrations, type Db, type Migration } from '@/db';
 import { openBetterSqliteDatabase } from '@/db/betterSqlite';
 import { openNodeDatabase } from '@/db/node';
 import { loadFixture } from '@/testing/loadFixture';
@@ -41,7 +41,7 @@ describe.each([
   it('keeps every row, column, index and link exactly as it was', async () => {
     const before = await dump(db);
     const shapes = { books: await shape(db, 'books'), loans: await shape(db, 'loans') };
-    expect(await migrate(db)).toMatchObject({ from: 7, applied: [8] });
+    expect(await migrate(db, upTo(8))).toMatchObject({ from: 7, applied: [8] });
     expect(await getSchemaVersion(db)).toBe(8);
     expect(await dump(db)).toEqual(before);
     expect({ books: await shape(db, 'books'), loans: await shape(db, 'loans') }).toEqual(shapes);
@@ -87,7 +87,7 @@ describe('a migration with foreign keys off', () => {
     await migrate(db);
     const breaking: Migration = { version: 99, name: '0099_breaks', foreignKeysOff: true, up: 'INSERT INTO book_authors (book_id, author_id) VALUES (12345, 67890);' };
     await expect(migrate(db, [...migrations, breaking])).rejects.toThrow(MigrationError);
-    expect(await getSchemaVersion(db)).toBe(8);
+    expect(await getSchemaVersion(db)).toBe(LATEST_VERSION);
     expect(await db.all('SELECT * FROM book_authors')).toEqual([]);
     expect(await db.get('PRAGMA foreign_keys')).toEqual({ foreign_keys: 1 });
     await db.close();

@@ -1,4 +1,5 @@
 import {
+  AUTHOR_NAME_MAX,
   BACKUP_FORMAT,
   BACKUP_FORMAT_VERSION,
   backupColumnsAt,
@@ -7,6 +8,7 @@ import {
   backupTableNames,
   backupTablesAt,
   joinNames,
+  TITLE_MAX,
   type BackupColumn,
   type BackupFile,
   type BackupRow,
@@ -75,6 +77,12 @@ const rowName = (table: BackupTableName, number: string | number) => translate(R
 
 const isObject = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
 
+/**
+ * The largest id a backup may carry (the largest 32-bit integer). The app
+ * gives ids from 1 up, one per record ever added, so no library comes near.
+ */
+export const MAX_BACKUP_ID = 2 ** 31 - 1;
+
 function typeOk(col: BackupColumn, v: unknown): boolean {
   if (v === null) return col.nullable;
   if (col.type === 'text') return typeof v === 'string';
@@ -99,8 +107,16 @@ function checkRow(spec: BackupTableSpec, columns: readonly BackupColumn[], raw: 
     if (col.type === 'text' && !col.nullable && (col.name === 'title' || col.name === 'name') && !(v as string).trim()) {
       throw new BackupError('bad-row', t('restore.errors.emptyField', { row, field: col.name }));
     }
+    // Longer than the book form takes: the book could not be edited (the app shortens such text on the way in).
+    if (typeof v === 'string' && ((spec.name === 'books' && col.name === 'title' && v.length > TITLE_MAX) || (spec.name === 'authors' && col.name === 'name' && v.length > AUTHOR_NAME_MAX))) {
+      throw new BackupError('bad-row', t('restore.errors.unexpectedField', { row, field: col.name }));
+    }
     if (spec.name === 'books' && col.name === 'rating' && v !== null && !isRating(v)) {
       throw new BackupError('bad-row', t('restore.errors.badRating', { row, value: String(v) }));
+    }
+    // Ids the app counts up to from 1: a hand-made file's huge or negative ids are refused.
+    if (typeof v === 'number' && (col.name === 'id' || col.name.endsWith('_id')) && (v < 1 || v > MAX_BACKUP_ID)) {
+      throw new BackupError('bad-row', t('restore.errors.unexpectedField', { row, field: col.name }));
     }
     // Series numbers the app itself never stores: the Series screens count up to the highest one.
     if (typeof v === 'number' && ((col.name === 'total_count' && v > MAX_SERIES_POSITION) || (col.name === 'series_position' && v >= MAX_SERIES_POSITION))) {

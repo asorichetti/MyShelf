@@ -10,7 +10,8 @@ export async function downloadCover(_bookId: number, url: string, _options: Down
   return url;
 }
 
-export function deleteCover(_bookId: number): boolean {
+/** The web build stores no cover files. */
+export function deleteCoverFile(_uri: string | null | undefined): boolean {
   return false;
 }
 
@@ -19,11 +20,12 @@ export function deleteAllCovers(): number {
   return 0;
 }
 
-export function isStoredCover(_bookId: number, _uri: string | null | undefined): boolean {
+/** The web build keeps covers as they are (a URL or a data: URI): each is already "stored". */
+export function isStoredCover(_uri: string | null | undefined): boolean {
   return true;
 }
 
 /** The web build keeps the picked image's own URI (a data: URI from the file picker). */
-export function storeCoverFile(_bookId: number, sourceUri: string): string {
+export function storeCoverFile(sourceUri: string, _options: { bookId?: number } = {}): string {
   return sourceUri;
 }

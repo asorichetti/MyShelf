@@ -1,4 +1,4 @@
-import { deleteCover, downloadCover, isLocalCover, isStoredCover, storeCoverFile } from '../index';
+import { deleteCoverFile, downloadCover, isLocalCover, isStoredCover, storeCoverFile } from '../index';
 
 // An in-memory stand-in for expo-file-system's File/Directory/Paths API.
 jest.mock('expo-file-system', () => {
@@ -52,24 +52,27 @@ const COVER_URL = 'https://covers.openlibrary.org/b/id/14647238-L.jpg';
 
 beforeEach(() => fs.__files.clear());
 
+const COVER_FILE = /^file:\/\/\/data\/docs\/covers\/42-[a-z0-9]+\.jpg$/;
+
 describe('downloadCover (native)', () => {
-  it('saves the image to <documents>/covers/<bookId>.jpg and returns its file:// URI', async () => {
+  it('saves the image to a file of its own, <documents>/covers/<bookId>-<unique>.jpg, and returns its file:// URI', async () => {
     const http = { getBinary: jest.fn(async () => ({ bytes: JPEG, contentType: 'image/jpeg' })) };
     const uri = await downloadCover(42, COVER_URL, { http });
-    expect(uri).toBe('file:///data/docs/covers/42.jpg');
+    expect(uri).toMatch(COVER_FILE);
     expect(http.getBinary).toHaveBeenCalledWith(COVER_URL, { signal: undefined });
     expect(fs.__files.get(uri)).toEqual(JPEG);
     expect(isLocalCover(uri)).toBe(true);
   });
 
-  it('replaces an earlier cover for the same book', async () => {
+  it('never writes over an earlier cover: each download gets a new file', async () => {
     const http = { getBinary: jest.fn(async () => ({ bytes: JPEG, contentType: 'image/jpeg' })) };
-    await downloadCover(7, COVER_URL, { http });
+    const first = await downloadCover(7, COVER_URL, { http });
     const newer = new Uint8Array([0xff, 0xd8, 1, 2]);
     http.getBinary.mockResolvedValueOnce({ bytes: newer, contentType: 'image/jpeg' });
-    await downloadCover(7, COVER_URL, { http });
-    expect(fs.__files.get('file:///data/docs/covers/7.jpg')).toEqual(newer);
-    expect(fs.__files.size).toBe(1);
+    const second = await downloadCover(7, COVER_URL, { http });
+    expect(second).not.toBe(first);
+    expect(fs.__files.get(first)).toEqual(JPEG);
+    expect(fs.__files.get(second)).toEqual(newer);
   });
 
   it('writes nothing when the download fails or is empty', async () => {
@@ -80,12 +83,17 @@ describe('downloadCover (native)', () => {
     expect(fs.__files.size).toBe(0);
   });
 
-  it("deletes a book's cover file", async () => {
+  it('deletes a stored cover file by its URI, and nothing outside the covers folder', async () => {
     const http = { getBinary: async () => ({ bytes: JPEG, contentType: 'image/jpeg' }) };
-    await downloadCover(3, COVER_URL, { http });
-    expect(deleteCover(3)).toBe(true);
-    expect(fs.__files.has('file:///data/docs/covers/3.jpg')).toBe(false);
-    expect(deleteCover(3)).toBe(false);
+    const uri = await downloadCover(3, COVER_URL, { http });
+    fs.__files.set('file:///cache/picker/abc.jpg', JPEG);
+    expect(deleteCoverFile('file:///cache/picker/abc.jpg')).toBe(false);
+    expect(fs.__files.has('file:///cache/picker/abc.jpg')).toBe(true);
+    expect(deleteCoverFile(uri)).toBe(true);
+    expect(fs.__files.has(uri)).toBe(false);
+    expect(deleteCoverFile(uri)).toBe(false);
+    expect(deleteCoverFile(COVER_URL)).toBe(false);
+    expect(deleteCoverFile(null)).toBe(false);
   });
 
   it('tells local covers from remote ones', () => {
@@ -95,18 +103,38 @@ describe('downloadCover (native)', () => {
 });
 
 describe('storeCoverFile (native)', () => {
-  it('copies a picked photo into <documents>/covers/<bookId>.jpg, replacing an old cover', () => {
+  it('copies a picked photo into a file of its own in <documents>/covers', () => {
     fs.__files.set('file:///cache/picker/abc.jpg', JPEG);
-    const uri = storeCoverFile(9, 'file:///cache/picker/abc.jpg');
-    expect(uri).toBe('file:///data/docs/covers/9.jpg');
+    const uri = storeCoverFile('file:///cache/picker/abc.jpg', { bookId: 9 });
+    expect(uri).toMatch(/^file:\/\/\/data\/docs\/covers\/9-[a-z0-9]+\.jpg$/);
     expect(fs.__files.get(uri)).toEqual(JPEG);
-    expect(isStoredCover(9, uri)).toBe(true);
-    expect(isStoredCover(9, 'file:///cache/picker/abc.jpg')).toBe(false);
+    expect(isStoredCover(uri)).toBe(true);
+    expect(isStoredCover('file:///cache/picker/abc.jpg')).toBe(false);
 
     const newer = new Uint8Array([0xff, 0xd8, 9]);
     fs.__files.set('file:///cache/picker/def.jpg', newer);
-    storeCoverFile(9, 'file:///cache/picker/def.jpg');
-    expect(fs.__files.get(uri)).toEqual(newer);
+    const again = storeCoverFile('file:///cache/picker/def.jpg', { bookId: 9 });
+    expect(again).not.toBe(uri);
+    // The old file stays until nothing names it (the caller releases it).
+    expect(fs.__files.get(uri)).toEqual(JPEG);
+    expect(fs.__files.get(again)).toEqual(newer);
+    // A book not saved yet has no id to put in the name.
+    expect(storeCoverFile('file:///cache/picker/def.jpg')).toMatch(/^file:\/\/\/data\/docs\/covers\/book-[a-z0-9]+\.jpg$/);
+  });
+
+  it('a copy that fails leaves the book’s current cover as it was, and no half-written file', () => {
+    fs.__files.set('file:///cache/picker/abc.jpg', JPEG);
+    const uri = storeCoverFile('file:///cache/picker/abc.jpg', { bookId: 9 });
+    const before = new Map(fs.__files);
+    expect(() => storeCoverFile('file:///cache/picker/gone.jpg', { bookId: 9 })).toThrow('source missing');
+    expect(fs.__files).toEqual(before);
+    expect(fs.__files.get(uri)).toEqual(JPEG);
+  });
+
+  it('counts covers stored before unique names (covers/<id>.jpg) as stored', () => {
+    expect(isStoredCover('file:///data/docs/covers/7.jpg')).toBe(true);
+    expect(isStoredCover('file:///data/docs/other/7.jpg')).toBe(false);
+    expect(isStoredCover(null)).toBe(false);
   });
 });
 
@@ -117,11 +145,11 @@ describe('downloadCover (web)', () => {
     const http = { getBinary: jest.fn() };
     await expect(web.downloadCover(1, COVER_URL, { http })).resolves.toBe(COVER_URL);
     expect(http.getBinary).not.toHaveBeenCalled();
-    expect(web.deleteCover(1)).toBe(false);
+    expect(web.deleteCoverFile(COVER_URL)).toBe(false);
   });
 
   it('keeps a picked image as it is', () => {
-    expect(web.storeCoverFile(1, 'data:image/jpeg;base64,xyz')).toBe('data:image/jpeg;base64,xyz');
-    expect(web.isStoredCover(1, 'data:image/jpeg;base64,xyz')).toBe(true);
+    expect(web.storeCoverFile('data:image/jpeg;base64,xyz', { bookId: 1 })).toBe('data:image/jpeg;base64,xyz');
+    expect(web.isStoredCover('data:image/jpeg;base64,xyz')).toBe(true);
   });
 });

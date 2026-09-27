@@ -91,10 +91,10 @@ describe('Edition picker (P03-08) and saving (P03-09)', () => {
     expect(screen.getByText('Which edition is yours?')).toBeOnTheScreen();
     expect(screen.getByTestId(p.confirm).props.accessibilityState).toMatchObject({ disabled: true });
     // Hold the editions back to see the loading state.
-    const real = mockMetadata.service.editions;
+    const real = mockMetadata.service.editionsPage;
     let release: () => void = () => {};
     const gate = new Promise<void>((resolve) => (release = resolve));
-    jest.spyOn(mockMetadata.service, 'editions').mockImplementation(async (...args) => {
+    jest.spyOn(mockMetadata.service, 'editionsPage').mockImplementation(async (...args) => {
       await gate;
       return real(...args);
     });
@@ -202,3 +202,55 @@ describe('Edition picker (P03-08) and saving (P03-09)', () => {
     expect(screen.getByTestId(p.expired)).toHaveTextContent(/This scan has expired/);
   });
 });
+
+describe('a work with more editions than one page (130)', () => {
+  async function newSpring() {
+    const { candidates } = await mockMetadata.service.search({ text: 'new spring robert jordan' });
+    const r = await open(createSession({ source: 'cover', candidates }).id);
+    await advance(0);
+    return r;
+  }
+
+  it('shows the first page, offers "Show more editions", and finds the edition by ISBN in the second page', async () => {
+    await newSpring();
+    expect(screen.getAllByTestId(p.edition)).toHaveLength(20);
+    expect(screen.queryByTestId(p.loadMore)).toBeNull();
+    // Looking for one edition: type what the copyright page says.
+    fireEvent.changeText(screen.getByTestId(p.findEdition), '978-1-60690-208-0');
+    await advance(0);
+    expect(screen.queryAllByTestId(p.edition)).toHaveLength(0);
+    expect(screen.getByText('None of the 100 editions loaded so far match. Show more to look through the rest.')).toBeOnTheScreen();
+    expect(screen.getByText('100 of 130 editions loaded')).toBeOnTheScreen();
+    expect(screen.getByTestId(p.loadMore).props.accessibilityLabel).toBe('Show more editions: 100 of 130 loaded');
+    await press(p.loadMore);
+    await advance(0);
+    const [found] = screen.getAllByTestId(p.edition);
+    expect(found.props.accessibilityLabel).toMatch(/Dynamite Entertainment, 2011/);
+    expect(screen.queryByTestId(p.loadMore)).toBeNull();
+    await press(p.edition);
+    await press(p.confirm);
+    await advance(0);
+    const [book] = await booksRepo.listBooks(db);
+    expect(book).toMatchObject({ title: 'New Spring', isbn13: '9781606902080', publisher: 'Dynamite Entertainment' });
+  });
+
+  it('pages through every edition with the buttons alone', async () => {
+    await newSpring();
+    const showMore = async (name: RegExp) => {
+      await act(async () => {
+        fireEvent.press(screen.getByRole('button', { name }));
+      });
+      await advance(0);
+    };
+    for (let i = 0; i < 4; i++) await showMore(/^Show 20 more editions$/);
+    expect(screen.getAllByTestId(p.edition)).toHaveLength(100);
+    await press(p.loadMore);
+    await advance(0);
+    expect(screen.getAllByTestId(p.edition)).toHaveLength(120);
+    await showMore(/^Show 10 more editions$/);
+    expect(screen.getAllByTestId(p.edition)).toHaveLength(130);
+    expect(screen.queryByTestId(p.loadMore)).toBeNull();
+    expect(screen.queryByRole('button', { name: /more edition/ })).toBeNull();
+  });
+});
+

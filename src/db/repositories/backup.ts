@@ -277,6 +277,20 @@ export async function getSnapshot(db: Db, id: number): Promise<Snapshot | null> 
   return row ? { id: row.id, createdAt: row.created_at, bookCount: row.book_count, body: row.body } : null;
 }
 
+/** The cover files (`file:` URIs) the safety copy's books name, so they are kept while it is. */
+export async function snapshotCoverUris(db: Db): Promise<string[]> {
+  const out = new Set<string>();
+  for (const { body } of await db.all<{ body: string }>('SELECT body FROM backup_snapshots')) {
+    try {
+      const books = (JSON.parse(body) as { tables?: { books?: { cover_uri?: unknown }[] } }).tables?.books ?? [];
+      for (const b of books) if (typeof b.cover_uri === 'string' && isDeviceCoverUri(b.cover_uri)) out.add(b.cover_uri);
+    } catch {
+      // A copy that cannot be read names nothing it can bring back.
+    }
+  }
+  return [...out];
+}
+
 export async function deleteSnapshots(db: Db): Promise<number> {
   return (await db.run('DELETE FROM backup_snapshots')).changes;
 }

@@ -1,0 +1,2310 @@
+{
+ "links": {
+  "self": "/works/OL99999W/editions.json?limit=100",
+  "work": "/works/OL99999W",
+  "next": "/works/OL99999W/editions.json?limit=100&offset=100"
+ },
+ "size": 130,
+ "entries": [
+  {
+   "key": "/books/OL9000001M",
+   "title": "New Spring",
+   "publishers": [
+    "Tor"
+   ],
+   "publish_date": "1995",
+   "isbn_13": [
+    "9780900000010"
+   ],
+   "physical_format": "Paperback",
+   "languages": [
+    {
+     "key": "/languages/eng"
+    }
+   ],
+   "works": [
+    {
+     "key": "/works/OL99999W"
+    }
+   ],
+   "number_of_pages": 300
+  },
+  {
+   "key": "/books/OL9000002M",
+   "title": "New Spring",
+   "publishers": [
+    "Orbit"
+   ],
+   "publish_date": "1996",
+   "isbn_13": [
+    "9780900000027"
+   ],
+   "physical_format": "Hardcover",
+   "languages": [
+    {
+     "key": "/languages/eng"
+    }
+   ],
+   "works": [
+    {
+     "key": "/works/OL99999W"
+    }
+   ],
+   "number_of_pages": 301
+  },
+  {
+   "key": "/books/OL9000003M",
+   "title": "New Spring",
+   "publishers": [
+    "Tor Books"
+   ],
+   "publish_date": "1997",
+   "isbn_13": [
+    "9780900000034"
+   ],
+   "physical_format": "Mass Market Paperback",
+   "languages": [
+    {
+     "key": "/languages/eng"
+    }
+   ],
+   "works": [
+    {
+     "key": "/works/OL99999W"
+    }
+   ],
+   "number_of_pages": 302
+  },
+  {
+   "key": "/books/OL9000004M",
+   "title": "New Spring",
+   "publishers": [
+    "Orbit Books"
+   ],
+   "publish_date": "1998",
+   "isbn_13": [
+    "9780900000041"
+   ],
+   "physical_format": "Paperback",
+   "languages": [
+    {
+     "key": "/languages/eng"
+    }
+   ],
+   "works": [
+    {
+     "key": "/works/OL99999W"
+    }
+   ],
+   "number_of_pages": 303
+  },
+  {
+   "key": "/books/OL9000005M",
+   "title": "New Spring",
+   "publishers": [
+    "Macmillan"
+   ],
+   "publish_date": "1999",
+   "isbn_13": [
+    "9780900000058"
+   ],
+   "physical_format": "Audio CD",
+   "languages": [
+    {
+     "key": "/languages/spa"
+    }
+   ],
+   "works": [
+    {
+     "key": "/works/OL99999W"
+    }
+   ],
+   "number_of_pages": 304
+  },
+  {
+   "key": "/books/OL9000006M",
+   "title": "New Spring",
+   "publishers": [
+    "Tor Fantasy"
+   ],
+   "publish_date": "2000",
+   "isbn_13": [
+    "9780900000065"
+   ],
+   "physical_format": "Hardcover",
+   "languages": [
+    {
+     "key": "/languages/ger"
+    }
+   ],
+   "works": [
+    {
+     "key": "/works/OL99999W"
+    }
+   ],
+   "number_of_pages": 305
+  },
+  {
+   "key": "/books/OL9000007M",
+   "title": "New Spring",
+   "publishers": [
+    "Little, Brown"
+   ],
+   "publish_date": "2001",
+   "isbn_13": [
+    "9780900000072"
+   ],
+   "physical_format": "Paperback",
+   "languages": [
+    {
+     "key": "/languages/fre"
+    }
+   ],
+   "works": [
+    {
+     "key": "/works/OL99999W"
+    }
+   ],
+   "number_of_pages": 306
+  },
+  {
+   "key": "/books/OL9000008M",
+   "title": "New Spring",
+   "publishers": [
+    "Ediciones Minotauro"
+   ],
+   "publish_date": "2002",
+   "isbn_13": [
+    "9780900000089"
+   ],
+   "physical_format": "Kindle Edition",
+   "languages": [
+    {
+     "key": "/languages/eng"
+    }
+   ],
+   "works": [
+    {
+     "key": "/works/OL99999W"
+    }
+   ],
+   "number_of_pages": 307
+  },
+  {
+   "key": "/books/OL9000009M",
+   "title": "New Spring",
+   "publishers": [
+    "Piper"
+   ],
+   "publish_date": "2003",
+   "isbn_13": [
+    "9780900000096"
+   ],
+   "physical_format": "Paperback",
+   "languages": [
+    {
+     "key": "/languages/eng"
+    }
+   ],
+   "works": [
+    {
+     "key": "/works/OL99999W"
+    }
+   ],
+   "number_of_pages": 308
+  },
+  {
+   "key": "/books/OL9000010M",
+   "title": "New Spring",
+   "publishers": [
+    "Bragelonne"
+   ],
+   "publish_date": "2004",
+   "isbn_13": [
+    "9780900000102"
+   ],
+   "physical_format": "Hardcover",
+   "languages": [
+    {
+     "key": "/languages/eng"
+    }
+   ],
+   "works": [
+    {
+     "key": "/works/OL99999W"
+    }
+   ],
+   "number_of_pages": 309
+  },
+  {
+   "key": "/books/OL9000011M",
+   "title": "New Spring",
+   "publishers": [
+    "Tor"
+   ],
+   "publish_date": "2005",
+   "isbn_13": [
+    "9780900000119"
+   ],
+   "physical_format": "Paperback",
+   "languages": [
+    {
+     "key": "/languages/eng"
+    }
+   ],
+   "works": [
+    {
+     "key": "/works/OL99999W"
+    }
+   ],
+   "number_of_pages": 310
+  },
+  {
+   "key": "/books/OL9000012M",
+   "title": "New Spring",
+   "publishers": [
+    "Orbit"
+   ],
+   "publish_date": "2006",
+   "isbn_13": [
+    "9780900000126"
+   ],
+   "physical_format": "Hardcover",
+   "languages": [
+    {
+     "key": "/languages/eng"
+    }
+   ],
+   "works": [
+    {
+     "key": "/works/OL99999W"
+    }
+   ],
+   "number_of_pages": 311
+  },
+  {
+   "key": "/books/OL9000013M",
+   "title": "New Spring",
+   "publishers": [
+    "Tor Books"
+   ],
+   "publish_date": "2007",
+   "isbn_13": [
+    "9780900000133"
+   ],
+   "physical_format": "Mass Market Paperback",
+   "languages": [
+    {
+     "key": "/languages/eng"
+    }
+   ],
+   "works": [
+    {
+     "key": "/works/OL99999W"
+    }
+   ],
+   "number_of_pages": 312
+  },
+  {
+   "key": "/books/OL9000014M",
+   "title": "New Spring",
+   "publishers": [
+    "Orbit Books"
+   ],
+   "publish_date": "2008",
+   "isbn_13": [
+    "9780900000140"
+   ],
+   "physical_format": "Paperback",
+   "languages": [
+    {
+     "key": "/languages/eng"
+    }
+   ],
+   "works": [
+    {
+     "key": "/works/OL99999W"
+    }
+   ],
+   "number_of_pages": 313
+  },
+  {
+   "key": "/books/OL9000015M",
+   "title": "New Spring",
+   "publishers": [
+    "Macmillan"
+   ],
+   "publish_date": "2009",
+   "isbn_13": [
+    "9780900000157"
+   ],
+   "physical_format": "Audio CD",
+   "languages": [
+    {
+     "key": "/languages/spa"
+    }
+   ],
+   "works": [
+    {
+     "key": "/works/OL99999W"
+    }
+   ],
+   "number_of_pages": 314
+  },
+  {
+   "key": "/books/OL9000016M",
+   "title": "New Spring",
+   "publishers": [
+    "Tor Fantasy"
+   ],
+   "publish_date": "2010",
+   "isbn_13": [
+    "9780900000164"
+   ],
+   "physical_format": "Hardcover",
+   "languages": [
+    {
+     "key": "/languages/ger"
+    }
+   ],
+   "works": [
+    {
+     "key": "/works/OL99999W"
+    }
+   ],
+   "number_of_pages": 315
+  },
+  {
+   "key": "/books/OL9000017M",
+   "title": "New Spring",
+   "publishers": [
+    "Little, Brown"
+   ],
+   "publish_date": "2011",
+   "isbn_13": [
+    "9780900000171"
+   ],
+   "physical_format": "Paperback",
+   "languages": [
+    {
+     "key": "/languages/fre"
+    }
+   ],
+   "works": [
+    {
+     "key": "/works/OL99999W"
+    }
+   ],
+   "number_of_pages": 316
+  },
+  {
+   "key": "/books/OL9000018M",
+   "title": "New Spring",
+   "publishers": [
+    "Ediciones Minotauro"
+   ],
+   "publish_date": "2012",
+   "isbn_13": [
+    "9780900000188"
+   ],
+   "physical_format": "Kindle Edition",
+   "languages": [
+    {
+     "key": "/languages/eng"
+    }
+   ],
+   "works": [
+    {
+     "key": "/works/OL99999W"
+    }
+   ],
+   "number_of_pages": 317
+  },
+  {
+   "key": "/books/OL9000019M",
+   "title": "New Spring",
+   "publishers": [
+    "Piper"
+   ],
+   "publish_date": "2013",
+   "isbn_13": [
+    "9780900000195"
+   ],
+   "physical_format": "Paperback",
+   "languages": [
+    {
+     "key": "/languages/eng"
+    }
+   ],
+   "works": [
+    {
+     "key": "/works/OL99999W"
+    }
+   ],
+   "number_of_pages": 318
+  },
+  {
+   "key": "/books/OL9000020M",
+   "title": "New Spring",
+   "publishers": [
+    "Bragelonne"
+   ],
+   "publish_date": "2014",
+   "isbn_13": [
+    "9780900000201"
+   ],
+   "physical_format": "Hardcover",
+   "languages": [
+    {
+     "key": "/languages/eng"
+    }
+   ],
+   "works": [
+    {
+     "key": "/works/OL99999W"
+    }
+   ],
+   "number_of_pages": 319
+  },
+  {
+   "key": "/books/OL9000021M",
+   "title": "New Spring",
+   "publishers": [
+    "Tor"
+   ],
+   "publish_date": "2015",
+   "isbn_13": [
+    "9780900000218"
+   ],
+   "physical_format": "Paperback",
+   "languages": [
+    {
+     "key": "/languages/eng"
+    }
+   ],
+   "works": [
+    {
+     "key": "/works/OL99999W"
+    }
+   ],
+   "number_of_pages": 320
+  },
+  {
+   "key": "/books/OL9000022M",
+   "title": "New Spring",
+   "publishers": [
+    "Orbit"
+   ],
+   "publish_date": "2016",
+   "isbn_13": [
+    "9780900000225"
+   ],
+   "physical_format": "Hardcover",
+   "languages": [
+    {
+     "key": "/languages/eng"
+    }
+   ],
+   "works": [
+    {
+     "key": "/works/OL99999W"
+    }
+   ],
+   "number_of_pages": 321
+  },
+  {
+   "key": "/books/OL9000023M",
+   "title": "New Spring",
+   "publishers": [
+    "Tor Books"
+   ],
+   "publish_date": "2017",
+   "isbn_13": [
+    "9780900000232"
+   ],
+   "physical_format": "Mass Market Paperback",
+   "languages": [
+    {
+     "key": "/languages/eng"
+    }
+   ],
+   "works": [
+    {
+     "key": "/works/OL99999W"
+    }
+   ],
+   "number_of_pages": 322
+  },
+  {
+   "key": "/books/OL9000024M",
+   "title": "New Spring",
+   "publishers": [
+    "Orbit Books"
+   ],
+   "publish_date": "2018",
+   "isbn_13": [
+    "9780900000249"
+   ],
+   "physical_format": "Paperback",
+   "languages": [
+    {
+     "key": "/languages/eng"
+    }
+   ],
+   "works": [
+    {
+     "key": "/works/OL99999W"
+    }
+   ],
+   "number_of_pages": 323
+  },
+  {
+   "key": "/books/OL9000025M",
+   "title": "New Spring",
+   "publishers": [
+    "Macmillan"
+   ],
+   "publish_date": "2019",
+   "isbn_13": [
+    "9780900000256"
+   ],
+   "physical_format": "Audio CD",
+   "languages": [
+    {
+     "key": "/languages/spa"
+    }
+   ],
+   "works": [
+    {
+     "key": "/works/OL99999W"
+    }
+   ],
+   "number_of_pages": 324
+  },
+  {
+   "key": "/books/OL9000026M",
+   "title": "New Spring",
+   "publishers": [
+    "Tor Fantasy"
+   ],
+   "publish_date": "2020",
+   "isbn_13": [
+    "9780900000263"
+   ],
+   "physical_format": "Hardcover",
+   "languages": [
+    {
+     "key": "/languages/ger"
+    }
+   ],
+   "works": [
+    {
+     "key": "/works/OL99999W"
+    }
+   ],
+   "number_of_pages": 325
+  },
+  {
+   "key": "/books/OL9000027M",
+   "title": "New Spring",
+   "publishers": [
+    "Little, Brown"
+   ],
+   "publish_date": "2021",
+   "isbn_13": [
+    "9780900000270"
+   ],
+   "physical_format": "Paperback",
+   "languages": [
+    {
+     "key": "/languages/fre"
+    }
+   ],
+   "works": [
+    {
+     "key": "/works/OL99999W"
+    }
+   ],
+   "number_of_pages": 326
+  },
+  {
+   "key": "/books/OL9000028M",
+   "title": "New Spring",
+   "publishers": [
+    "Ediciones Minotauro"
+   ],
+   "publish_date": "2022",
+   "isbn_13": [
+    "9780900000287"
+   ],
+   "physical_format": "Kindle Edition",
+   "languages": [
+    {
+     "key": "/languages/eng"
+    }
+   ],
+   "works": [
+    {
+     "key": "/works/OL99999W"
+    }
+   ],
+   "number_of_pages": 327
+  },
+  {
+   "key": "/books/OL9000029M",
+   "title": "New Spring",
+   "publishers": [
+    "Piper"
+   ],
+   "publish_date": "1995",
+   "isbn_13": [
+    "9780900000294"
+   ],
+   "physical_format": "Paperback",
+   "languages": [
+    {
+     "key": "/languages/eng"
+    }
+   ],
+   "works": [
+    {
+     "key": "/works/OL99999W"
+    }
+   ],
+   "number_of_pages": 328
+  },
+  {
+   "key": "/books/OL9000030M",
+   "title": "New Spring",
+   "publishers": [
+    "Bragelonne"
+   ],
+   "publish_date": "1996",
+   "isbn_13": [
+    "9780900000300"
+   ],
+   "physical_format": "Hardcover",
+   "languages": [
+    {
+     "key": "/languages/eng"
+    }
+   ],
+   "works": [
+    {
+     "key": "/works/OL99999W"
+    }
+   ],
+   "number_of_pages": 329
+  },
+  {
+   "key": "/books/OL9000031M",
+   "title": "New Spring",
+   "publishers": [
+    "Tor"
+   ],
+   "publish_date": "1997",
+   "isbn_13": [
+    "9780900000317"
+   ],
+   "physical_format": "Paperback",
+   "languages": [
+    {
+     "key": "/languages/eng"
+    }
+   ],
+   "works": [
+    {
+     "key": "/works/OL99999W"
+    }
+   ],
+   "number_of_pages": 330
+  },
+  {
+   "key": "/books/OL9000032M",
+   "title": "New Spring",
+   "publishers": [
+    "Orbit"
+   ],
+   "publish_date": "1998",
+   "isbn_13": [
+    "9780900000324"
+   ],
+   "physical_format": "Hardcover",
+   "languages": [
+    {
+     "key": "/languages/eng"
+    }
+   ],
+   "works": [
+    {
+     "key": "/works/OL99999W"
+    }
+   ],
+   "number_of_pages": 331
+  },
+  {
+   "key": "/books/OL9000033M",
+   "title": "New Spring",
+   "publishers": [
+    "Tor Books"
+   ],
+   "publish_date": "1999",
+   "isbn_13": [
+    "9780900000331"
+   ],
+   "physical_format": "Mass Market Paperback",
+   "languages": [
+    {
+     "key": "/languages/eng"
+    }
+   ],
+   "works": [
+    {
+     "key": "/works/OL99999W"
+    }
+   ],
+   "number_of_pages": 332
+  },
+  {
+   "key": "/books/OL9000034M",
+   "title": "New Spring",
+   "publishers": [
+    "Orbit Books"
+   ],
+   "publish_date": "2000",
+   "isbn_13": [
+    "9780900000348"
+   ],
+   "physical_format": "Paperback",
+   "languages": [
+    {
+     "key": "/languages/eng"
+    }
+   ],
+   "works": [
+    {
+     "key": "/works/OL99999W"
+    }
+   ],
+   "number_of_pages": 333
+  },
+  {
+   "key": "/books/OL9000035M",
+   "title": "New Spring",
+   "publishers": [
+    "Macmillan"
+   ],
+   "publish_date": "2001",
+   "isbn_13": [
+    "9780900000355"
+   ],
+   "physical_format": "Audio CD",
+   "languages": [
+    {
+     "key": "/languages/spa"
+    }
+   ],
+   "works": [
+    {
+     "key": "/works/OL99999W"
+    }
+   ],
+   "number_of_pages": 334
+  },
+  {
+   "key": "/books/OL9000036M",
+   "title": "New Spring",
+   "publishers": [
+    "Tor Fantasy"
+   ],
+   "publish_date": "2002",
+   "isbn_13": [
+    "9780900000362"
+   ],
+   "physical_format": "Hardcover",
+   "languages": [
+    {
+     "key": "/languages/ger"
+    }
+   ],
+   "works": [
+    {
+     "key": "/works/OL99999W"
+    }
+   ],
+   "number_of_pages": 335
+  },
+  {
+   "key": "/books/OL9000037M",
+   "title": "New Spring",
+   "publishers": [
+    "Little, Brown"
+   ],
+   "publish_date": "2003",
+   "isbn_13": [
+    "9780900000379"
+   ],
+   "physical_format": "Paperback",
+   "languages": [
+    {
+     "key": "/languages/fre"
+    }
+   ],
+   "works": [
+    {
+     "key": "/works/OL99999W"
+    }
+   ],
+   "number_of_pages": 336
+  },
+  {
+   "key": "/books/OL9000038M",
+   "title": "New Spring",
+   "publishers": [
+    "Ediciones Minotauro"
+   ],
+   "publish_date": "2004",
+   "isbn_13": [
+    "9780900000386"
+   ],
+   "physical_format": "Kindle Edition",
+   "languages": [
+    {
+     "key": "/languages/eng"
+    }
+   ],
+   "works": [
+    {
+     "key": "/works/OL99999W"
+    }
+   ],
+   "number_of_pages": 337
+  },
+  {
+   "key": "/books/OL9000039M",
+   "title": "New Spring",
+   "publishers": [
+    "Piper"
+   ],
+   "publish_date": "2005",
+   "isbn_13": [
+    "9780900000393"
+   ],
+   "physical_format": "Paperback",
+   "languages": [
+    {
+     "key": "/languages/eng"
+    }
+   ],
+   "works": [
+    {
+     "key": "/works/OL99999W"
+    }
+   ],
+   "number_of_pages": 338
+  },
+  {
+   "key": "/books/OL9000040M",
+   "title": "New Spring",
+   "publishers": [
+    "Bragelonne"
+   ],
+   "publish_date": "2006",
+   "isbn_13": [
+    "9780900000409"
+   ],
+   "physical_format": "Hardcover",
+   "languages": [
+    {
+     "key": "/languages/eng"
+    }
+   ],
+   "works": [
+    {
+     "key": "/works/OL99999W"
+    }
+   ],
+   "number_of_pages": 339
+  },
+  {
+   "key": "/books/OL9000041M",
+   "title": "New Spring",
+   "publishers": [
+    "Tor"
+   ],
+   "publish_date": "2007",
+   "isbn_13": [
+    "9780900000416"
+   ],
+   "physical_format": "Paperback",
+   "languages": [
+    {
+     "key": "/languages/eng"
+    }
+   ],
+   "works": [
+    {
+     "key": "/works/OL99999W"
+    }
+   ],
+   "number_of_pages": 340
+  },
+  {
+   "key": "/books/OL9000042M",
+   "title": "New Spring",
+   "publishers": [
+    "Orbit"
+   ],
+   "publish_date": "2008",
+   "isbn_13": [
+    "9780900000423"
+   ],
+   "physical_format": "Hardcover",
+   "languages": [
+    {
+     "key": "/languages/eng"
+    }
+   ],
+   "works": [
+    {
+     "key": "/works/OL99999W"
+    }
+   ],
+   "number_of_pages": 341
+  },
+  {
+   "key": "/books/OL9000043M",
+   "title": "New Spring",
+   "publishers": [
+    "Tor Books"
+   ],
+   "publish_date": "2009",
+   "isbn_13": [
+    "9780900000430"
+   ],
+   "physical_format": "Mass Market Paperback",
+   "languages": [
+    {
+     "key": "/languages/eng"
+    }
+   ],
+   "works": [
+    {
+     "key": "/works/OL99999W"
+    }
+   ],
+   "number_of_pages": 342
+  },
+  {
+   "key": "/books/OL9000044M",
+   "title": "New Spring",
+   "publishers": [
+    "Orbit Books"
+   ],
+   "publish_date": "2010",
+   "isbn_13": [
+    "9780900000447"
+   ],
+   "physical_format": "Paperback",
+   "languages": [
+    {
+     "key": "/languages/eng"
+    }
+   ],
+   "works": [
+    {
+     "key": "/works/OL99999W"
+    }
+   ],
+   "number_of_pages": 343
+  },
+  {
+   "key": "/books/OL9000045M",
+   "title": "New Spring",
+   "publishers": [
+    "Macmillan"
+   ],
+   "publish_date": "2011",
+   "isbn_13": [
+    "9780900000454"
+   ],
+   "physical_format": "Audio CD",
+   "languages": [
+    {
+     "key": "/languages/spa"
+    }
+   ],
+   "works": [
+    {
+     "key": "/works/OL99999W"
+    }
+   ],
+   "number_of_pages": 344
+  },
+  {
+   "key": "/books/OL9000046M",
+   "title": "New Spring",
+   "publishers": [
+    "Tor Fantasy"
+   ],
+   "publish_date": "2012",
+   "isbn_13": [
+    "9780900000461"
+   ],
+   "physical_format": "Hardcover",
+   "languages": [
+    {
+     "key": "/languages/ger"
+    }
+   ],
+   "works": [
+    {
+     "key": "/works/OL99999W"
+    }
+   ],
+   "number_of_pages": 345
+  },
+  {
+   "key": "/books/OL9000047M",
+   "title": "New Spring",
+   "publishers": [
+    "Little, Brown"
+   ],
+   "publish_date": "2013",
+   "isbn_13": [
+    "9780900000478"
+   ],
+   "physical_format": "Paperback",
+   "languages": [
+    {
+     "key": "/languages/fre"
+    }
+   ],
+   "works": [
+    {
+     "key": "/works/OL99999W"
+    }
+   ],
+   "number_of_pages": 346
+  },
+  {
+   "key": "/books/OL9000048M",
+   "title": "New Spring",
+   "publishers": [
+    "Ediciones Minotauro"
+   ],
+   "publish_date": "2014",
+   "isbn_13": [
+    "9780900000485"
+   ],
+   "physical_format": "Kindle Edition",
+   "languages": [
+    {
+     "key": "/languages/eng"
+    }
+   ],
+   "works": [
+    {
+     "key": "/works/OL99999W"
+    }
+   ],
+   "number_of_pages": 347
+  },
+  {
+   "key": "/books/OL9000049M",
+   "title": "New Spring",
+   "publishers": [
+    "Piper"
+   ],
+   "publish_date": "2015",
+   "isbn_13": [
+    "9780900000492"
+   ],
+   "physical_format": "Paperback",
+   "languages": [
+    {
+     "key": "/languages/eng"
+    }
+   ],
+   "works": [
+    {
+     "key": "/works/OL99999W"
+    }
+   ],
+   "number_of_pages": 348
+  },
+  {
+   "key": "/books/OL9000050M",
+   "title": "New Spring",
+   "publishers": [
+    "Bragelonne"
+   ],
+   "publish_date": "2016",
+   "isbn_13": [
+    "9780900000508"
+   ],
+   "physical_format": "Hardcover",
+   "languages": [
+    {
+     "key": "/languages/eng"
+    }
+   ],
+   "works": [
+    {
+     "key": "/works/OL99999W"
+    }
+   ],
+   "number_of_pages": 349
+  },
+  {
+   "key": "/books/OL9000051M",
+   "title": "New Spring",
+   "publishers": [
+    "Tor"
+   ],
+   "publish_date": "2017",
+   "isbn_13": [
+    "9780900000515"
+   ],
+   "physical_format": "Paperback",
+   "languages": [
+    {
+     "key": "/languages/eng"
+    }
+   ],
+   "works": [
+    {
+     "key": "/works/OL99999W"
+    }
+   ],
+   "number_of_pages": 350
+  },
+  {
+   "key": "/books/OL9000052M",
+   "title": "New Spring",
+   "publishers": [
+    "Orbit"
+   ],
+   "publish_date": "2018",
+   "isbn_13": [
+    "9780900000522"
+   ],
+   "physical_format": "Hardcover",
+   "languages": [
+    {
+     "key": "/languages/eng"
+    }
+   ],
+   "works": [
+    {
+     "key": "/works/OL99999W"
+    }
+   ],
+   "number_of_pages": 351
+  },
+  {
+   "key": "/books/OL9000053M",
+   "title": "New Spring",
+   "publishers": [
+    "Tor Books"
+   ],
+   "publish_date": "2019",
+   "isbn_13": [
+    "9780900000539"
+   ],
+   "physical_format": "Mass Market Paperback",
+   "languages": [
+    {
+     "key": "/languages/eng"
+    }
+   ],
+   "works": [
+    {
+     "key": "/works/OL99999W"
+    }
+   ],
+   "number_of_pages": 352
+  },
+  {
+   "key": "/books/OL9000054M",
+   "title": "New Spring",
+   "publishers": [
+    "Orbit Books"
+   ],
+   "publish_date": "2020",
+   "isbn_13": [
+    "9780900000546"
+   ],
+   "physical_format": "Paperback",
+   "languages": [
+    {
+     "key": "/languages/eng"
+    }
+   ],
+   "works": [
+    {
+     "key": "/works/OL99999W"
+    }
+   ],
+   "number_of_pages": 353
+  },
+  {
+   "key": "/books/OL9000055M",
+   "title": "New Spring",
+   "publishers": [
+    "Macmillan"
+   ],
+   "publish_date": "2021",
+   "isbn_13": [
+    "9780900000553"
+   ],
+   "physical_format": "Audio CD",
+   "languages": [
+    {
+     "key": "/languages/spa"
+    }
+   ],
+   "works": [
+    {
+     "key": "/works/OL99999W"
+    }
+   ],
+   "number_of_pages": 354
+  },
+  {
+   "key": "/books/OL9000056M",
+   "title": "New Spring",
+   "publishers": [
+    "Tor Fantasy"
+   ],
+   "publish_date": "2022",
+   "isbn_13": [
+    "9780900000560"
+   ],
+   "physical_format": "Hardcover",
+   "languages": [
+    {
+     "key": "/languages/ger"
+    }
+   ],
+   "works": [
+    {
+     "key": "/works/OL99999W"
+    }
+   ],
+   "number_of_pages": 355
+  },
+  {
+   "key": "/books/OL9000057M",
+   "title": "New Spring",
+   "publishers": [
+    "Little, Brown"
+   ],
+   "publish_date": "1995",
+   "isbn_13": [
+    "9780900000577"
+   ],
+   "physical_format": "Paperback",
+   "languages": [
+    {
+     "key": "/languages/fre"
+    }
+   ],
+   "works": [
+    {
+     "key": "/works/OL99999W"
+    }
+   ],
+   "number_of_pages": 356
+  },
+  {
+   "key": "/books/OL9000058M",
+   "title": "New Spring",
+   "publishers": [
+    "Ediciones Minotauro"
+   ],
+   "publish_date": "1996",
+   "isbn_13": [
+    "9780900000584"
+   ],
+   "physical_format": "Kindle Edition",
+   "languages": [
+    {
+     "key": "/languages/eng"
+    }
+   ],
+   "works": [
+    {
+     "key": "/works/OL99999W"
+    }
+   ],
+   "number_of_pages": 357
+  },
+  {
+   "key": "/books/OL9000059M",
+   "title": "New Spring",
+   "publishers": [
+    "Piper"
+   ],
+   "publish_date": "1997",
+   "isbn_13": [
+    "9780900000591"
+   ],
+   "physical_format": "Paperback",
+   "languages": [
+    {
+     "key": "/languages/eng"
+    }
+   ],
+   "works": [
+    {
+     "key": "/works/OL99999W"
+    }
+   ],
+   "number_of_pages": 358
+  },
+  {
+   "key": "/books/OL9000060M",
+   "title": "New Spring",
+   "publishers": [
+    "Bragelonne"
+   ],
+   "publish_date": "1998",
+   "isbn_13": [
+    "9780900000607"
+   ],
+   "physical_format": "Hardcover",
+   "languages": [
+    {
+     "key": "/languages/eng"
+    }
+   ],
+   "works": [
+    {
+     "key": "/works/OL99999W"
+    }
+   ],
+   "number_of_pages": 359
+  },
+  {
+   "key": "/books/OL9000061M",
+   "title": "New Spring",
+   "publishers": [
+    "Tor"
+   ],
+   "publish_date": "1999",
+   "isbn_13": [
+    "9780900000614"
+   ],
+   "physical_format": "Paperback",
+   "languages": [
+    {
+     "key": "/languages/eng"
+    }
+   ],
+   "works": [
+    {
+     "key": "/works/OL99999W"
+    }
+   ],
+   "number_of_pages": 360
+  },
+  {
+   "key": "/books/OL9000062M",
+   "title": "New Spring",
+   "publishers": [
+    "Orbit"
+   ],
+   "publish_date": "2000",
+   "isbn_13": [
+    "9780900000621"
+   ],
+   "physical_format": "Hardcover",
+   "languages": [
+    {
+     "key": "/languages/eng"
+    }
+   ],
+   "works": [
+    {
+     "key": "/works/OL99999W"
+    }
+   ],
+   "number_of_pages": 361
+  },
+  {
+   "key": "/books/OL9000063M",
+   "title": "New Spring",
+   "publishers": [
+    "Tor Books"
+   ],
+   "publish_date": "2001",
+   "isbn_13": [
+    "9780900000638"
+   ],
+   "physical_format": "Mass Market Paperback",
+   "languages": [
+    {
+     "key": "/languages/eng"
+    }
+   ],
+   "works": [
+    {
+     "key": "/works/OL99999W"
+    }
+   ],
+   "number_of_pages": 362
+  },
+  {
+   "key": "/books/OL9000064M",
+   "title": "New Spring",
+   "publishers": [
+    "Orbit Books"
+   ],
+   "publish_date": "2002",
+   "isbn_13": [
+    "9780900000645"
+   ],
+   "physical_format": "Paperback",
+   "languages": [
+    {
+     "key": "/languages/eng"
+    }
+   ],
+   "works": [
+    {
+     "key": "/works/OL99999W"
+    }
+   ],
+   "number_of_pages": 363
+  },
+  {
+   "key": "/books/OL9000065M",
+   "title": "New Spring",
+   "publishers": [
+    "Macmillan"
+   ],
+   "publish_date": "2003",
+   "isbn_13": [
+    "9780900000652"
+   ],
+   "physical_format": "Audio CD",
+   "languages": [
+    {
+     "key": "/languages/spa"
+    }
+   ],
+   "works": [
+    {
+     "key": "/works/OL99999W"
+    }
+   ],
+   "number_of_pages": 364
+  },
+  {
+   "key": "/books/OL9000066M",
+   "title": "New Spring",
+   "publishers": [
+    "Tor Fantasy"
+   ],
+   "publish_date": "2004",
+   "isbn_13": [
+    "9780900000669"
+   ],
+   "physical_format": "Hardcover",
+   "languages": [
+    {
+     "key": "/languages/ger"
+    }
+   ],
+   "works": [
+    {
+     "key": "/works/OL99999W"
+    }
+   ],
+   "number_of_pages": 365
+  },
+  {
+   "key": "/books/OL9000067M",
+   "title": "New Spring",
+   "publishers": [
+    "Little, Brown"
+   ],
+   "publish_date": "2005",
+   "isbn_13": [
+    "9780900000676"
+   ],
+   "physical_format": "Paperback",
+   "languages": [
+    {
+     "key": "/languages/fre"
+    }
+   ],
+   "works": [
+    {
+     "key": "/works/OL99999W"
+    }
+   ],
+   "number_of_pages": 366
+  },
+  {
+   "key": "/books/OL9000068M",
+   "title": "New Spring",
+   "publishers": [
+    "Ediciones Minotauro"
+   ],
+   "publish_date": "2006",
+   "isbn_13": [
+    "9780900000683"
+   ],
+   "physical_format": "Kindle Edition",
+   "languages": [
+    {
+     "key": "/languages/eng"
+    }
+   ],
+   "works": [
+    {
+     "key": "/works/OL99999W"
+    }
+   ],
+   "number_of_pages": 367
+  },
+  {
+   "key": "/books/OL9000069M",
+   "title": "New Spring",
+   "publishers": [
+    "Piper"
+   ],
+   "publish_date": "2007",
+   "isbn_13": [
+    "9780900000690"
+   ],
+   "physical_format": "Paperback",
+   "languages": [
+    {
+     "key": "/languages/eng"
+    }
+   ],
+   "works": [
+    {
+     "key": "/works/OL99999W"
+    }
+   ],
+   "number_of_pages": 368
+  },
+  {
+   "key": "/books/OL9000070M",
+   "title": "New Spring",
+   "publishers": [
+    "Bragelonne"
+   ],
+   "publish_date": "2008",
+   "isbn_13": [
+    "9780900000706"
+   ],
+   "physical_format": "Hardcover",
+   "languages": [
+    {
+     "key": "/languages/eng"
+    }
+   ],
+   "works": [
+    {
+     "key": "/works/OL99999W"
+    }
+   ],
+   "number_of_pages": 369
+  },
+  {
+   "key": "/books/OL9000071M",
+   "title": "New Spring",
+   "publishers": [
+    "Tor"
+   ],
+   "publish_date": "2009",
+   "isbn_13": [
+    "9780900000713"
+   ],
+   "physical_format": "Paperback",
+   "languages": [
+    {
+     "key": "/languages/eng"
+    }
+   ],
+   "works": [
+    {
+     "key": "/works/OL99999W"
+    }
+   ],
+   "number_of_pages": 370
+  },
+  {
+   "key": "/books/OL9000072M",
+   "title": "New Spring",
+   "publishers": [
+    "Orbit"
+   ],
+   "publish_date": "2010",
+   "isbn_13": [
+    "9780900000720"
+   ],
+   "physical_format": "Hardcover",
+   "languages": [
+    {
+     "key": "/languages/eng"
+    }
+   ],
+   "works": [
+    {
+     "key": "/works/OL99999W"
+    }
+   ],
+   "number_of_pages": 371
+  },
+  {
+   "key": "/books/OL9000073M",
+   "title": "New Spring",
+   "publishers": [
+    "Tor Books"
+   ],
+   "publish_date": "2011",
+   "isbn_13": [
+    "9780900000737"
+   ],
+   "physical_format": "Mass Market Paperback",
+   "languages": [
+    {
+     "key": "/languages/eng"
+    }
+   ],
+   "works": [
+    {
+     "key": "/works/OL99999W"
+    }
+   ],
+   "number_of_pages": 372
+  },
+  {
+   "key": "/books/OL9000074M",
+   "title": "New Spring",
+   "publishers": [
+    "Orbit Books"
+   ],
+   "publish_date": "2012",
+   "isbn_13": [
+    "9780900000744"
+   ],
+   "physical_format": "Paperback",
+   "languages": [
+    {
+     "key": "/languages/eng"
+    }
+   ],
+   "works": [
+    {
+     "key": "/works/OL99999W"
+    }
+   ],
+   "number_of_pages": 373
+  },
+  {
+   "key": "/books/OL9000075M",
+   "title": "New Spring",
+   "publishers": [
+    "Macmillan"
+   ],
+   "publish_date": "2013",
+   "isbn_13": [
+    "9780900000751"
+   ],
+   "physical_format": "Audio CD",
+   "languages": [
+    {
+     "key": "/languages/spa"
+    }
+   ],
+   "works": [
+    {
+     "key": "/works/OL99999W"
+    }
+   ],
+   "number_of_pages": 374
+  },
+  {
+   "key": "/books/OL9000076M",
+   "title": "New Spring",
+   "publishers": [
+    "Tor Fantasy"
+   ],
+   "publish_date": "2014",
+   "isbn_13": [
+    "9780900000768"
+   ],
+   "physical_format": "Hardcover",
+   "languages": [
+    {
+     "key": "/languages/ger"
+    }
+   ],
+   "works": [
+    {
+     "key": "/works/OL99999W"
+    }
+   ],
+   "number_of_pages": 375
+  },
+  {
+   "key": "/books/OL9000077M",
+   "title": "New Spring",
+   "publishers": [
+    "Little, Brown"
+   ],
+   "publish_date": "2015",
+   "isbn_13": [
+    "9780900000775"
+   ],
+   "physical_format": "Paperback",
+   "languages": [
+    {
+     "key": "/languages/fre"
+    }
+   ],
+   "works": [
+    {
+     "key": "/works/OL99999W"
+    }
+   ],
+   "number_of_pages": 376
+  },
+  {
+   "key": "/books/OL9000078M",
+   "title": "New Spring",
+   "publishers": [
+    "Ediciones Minotauro"
+   ],
+   "publish_date": "2016",
+   "isbn_13": [
+    "9780900000782"
+   ],
+   "physical_format": "Kindle Edition",
+   "languages": [
+    {
+     "key": "/languages/eng"
+    }
+   ],
+   "works": [
+    {
+     "key": "/works/OL99999W"
+    }
+   ],
+   "number_of_pages": 377
+  },
+  {
+   "key": "/books/OL9000079M",
+   "title": "New Spring",
+   "publishers": [
+    "Piper"
+   ],
+   "publish_date": "2017",
+   "isbn_13": [
+    "9780900000799"
+   ],
+   "physical_format": "Paperback",
+   "languages": [
+    {
+     "key": "/languages/eng"
+    }
+   ],
+   "works": [
+    {
+     "key": "/works/OL99999W"
+    }
+   ],
+   "number_of_pages": 378
+  },
+  {
+   "key": "/books/OL9000080M",
+   "title": "New Spring",
+   "publishers": [
+    "Bragelonne"
+   ],
+   "publish_date": "2018",
+   "isbn_13": [
+    "9780900000805"
+   ],
+   "physical_format": "Hardcover",
+   "languages": [
+    {
+     "key": "/languages/eng"
+    }
+   ],
+   "works": [
+    {
+     "key": "/works/OL99999W"
+    }
+   ],
+   "number_of_pages": 379
+  },
+  {
+   "key": "/books/OL9000081M",
+   "title": "New Spring",
+   "publishers": [
+    "Tor"
+   ],
+   "publish_date": "2019",
+   "isbn_13": [
+    "9780900000812"
+   ],
+   "physical_format": "Paperback",
+   "languages": [
+    {
+     "key": "/languages/eng"
+    }
+   ],
+   "works": [
+    {
+     "key": "/works/OL99999W"
+    }
+   ],
+   "number_of_pages": 380
+  },
+  {
+   "key": "/books/OL9000082M",
+   "title": "New Spring",
+   "publishers": [
+    "Orbit"
+   ],
+   "publish_date": "2020",
+   "isbn_13": [
+    "9780900000829"
+   ],
+   "physical_format": "Hardcover",
+   "languages": [
+    {
+     "key": "/languages/eng"
+    }
+   ],
+   "works": [
+    {
+     "key": "/works/OL99999W"
+    }
+   ],
+   "number_of_pages": 381
+  },
+  {
+   "key": "/books/OL9000083M",
+   "title": "New Spring",
+   "publishers": [
+    "Tor Books"
+   ],
+   "publish_date": "2021",
+   "isbn_13": [
+    "9780900000836"
+   ],
+   "physical_format": "Mass Market Paperback",
+   "languages": [
+    {
+     "key": "/languages/eng"
+    }
+   ],
+   "works": [
+    {
+     "key": "/works/OL99999W"
+    }
+   ],
+   "number_of_pages": 382
+  },
+  {
+   "key": "/books/OL9000084M",
+   "title": "New Spring",
+   "publishers": [
+    "Orbit Books"
+   ],
+   "publish_date": "2022",
+   "isbn_13": [
+    "9780900000843"
+   ],
+   "physical_format": "Paperback",
+   "languages": [
+    {
+     "key": "/languages/eng"
+    }
+   ],
+   "works": [
+    {
+     "key": "/works/OL99999W"
+    }
+   ],
+   "number_of_pages": 383
+  },
+  {
+   "key": "/books/OL9000085M",
+   "title": "New Spring",
+   "publishers": [
+    "Macmillan"
+   ],
+   "publish_date": "1995",
+   "isbn_13": [
+    "9780900000850"
+   ],
+   "physical_format": "Audio CD",
+   "languages": [
+    {
+     "key": "/languages/spa"
+    }
+   ],
+   "works": [
+    {
+     "key": "/works/OL99999W"
+    }
+   ],
+   "number_of_pages": 384
+  },
+  {
+   "key": "/books/OL9000086M",
+   "title": "New Spring",
+   "publishers": [
+    "Tor Fantasy"
+   ],
+   "publish_date": "1996",
+   "isbn_13": [
+    "9780900000867"
+   ],
+   "physical_format": "Hardcover",
+   "languages": [
+    {
+     "key": "/languages/ger"
+    }
+   ],
+   "works": [
+    {
+     "key": "/works/OL99999W"
+    }
+   ],
+   "number_of_pages": 385
+  },
+  {
+   "key": "/books/OL9000087M",
+   "title": "New Spring",
+   "publishers": [
+    "Little, Brown"
+   ],
+   "publish_date": "1997",
+   "isbn_13": [
+    "9780900000874"
+   ],
+   "physical_format": "Paperback",
+   "languages": [
+    {
+     "key": "/languages/fre"
+    }
+   ],
+   "works": [
+    {
+     "key": "/works/OL99999W"
+    }
+   ],
+   "number_of_pages": 386
+  },
+  {
+   "key": "/books/OL9000088M",
+   "title": "New Spring",
+   "publishers": [
+    "Ediciones Minotauro"
+   ],
+   "publish_date": "1998",
+   "isbn_13": [
+    "9780900000881"
+   ],
+   "physical_format": "Kindle Edition",
+   "languages": [
+    {
+     "key": "/languages/eng"
+    }
+   ],
+   "works": [
+    {
+     "key": "/works/OL99999W"
+    }
+   ],
+   "number_of_pages": 387
+  },
+  {
+   "key": "/books/OL9000089M",
+   "title": "New Spring",
+   "publishers": [
+    "Piper"
+   ],
+   "publish_date": "1999",
+   "isbn_13": [
+    "9780900000898"
+   ],
+   "physical_format": "Paperback",
+   "languages": [
+    {
+     "key": "/languages/eng"
+    }
+   ],
+   "works": [
+    {
+     "key": "/works/OL99999W"
+    }
+   ],
+   "number_of_pages": 388
+  },
+  {
+   "key": "/books/OL9000090M",
+   "title": "New Spring",
+   "publishers": [
+    "Bragelonne"
+   ],
+   "publish_date": "2000",
+   "isbn_13": [
+    "9780900000904"
+   ],
+   "physical_format": "Hardcover",
+   "languages": [
+    {
+     "key": "/languages/eng"
+    }
+   ],
+   "works": [
+    {
+     "key": "/works/OL99999W"
+    }
+   ],
+   "number_of_pages": 389
+  },
+  {
+   "key": "/books/OL9000091M",
+   "title": "New Spring",
+   "publishers": [
+    "Tor"
+   ],
+   "publish_date": "2001",
+   "isbn_13": [
+    "9780900000911"
+   ],
+   "physical_format": "Paperback",
+   "languages": [
+    {
+     "key": "/languages/eng"
+    }
+   ],
+   "works": [
+    {
+     "key": "/works/OL99999W"
+    }
+   ],
+   "number_of_pages": 390
+  },
+  {
+   "key": "/books/OL9000092M",
+   "title": "New Spring",
+   "publishers": [
+    "Orbit"
+   ],
+   "publish_date": "2002",
+   "isbn_13": [
+    "9780900000928"
+   ],
+   "physical_format": "Hardcover",
+   "languages": [
+    {
+     "key": "/languages/eng"
+    }
+   ],
+   "works": [
+    {
+     "key": "/works/OL99999W"
+    }
+   ],
+   "number_of_pages": 391
+  },
+  {
+   "key": "/books/OL9000093M",
+   "title": "New Spring",
+   "publishers": [
+    "Tor Books"
+   ],
+   "publish_date": "2003",
+   "isbn_13": [
+    "9780900000935"
+   ],
+   "physical_format": "Mass Market Paperback",
+   "languages": [
+    {
+     "key": "/languages/eng"
+    }
+   ],
+   "works": [
+    {
+     "key": "/works/OL99999W"
+    }
+   ],
+   "number_of_pages": 392
+  },
+  {
+   "key": "/books/OL9000094M",
+   "title": "New Spring",
+   "publishers": [
+    "Orbit Books"
+   ],
+   "publish_date": "2004",
+   "isbn_13": [
+    "9780900000942"
+   ],
+   "physical_format": "Paperback",
+   "languages": [
+    {
+     "key": "/languages/eng"
+    }
+   ],
+   "works": [
+    {
+     "key": "/works/OL99999W"
+    }
+   ],
+   "number_of_pages": 393
+  },
+  {
+   "key": "/books/OL9000095M",
+   "title": "New Spring",
+   "publishers": [
+    "Macmillan"
+   ],
+   "publish_date": "2005",
+   "isbn_13": [
+    "9780900000959"
+   ],
+   "physical_format": "Audio CD",
+   "languages": [
+    {
+     "key": "/languages/spa"
+    }
+   ],
+   "works": [
+    {
+     "key": "/works/OL99999W"
+    }
+   ],
+   "number_of_pages": 394
+  },
+  {
+   "key": "/books/OL9000096M",
+   "title": "New Spring",
+   "publishers": [
+    "Tor Fantasy"
+   ],
+   "publish_date": "2006",
+   "isbn_13": [
+    "9780900000966"
+   ],
+   "physical_format": "Hardcover",
+   "languages": [
+    {
+     "key": "/languages/ger"
+    }
+   ],
+   "works": [
+    {
+     "key": "/works/OL99999W"
+    }
+   ],
+   "number_of_pages": 395
+  },
+  {
+   "key": "/books/OL9000097M",
+   "title": "New Spring",
+   "publishers": [
+    "Little, Brown"
+   ],
+   "publish_date": "2007",
+   "isbn_13": [
+    "9780900000973"
+   ],
+   "physical_format": "Paperback",
+   "languages": [
+    {
+     "key": "/languages/fre"
+    }
+   ],
+   "works": [
+    {
+     "key": "/works/OL99999W"
+    }
+   ],
+   "number_of_pages": 396
+  },
+  {
+   "key": "/books/OL9000098M",
+   "title": "New Spring",
+   "publishers": [
+    "Ediciones Minotauro"
+   ],
+   "publish_date": "2008",
+   "isbn_13": [
+    "9780900000980"
+   ],
+   "physical_format": "Kindle Edition",
+   "languages": [
+    {
+     "key": "/languages/eng"
+    }
+   ],
+   "works": [
+    {
+     "key": "/works/OL99999W"
+    }
+   ],
+   "number_of_pages": 397
+  },
+  {
+   "key": "/books/OL9000099M",
+   "title": "New Spring",
+   "publishers": [
+    "Piper"
+   ],
+   "publish_date": "2009",
+   "isbn_13": [
+    "9780900000997"
+   ],
+   "physical_format": "Paperback",
+   "languages": [
+    {
+     "key": "/languages/eng"
+    }
+   ],
+   "works": [
+    {
+     "key": "/works/OL99999W"
+    }
+   ],
+   "number_of_pages": 398
+  },
+  {
+   "key": "/books/OL9000100M",
+   "title": "New Spring",
+   "publishers": [
+    "Bragelonne"
+   ],
+   "publish_date": "2010",
+   "isbn_13": [
+    "9780900001000"
+   ],
+   "physical_format": "Hardcover",
+   "languages": [
+    {
+     "key": "/languages/eng"
+    }
+   ],
+   "works": [
+    {
+     "key": "/works/OL99999W"
+    }
+   ],
+   "number_of_pages": 399
+  }
+ ]
+}

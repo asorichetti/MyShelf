@@ -43,6 +43,7 @@ export const googleBooksRoutes: FixtureRoutes = {
   // The same synthetic volumes for the free-text searches the lookup field and typed cover text send.
   [gbSearchUrl('colour of magic pratchett')]: { body: searchColourOfMagic },
   [gbSearchUrl('the colour of magic terry pratchett')]: { body: searchColourOfMagic },
+  [gbSearchUrl('new spring robert jordan')]: { body: noItems },
 };
 
 /** The real keyless response: a daily-quota 429. */

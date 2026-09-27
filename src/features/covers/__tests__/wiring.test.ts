@@ -1,5 +1,7 @@
 import { authorsRepo, booksRepo, coverAttemptsRepo, settingsRepo, type Db } from '@/db';
 import { openNodeDatabase } from '@/db/node';
+import { isE2eEnabled } from '@/features/e2e/e2eFlag';
+import { settleFixtureCovers } from '@/features/e2e/settleFixtureCovers';
 import { exportBackup, restoreBackup } from '@/services/backup';
 import { images } from '@/services/covers/__fixtures__/images';
 import { coverBatchUrl } from '@/services/covers/batchCoverIds';
@@ -9,8 +11,11 @@ import batch from '@/services/metadata/__fixtures__/openlibrary/search-isbn-batc
 import { OL_BOOKS, openLibraryRoutes } from '@/services/metadata/__fixtures__/openLibraryRoutes';
 import { createTestDb } from '@/testing/createTestDb';
 import { createFixtureFetch } from '@/testing/fixtureFetch';
+import { loadFixture } from '@/testing/loadFixture';
 
 import { backfillCoversNow, drainCoverBackfill, throttle } from '../index';
+
+jest.mock('@/features/e2e/e2eFlag', () => ({ ...jest.requireActual('@/features/e2e/e2eFlag'), isE2eEnabled: jest.fn(() => false) }));
 
 // Native storage is covered by downloadCover's own tests; here it only names the file.
 jest.mock('@/services/covers/downloadCover', () => ({
@@ -47,6 +52,28 @@ describe('backfillCoversNow (app wiring)', () => {
     expect(fixtures.calls).toEqual([search, cover]);
     expect((await booksRepo.getBook(db, book.id))?.coverUri).toBe(`file:///doc/covers/${book.id}.jpg`);
     expect(await coverAttemptsRepo.get(db, book.id)).toBeNull();
+  });
+});
+
+describe('fixture books in an E2E build', () => {
+  it('are never searched for, even once any backoff would have run out', async () => {
+    jest.mocked(isE2eEnabled).mockReturnValue(true);
+    await loadFixture(db, 'demo');
+    expect(await settleFixtureCovers(db)).toBe(1);
+    // Forty days on (the backup reminder journey): any backoff is long over.
+    await db.run("UPDATE cover_attempts SET retry_after = '2000-01-01T00:00:00.000Z'");
+    const fixtures = createFixtureFetch({});
+    jest.spyOn(global, 'fetch').mockImplementation((url, init) => fixtures.fetch(String(url), init as never));
+    const list = jest.spyOn(coverAttemptsRepo, 'listBooksNeedingCover');
+    await expect(backfillCoversNow(db)).resolves.toEqual({ checked: 0, attached: 0, none: 0, failed: 0, offline: false });
+    expect(fixtures.calls).toEqual([]);
+    expect(list).toHaveBeenLastCalledWith(db, expect.objectContaining({ skipFixtureBooks: true }));
+
+    // A release build (no fixture loader) passes no such flag.
+    jest.mocked(isE2eEnabled).mockReturnValue(false);
+    list.mockResolvedValueOnce([]);
+    await backfillCoversNow(db);
+    expect(list).toHaveBeenLastCalledWith(db, expect.objectContaining({ skipFixtureBooks: false }));
   });
 });
 

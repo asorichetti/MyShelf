@@ -1,0 +1,12 @@
+# Set-up for db-export.yaml (run by scripts/maestro-suite.sh): a fresh
+# "demo" library, then the app is stopped so the script can leave the fault
+# marker for its next start.
+appId: dev.asorichetti.myshelf
+name: Save the database file (set-up)
+tags: [hooked]
+---
+- runFlow:
+    file: common/open-fixture.yaml
+    env: { FIXTURE: demo, NEXT: / }
+- assertVisible: { id: home-row, text: 'Dune,.*' }
+- stopApp

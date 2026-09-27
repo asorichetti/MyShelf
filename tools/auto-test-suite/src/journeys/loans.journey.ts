@@ -126,6 +126,73 @@ register({
   },
 });
 
+/** Drags from the middle of `selector` by `dx` px with the mouse (a pointer swipe), in small steps. */
+async function drag(c: Context, selector: string, dx: number): Promise<void> {
+  const box = await c.page.locator(selector).boundingBox();
+  expect(box != null, `${selector}: expected a box to drag`);
+  const y = box.y + box.height / 2;
+  const x = box.x + box.width * 0.8;
+  await c.page.mouse.move(x, y);
+  await c.page.mouse.down();
+  for (let i = 1; i <= 12; i++) await c.page.mouse.move(x + (dx * i) / 12, y);
+  await c.page.mouse.up();
+}
+
+register({
+  name: 'loan-swipe-return',
+  suite: 'p05',
+  desc: 'Fixture "demo": on the Loans tab a short drag of a loan card does nothing, a swipe to the left uncovers "Mark returned" and opens the same return sheet as the button; confirming moves Dune to History',
+  async run(c) {
+    await openFixture(c, 'demo', '/loans', TODAY);
+    await waitForCount(c, loanRow, 2, '/loans');
+    const dune = `${loanRow}:has(${tid(Testids.loans.rowBook)}[aria-label="Open Dune"])`;
+
+    // The panel under the card is decoration only: the button and the swipe do the same thing.
+    const panel = c.page.locator(tid(Testids.loans.rowSwipePanel)).first();
+    expect((await panel.getAttribute('aria-hidden')) === 'true', '/loans: expected the swipe panel to be hidden from screen readers');
+
+    await drag(c, dune, -40);
+    // The card slides back into place, and nothing opens.
+    await c.page.waitForFunction(
+      ([card, list]) => Math.abs(document.querySelector(card)!.getBoundingClientRect().x - document.querySelector(list)!.getBoundingClientRect().x) < 1,
+      [dune, tid(Testids.loans.list)] as const,
+    );
+    expect((await c.page.locator(tid(Testids.returnLoan.sheet)).count()) === 0, '/loans: expected a short drag not to open the return sheet');
+
+    // Half-way through a swipe the card has moved and the panel shows under it.
+    const box = await c.page.locator(dune).boundingBox();
+    expect(box != null, '/loans: expected Dune\'s card');
+    const y = box.y + box.height / 2;
+    const x = box.x + box.width * 0.8;
+    await c.page.mouse.move(x, y);
+    await c.page.mouse.down();
+    for (let i = 1; i <= 10; i++) await c.page.mouse.move(x - (box.width * 0.6 * i) / 10, y);
+    const moved = await c.page.locator(dune).boundingBox();
+    expect(moved != null && moved.x < box.x - box.width * 0.4, `/loans: expected the card to follow the pointer, found x=${q(moved?.x)} from ${q(box.x)}`);
+    await c.snap('swipe-half-way');
+    await c.page.mouse.up();
+
+    await waitVisible(c, tid(Testids.returnLoan.sheet), '/loans (swiped)');
+    const back = await c.page.locator(tid(Testids.returnLoan.date)).inputValue();
+    expect(back === TODAY, `/loans: expected the return date to default to today, found ${q(back)}`);
+    await c.checkGates('/loans (return sheet from a swipe)');
+    await c.page.locator(tid(Testids.returnLoan.confirm)).click();
+    await c.page.locator(tid(Testids.returnLoan.sheet)).waitFor({ state: 'detached', timeout: 10_000 });
+    await waitForCount(c, loanRow, 1, '/loans (after the swipe)');
+    const welcome = await textOf(c, tid(Testids.snackbar.root));
+    expect(welcome.startsWith('Welcome home, “Dune”!'), `/loans: expected the welcome-home snackbar, found ${q(welcome)}`);
+    const card = await c.page.locator(loanRow).boundingBox();
+    const list = await c.page.locator(tid(Testids.loans.list)).boundingBox();
+    expect(card != null && list != null && Math.abs(card.x - list.x) < 1, `/loans: expected the other card to sit in place, found ${q(card?.x)} vs ${q(list?.x)}`);
+
+    await c.page.locator(tid(Testids.loans.tabHistory)).click();
+    await waitForCount(c, loanRow, 2, '/loans History');
+    expect((await loanTitles(c))[0] === 'Dune', `/loans History: expected Dune first, found ${q(await loanTitles(c))}`);
+    // Returned loans cannot be swiped.
+    expect((await c.page.locator(tid(Testids.loans.rowSwipePanel)).count()) === 0, '/loans History: expected no swipe on returned loans');
+  },
+});
+
 register({
   name: 'loan-double-lend-blocked',
   suite: 'p05',

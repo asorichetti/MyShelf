@@ -1,4 +1,4 @@
-import { bookMatchKey, type LanguagePreference } from '@/domain';
+import { bookMatchKey, normaliseText, type LanguagePreference } from '@/domain';
 import { rankEditions, type BookCandidate } from '@/services/metadata';
 import { coverUrlFromId } from '@/services/metadata/openLibraryMap';
 
@@ -38,11 +38,13 @@ export function groupByWork(candidates: readonly BookCandidate[]): WorkGroup[] {
   return groups;
 }
 
+const editionKey = (c: BookCandidate) => c.isbn13 ?? c.isbn10 ?? `${c.source}:${c.sourceId}`;
+
 /** One entry per edition: by ISBN, else by provider record. */
 export function dedupeEditions(list: readonly BookCandidate[]): BookCandidate[] {
   const seen = new Set<string>();
   return list.filter((c) => {
-    const key = c.isbn13 ?? c.isbn10 ?? `${c.source}:${c.sourceId}`;
+    const key = editionKey(c);
     if (seen.has(key)) return false;
     seen.add(key);
     return true;
@@ -63,6 +65,44 @@ export interface OrderEditionsOptions {
  */
 export function orderEditions(group: WorkGroup, loaded: readonly BookCandidate[], { language, title }: OrderEditionsOptions = {}): BookCandidate[] {
   return rankEditions(dedupeEditions([...group.members, ...loaded]), { language, title: title ?? group.work.title });
+}
+
+/**
+ * A work's editions loaded page by page ("Show more editions"): the first
+ * page with the search's own editions as `orderEditions` ranks them, then
+ * each later page ranked on its own and added after, less editions already
+ * listed. What is on screen keeps its place as more arrive.
+ */
+export function orderEditionPages(group: WorkGroup, pages: readonly (readonly BookCandidate[])[], options: OrderEditionsOptions = {}): BookCandidate[] {
+  const [first = [], ...later] = pages;
+  const list = orderEditions(group, first, options);
+  const seen = new Set(list.map(editionKey));
+  for (const page of later) {
+    const fresh = dedupeEditions(page).filter((e) => !seen.has(editionKey(e)));
+    fresh.forEach((e) => seen.add(editionKey(e)));
+    list.push(...rankEditions(fresh, { language: options.language, title: options.title ?? group.work.title }));
+  }
+  return list;
+}
+
+/**
+ * Whether an edition matches what was typed to find it: every word must
+ * match. Four digits are a year; more digits (hyphens and spaces ignored
+ * inside a word) are part of an ISBN; anything else is found in the
+ * publisher, edition name, title or subtitle, ignoring case and accents.
+ */
+export function editionMatches(edition: BookCandidate, text: string): boolean {
+  const words = text.trim().split(/\s+/).filter(Boolean);
+  if (!words.length) return true;
+  const haystack = normaliseText([edition.publisher, edition.edition, edition.title, edition.subtitle].filter(Boolean).join(' '), { dropArticle: false });
+  const isbns = [edition.isbn13, edition.isbn10].filter((i): i is string => Boolean(i));
+  return words.every((word) => {
+    const digits = word.replace(/[-‐]/g, '');
+    if (/^\d{4}$/.test(digits)) return edition.publicationYear === Number(digits);
+    if (/^\d{5,}[\dXx]?$/.test(digits)) return isbns.some((i) => i.includes(digits.toUpperCase()));
+    const needle = normaliseText(word, { dropArticle: false });
+    return !needle || haystack.includes(needle);
+  });
 }
 
 const firstCoverId = (c: BookCandidate) => c.coverRefs.olEditionCoverIds[0];

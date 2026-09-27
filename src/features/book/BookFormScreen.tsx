@@ -8,6 +8,7 @@ import type { BookDraft } from '@/domain';
 import { useAddBookLookup } from '@/features/lookup/useAddBookLookup';
 import { getPrefill, type Prefill } from '@/features/scan/prefill';
 import { useSeriesOptions } from '@/features/series/useSeriesOptions';
+import { useMounted } from '@/hooks/useMounted';
 import { t } from '@/i18n';
 
 import { BookMissing, goBackOrShelf } from './BookDetailScreen';
@@ -24,6 +25,7 @@ function BookFormScreen({ bookId, prefill, scanned }: { bookId: number | null; p
   const existingSeries = useSeriesOptions();
   const formRef = useRef<BookFormHandle>(null);
   const { show } = useSnackbar();
+  const mounted = useMounted();
   const guard = useUnsavedChangesGuard(form.dirty && !form.saving);
   const lookup = useAddBookLookup(mode, form, (field) => formRef.current?.focusField(field), scanned);
 
@@ -53,16 +55,17 @@ function BookFormScreen({ bookId, prefill, scanned }: { bookId: number | null; p
     try {
       const result = await form.submit();
       if (!result.ok) {
-        if (result.firstInvalid) requestAnimationFrame(() => formRef.current?.focusField(result.firstInvalid!));
+        if (result.firstInvalid && mounted.current) requestAnimationFrame(() => formRef.current?.focusField(result.firstInvalid!));
         return;
       }
       guard.release();
       lookup.afterSave(result.id);
+      // The book is saved either way; a form the user has already left does not navigate again.
       if (mode === 'add') {
-        router.replace({ pathname: '/book/[id]', params: { id: String(result.id) } });
+        if (mounted.current) router.replace({ pathname: '/book/[id]', params: { id: String(result.id) } });
         show({ message: t('bookForm.screen.savedNew', { title: result.title }) });
       } else {
-        goBackOrShelf();
+        if (mounted.current) goBackOrShelf();
         show({ message: t('bookForm.screen.savedChanges') });
       }
     } catch (e) {

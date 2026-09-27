@@ -13,9 +13,10 @@ import {
   type BookDraftErrors,
   type BookDraftField,
 } from '@/domain';
+import { releaseCover } from '@/features/covers';
 import { emit } from '@/features/events';
 import { beginSeriesSave } from '@/features/series/seriesEvents';
-import { isStoredCover, storeCoverFile } from '@/services/covers';
+import { deleteCoverFile, isStoredCover, storeCoverFile } from '@/services/covers';
 
 export type SubmitResult = { ok: true; id: number; title: string } | { ok: false; firstInvalid: BookDraftField | null };
 
@@ -120,14 +121,25 @@ export function useBookForm(id: number | null, prefill?: Partial<BookDraft>): Bo
     submitting.current = true;
     try {
       const seriesProbe = await beginSeriesSave(db, { bookId: id, seriesNames: [full.seriesName] });
-      const savedId = await booksRepo.saveBookDraft(db, result.value, id ?? undefined);
-      // A picked or photographed cover is a temporary file: keep a copy with the book.
-      const cover = result.value.coverUri;
-      if (cover && cover.startsWith('file:') && !isStoredCover(savedId, cover)) {
-        const stored = storeCoverFile(savedId, cover);
-        await booksRepo.updateBook(db, savedId, { coverUri: stored });
+      // A picked or photographed cover is a temporary file: keep a copy with the book, in a file of its own,
+      // before the book names it. A copy that fails fails the save, and the book keeps the cover it had.
+      let value = result.value;
+      const cover = value.coverUri;
+      const stored = cover && cover.startsWith('file:') && !isStoredCover(cover) ? storeCoverFile(cover, { bookId: id ?? undefined }) : null;
+      if (stored) value = { ...value, coverUri: stored };
+      let savedId: number;
+      try {
+        savedId = await booksRepo.saveBookDraft(db, value, id ?? undefined);
+      } catch (error) {
+        if (stored) deleteCoverFile(stored);
+        throw error;
       }
-      setInitial(full);
+      // The cover the book had goes once nothing names it (a restore's safety copy or another book may).
+      const before = initial.coverUri;
+      if (before && before !== value.coverUri) void releaseCover(db, before);
+      const saved = { ...full, coverUri: value.coverUri };
+      setDraft(saved);
+      setInitial(saved);
       emit('library-changed');
       // Booky's series gap tip and the completion celebration (P04-07, P04-08).
       void seriesProbe.finish(savedId);
@@ -136,7 +148,7 @@ export function useBookForm(id: number | null, prefill?: Partial<BookDraft>): Bo
       submitting.current = false;
       setSaving(false);
     }
-  }, [db, draft, authorText, genreText, existingGenres, id]);
+  }, [db, draft, initial, authorText, genreText, existingGenres, id]);
 
   const dirty = draftsDiffer(draft, initial) || authorText.trim() !== '' || genreText.trim() !== '';
 

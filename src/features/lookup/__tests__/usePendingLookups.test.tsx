@@ -188,6 +188,43 @@ describe('usePendingLookups', () => {
     expect(await pendingLookupsRepo.list(db)).toEqual([]);
   });
 
+  it('stops showing "Trying…" when the queue cannot be read, and can try again', async () => {
+    const lookup = jest.fn(async (isbn: string) => found(isbn));
+    const { result } = renderLookups({ lookup, backfillCovers: null });
+    await waitFor(() => expect(result.current.lookups.retrying).toBe(false));
+    await pendingLookupsRepo.enqueue(db, A);
+    const spy = jest.spyOn(pendingLookupsRepo, 'listDue').mockRejectedValueOnce(new Error('database is locked'));
+    await act(async () => {
+      await expect(result.current.lookups.retryNow()).rejects.toThrow('database is locked');
+    });
+    expect(result.current.lookups.retrying).toBe(false);
+    spy.mockRestore();
+    await act(async () => {
+      await result.current.lookups.retryNow();
+    });
+    expect(lookup).toHaveBeenCalledWith(A, expect.anything());
+    expect(result.current.lookups.retrying).toBe(false);
+  });
+
+  it('stops showing "Trying…" when the queue cannot be read after the lookups', async () => {
+    const lookup = jest.fn(async (isbn: string) => found(isbn));
+    const { result } = renderLookups({ lookup, backfillCovers: null });
+    await waitFor(() => expect(result.current.lookups.retrying).toBe(false));
+    await pendingLookupsRepo.enqueue(db, A);
+    // The first read works, the one after the lookups fails.
+    const real = pendingLookupsRepo.listDue;
+    const spy = jest
+      .spyOn(pendingLookupsRepo, 'listDue')
+      .mockImplementationOnce((...args) => real(...args))
+      .mockRejectedValueOnce(new Error('disk I/O error'));
+    await act(async () => {
+      await expect(result.current.lookups.retryNow()).rejects.toThrow('disk I/O error');
+    });
+    expect(lookup).toHaveBeenCalledTimes(1);
+    expect(result.current.lookups.retrying).toBe(false);
+    spy.mockRestore();
+  });
+
   it('does nothing on mount when the queue is empty', async () => {
     const lookup = jest.fn();
     const { result } = renderLookups({ lookup });

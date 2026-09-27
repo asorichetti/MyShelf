@@ -219,6 +219,7 @@ describe('Google Books mapping helpers', () => {
   it('turns bookDisplayNumber into a position-only hint', () => {
     expect(seriesHintFromInfo({ bookDisplayNumber: '3' })).toEqual([{ name: null, position: 3, source: 'googlebooks', raw: '3' }]);
     expect(seriesHintFromInfo({ bookDisplayNumber: '2.5' })[0].position).toBe(2.5);
+    expect(seriesHintFromInfo({ bookDisplayNumber: '0' })).toEqual([{ name: null, position: 0, source: 'googlebooks', raw: '0' }]);
     expect(seriesHintFromInfo({ volumeSeries: [{ orderNumber: 4 }] })[0].position).toBe(4);
     // Positions a series cannot have (the book form would refuse them).
     expect(seriesHintFromInfo({ volumeSeries: [{ orderNumber: -2 }] })).toEqual([]);

@@ -147,6 +147,43 @@ describe('validateBackup', () => {
     expect(check(fine)).toBe('accepted');
   });
 
+  it('refuses titles and names longer than the book form takes, and accepts long real ones', () => {
+    const cases: [string, (b: BackupFile) => void][] = [
+      ['a title of 1001 characters', (b) => (b.tables.books![0].title = 'x'.repeat(1001))],
+      ['an author of 1001 characters', (b) => (b.tables.authors![0].name = 'y'.repeat(1001))],
+    ];
+    for (const [what, tamper] of cases) {
+      const doc = clone();
+      tamper(doc);
+      expect({ what, code: check(doc) }).toEqual({ what, code: 'bad-row' });
+    }
+    const fine = clone();
+    fine.tables.books![0].title = 'x'.repeat(1000);
+    fine.tables.authors![0].name = 'y'.repeat(600);
+    expect(check(fine)).toBe('accepted');
+  });
+
+  it('refuses ids no library reaches, which only a hand-made file has', () => {
+    const cases: [string, (b: BackupFile) => void][] = [
+      ['book id in the trillions', (b) => (b.tables.books![0].id = 4_000_000_000_000)],
+      ['book id zero', (b) => (b.tables.books![0].id = 0)],
+      ['negative genre id', (b) => (b.tables.genres![0].id = -5)],
+      ['loan id past two billion', (b) => (b.tables.loans![0].id = 2 ** 31)],
+    ];
+    for (const [what, tamper] of cases) {
+      const doc = clone();
+      tamper(doc);
+      expect({ what, code: check(doc) }).toEqual({ what, code: 'bad-row' });
+    }
+    const fine = clone();
+    const old = fine.tables.books![0].id;
+    fine.tables.books![0].id = 2 ** 31 - 1;
+    for (const table of ['book_authors', 'book_genres', 'group_books', 'loans'] as const) {
+      for (const row of fine.tables[table] ?? []) if (row.book_id === old) row.book_id = 2 ** 31 - 1;
+    }
+    expect(check(fine)).toBe('accepted');
+  });
+
   it('allows columns the database fills in to be left out', () => {
     const doc = clone();
     delete doc.tables.books![0].created_at;

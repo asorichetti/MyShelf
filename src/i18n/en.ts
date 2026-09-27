@@ -124,6 +124,17 @@ export const en = {
     databaseError: {
       title: "I couldn't open your library",
       message: "Something went wrong opening the catalogue on this device. Your books are safe; let's try again.",
+      exportHint: "If trying again doesn't help, save a copy of your library's database file and keep it somewhere safe. It holds your whole catalogue.",
+      export: 'Save a copy of the library file',
+      /** The Android share sheet's title. */
+      shareDialogTitle: 'Save your library file',
+      /** {fileName} is like "myshelf-library-2026-06-15.db". */
+      shared: '{fileName} is ready. Keep it somewhere safe.',
+      /** Web: the browser downloaded the file. */
+      downloaded: 'Downloaded {fileName}.',
+      noFile: "There's no library file on this device yet, so there's nothing to save.",
+      cantShare: "This device can't share files, so the copy couldn't be saved.",
+      exportFailed: "I couldn't save a copy of the library file.",
     },
     notFound: {
       /** The browser tab's title for an unknown address. */
@@ -1499,7 +1510,7 @@ export const en = {
       fallbackName: 'the group',
     },
     reorder: {
-      hint: 'Use the arrows to change the order.',
+      hint: 'Hold a book and drag it to its place, or use the arrows.',
       listLabel: 'Books in this group',
       /** A row's name: "2. Mort". */
       rowLabel: '{index}. {title}',
@@ -1978,6 +1989,9 @@ export const en = {
       skippedLine: 'Line {line}: {reason}',
       skippedLineWithTitle: 'Line {line} ({title}): {reason}',
       seeShelf: 'See your shelf',
+      /** Looks the imported books up for what the file lacked (summary, genres, series…). */
+      fetchDetails: 'Fetch missing details',
+      fetchDetailsHint: 'I can look these books up and offer what the file didn’t have, like summaries, genres and series. You choose what to add.',
     },
     /** Why a row is not imported. */
     reasons: {
@@ -1993,6 +2007,7 @@ export const en = {
       badPages: 'The page count “{value}” wasn’t understood.',
       badRating: 'The rating “{value}” wasn’t understood, so it was left out.',
       badAdded: 'The date added “{value}” wasn’t understood, so the book is dated today.',
+      shortened: 'The title or an author’s name was over {max} characters, so it was shortened.',
     },
     errors: {
       empty: 'That file is empty. Choose a spreadsheet saved as CSV.',
@@ -2336,6 +2351,10 @@ export const en = {
       /** After a scan in "Scan several" mode; {title} is the book's title. */
       addedToTray: 'Added “{title}” to the tray.',
       needsChoice: '“{title}” needs a choice of edition — pick it when you review.',
+      /** The same ISBN scanned again in "Scan several": nothing is added unless the user asks for another copy. */
+      alreadyInTray: '“{title}” is already in the tray. Scanned a second copy?',
+      addCopy: '+1 copy',
+      addCopyLabel: 'Add another copy of {title} to the tray',
     },
     /** Booky's messages while scanning. */
     messages: {
@@ -2458,6 +2477,19 @@ export const en = {
     },
     save: { one: 'Save {count} book', other: 'Save {count} books' },
     nothingReady: 'Nothing ready to save',
+    /** A rubber stamp on a tray row for a book the shelf already has. */
+    onShelf: 'Already on your shelf',
+    onShelfCount: { one: 'You have {count} copy of this book already.', other: 'You have {count} copies of this book already.' },
+    keep: 'Add it anyway',
+    keepLabel: 'Add another copy of {title} anyway',
+    keeping: 'Another copy will be added.',
+    onShelfWaiting: {
+      one: '{count} book is already on your shelf: add it anyway, or drop it.',
+      other: '{count} books are already on your shelf: add them anyway, or drop them.',
+    },
+    copies: { one: '{count} copy', other: '{count} copies' },
+    removeCopy: 'Remove a copy',
+    removeCopyLabel: 'Remove a copy of {title}',
   },
   /** `/scan/pick`: the edition picker. */
   editions: {
@@ -2479,6 +2511,16 @@ export const en = {
       loadFailed: 'I couldn’t load its editions just now. You can still choose the book itself.',
       noMatch: 'No editions match those filters.',
       showMore: { one: 'Show {count} more edition', other: 'Show {count} more editions' },
+      /** A work with more editions than the first page: loads the next page. {loaded} of {total} are loaded. */
+      loadMore: 'Show more editions',
+      loadMoreLabel: 'Show more editions: {loaded} of {total} loaded',
+      loadedOf: '{loaded} of {total} editions loaded',
+      loadMoreFailed: 'I couldn’t load more editions just now. Try again in a moment.',
+      /** Filters found nothing among the editions loaded so far, and there are more. */
+      noMatchYet: 'None of the {loaded} editions loaded so far match. Show more to look through the rest.',
+      findEdition: 'Find your edition',
+      findEditionPlaceholder: 'Year, publisher or ISBN',
+      findEditionHelp: 'From the copyright page, e.g. 1998, Tor or 978-0-312-85848-9.',
       reviewBeforeSaving: 'Review before saving',
       reviewBeforeSavingLabel: 'Review the details in the form before saving',
       none: 'None of these — add manually',
@@ -2583,6 +2625,29 @@ export const en = {
     changesLabel: 'Changes to apply',
     update: { one: 'Update {count} detail', other: 'Update {count} details' },
     nothingTicked: 'Nothing ticked',
+  },
+  /** "Fetch missing details" for books imported from a spreadsheet (P08-05). */
+  fetchDetails: {
+    title: 'Fetch missing details',
+    intro: 'Details the catalogues have that your file didn’t. Nothing you imported is replaced, and your ratings and notes stay as they are.',
+    checking: { one: 'Looking up {done} of {total} book…', other: 'Looking up {done} of {total} books…' },
+    stop: 'Stop and review',
+    offline: 'I went offline before I could look up every book. Here’s what I found; try again later for the rest.',
+    /** Parts of the summary, joined into one sentence list. */
+    found: { one: '{count} book has something to add.', other: '{count} books have something to add.' },
+    upToDate: { one: '{count} has nothing new.', other: '{count} have nothing new.' },
+    notFound: { one: '{count} isn’t in the catalogues.', other: '{count} aren’t in the catalogues.' },
+    failed: { one: '{count} couldn’t be looked up.', other: '{count} couldn’t be looked up.' },
+    nothingTitle: 'Nothing to add',
+    nothingMessage: 'The catalogues had nothing your books were missing.',
+    /** A book's section: its title, and the changes as a group named after it. */
+    bookChanges: 'Details for “{title}”',
+    apply: { one: 'Add {count} detail', other: 'Add {count} details' },
+    nothingTicked: 'Nothing ticked',
+    notNow: 'Not now',
+    saved: { one: 'Added details to {count} book.', other: 'Added details to {count} books.' },
+    saveFailed: 'Sorry, I couldn’t save those details. Please try again.',
+    seeShelf: 'See your shelf',
   },
   /** The end-to-end test harness screens (only in test builds). */
   e2e: {

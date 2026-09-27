@@ -56,6 +56,7 @@
     "batchToggle": "scan-batch-toggle",
     "trayCount": "scan-tray-count",
     "reviewOpen": "scan-review-open",
+    "addCopy": "scan-add-copy",
     "lastScanned": "scan-last-scanned",
     "helpSheet": "scan-help-sheet",
     "helpClose": "scan-help-close"
@@ -71,6 +72,8 @@
     "rowBorrower": "loans-row-borrower",
     "stamp": "loans-stamp",
     "rowReturn": "loans-row-return",
+    "rowSwipe": "loans-row-swipe",
+    "rowSwipePanel": "loans-row-swipe-panel",
     "filterBorrower": "loans-filter-borrower",
     "empty": "loans-empty"
   },
@@ -182,7 +185,7 @@
   },
   "notFound": { "root": "not-found-root", "title": "not-found-title", "homeLink": "not-found-home-link" },
   "loading": { "root": "loading-root", "title": "loading-title" },
-  "dbError": { "root": "db-error-root", "title": "db-error-title", "retry": "db-error-retry" },
+  "dbError": { "root": "db-error-root", "title": "db-error-title", "retry": "db-error-retry", "export": "db-error-export", "exportStatus": "db-error-export-status" },
   "emptyState": { "root": "empty-state", "action": "empty-state-action" },
   "booky": {
     "avatar": "booky-avatar",
@@ -464,6 +467,8 @@
     "skeleton": "picker-skeleton",
     "filterFormat": "picker-filter-format",
     "filterLanguage": "picker-filter-language",
+    "findEdition": "picker-find-edition",
+    "loadMore": "picker-load-more",
     "confirm": "picker-confirm",
     "none": "picker-none",
     "review": "picker-review",
@@ -475,6 +480,10 @@
     "item": "scan-review-item",
     "choose": "scan-review-choose",
     "drop": "scan-review-drop",
+    "onShelf": "scan-review-on-shelf",
+    "keep": "scan-review-keep",
+    "copies": "scan-review-copies",
+    "removeCopy": "scan-review-remove-copy",
     "saveAll": "scan-review-save-all",
     "empty": "scan-review-empty"
   },
@@ -505,13 +514,26 @@
     "mapping": "csv-import-mapping",
     "mapField": "csv-import-map-field",
     "shelvesToggle": "csv-import-shelves-toggle",
-    "fetchToggle": "csv-import-fetch-toggle",
+    "fetchDetails": "csv-import-fetch-details",
     "preview": "csv-import-preview",
     "previewRow": "csv-import-preview-row",
     "confirm": "csv-import-confirm",
     "report": "csv-import-report",
     "skipped": "csv-import-skipped",
     "done": "csv-import-done"
+  },
+  "fetchDetails": {
+    "root": "fetch-details-root",
+    "back": "fetch-details-back",
+    "progress": "fetch-details-progress",
+    "stop": "fetch-details-stop",
+    "summary": "fetch-details-summary",
+    "offline": "fetch-details-offline",
+    "book": "fetch-details-book",
+    "apply": "fetch-details-apply",
+    "cancel": "fetch-details-cancel",
+    "saved": "fetch-details-saved",
+    "done": "fetch-details-done"
   },
   "erase": {
     "root": "erase-root",

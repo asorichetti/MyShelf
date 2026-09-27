@@ -1,5 +1,6 @@
 import type { Book, BookGenre, BookGroup, Genre } from '@/domain';
 
+import { forgetEntities } from './settings';
 import { BOOK_COLUMNS, foldBookGroups, toBook, type BookRow } from './shared';
 
 import type { Db } from '../types';
@@ -49,9 +50,13 @@ export async function renameGenre(db: Db, id: number, name: string): Promise<Gen
   return changes ? getGenre(db, id) : null;
 }
 
-/** Deletes a genre: books lose the tag, and nothing else changes. */
+/** Deletes a genre: books lose the tag, and the Shelf stops filtering on it. */
 export async function deleteGenre(db: Db, id: number): Promise<boolean> {
-  return (await db.run('DELETE FROM genres WHERE id = ?', [id])).changes > 0;
+  return db.transaction(async (tx) => {
+    const deleted = (await tx.run('DELETE FROM genres WHERE id = ?', [id])).changes > 0;
+    if (deleted) await forgetEntities(tx, 'genre', [id]);
+    return deleted;
+  });
 }
 
 export interface GenreWithCount extends Genre {
@@ -85,6 +90,7 @@ export async function mergeGenres(db: Db, sourceId: number, targetId: number): P
       [targetId, sourceId],
     );
     await tx.run('DELETE FROM genres WHERE id = ?', [sourceId]);
+    await forgetEntities(tx, 'genre', [sourceId], { mergedInto: targetId });
     const row = await tx.get<{ count: number }>('SELECT COUNT(*) AS count FROM book_genres WHERE genre_id = ?', [targetId]);
     return { ...target, count: row?.count ?? 0 };
   });

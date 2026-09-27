@@ -30,9 +30,21 @@ describe('title', () => {
     expect(valueOf({ title: '  Dune  ' }).title).toBe('Dune');
   });
 
-  it('is at most 300 characters', () => {
-    expect(valueOf({ title: 'x'.repeat(300) }).title).toHaveLength(300);
-    expect(errorOf({ title: 'x'.repeat(301) }, 'title')).toMatch(/under 300 characters/);
+  it('takes the longest titles real catalogues hold (500 characters and more), up to 1000', () => {
+    expect(valueOf({ title: 'x'.repeat(500) }).title).toHaveLength(500);
+    expect(valueOf({ title: 'x'.repeat(1000) }).title).toHaveLength(1000);
+    expect(errorOf({ title: 'x'.repeat(1001) }, 'title')).toMatch(/under 1000 characters/);
+  });
+});
+
+describe('authors', () => {
+  it('take names up to 1000 characters (corporate authors run past 200)', () => {
+    const committee = 'United States. Congress. Senate. Committee on Governmental Affairs. Subcommittee on Oversight of Government Management, the Federal Workforce, and the District of Columbia';
+    const long = `${committee}. ${committee}`;
+    expect(long.length).toBeGreaterThan(300);
+    expect(valueOf({ authors: [{ name: long, role: 'author', sortName: null }] }).authors.map((a) => a.name)).toEqual([long]);
+    expect(valueOf({ authors: [{ name: 'y'.repeat(1000), role: 'author', sortName: null }] }).authors).toHaveLength(1);
+    expect(errorOf({ authors: [{ name: 'y'.repeat(1001), role: 'author', sortName: null }] }, 'authors')).toBeTruthy();
   });
 });
 
@@ -113,10 +125,13 @@ describe('series', () => {
     expect(valueOf({ seriesName: 'Discworld', seriesPosition: 'Book 3' }).series).toEqual({ name: 'Discworld', position: 3 });
     expect(valueOf({ seriesName: 'Discworld', seriesPosition: 'III' }).series).toEqual({ name: 'Discworld', position: 3 });
     expect(valueOf({ seriesName: 'Discworld' }).series).toEqual({ name: 'Discworld', position: null });
+    // A prequel numbered before the first book: New Spring is The Wheel of Time #0.
+    expect(valueOf({ seriesName: 'The Wheel of Time', seriesPosition: '0' }).series).toEqual({ name: 'The Wheel of Time', position: 0 });
+    expect(valueOf({ seriesName: 'The Wheel of Time', seriesPosition: '#0' }).series).toEqual({ name: 'The Wheel of Time', position: 0 });
   });
 
-  it('rejects positions that are not a positive number', () => {
-    for (const bad of ['0', '-1', 'soon']) {
+  it('rejects positions that are not a number from 0 up', () => {
+    for (const bad of ['-1', '-0.5', 'soon']) {
       expect(errorOf({ seriesName: 'Discworld', seriesPosition: bad }, 'seriesPosition')).toMatch(/like 3, or 2.5/);
     }
   });
