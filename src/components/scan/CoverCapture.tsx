@@ -88,8 +88,10 @@ export function CoverCapture({ recognize, available, onRecognised, onTypeText, c
   }
 
   const read = async (uri: string, from: From) => {
-    // While it is read the photo is on its way to the scan, which deletes it when done with it.
-    release();
+    // While it is read the photo is on its way to the scan, which deletes it when done with it:
+    // hand it on (an earlier photo still held, such as one that failed, is deleted).
+    release(uri);
+    held.current = null;
     setState({ step: 'reading', uri, from });
     try {
       const result = await recognize(uri);

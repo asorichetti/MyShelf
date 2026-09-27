@@ -77,6 +77,24 @@ describe('CoverCapture (P03-05)', () => {
     expect(replaced.onDiscardPhoto).not.toHaveBeenCalledWith('file:///cache/ImagePicker/b.jpg');
   });
 
+  it('keeps the photo it is reading until the scan is done with it', async () => {
+    const camera = 'file:///cache/Camera/cover.jpg';
+    const discarded: string[] = [];
+    const recognize = jest.fn(async (uri: string) => {
+      // The photo must still be there to be read.
+      expect(discarded).not.toContain(uri);
+      return result;
+    });
+    const { onDiscardPhoto, onRecognised, unmount } = render(recognize);
+    onDiscardPhoto.mockImplementation((uri: string) => discarded.push(uri));
+    await press(Testids.scan.capture);
+    await press(Testids.scan.usePhoto);
+    expect(recognize).toHaveBeenCalledWith(camera);
+    expect(onRecognised).toHaveBeenCalledWith(result, camera);
+    unmount();
+    expect(onDiscardPhoto).not.toHaveBeenCalled();
+  });
+
   it('a failed read shows Booky concerned with Try again', async () => {
     const recognize = jest.fn().mockRejectedValueOnce(new Error('no text')).mockResolvedValueOnce(result);
     const { onRecognised } = render(recognize);
