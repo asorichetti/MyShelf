@@ -23,7 +23,7 @@ Everything later phases build on: the Expo app skeleton with routing and a web t
 
 ## Prerequisites
 
-- Node 22.13+ or 23.4+ (for `node:sqlite`) and npm; a one-time `npm run autotest:install-browser` (Chromium) for the auto test suite; Android Studio emulator or a device with USB debugging for Maestro; Maestro CLI installed (`curl -fsSL "https://get.maestro.mobile.dev" | bash`).
+- Node 24 LTS, 24.15+ (`.nvmrc`; for `node:sqlite`) and npm; a one-time `npm run autotest:install-browser` (Chromium) for the auto test suite; Android Studio emulator or a device with USB debugging for Maestro; Maestro CLI installed (`curl -fsSL "https://get.maestro.mobile.dev" | bash`).
 - `git config core.hooksPath .githooks` run once in the clone.
 
 ## Notes for implementers

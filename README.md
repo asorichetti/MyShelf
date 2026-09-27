@@ -71,7 +71,7 @@ A build signed with the debug key (`…-debug-signed…`) installs and runs norm
 
 ## Build from source
 
-Prerequisites: Node.js 22.13 or newer (Jest uses its built-in `node:sqlite`) and npm; for the Android app, JDK 17 and the Android SDK (Android Studio installs both) and an emulator or a phone with USB debugging.
+Prerequisites: Node.js 24 LTS, 24.15 or newer (`.nvmrc`; Jest uses its built-in `node:sqlite`), and the npm that comes with it; for the Android app, JDK 17 and the Android SDK (Android Studio installs both) and an emulator or a phone with USB debugging.
 
 ```bash
 git clone https://github.com/asorichetti/MyShelf.git
