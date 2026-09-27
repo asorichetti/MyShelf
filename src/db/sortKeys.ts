@@ -260,10 +260,12 @@ const MAX_REMEMBERED_TITLES = 50_000;
 /** Each book's spine colour, as its place round the colour wheel (0 = red). */
 async function colourRanks(db: Db, { coverOrder = PALETTE_ORDER }: SortOptions): Promise<Map<number, number>> {
   const count = coverOrder.length;
-  const rows = await db.all<{ id: number; title: string }>('SELECT id, title FROM books');
+  // One JSON array rather than a row per book: on the web build each row read costs a trip into the SQLite worker's memory.
+  const all = await db.get<{ rows: string }>('SELECT json_group_array(json_array(id, title)) AS rows FROM books');
+  const rows = JSON.parse(all?.rows ?? '[]') as [number, string][];
   if (bindingByTitle.size > MAX_REMEMBERED_TITLES) bindingByTitle.clear();
   const out = new Map<number, number>();
-  for (const { id, title } of rows) {
+  for (const [id, title] of rows) {
     const key = `${count}\u0000${title}`;
     let binding = bindingByTitle.get(key);
     if (binding === undefined) {

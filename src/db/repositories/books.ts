@@ -223,24 +223,64 @@ export function filterClause(filters: ShelfFilters): SqlClause | null {
   return parts.length ? { sql: parts.map((p) => `(${p})`).join(' AND '), params } : null;
 }
 
-interface ListRow {
-  id: number;
-  title: string;
-  subtitle: string | null;
-  cover_uri: string | null;
-  publication_year: number | null;
-  series_id: number | null;
-  series_name: string | null;
-  series_position: number | null;
-  on_loan: number;
-  loan_borrower: string | null;
-  loan_due_on: string | null;
-  rating: number | null;
-  author_names: string | null;
-}
+/**
+ * What the Shelf shows of each book, in this order. Rows come back from
+ * SQLite as JSON arrays (`listBookItems`): one value per column and no
+ * column names, which on the web build (SQLite in a worker) costs a fraction
+ * of reading 10,000 rows column by column.
+ */
+const LIST_COLUMNS = [
+  'b.id',
+  'b.title',
+  'b.subtitle',
+  'b.cover_uri',
+  'b.publication_year',
+  'b.series_id',
+  's.name',
+  'b.series_position',
+  'ol.id IS NOT NULL',
+  'olp.name',
+  'ol.due_on',
+  'b.rating',
+  'k.author_names',
+].join(', ');
+
+type ListRow = [
+  id: number,
+  title: string,
+  subtitle: string | null,
+  coverUri: string | null,
+  publicationYear: number | null,
+  seriesId: number | null,
+  seriesName: string | null,
+  seriesPosition: number | null,
+  onLoan: number,
+  loanBorrower: string | null,
+  loanDueOn: string | null,
+  rating: number | null,
+  authorNames: string | null,
+];
 
 /** Separates a book's author names in `book_sort_keys.author_names` (char 31). */
 const NAME_SEPARATOR = '\u001f';
+
+function toListItem(r: ListRow): BookListItem {
+  return {
+    id: r[0],
+    title: r[1],
+    subtitle: r[2],
+    authors: r[12] ? r[12].split(NAME_SEPARATOR) : [],
+    coverUri: r[3],
+    publicationYear: r[4],
+    seriesId: r[5],
+    seriesName: r[6],
+    seriesPosition: r[7],
+    onLoan: r[8] === 1,
+    loanBorrower: r[9],
+    loanDueOn: r[10],
+    rating: r[11] ?? null,
+  };
+}
 
 const likeEscape = (text: string) => text.replace(/[\\%_]/g, (c) => `\\${c}`);
 
@@ -407,9 +447,10 @@ export async function searchClause(db: Db, query: string): Promise<(SqlClause & 
 }
 
 /**
- * The Shelf list: one query for the rows (sorted and filtered in SQL, with
- * each book's author names from its stored sort keys), whatever the number
- * of books.
+ * The Shelf list: one query, sorted and filtered in SQL, whatever the number
+ * of books. The whole list comes back as one JSON array (one row, one
+ * column), in the sort's order (an aggregate's own ORDER BY, SQLite 3.44+);
+ * a page of it (`limit`) as one JSON array per row.
  */
 export async function listBookItems(db: Db, options: ListBookItemsOptions = {}): Promise<BookListItem[]> {
   const { sort = defaultShelfSort, limit, offset = 0, scope = {} } = options;
@@ -442,30 +483,25 @@ export async function listBookItems(db: Db, options: ListBookItemsOptions = {}):
   await ensureSortKeys(db);
   const groupOrder = scope.groupId != null && options.groupOrder;
   const order = groupOrder ? { orderBy: `gb.position, ${SORT_TITLE_SQL} COLLATE NOCASE, b.id`, params: [] } : await buildSortSql(db, sort, { coverOrder: options.coverOrder });
-  const rows = await db.all<ListRow>(
-    `SELECT b.id, b.title, b.subtitle, b.cover_uri, b.publication_year, b.series_id, s.name AS series_name, b.series_position,
-       ol.id IS NOT NULL AS on_loan, olp.name AS loan_borrower, ol.due_on AS loan_due_on, b.rating, k.author_names
-     FROM books b ${joins.join(' ')} ${BASE_JOINS}
-     ${where.length ? `WHERE ${where.join(' AND ')}` : ''}
-     ORDER BY ${search?.rank ? `${search.rank.sql}, ` : ''}${order.orderBy}
-     ${limit != null ? 'LIMIT ? OFFSET ?' : ''}`,
-    [...params, ...(search?.rank?.params ?? []), ...order.params, ...(limit != null ? [limit, offset] : [])],
-  );
-  return rows.map((r) => ({
-    id: r.id,
-    title: r.title,
-    subtitle: r.subtitle,
-    authors: r.author_names ? r.author_names.split(NAME_SEPARATOR) : [],
-    coverUri: r.cover_uri,
-    publicationYear: r.publication_year,
-    seriesId: r.series_id,
-    seriesName: r.series_name,
-    seriesPosition: r.series_position,
-    onLoan: r.on_loan === 1,
-    loanBorrower: r.loan_borrower,
-    loanDueOn: r.loan_due_on,
-    rating: r.rating ?? null,
-  }));
+  const from = `FROM books b ${joins.join(' ')} ${BASE_JOINS}
+     ${where.length ? `WHERE ${where.join(' AND ')}` : ''}`;
+  const orderBy = `${search?.rank ? `${search.rank.sql}, ` : ''}${order.orderBy}`;
+  const orderParams = [...(search?.rank?.params ?? []), ...order.params];
+  if (limit != null) {
+    const page = await db.all<{ r: string }>(`SELECT json_array(${LIST_COLUMNS}) AS r ${from} ORDER BY ${orderBy} LIMIT ? OFFSET ?`, [
+      ...params,
+      ...orderParams,
+      limit,
+      offset,
+    ]);
+    return page.map((row) => toListItem(JSON.parse(row.r) as ListRow));
+  }
+  // The ORDER BY sits in the select list here, before the FROM and WHERE: its parameters come first.
+  const all = await db.get<{ rows: string }>(`SELECT json_group_array(json_array(${LIST_COLUMNS}) ORDER BY ${orderBy}) AS rows ${from}`, [
+    ...orderParams,
+    ...params,
+  ]);
+  return (JSON.parse(all?.rows ?? '[]') as ListRow[]).map(toListItem);
 }
 
 /** What the Shelf's filter sheet can offer: only values some book actually has. */

@@ -89,6 +89,15 @@ describe('listBookItems sorting (demo fixture)', () => {
     const all = await titles();
     expect(await titles({ limit: 5, offset: 5 })).toEqual(all.slice(5, 10));
   });
+
+  it('gives the same rows whole (one JSON array) as page by page (one per row), whatever the sort', async () => {
+    for (const levels of [oneKey('title').levels, oneKey('seriesPosition').levels, [{ key: 'onLoan', direction: 'asc' } as const, { key: 'rating', direction: 'desc' } as const]]) {
+      const whole = await booksRepo.listBookItems(db, { sort: { levels } });
+      const pages = [];
+      for (let offset = 0; offset < whole.length; offset += 4) pages.push(...(await booksRepo.listBookItems(db, { sort: { levels }, limit: 4, offset })));
+      expect(pages).toEqual(whole);
+    }
+  });
 });
 
 describe('listBookItems rows', () => {
