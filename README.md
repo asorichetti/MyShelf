@@ -107,7 +107,7 @@ Signing with your own key, CI and EAS builds: [`docs/release.md`](docs/release.m
 | `npm run web` | open the app in a browser |
 | `npm run export:web` | static web build into `dist/` |
 | `npm run check` | everything CI runs for the app: the selectors and licences checks, lint, typecheck and Jest |
-| `npm run lint` | ESLint |
+| `npm run lint` | ESLint, with no warnings allowed |
 | `npm run typecheck` | TypeScript (route links are checked strictly once the dev server has generated `.expo/types`) |
 | `npm test` | Jest unit and component tests (offline; never touches the network) |
 | `npm run test:live` | live checks against the real Open Library (see [Testing](#testing)) |
