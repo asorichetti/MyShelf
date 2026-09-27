@@ -124,42 +124,46 @@ export function usePendingLookups({ lookup, backfillCovers }: UsePendingLookupsO
     const gaveUp: string[] = [];
     let offline = false;
     try {
-      for (const item of await reload()) {
-        if (abort.signal.aborted) break;
-        // Already arrived and waiting for the user.
-        if (arrivedIsbns.current.has(item.isbn13)) continue;
-        try {
-          const { candidates } = await doLookup(item.isbn13, abort.signal);
-          if (candidates.length) {
-            // Stays queued until the user saves the book: nothing scanned is lost if the app closes first.
-            arrived.push({ isbn13: item.isbn13, candidates });
-          } else {
-            await pendingLookupsRepo.markFailed(db, item.isbn13, 'not-found');
-            gaveUp.push(item.isbn13);
+      try {
+        for (const item of await reload()) {
+          if (abort.signal.aborted) break;
+          // Already arrived and waiting for the user.
+          if (arrivedIsbns.current.has(item.isbn13)) continue;
+          try {
+            const { candidates } = await doLookup(item.isbn13, abort.signal);
+            if (candidates.length) {
+              // Stays queued until the user saves the book: nothing scanned is lost if the app closes first.
+              arrived.push({ isbn13: item.isbn13, candidates });
+            } else {
+              await pendingLookupsRepo.markFailed(db, item.isbn13, 'not-found');
+              gaveUp.push(item.isbn13);
+            }
+          } catch (error) {
+            if (isAbortError(error)) break;
+            if (error instanceof OfflineError) {
+              offline = true; // still offline: try again next time
+              break;
+            }
+            if (error instanceof InvalidIsbnError) {
+              await pendingLookupsRepo.markFailed(db, item.isbn13, 'invalid-isbn');
+              gaveUp.push(item.isbn13);
+              continue;
+            }
+            const row = await pendingLookupsRepo.recordFailure(db, item.isbn13, error instanceof Error ? error.message : String(error));
+            if (row && row.attempts >= pendingLookupsRepo.MAX_LOOKUP_ATTEMPTS) gaveUp.push(item.isbn13);
           }
-        } catch (error) {
-          if (isAbortError(error)) break;
-          if (error instanceof OfflineError) {
-            offline = true; // still offline: try again next time
-            break;
-          }
-          if (error instanceof InvalidIsbnError) {
-            await pendingLookupsRepo.markFailed(db, item.isbn13, 'invalid-isbn');
-            gaveUp.push(item.isbn13);
-            continue;
-          }
-          const row = await pendingLookupsRepo.recordFailure(db, item.isbn13, error instanceof Error ? error.message : String(error));
-          if (row && row.attempts >= pendingLookupsRepo.MAX_LOOKUP_ATTEMPTS) gaveUp.push(item.isbn13);
         }
+      } finally {
+        running.current = false;
+        controller.current = null;
       }
+      if (abort.signal.aborted) return;
+      if (arrived.length) showResults((current) => [...current.filter((r) => !arrived.some((a) => a.isbn13 === r.isbn13)), ...arrived]);
+      await reload();
     } finally {
-      running.current = false;
-      controller.current = null;
+      // Also when the database throws: "Trying…" must never stay on screen.
+      setRetrying(false);
     }
-    if (abort.signal.aborted) return;
-    if (arrived.length) showResults((current) => [...current.filter((r) => !arrived.some((a) => a.isbn13 === r.isbn13)), ...arrived]);
-    await reload();
-    setRetrying(false);
     if (!offline) startBackfill();
     if (arrived.length) {
       void emit({ type: 'lookup-arrived', vars: { books: bookCount(arrived.length) } });
