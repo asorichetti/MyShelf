@@ -66,6 +66,12 @@ export interface BookyContextValue {
 
 const BookyContext = createContext<BookyContextValue | null>(null);
 
+/** What the engine made of one emission: the triggers it was sent and the tip it chose (null: none). */
+export interface BookyDecision {
+  triggers: BookyEvent['type'][];
+  tip: string | null;
+}
+
 export interface BookyProviderProps {
   children: ReactNode;
   store?: BookyStore;
@@ -74,10 +80,12 @@ export interface BookyProviderProps {
   /** Clock and calendar, for tests. */
   now?: () => number;
   today?: () => string;
+  /** Told of every decision, tip or not (the web E2E build notes them for journeys). */
+  onDecision?: (decision: BookyDecision) => void;
 }
 
 /** Holds Booky's state, runs the engine for every event and remembers what was shown. */
-export function BookyProvider({ children, store, reloadKey = 0, now = Date.now, today = todayOf }: BookyProviderProps) {
+export function BookyProvider({ children, store, reloadKey = 0, now = Date.now, today = todayOf, onDecision }: BookyProviderProps) {
   const engine = useRef<EngineState>(initialEngineState(today()));
   const [tip, setTip] = useState<ShownTip | null>(null);
   const [mode, setModeState] = useState<BookyMode>('helpful');
@@ -88,9 +96,11 @@ export function BookyProvider({ children, store, reloadKey = 0, now = Date.now, 
   // Saves run one after another, and a reload waits for them, so it never reads stale memory.
   const saving = useRef<Promise<void>>(Promise.resolve());
   const clock = useRef({ now, today });
+  const decided = useRef(onDecision);
   useEffect(() => {
     clock.current = { now, today };
-  }, [now, today]);
+    decided.current = onDecision;
+  }, [now, today, onDecision]);
 
   useEffect(() => {
     if (!store) return;
@@ -128,11 +138,13 @@ export function BookyProvider({ children, store, reloadKey = 0, now = Date.now, 
   const emit = useCallback(
     async (emission: BookyEmission): Promise<ShownTip | null> => {
       await loaded.current;
+      const sent: readonly BookyEvent[] = Array.isArray(emission) ? emission : [emission as BookyEvent];
       // A tip about what the screen in front already shows is not floated over it (it stays unused, for later).
-      const events = (Array.isArray(emission) ? emission : [emission as BookyEvent]).filter((e: BookyEvent) => !topicOnScreen(e.topics));
+      const events = sent.filter((e) => !topicOnScreen(e.topics));
       const t = clock.current.now();
       const state = { ...engine.current, blocked: isBlocked(), today: clock.current.today() };
       const chosen = selectFirst(state, events, t);
+      decided.current?.({ triggers: sent.map((e) => e.type), tip: chosen?.tip.id ?? null });
       if (!chosen) return null;
       const next = markShown(state, chosen, t);
       if (next.seen !== state.seen) persist({ seen: [...next.seen] });

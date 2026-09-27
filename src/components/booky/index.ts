@@ -8,6 +8,7 @@ export {
   useBookyMode,
   useOptionalBooky,
   type BookyContextValue,
+  type BookyDecision,
   type BookyProviderProps,
   type BookyStore,
   type BookyStoreData,
