@@ -1,6 +1,6 @@
 # Releasing MyShelf
 
-MyShelf is released as an Android APK and App Bundle (AAB) on [GitHub Releases](https://github.com/asorichetti/MyShelf/releases), built for free ([ADR 0011](adr/0011-free-android-release-pipeline.md)). There are three ways to build a release, all from the same configuration:
+MyShelf is released as Android APKs and an App Bundle (AAB) on [GitHub Releases](https://github.com/asorichetti/MyShelf/releases), built for free ([ADR 0011](adr/0011-free-android-release-pipeline.md)). There are three ways to build a release, all from the same configuration:
 
 | Where | Cost | Needs |
 |---|---|---|
@@ -76,8 +76,18 @@ Or in the browser: **Settings → Secrets and variables → Actions → New repo
 2. `scripts/release-version.mjs` (on a tag: writes the tag's version into `app.json`).
 3. Decodes the keystore from the secrets into the runner's temporary folder, or warns and carries on debug-signed.
 4. `npx expo prebuild --platform android --clean`, then `./gradlew assembleRelease bundleRelease` in `android/` (Gradle's caches are kept between runs by `gradle/actions/setup-gradle`).
-5. Uploads `myshelf-<version>-<signed|debug-signed>.apk`, `.aab` and `.sha256` as workflow artifacts (kept 30 days). The run's summary lists the checksums, the signing certificate and the permissions in the APK.
-6. **On a tag only:** creates a **draft** GitHub Release named after the tag (marked pre-release when the tag has a `-rc` part) with the three files attached. The notes are the version's section of `CHANGELOG.md` (`## [1.2.3]`, `## 1.2.3` or `## v1.2.3`), or else the annotated tag's message (`scripts/release-notes.mjs`). Check it, then press **Publish**. Re-running a tag's workflow replaces the files on its draft.
+5. Uploads `myshelf-<version>-<signed|debug-signed>-arm64-v8a.apk` and `…-armeabi-v7a.apk`, the `.aab` and a `.sha256` of all three as workflow artifacts (kept 30 days). The run's summary lists the checksums, the signing certificate and the permissions in the APK.
+6. **On a tag only:** creates a **draft** GitHub Release named after the tag (marked pre-release when the tag has a `-rc` part) with the files attached. The notes are the version's section of `CHANGELOG.md` (`## [1.2.3]`, `## 1.2.3` or `## v1.2.3`), or else the annotated tag's message (`scripts/release-notes.mjs`). Check it, then press **Publish**. Re-running a tag's workflow replaces the files on its draft.
+
+### Which file to install
+
+| File | For | Size |
+|---|---|---|
+| `…-arm64-v8a.apk` | sideloading on any phone from the last ten years (64-bit ARM) | about 57 MB to download, about 60 MB installed |
+| `…-armeabi-v7a.apk` | sideloading on an old 32-bit phone | a little smaller |
+| `….aab` | Google Play only (it cannot be installed directly) | universal; Play sends each phone only its own part |
+
+A universal APK, with the native code for all four ABIs React Native builds, is about 147 MB installed, so the release builds one APK per ABI instead (`plugins/withApkAbiSplits.js`, switched on by the Gradle property `-PmyshelfApkAbis=arm64-v8a,armeabi-v7a`). The App Bundle is unaffected: it stays universal, and Google Play splits it per device. If unsure, `adb shell getprop ro.product.cpu.abi` names a phone's ABI; practically every phone in use today is `arm64-v8a`.
 
 **Release a version:**
 
@@ -93,7 +103,7 @@ git push origin v1.0.0
 gh workflow run release.yml --ref <branch> -f sign=false
 gh run list --workflow release.yml --limit 1        # note the run id
 gh run watch <run-id>
-gh run download <run-id>                            # all three files
+gh run download <run-id>                            # the APKs, the AAB and the checksums
 ```
 
 A dispatched run uses the version already in `app.json` and never creates a Release.
@@ -115,7 +125,9 @@ export MYSHELF_UPLOAD_KEY_PASSWORD="$MYSHELF_UPLOAD_STORE_PASSWORD"
 (cd android && ./gradlew assembleRelease bundleRelease)
 ```
 
-Skip the `export`s for a debug-signed build. The results are `android/app/build/outputs/apk/release/app-release.apk` and `android/app/build/outputs/bundle/release/app-release.aab`. Install the APK with `adb install -r android/app/build/outputs/apk/release/app-release.apk`. Check the signature with `$ANDROID_HOME/build-tools/<version>/apksigner verify --print-certs <apk>`.
+Skip the `export`s for a debug-signed build. The results are `android/app/build/outputs/apk/release/app-release.apk` (universal) and `android/app/build/outputs/bundle/release/app-release.aab`. Install the APK with `adb install -r android/app/build/outputs/apk/release/app-release.apk`. Add `-PmyshelfApkAbis=arm64-v8a,armeabi-v7a` for one APK per ABI as CI builds them (`app-arm64-v8a-release.apk`, …), or `-PreactNativeArchitectures=arm64-v8a` to build only the 64-bit ARM native code (much faster, and all a modern phone needs).
+
+**A test APK in one command:** `scripts/build-android-apk.sh production` (what users get) or `scripts/build-android-apk.sh e2e` (with the fixture loader, for Maestro only) runs the prebuild and Gradle steps above for arm64-v8a and copies the result to `build/myshelf-<kind>.apk`; `ABIS=all` builds the universal APK, `ABIS=x86_64` one for an Intel emulator. See [`device-testing.md`](device-testing.md). Check the signature with `$ANDROID_HOME/build-tools/<version>/apksigner verify --print-certs <apk>`.
 
 Instead of environment variables, the four `MYSHELF_UPLOAD_*` values can go in `~/.gradle/gradle.properties` (outside the repository).
 
@@ -179,5 +191,6 @@ Every image is rendered from an SVG in `assets/source/` by `npm run icons:render
 | `assets/android-icon-foreground.png`, `-background.png`, `-monochrome.png` | 1024² | adaptive icon layers; monochrome for Android 13+ themed icons |
 | `assets/splash-icon.png` | 1024² | splash (Booky and the wordmark, 200 dp on the paper colour) |
 | `assets/favicon.png` | 48² | web |
+| `assets/notification-icon.png` | 96² | the loan reminders' status bar icon (`expo-notifications` plugin; Android keeps only its alpha) |
 | `assets/store/icon-512.png` | 512² | Google Play hi-res icon |
 | `assets/store/feature-graphic.png` | 1024×500 | Google Play feature graphic |

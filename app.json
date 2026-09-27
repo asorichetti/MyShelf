@@ -122,6 +122,7 @@
           "dark": "#C4A8EE"
         }
       ],
+      "./plugins/withApkAbiSplits",
       "./plugins/withReleaseSigning"
     ],
     "scheme": "myshelf",

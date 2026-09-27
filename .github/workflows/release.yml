@@ -3,8 +3,12 @@ name: Release
 # Builds a release APK and AAB with Gradle on the runner (ADR 0011, P09-07).
 #
 # - Pushing a tag vX.Y.Z (or vX.Y.Z-rcN) runs the checks, builds with the
-#   tag's version and attaches the APK, AAB and SHA-256 checksums to a draft
+#   tag's version and attaches the APKs, AAB and SHA-256 checksums to a draft
 #   GitHub Release, with notes from CHANGELOG.md when it has that version.
+#
+# APKs are per ABI (plugins/withApkAbiSplits.js): arm64-v8a for every current
+# phone and armeabi-v7a for old 32-bit ones, each well under half the size
+# of a universal APK. The AAB stays universal; Google Play splits it.
 # - "Run workflow" (workflow_dispatch) builds any branch with the version in
 #   app.json and uploads the files as workflow artifacts only.
 #
@@ -181,9 +185,9 @@ jobs:
           EXPO_NO_GIT_STATUS: '1'
         run: npx expo prebuild --platform android --clean --no-install
 
-      - name: Build release APK and AAB
+      - name: Build release APKs and AAB
         working-directory: android
-        run: ./gradlew assembleRelease bundleRelease --no-daemon -Dorg.gradle.jvmargs="-Xmx4g -XX:MaxMetaspaceSize=1g"
+        run: ./gradlew assembleRelease bundleRelease -PmyshelfApkAbis=arm64-v8a,armeabi-v7a --no-daemon -Dorg.gradle.jvmargs="-Xmx4g -XX:MaxMetaspaceSize=1g"
 
       - name: Collect the builds
         id: collect
@@ -193,9 +197,12 @@ jobs:
         run: |
           mkdir -p release
           name="myshelf-$VERSION-$LABEL"
-          cp android/app/build/outputs/apk/release/app-release.apk "release/$name.apk"
+          apks=android/app/build/outputs/apk/release
+          for abi in arm64-v8a armeabi-v7a; do
+            cp "$apks/app-$abi-release.apk" "release/$name-$abi.apk"
+          done
           cp android/app/build/outputs/bundle/release/app-release.aab "release/$name.aab"
-          (cd release && sha256sum "$name.apk" "$name.aab" > "$name.sha256")
+          (cd release && sha256sum "$name"-*.apk "$name.aab" > "$name.sha256")
           echo "name=$name" >> "$GITHUB_OUTPUT"
           {
             echo "### MyShelf $VERSION ($LABEL)"
@@ -207,19 +214,19 @@ jobs:
             echo
             echo "**Signing certificate**"
             echo '```'
-            "$BUILD_TOOLS_DIR/apksigner" verify --print-certs "release/$name.apk" | grep -E 'Signer #1 certificate (DN|SHA-256)' || true
+            "$BUILD_TOOLS_DIR/apksigner" verify --print-certs "release/$name-arm64-v8a.apk" | grep -E 'Signer #1 certificate (DN|SHA-256)' || true
             echo '```'
             echo "**Permissions in the APK**"
             echo '```'
-            "$BUILD_TOOLS_DIR/aapt2" dump permissions "release/$name.apk" || "$BUILD_TOOLS_DIR/aapt" dump permissions "release/$name.apk" || true
+            "$BUILD_TOOLS_DIR/aapt2" dump permissions "release/$name-arm64-v8a.apk" || "$BUILD_TOOLS_DIR/aapt" dump permissions "release/$name-arm64-v8a.apk" || true
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Upload APK
+      - name: Upload APKs
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ steps.collect.outputs.name }}.apk
-          path: release/${{ steps.collect.outputs.name }}.apk
+          name: ${{ steps.collect.outputs.name }}-apks
+          path: release/${{ steps.collect.outputs.name }}-*.apk
           if-no-files-found: error
           retention-days: 30
       - name: Upload AAB
