@@ -294,6 +294,24 @@ describe('each key on its own', () => {
     expect((await titles('callNumber', 'desc'))[0]).toBe(got.at(-1));
   });
 
+  it("call number: weighs all of a book's genres, as the book page does (a memoir tagged Fiction is BIO)", async () => {
+    const small = await createTestDb();
+    try {
+      await loadFixture(small, {
+        books: [
+          { title: 'Aardvark Tales', authors: ['Anna Aaron'], genres: ['Fiction'], publicationYear: 2020 },
+          { title: "Nobody's Girl", authors: ['Virginia Roberts Giuffre'], genres: ['Memoir', 'Fiction'], publicationYear: 2025 },
+          { title: 'Tudors', authors: ['Zed Zola'], genres: ['History', 'Historical Fiction'], publicationYear: 2001 },
+        ],
+      });
+      const got = (await booksRepo.listBookItems(small, { sort: oneKey('callNumber', 'asc'), coverOrder })).map((b) => b.title);
+      // BIO GIU 2025, FIC AAR 2020, FIC ZOL 2001.
+      expect(got).toEqual(["Nobody's Girl", 'Aardvark Tales', 'Tudors']);
+    } finally {
+      await small.close();
+    }
+  });
+
   it('surprise me: the same seed gives the same order, another seed another; SQL and TypeScript agree', async () => {
     const a = await titles('shuffle', 'asc', 12345);
     expect(await titles('shuffle', 'asc', 12345)).toEqual(a);

@@ -130,9 +130,9 @@ const FIRST_AUTHOR = `(SELECT ${foldSql('COALESCE(a.sort_name, a.name)')} FROM b
 
 /**
  * A book's primary genre: the first of its genres in alphabetical order
- * (ignoring case) — the order the book page lists them in, so it is also the
- * genre its call number's class comes from. Books have no "main" genre of
- * their own; alphabetical is stable and needs nothing new stored.
+ * (ignoring case) — the order the book page lists them in. Books have no
+ * "main" genre of their own; alphabetical is stable and needs nothing new
+ * stored. (The call number's class weighs all the genres: `callNumberRanks`.)
  */
 const PRIMARY_GENRE = `(SELECT ${foldSql('g.name')} FROM book_genres bg JOIN genres g ON g.id = bg.genre_id
   WHERE bg.book_id = b.id ORDER BY g.name COLLATE NOCASE, g.id LIMIT 1)`;
@@ -231,11 +231,16 @@ async function colourRanks(db: Db, { coverOrder = PALETTE_ORDER }: SortOptions):
 type CallParts = [string, string, number];
 const compareCall = (a: CallParts, b: CallParts) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : a[1] < b[1] ? -1 : a[1] > b[1] ? 1 : a[2] - b[2]);
 
+/** Separates a book's genre names in one column (a control character no name contains). */
+const GENRE_SEPARATOR = '\u001f';
+
 /** Each book's call number ("FIC PRA 1983"), exactly as the book page prints it, in shelf order. */
 async function callNumberRanks(db: Db): Promise<Map<number, number>> {
+  // The class depends on all of a book's genres (a memoir also tagged "Fiction" is BIO), so fetch them all.
   const rows = await db.all<{ id: number; title: string; year: number | null; genre: string | null; author: string | null }>(
     `SELECT b.id, b.title, b.publication_year AS year,
-       (SELECT g.name FROM book_genres bg JOIN genres g ON g.id = bg.genre_id WHERE bg.book_id = b.id ORDER BY g.name, g.id LIMIT 1) AS genre,
+       (SELECT group_concat(name, char(31)) FROM (SELECT g.name FROM book_genres bg JOIN genres g ON g.id = bg.genre_id
+          WHERE bg.book_id = b.id ORDER BY g.name, g.id)) AS genre,
        (SELECT COALESCE(a.sort_name, a.name) FROM book_authors ba JOIN authors a ON a.id = ba.author_id WHERE ba.book_id = b.id ORDER BY ba.position, a.id LIMIT 1) AS author
      FROM books b`,
   );
@@ -245,7 +250,8 @@ async function callNumberRanks(db: Db): Promise<Map<number, number>> {
     const key = `${r.genre ?? ''}\u0000${r.author != null ? `a${r.author}` : `t${r.title}`}\u0000${r.year ?? ''}`;
     let call = seen.get(key);
     if (!call) {
-      const [cls, mark, year] = callNumber({ genres: r.genre ? [r.genre] : [], author: r.author, title: r.title, year: r.year }).split(' ');
+      const genres = r.genre ? r.genre.split(GENRE_SEPARATOR) : [];
+      const [cls, mark, year] = callNumber({ genres, author: r.author, title: r.title, year: r.year }).split(' ');
       call = [cls, mark, year ? Number(year) : Number.MAX_SAFE_INTEGER];
       seen.set(key, call);
     }

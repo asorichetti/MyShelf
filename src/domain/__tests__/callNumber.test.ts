@@ -11,6 +11,33 @@ describe('callNumber', () => {
     expect(callNumber({ genres: ['Cookery'], author: 'Ottolenghi, Yotam', title: 'Plenty', year: 2010 })).toBe('COO OTT 2010');
   });
 
+  it.each<[string[], string]>([
+    // As the book page lists them: alphabetically. "Fiction" sorts before "Memoir".
+    [['Fiction', 'Memoir'], 'BIO'],
+    [['Memoir'], 'BIO'],
+    [['Biography', 'Cookery'], 'BIO'],
+    [['Business', 'Self-Help'], 'SLF'],
+    [['History', 'Science'], 'HIS'],
+    [['Cookery', 'Reference'], 'COO'],
+    [['Fiction', 'Science'], 'SCI'],
+    // A kind of novel says fiction, whatever else is there.
+    [['Historical Fiction', 'History'], 'FIC'],
+    [['Fantasy', 'Fiction', 'Horror'], 'FIC'],
+    [['Fiction', 'Literary Fiction', 'Romance'], 'FIC'],
+    // Audience and form have their own shelves.
+    [["Children's", 'Fantasy', 'Fiction'], 'JUV'],
+    [["Children's", 'Science'], 'JUV'],
+    [['Fantasy', 'Young Adult'], 'YA'],
+    [['Graphic Novel', 'History', 'Memoir'], 'GN'],
+    [['Fiction', 'Poetry'], 'POE'],
+    [['Fiction'], 'FIC'],
+    [['Fiction', 'Gardening'], 'FIC'],
+    [['Gardening', 'Memoir'], 'BIO'],
+  ])('classes %p as %s, whatever their order', (genres, cls) => {
+    expect(callNumber({ genres, author: 'Giuffre, Virginia Roberts', title: "Nobody's Girl", year: 2025 })).toBe(`${cls} GIU 2025`);
+    expect(callNumber({ genres: [...genres].reverse(), author: 'Giuffre, Virginia Roberts', title: "Nobody's Girl", year: 2025 })).toBe(`${cls} GIU 2025`);
+  });
+
   it('uses the first letters of an unknown genre, GEN with none', () => {
     expect(callNumber({ genres: ['Gardening'], author: null, title: 'Soil', year: null })).toBe('GAR SOI');
     expect(callNumber({ genres: [], author: 'Austen, Jane', title: 'Emma', year: 1815 })).toBe('GEN AUS 1815');
