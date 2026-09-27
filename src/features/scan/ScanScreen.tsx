@@ -20,6 +20,7 @@ import { choosePhoto } from './choosePhoto';
 import { logOcrResult } from './ocrLog';
 import { prefillFromScan, putPrefill } from './prefill';
 import { onInjectedScan, takeInjectedScan } from './scanInjector';
+import { discardPhoto } from './tempPhoto';
 import { addToTray, useTray } from './useBatchScan';
 import { usePermission } from './usePermission';
 import { resetLastFound, scanMessages, useScanSession, type ScanNotice } from './useScanSession';
@@ -125,6 +126,7 @@ export function ScanScreen() {
       choosePhoto={choosePhoto}
       typedCover={typedCover}
       onTypedCoverDone={() => setTypedCover(null)}
+      onDiscardPhoto={discardPhoto}
     />
   );
   // Booky's answer for a cover photo shows above the tall cover camera, where it is seen.
