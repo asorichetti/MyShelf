@@ -32,7 +32,9 @@ EXPO_NO_GIT_STATUS=1 npx expo prebuild --platform android --clean --no-install
 gradle_args=(assembleRelease)
 [ "$abis" != all ] && gradle_args+=("-PreactNativeArchitectures=$abis")
 # --rerun-tasks is not needed: prebuild --clean starts android/ afresh, so the
-# JS bundle is always rebuilt with this build's EXPO_PUBLIC_E2E.
+# JS bundle is always rebuilt with this build's EXPO_PUBLIC_E2E. Metro's
+# transform cache is kept when CI is set, and is keyed on the EXPO_PUBLIC_*
+# values (metro.config.js), so an E2E and a production build never share it.
 (cd android && ./gradlew "${gradle_args[@]}")
 
 mkdir -p "$(dirname "$out")"
