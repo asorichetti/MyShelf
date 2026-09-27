@@ -54,11 +54,21 @@ export function GeneratedCover({ title, author, size = 'thumb', width: w, height
         <RNText allowFontScaling={false} style={[artworkTypography.h2, styles.center, { color: colors.ink }]}>{initial}</RNText>
       ) : (
         <View style={[styles.text, { paddingLeft: inset * 1.8, paddingRight: inset, gap: theme.spacing.sm }]}>
-          <RNText allowFontScaling={false} numberOfLines={size === 'large' ? 6 : 5} style={[titleType, narrow && { fontFamily: theme.fonts.heading }, styles.center, { color: colors.ink }]}>
+          <RNText
+            allowFontScaling={false}
+            numberOfLines={size === 'large' ? 6 : 5}
+            android_hyphenationFrequency="normal"
+            style={[titleType, narrow && { fontFamily: theme.fonts.heading }, styles.lettering, { color: colors.ink }]}
+          >
             {title}
           </RNText>
           {author ? (
-            <RNText allowFontScaling={false} numberOfLines={2} style={[artworkTypography.caption, styles.center, { color: colors.ink, fontFamily: theme.fonts.headingRegular }]}>
+            <RNText
+              allowFontScaling={false}
+              numberOfLines={2}
+              android_hyphenationFrequency="normal"
+              style={[artworkTypography.caption, styles.lettering, { color: colors.ink, fontFamily: theme.fonts.headingRegular }]}
+            >
               {author}
             </RNText>
           ) : null}
@@ -72,4 +82,9 @@ const styles = StyleSheet.create({
   cover: { overflow: 'hidden', alignItems: 'center', justifyContent: 'center' },
   text: { flex: 1, alignSelf: 'stretch', alignItems: 'center', justifyContent: 'center' },
   center: { textAlign: 'center' },
+  // The lettering spans the cover's width, centred. Sized to its own measured
+  // width instead, Android could wrap it when drawing and clip the second line
+  // ("J. R. R. Tolkien" drew as "J. R. R."). Hyphenation: a name too long for
+  // a narrow grid cell breaks at a syllable, not anywhere ("Fairwe / ather").
+  lettering: { textAlign: 'center', alignSelf: 'stretch' },
 });
