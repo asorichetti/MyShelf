@@ -10,7 +10,9 @@
 # 1. Installs the E2E APK and puts the device in a known state: light mode,
 #    100 % font size, online, automatic time, and the backup and Goodreads
 #    test files in Downloads.
-# 2. Runs every flow not tagged `manual`, `production` or `hooked`.
+# 2. Runs every flow not tagged `manual`, `production` or `hooked`, then each
+#    cover-scan/photo-<book>.yaml whose photo of the developer's own copy is
+#    in .maestro/cover-scan/photos/ (never committed; .maestro/cover-scan/README.md).
 # 3. Runs each `hooked` flow with its set-up and checks:
 #      lookup-isbn-online  then checks the database holds a file:// cover
 #      reminders           then checks the alarm is set, moves the clock to the
@@ -126,6 +128,16 @@ a push "$root/src/services/backup/__fixtures__/goodreads_library_export.csv" /sd
 a shell content call --uri content://media/external/file --method scan_volume --arg external_primary > /dev/null 2>&1 || true
 
 run flows "$flows" --exclude-tags manual,production,hooked
+
+# Real covers: only where the developer's photo is there.
+for flow in "$flows"/cover-scan/photo-*.yaml; do
+  book=$(basename "$flow" .yaml); book=${book#photo-}
+  if [ -f "$flows/cover-scan/photos/$book.jpg" ]; then
+    run "cover-photo-$book" "$flow"
+  else
+    echo "No .maestro/cover-scan/photos/$book.jpg: skipping $(basename "$flow")"
+  fi
+done
 
 # Online lookup, and the cover it saved is a file on the phone.
 if run lookup-isbn-online "$flows/lookup-isbn-online.yaml" && $has_root; then

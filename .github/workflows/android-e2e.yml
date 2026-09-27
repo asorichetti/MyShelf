@@ -4,7 +4,9 @@ name: Android E2E
 # docs/device-testing.md): builds an E2E APK (fixture loader on) and a
 # production APK for x86_64, boots a Pixel emulator with KVM and runs
 # scripts/maestro-suite.sh, which sets the device up for the flows that need
-# it (dark mode, font size, airplane mode, the clock for reminders).
+# it (dark mode, font size, airplane mode, the clock for reminders). Cover
+# reading runs on the committed made-up cover; the flows that need the
+# developer's own cover photos are skipped, as those are never committed.
 # Screenshots, logs and JUnit reports are uploaded on every run.
 #
 # Run it from Actions -> Android E2E -> Run workflow, or with
