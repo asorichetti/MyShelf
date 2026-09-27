@@ -1,6 +1,6 @@
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 
 import { formatLabels } from '@/components/book/BookForm';
@@ -46,6 +46,8 @@ export function EditionPickerScreen() {
   const [saving, setSaving] = useState(false);
   const [duplicates, setDuplicates] = useState<{ existing: BookDetail[]; candidate: BookCandidate } | null>(null);
   const [shown, setShown] = useState<Record<string, number>>({});
+  // A second tap while the first is still checking or saving must not save the book twice.
+  const busy = useRef(false);
   // Booky's help tip sits above the bottom bar, never over "This is my edition" (P07-07).
   const { attach: attachBar, onLayout: layoutBar } = useBottomObstacle(session != null);
   // Room for Booky's floating tip below the list.
@@ -68,6 +70,8 @@ export function EditionPickerScreen() {
   }
 
   const saveIt = async (candidate: BookCandidate) => {
+    if (busy.current) return;
+    busy.current = true;
     setSaving(true);
     try {
       const saved = await save(candidate);
@@ -80,13 +84,14 @@ export function EditionPickerScreen() {
       console.error('Could not save the book', e);
       show({ message: t('common.saveFailed') });
     } finally {
+      busy.current = false;
       setSaving(false);
     }
   };
 
   const confirm = async () => {
     const candidate = picker.chosen();
-    if (!candidate) return;
+    if (!candidate || busy.current) return;
     if (session.trayItemId) {
       resolveTrayItem(session.trayItemId, candidate);
       endSession(session.id);
@@ -94,13 +99,25 @@ export function EditionPickerScreen() {
       return;
     }
     if (review) {
-      const genres = (await genresRepo.listGenres(db)).map((g) => g.name);
+      busy.current = true;
+      const genres = await genresRepo
+        .listGenres(db)
+        .then((list) => list.map((g) => g.name))
+        .finally(() => {
+          busy.current = false;
+        });
       const id = putPrefill(prefillFromCandidate(candidate, genres));
       endSession(session.id);
       router.replace({ pathname: '/book/new', params: { prefill: id } });
       return;
     }
-    const existing = await check(candidate);
+    busy.current = true;
+    let existing: BookDetail[];
+    try {
+      existing = await check(candidate);
+    } finally {
+      busy.current = false;
+    }
     if (existing.length) {
       setDuplicates({ existing, candidate });
       return;

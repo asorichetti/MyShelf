@@ -71,6 +71,18 @@ describe('Edition picker (P03-08) and saving (P03-09)', () => {
     expect(attachCoverFromCandidate).toHaveBeenCalledTimes(1);
   });
 
+  it('a double tap on "This is my edition" saves the book once', async () => {
+    const session = await isbnSession(OL_BOOKS.colourOfMagic);
+    await open(session.id);
+    await act(async () => {
+      fireEvent.press(screen.getByTestId(p.confirm));
+      fireEvent.press(screen.getByTestId(p.confirm));
+    });
+    await advance(0);
+    expect(await booksRepo.countBooks(db)).toBe(1);
+    expect(attachCoverFromCandidate).toHaveBeenCalledTimes(1);
+  });
+
   it('a cover search: works first, confirming needs an edition, editions load as skeletons', async () => {
     const { candidates } = await mockMetadata.service.search({ text: 'the colour of magic terry pratchett' });
     const r = await open(createSession({ source: 'cover', candidates }).id);

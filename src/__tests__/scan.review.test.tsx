@@ -64,6 +64,17 @@ async function scanSeveral(isbns: string[]) {
 }
 
 describe('Scan several, then review (P03-12)', () => {
+  it('a double tap on "Save" saves each book once', async () => {
+    await scanSeveral(FIVE.slice(0, 2));
+    await press(Testids.scan.reviewOpen);
+    await act(async () => {
+      fireEvent.press(screen.getByTestId(Testids.scanReview.saveAll));
+      fireEvent.press(screen.getByTestId(Testids.scanReview.saveAll));
+    });
+    await advance(0);
+    expect(await booksRepo.countBooks(db)).toBe(2);
+  });
+
   it('five ISBNs go to the tray, and confirming saves five books', async () => {
     const r = await scanSeveral(FIVE);
     expect(screen.getByTestId(Testids.scan.trayCount)).toHaveTextContent('5');
