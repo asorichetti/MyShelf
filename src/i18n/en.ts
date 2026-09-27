@@ -2652,5 +2652,8 @@ export const en = {
     unknownFixture: 'Unknown fixture "{name}". Try one of: {names}.',
     /** "today" is a URL parameter name; keep it as it is. */
     badToday: '"today" must be a YYYY-MM-DD date, got "{value}".',
+    /** {name} is a URL parameter name ("api", "network") and {values} its allowed values; keep them as they are. */
+    badSwitch: '"{name}" must be one of {values}, got "{value}".',
+    switchingNetwork: 'Switching the network…',
   },
 } as const;
