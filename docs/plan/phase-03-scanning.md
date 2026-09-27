@@ -104,7 +104,7 @@ The headline feature: point the phone at a book and get it onto the shelf with t
 - **Files:** `src/features/scan/useDuplicateCheck.ts`, `src/components/scan/DuplicateSheet.tsx`.
 - **Acceptance:** duplicate prompt appears for an existing ISBN; "Add another copy" creates a second row.
 - **Tests:** `src/features/scan/__tests__/useDuplicateCheck.test.tsx`.
-- **Delivered:** `findDuplicates` / `useDuplicateCheck` (`src/features/scan/useDuplicateCheck.ts`) match the ISBN-13 or ISBN-10, or, for a candidate without one, the title and first author (`bookMatchKey`). `DuplicateSheet` (on the shared `Sheet`) shows "Already on your shelf" with the existing card and Open it / Add another copy / Cancel. The batch tray saves without this check (noted for P03-12).
+- **Delivered:** `findDuplicates` / `useDuplicateCheck` (`src/features/scan/useDuplicateCheck.ts`) match the ISBN-13 or ISBN-10, or, for a candidate without one, the title and first author (`bookMatchKey`). `DuplicateSheet` (on the shared `Sheet`) shows "Already on your shelf" with the existing card and Open it / Add another copy / Cancel. The batch tray saves without this check (noted for P03-12). The picker also asks before "Review before saving" (September 2026: it used to open the form without asking); Add another copy then opens the form.
 
 ### P03-11 Manual fallback with prefill — done
 

@@ -170,6 +170,19 @@ describe('Edition picker (P03-08) and saving (P03-09)', () => {
     expect(book).toMatchObject({ title: 'The Colour of Magic (mine)', source: 'openlibrary', sourceId: 'OL28477029M' });
   });
 
+  it('"Review before saving" a book already on the shelf asks first, and Add another copy opens the form', async () => {
+    const session = await isbnSession(OL_BOOKS.prideAndPrejudice);
+    const r = await open(session.id, 'demo');
+    await press(p.review);
+    await press(p.confirm);
+    expect(screen.getByTestId(Testids.duplicate.sheet)).toHaveTextContent(/Already on your shelf/);
+    expect(r.getPathname()).toBe('/scan/pick');
+    await press(Testids.duplicate.addCopy);
+    expect(r.getPathname()).toBe('/book/new');
+    expect(screen.getByTestId(Testids.bookForm.title).props.value).toBe('Pride and Prejudice');
+    expect(await booksRepo.countBooks(db)).toBe(12);
+  });
+
   it('leaving without saving deletes the cover photo taken for the search', async () => {
     const { candidates } = await mockMetadata.service.search({ text: 'the colour of magic terry pratchett' });
     const session = createSession({ source: 'cover', candidates, photoUri: 'file:///cache/Camera/cover.jpg' });

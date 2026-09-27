@@ -98,6 +98,21 @@ export function EditionPickerScreen() {
     }
   };
 
+  /** "Review before saving": the form, filled in; nothing is saved until the user taps Save there. */
+  const reviewIt = async (candidate: BookCandidate) => {
+    if (busy.current) return;
+    busy.current = true;
+    try {
+      const genres = (await genresRepo.listGenres(db)).map((g) => g.name);
+      const id = putPrefill(prefillFromCandidate(candidate, genres));
+      setDuplicates(null);
+      endSession(session.id);
+      router.replace({ pathname: '/book/new', params: { prefill: id } });
+    } finally {
+      busy.current = false;
+    }
+  };
+
   const confirm = async () => {
     const candidate = picker.chosen();
     if (!candidate || busy.current) return;
@@ -107,19 +122,7 @@ export function EditionPickerScreen() {
       backToScan();
       return;
     }
-    if (review) {
-      busy.current = true;
-      const genres = await genresRepo
-        .listGenres(db)
-        .then((list) => list.map((g) => g.name))
-        .finally(() => {
-          busy.current = false;
-        });
-      const id = putPrefill(prefillFromCandidate(candidate, genres));
-      endSession(session.id);
-      router.replace({ pathname: '/book/new', params: { prefill: id } });
-      return;
-    }
+    // Already on the shelf? Asked first, whether it is saved now or reviewed in the form.
     busy.current = true;
     let existing: BookDetail[];
     try {
@@ -131,7 +134,7 @@ export function EditionPickerScreen() {
       setDuplicates({ existing, candidate });
       return;
     }
-    await saveIt(candidate);
+    await (review ? reviewIt(candidate) : saveIt(candidate));
   };
 
   const addManually = () => {
@@ -257,7 +260,7 @@ export function EditionPickerScreen() {
           endSession(session.id);
           if (first) router.replace({ pathname: '/book/[id]', params: { id: String(first.id) } });
         }}
-        onAddCopy={() => duplicates && void saveIt(duplicates.candidate)}
+        onAddCopy={() => duplicates && void (review ? reviewIt(duplicates.candidate) : saveIt(duplicates.candidate))}
       />
     </Screen>
   );
