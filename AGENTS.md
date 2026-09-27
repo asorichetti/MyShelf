@@ -85,6 +85,7 @@ Use `npx`, not `bunx` (this project uses npm; there is no `bun.lock`).
 - Add packages with `npx expo install <package>` so versions match Expo SDK 57. Prefer Expo modules over third-party libraries.
 - Libraries with native code (for example ML Kit OCR) need a development build (`npx expo run:android` or `eas build --profile development`); they do not run in Expo Go.
 - `android/` and `ios/` are generated (Continuous Native Generation) and git-ignored. Never create or edit them by hand — configure native behaviour through `app.json` and config plugins.
+- `npm audit`: the `overrides` in `package.json` lift `xcode`'s `uuid` to 11.1.1 (GHSA-w5hq-g745-h8pq; `xcode` only runs during iOS prebuild, and 11 keeps the CommonJS `v4()` it calls). Drop the override once `@expo/config-plugins` no longer brings uuid 7. The one finding left, reported three times, is `decode-uri-component` 0.2.2 (GHSA-vcc3-ghjq-m6fr, moderate) under `query-string` 7 under `expo-router`: no release fixes it inside SDK 57 (`npm audit fix --force` would install expo-router 5), and it is only reachable through a malformed link the user opens, where it costs the app its own time. Check again at each SDK upgrade.
 
 ### Accessibility and UX
 
