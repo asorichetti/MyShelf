@@ -436,6 +436,20 @@
     {
       "url": "https://openlibrary.org/search.json?title=The%20Colour%20of%20Magic&author=Terry%20Pratchett&fields=key%2Ctitle%2Cauthor_name%2Cfirst_publish_year%2Cedition_count%2Cisbn%2Ccover_i%2Csubject%2Clanguage%2Cauthor_key&limit=10",
       "body": "openlibrary/search-the-colour-of-magic-by-terry-pratchett.json"
+    },
+    {
+      "url": "https://openlibrary.org/search.json?title=the%20colour%20of%20magic&author=terry%20pratchett&fields=key%2Ctitle%2Cauthor_name%2Cfirst_publish_year%2Cedition_count%2Cisbn%2Ccover_i%2Csubject%2Clanguage%2Cauthor_key&limit=10",
+      "body": "openlibrary/search-title-the-colour-of-magic-author-terry-pratchett.json"
+    },
+    {
+      "url": "https://www.googleapis.com/books/v1/volumes?q=intitle%3A%22the%20colour%20of%20magic%22%20inauthor%3A%22terry%20pratchett%22&maxResults=10&printType=books&fields=totalItems%2Citems(id%2CvolumeInfo(title%2Csubtitle%2Cauthors%2Cpublisher%2CpublishedDate%2Cdescription%2CindustryIdentifiers%2CpageCount%2Ccategories%2CimageLinks%2Clanguage%2CseriesInfo))",
+      "body": "googlebooks/synthetic-search-colour-of-magic.json",
+      "note": "The search the synthetic cover's text makes on Android (.maestro/cover-scan-synthetic.yaml)"
+    },
+    {
+      "url": "https://www.googleapis.com/books/v1/volumes?q=intitle%3A%22The%20Colour%20of%20Magic%22%20inauthor%3A%22Terry%20Pratchett%22&maxResults=10&printType=books&fields=totalItems%2Citems(id%2CvolumeInfo(title%2Csubtitle%2Cauthors%2Cpublisher%2CpublishedDate%2Cdescription%2CindustryIdentifiers%2CpageCount%2Ccategories%2CimageLinks%2Clanguage%2CseriesInfo))",
+      "body": "googlebooks/synthetic-search-colour-of-magic.json",
+      "note": "The search the Goodreads import's details lookup makes on Android (.maestro/csv-import-goodreads.yaml)"
     }
   ]
 }
