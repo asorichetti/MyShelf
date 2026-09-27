@@ -166,6 +166,23 @@ describe('restore: merge', () => {
     expect(await settingsRepo.getSetting(db, 'loanDays')).toBe(28);
   });
 
+  it('puts books merged into a group that already exists after the books already in it', async () => {
+    const fill = async (target: Db, titles: string[]) => {
+      const group = await groupsRepo.createGroup(target, { name: 'Favourites' });
+      for (const title of titles) await groupsRepo.addBookToGroup(target, group.id, (await booksRepo.createBook(target, { title })).id);
+      return group.id;
+    };
+    const mine = await fill(db, ['Mine one', 'Mine two']);
+    const source = await createTestDb();
+    await fill(source, ['Theirs one', 'Theirs two']);
+    const backup = parseBackup(serializeBackup(await exportBackup(source, { appVersion: '1', now: NOW })), options);
+    await source.close();
+
+    await restoreBackup(db, backup, { mode: 'merge', now: NOW });
+    expect((await groupsRepo.listBooksInGroup(db, mine)).map((b) => b.title)).toEqual(['Mine one', 'Mine two', 'Theirs one', 'Theirs two']);
+    expect(await groupsRepo.listGroups(db)).toHaveLength(1);
+  });
+
   it('merging the same backup twice adds nothing the second time', async () => {
     const backup = await demoBackup();
     await restoreBackup(db, backup, { mode: 'merge', now: NOW });
