@@ -30,17 +30,22 @@ export interface UsePendingLookupsOptions {
 }
 
 export interface PendingLookups {
-  /** Queued and still being retried. */
+  /** Queued and still being retried (not counting those whose details arrived). */
   pending: PendingLookup[];
   /** Gave up after five attempts, or no provider knows the ISBN. */
   failed: PendingLookup[];
-  /** Arrived; the user confirms each through the candidate UI, then calls `dismissResult`. */
+  /**
+   * Arrived; the user confirms each through the candidate UI (the edition
+   * picker). They stay queued until the book is saved (`saveCandidate`
+   * removes the ISBN) or dismissed, so a restart before then finds them again.
+   */
   results: PendingResult[];
   retrying: boolean;
   /** Queues an ISBN after an `OfflineError` (Booky: sleepy). False if it was already queued. */
   queue(isbn13: string): Promise<boolean>;
   /** Retries every due lookup now, one at a time. Also runs on returning to the foreground. */
   retryNow(): Promise<void>;
+  /** Forgets arrived details without saving the book, and drops the ISBN from the queue. */
   dismissResult(isbn13: string): void;
   /** Drops a lookup from the queue (Settings → Pending lookups). */
   remove(isbn13: string): Promise<void>;
@@ -88,12 +93,26 @@ export function usePendingLookups({ lookup, backfillCovers }: UsePendingLookupsO
     [lookup, service],
   );
 
+  /** `results` as of now (state lags a render), and their ISBNs, for `pending` and the retry. */
+  const resultsNow = useRef<PendingResult[]>([]);
+  const arrivedIsbns = useRef(new Set<string>());
+
+  const showResults = useCallback((update: (current: PendingResult[]) => PendingResult[]) => {
+    const next = update(resultsNow.current);
+    resultsNow.current = next;
+    arrivedIsbns.current = new Set(next.map((r) => r.isbn13));
+    setResults(next);
+  }, []);
+
   const reload = useCallback(async () => {
     const [due, gaveUp] = await Promise.all([pendingLookupsRepo.listDue(db), pendingLookupsRepo.listFailed(db)]);
-    setPending(due);
+    const queued = new Set(due.map((p) => p.isbn13));
+    // Details for an ISBN no longer queued (saved, or removed in Settings) are done with.
+    if ([...arrivedIsbns.current].some((isbn) => !queued.has(isbn))) showResults((current) => current.filter((r) => queued.has(r.isbn13)));
+    setPending(due.filter((p) => !arrivedIsbns.current.has(p.isbn13)));
     setFailed(gaveUp);
     return due;
-  }, [db]);
+  }, [db, showResults]);
 
   const retryNow = useCallback(async () => {
     if (running.current) return;
@@ -107,10 +126,12 @@ export function usePendingLookups({ lookup, backfillCovers }: UsePendingLookupsO
     try {
       for (const item of await reload()) {
         if (abort.signal.aborted) break;
+        // Already arrived and waiting for the user.
+        if (arrivedIsbns.current.has(item.isbn13)) continue;
         try {
           const { candidates } = await doLookup(item.isbn13, abort.signal);
           if (candidates.length) {
-            await pendingLookupsRepo.remove(db, item.isbn13);
+            // Stays queued until the user saves the book: nothing scanned is lost if the app closes first.
             arrived.push({ isbn13: item.isbn13, candidates });
           } else {
             await pendingLookupsRepo.markFailed(db, item.isbn13, 'not-found');
@@ -136,16 +157,16 @@ export function usePendingLookups({ lookup, backfillCovers }: UsePendingLookupsO
       controller.current = null;
     }
     if (abort.signal.aborted) return;
+    if (arrived.length) showResults((current) => [...current.filter((r) => !arrived.some((a) => a.isbn13 === r.isbn13)), ...arrived]);
     await reload();
     setRetrying(false);
     if (!offline) startBackfill();
     if (arrived.length) {
-      setResults((current) => [...current.filter((r) => !arrived.some((a) => a.isbn13 === r.isbn13)), ...arrived]);
       void emit({ type: 'lookup-arrived', vars: { books: bookCount(arrived.length) } });
     } else if (gaveUp.length) {
       void emit({ type: 'lookup-none', variant: 'offline', vars: { books: bookCount(gaveUp.length), them: t('lookup.pending.them', { count: gaveUp.length }) } });
     }
-  }, [db, doLookup, reload, emit, startBackfill]);
+  }, [db, doLookup, reload, emit, startBackfill, showResults]);
 
   const queue = useCallback(
     async (isbn13: string) => {
@@ -173,9 +194,16 @@ export function usePendingLookups({ lookup, backfillCovers }: UsePendingLookupsO
     retryNow().catch(() => undefined);
   });
 
-  const dismissResult = useCallback((isbn13: string) => {
-    setResults((current) => current.filter((r) => r.isbn13 !== isbn13));
-  }, []);
+  const dismissResult = useCallback(
+    (isbn13: string) => {
+      showResults((current) => current.filter((r) => r.isbn13 !== isbn13));
+      pendingLookupsRepo
+        .remove(db, isbn13)
+        .then(() => reload())
+        .catch(() => undefined);
+    },
+    [db, reload, showResults],
+  );
 
   useEffect(() => {
     let mounted = true;

@@ -15,6 +15,7 @@ import { isAbortError, OfflineError } from '@/services/http';
 import { toIsbn13, type BookCandidate } from '@/services/metadata';
 import { Testids } from '@/testing/testids.gen';
 
+import { clearPendingLookup } from './clearPendingLookup';
 import { getLookupServices, useMetadataService } from './metadataService';
 import { useLookup, type LookupState } from './useLookup';
 
@@ -175,7 +176,11 @@ export function useAddBookLookup(
       const cover = onlineCover.current;
       void (async () => {
         try {
-          if (candidate && mode === 'add') await booksRepo.updateBook(db, bookId, { source: candidate.source, sourceId: candidate.sourceId });
+          if (candidate && mode === 'add') {
+            await booksRepo.updateBook(db, bookId, { source: candidate.source, sourceId: candidate.sourceId });
+            // Details that arrived for a book scanned offline, reviewed before saving (P02-10).
+            if (await clearPendingLookup(db, candidate.isbn13)) emit('pending-changed');
+          }
           // The card shows an online cover: store the best real version of it (a file on the phone).
           if (cover && saved === cover.url) {
             const { http } = getLookupServices(db);

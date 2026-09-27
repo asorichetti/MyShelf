@@ -259,6 +259,14 @@ export const en = {
       },
       trying: 'Trying…',
       tryNow: 'Try now',
+      /** Details found for books scanned offline, waiting for the user to choose the edition and save. */
+      arrived: {
+        one: 'I found details for {count} book you scanned offline.',
+        other: 'I found details for {count} books you scanned offline.',
+      },
+      review: 'Review',
+      /** "Review" as read out: which book it opens. */
+      reviewLabel: 'Review the details found for ISBN {isbn}',
     },
   },
   /** The Shelf's filter sheet and the chips showing active filters. */

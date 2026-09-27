@@ -1,12 +1,15 @@
+import { router } from 'expo-router';
 import { createContext, useCallback, useContext, type ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import { PendingBanner } from '@/components/book/PendingBanner';
+import { ArrivedBanner, PendingBanner } from '@/components/book/PendingBanner';
 import { bookCount, tipById, formatTip } from '@/components/booky';
 import { Button, Text } from '@/components/ui';
 import { useDatabase } from '@/db';
+import { formatIsbn13 } from '@/domain';
 import { backfillCoversNow } from '@/features/covers';
 import { emit } from '@/features/events';
+import { createSession } from '@/features/scan/sessionStore';
 import { t } from '@/i18n';
 
 import { usePendingLookups, type PendingLookups } from './usePendingLookups';
@@ -43,8 +46,16 @@ export function ShelfPendingBanner() {
   const pending = usePendingLookupsContext();
   if (!pending) return null;
   const failed = pending.failed;
+  const [first] = pending.results;
+  // The edition picker, as for a scanned barcode; saving the book there takes it out of the queue.
+  const review = () => {
+    if (!first) return;
+    const session = createSession({ source: 'isbn', isbn13: first.isbn13, candidates: first.candidates });
+    router.navigate({ pathname: '/scan/pick', params: { session: session.id } });
+  };
   return (
     <>
+      {first ? <ArrivedBanner count={pending.results.length} isbn={formatIsbn13(first.isbn13)} onReview={review} /> : null}
       <PendingBanner count={pending.pending.length} retrying={pending.retrying} onRetry={() => void pending.retryNow()} />
       {failed.length ? (
         // Booky says this in a tip too; it stays here, in the screen, until the user has read it (P07-09).

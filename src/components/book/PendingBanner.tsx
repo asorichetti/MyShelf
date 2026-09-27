@@ -35,6 +35,35 @@ export function PendingBanner({ count, retrying, onRetry }: PendingBannerProps) 
   );
 }
 
+export interface ArrivedBannerProps {
+  /** Books scanned offline whose details have arrived. */
+  count: number;
+  /** The ISBN "Review" opens (the first waiting), for its spoken name. */
+  isbn: string;
+  onReview: () => void;
+}
+
+/** "I found details for 2 books you scanned offline." with Review (P02-10): the user chooses the edition and saves. */
+export function ArrivedBanner({ count, isbn, onReview }: ArrivedBannerProps) {
+  const { colors, spacing, radii, sizes } = useTheme();
+  if (count <= 0) return null;
+  return (
+    <View
+      testID={Testids.pending.arrived}
+      role="status"
+      aria-live="polite"
+      accessibilityLiveRegion="polite"
+      style={[styles.row, { backgroundColor: colors.accentContainer, borderRadius: radii.md, padding: spacing.md, gap: spacing.sm }]}
+    >
+      <MaterialCommunityIcons name="cloud-check-outline" size={sizes.icon} color={colors.onAccentContainer} aria-hidden />
+      <Text color="onAccentContainer" style={styles.text}>
+        {t('shelf.pending.arrived', { count })}
+      </Text>
+      <Button variant="ghost" label={t('shelf.pending.review')} accessibilityLabel={t('shelf.pending.reviewLabel', { isbn })} onPress={onReview} testID={Testids.pending.review} />
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap' },
   text: { flex: 1, minWidth: 160 },

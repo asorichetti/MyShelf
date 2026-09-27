@@ -511,6 +511,8 @@ export const Testids = {
   pending: {
     banner: 'pending-banner',
     retry: 'pending-retry',
+    arrived: 'pending-arrived',
+    review: 'pending-review',
   },
   refresh: {
     root: 'refresh-root',
