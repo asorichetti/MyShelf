@@ -75,19 +75,22 @@ Or in the browser: **Settings → Secrets and variables → Actions → New repo
 1. `npm ci`, Java 17 (Temurin), and the NDK, build tools and platform that React Native's version catalog (`node_modules/react-native/gradle/libs.versions.toml`) asks for.
 2. `scripts/release-version.mjs` (on a tag: writes the tag's version into `app.json`).
 3. Decodes the keystore from the secrets into the runner's temporary folder, or warns and carries on debug-signed.
-4. `npx expo prebuild --platform android --clean`, then `./gradlew assembleRelease bundleRelease` in `android/` (Gradle's caches are kept between runs by `gradle/actions/setup-gradle`).
+4. `npx expo prebuild --platform android --clean`, then in `android/` `./gradlew bundleRelease` and `./gradlew assembleRelease -PmyshelfApkAbis=arm64-v8a,armeabi-v7a` (two runs: with resource shrinking on, the Android Gradle plugin will not build per-ABI APKs and a bundle in one) (Gradle's caches are kept between runs by `gradle/actions/setup-gradle`).
 5. Uploads `myshelf-<version>-<signed|debug-signed>-arm64-v8a.apk` and `…-armeabi-v7a.apk`, the `.aab` and a `.sha256` of all three as workflow artifacts (kept 30 days). The run's summary lists the checksums, the signing certificate and the permissions in the APK.
 6. **On a tag only:** creates a **draft** GitHub Release named after the tag (marked pre-release when the tag has a `-rc` part) with the files attached. The notes are the version's section of `CHANGELOG.md` (`## [1.2.3]`, `## 1.2.3` or `## v1.2.3`), or else the annotated tag's message (`scripts/release-notes.mjs`). Check it, then press **Publish**. Re-running a tag's workflow replaces the files on its draft.
 
 ### Which file to install
 
-| File | For | Size |
+| File | For | Size (1.0.0, 27 September 2026) |
 |---|---|---|
-| `…-arm64-v8a.apk` | sideloading on any phone from the last ten years (64-bit ARM) | about 57 MB to download, about 60 MB installed |
-| `…-armeabi-v7a.apk` | sideloading on an old 32-bit phone | a little smaller |
-| `….aab` | Google Play only (it cannot be installed directly) | universal; Play sends each phone only its own part |
+| `…-arm64-v8a.apk` | sideloading on any phone from the last ten years (64-bit ARM) | 60.7 MB to download, about 80 MB installed |
+| `…-armeabi-v7a.apk` | sideloading on an old 32-bit phone | 46.9 MB to download |
+| `….aab` | Google Play only (it cannot be installed directly) | 110 MB, all four ABIs; Play sends each phone only its own part |
 
-A universal APK, with the native code for all four ABIs React Native builds, is about 147 MB installed, so the release builds one APK per ABI instead (`plugins/withApkAbiSplits.js`, switched on by the Gradle property `-PmyshelfApkAbis=arm64-v8a,armeabi-v7a`). The App Bundle is unaffected: it stays universal, and Google Play splits it per device. If unsure, `adb shell getprop ro.product.cpu.abi` names a phone's ABI; practically every phone in use today is `arm64-v8a`.
+Two things keep the APKs small:
+
+- **One APK per ABI** (`plugins/withApkAbiSplits.js`, switched on by the Gradle property `-PmyshelfApkAbis=arm64-v8a,armeabi-v7a`). A universal APK carries the native code for all four ABIs React Native builds: 179 MB to download and about 190 MB installed. The App Bundle is unaffected: it stays universal, and Google Play splits it per device. If unsure, `adb shell getprop ro.product.cpu.abi` names a phone's ABI; practically every phone in use today is `arm64-v8a`.
+- **R8 shrinking** of code and resources (`plugins/withReleaseShrinking.js`): without it the arm64-v8a APK was 72.3 MB and about 120 MB installed, most of it library classes Android also compiles on install. Libraries ship their own keep rules; the Maestro suite runs on the shrunk build, so a class R8 wrongly removes would show up there ([`device-testing.md`](device-testing.md)).
 
 **Release a version:**
 
@@ -108,6 +111,10 @@ gh run download <run-id>                            # the APKs, the AAB and the 
 
 A dispatched run uses the version already in `app.json` and never creates a Release.
 
+## Before a release
+
+Run the device regression on the release candidate and note the result in the release pull request: the checklist is in [`device-testing.md`](device-testing.md#regression-checklist-p09-10) (the Maestro suite on an emulator or the **Android E2E** workflow, a physical phone, the real camera, TalkBack, offline, an upgrade over the previous release, the production APK's first run).
+
 ## Locally, with the Android SDK
 
 Prerequisites: **JDK 17** (e.g. Temurin), the **Android SDK** with the platform, build tools and **NDK** versions listed in `node_modules/react-native/gradle/libs.versions.toml` (`compileSdk`, `buildTools`, `ndkVersion`; Android Studio's SDK Manager installs them), and `ANDROID_HOME` pointing at the SDK.
@@ -125,7 +132,7 @@ export MYSHELF_UPLOAD_KEY_PASSWORD="$MYSHELF_UPLOAD_STORE_PASSWORD"
 (cd android && ./gradlew assembleRelease bundleRelease)
 ```
 
-Skip the `export`s for a debug-signed build. The results are `android/app/build/outputs/apk/release/app-release.apk` (universal) and `android/app/build/outputs/bundle/release/app-release.aab`. Install the APK with `adb install -r android/app/build/outputs/apk/release/app-release.apk`. Add `-PmyshelfApkAbis=arm64-v8a,armeabi-v7a` for one APK per ABI as CI builds them (`app-arm64-v8a-release.apk`, …), or `-PreactNativeArchitectures=arm64-v8a` to build only the 64-bit ARM native code (much faster, and all a modern phone needs).
+Skip the `export`s for a debug-signed build. The results are `android/app/build/outputs/apk/release/app-release.apk` (universal) and `android/app/build/outputs/bundle/release/app-release.aab`. Install the APK with `adb install -r android/app/build/outputs/apk/release/app-release.apk`. Run `./gradlew assembleRelease -PmyshelfApkAbis=arm64-v8a,armeabi-v7a` on its own for one APK per ABI as CI builds them (`app-arm64-v8a-release.apk`, …; not in the same run as `bundleRelease`, which the Android Gradle plugin refuses while resources are shrunk), or `-PreactNativeArchitectures=arm64-v8a` to build only the 64-bit ARM native code (much faster, and all a modern phone needs).
 
 **A test APK in one command:** `scripts/build-android-apk.sh production` (what users get) or `scripts/build-android-apk.sh e2e` (with the fixture loader, for Maestro only) runs the prebuild and Gradle steps above for arm64-v8a and copies the result to `build/myshelf-<kind>.apk`; `ABIS=all` builds the universal APK, `ABIS=x86_64` one for an Intel emulator. See [`device-testing.md`](device-testing.md). Check the signature with `$ANDROID_HOME/build-tools/<version>/apksigner verify --print-certs <apk>`.
 
@@ -178,6 +185,8 @@ Reading covers (P03-05) uses ML Kit Text Recognition v2 with its **bundled Latin
 |---|---|
 | without the text-recognition module | 59.7 MB |
 | with it | 72.3 MB (**+12.6 MB**, +21 %) |
+
+These are from before release builds were shrunk with R8 (above); the module's cost is native code and model files, which R8 leaves as they are.
 
 The increase is the native OCR library (`libmlkit_google_ocr_pipeline.so`, 11.1 MB for `arm64-v8a`) and the models (about 1.5 MB in `assets/mlkit-google-ocr-models/`). The library is per ABI: 6.8 MB for `armeabi-v7a`, 11.6 MB for `x86` and `x86_64`, so an APK for all four ABIs grows by about 42 MB, while an App Bundle download from Google Play grows by one ABI's share (about 12.6 MB on a 64-bit ARM phone). The module adds no Android permission (`aapt2 dump permissions` is unchanged). Like the barcode scanner's bundled ML Kit model, it may send Google diagnostic information, never the images or the words read (see [privacy.md](privacy.md#camera-and-photos)).
 
