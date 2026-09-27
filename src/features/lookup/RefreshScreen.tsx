@@ -47,6 +47,7 @@ export function RefreshScreen() {
   const apply = async () => {
     try {
       const n = await refresh.apply();
+      if (n === null) return; // a second tap while the first is saving
       goBackOrShelf();
       show({ message: t('refresh.updated', { count: n }) });
     } catch (e) {

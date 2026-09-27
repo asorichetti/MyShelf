@@ -115,6 +115,18 @@ describe('Refresh details', () => {
     expect(attachCoverFromCandidate).toHaveBeenCalledWith(db, book.id, expect.objectContaining({ sourceId: 'OL17852114M' }));
   });
 
+  it('a double tap on Update applies the changes once', async () => {
+    const book = await farthestShore();
+    renderApp(db, `/book/${book.id}/refresh`, routes);
+    await advance(0);
+    await act(async () => {
+      fireEvent.press(screen.getByTestId(rf.apply));
+      fireEvent.press(screen.getByTestId(rf.apply));
+    });
+    await advance(0);
+    expect(attachCoverFromCandidate).toHaveBeenCalledTimes(1);
+  });
+
   it('says so when the catalogues have nothing new', async () => {
     await loadFixture(db, 'empty');
     const saved = await booksRepo.createBook(db, { title: 'Unknown', isbn13: '9791099999993' });
