@@ -1,0 +1,32 @@
+# P06-08: with the `large` fixture (2,000 books) the covers grid and the
+# spines view scroll on the phone without the app stopping to respond; the
+# view mode is kept across a restart (P06-09). Screenshots for review.
+appId: dev.asorichetti.myshelf
+name: Covers and spines scroll with 2,000 books
+tags: [core]
+---
+- runFlow:
+    file: common/open-fixture.yaml
+    env: { FIXTURE: large, NEXT: / }
+- extendedWaitUntil: { visible: { text: 2000 BOOKS CATALOGUED }, timeout: 30000 }
+- tapOn: { id: shelf-mode-covers }
+- extendedWaitUntil: { visible: { id: shelf-cover-cell }, timeout: 10000 }
+- repeat:
+    times: 8
+    commands:
+      - swipe: { direction: UP, duration: 200 }
+- assertVisible: { id: shelf-cover-cell }
+- takeScreenshot: screenshots/covers-large-scrolled
+# A restart opens the Shelf at the top, still in the covers view.
+- stopApp
+- launchApp
+- extendedWaitUntil: { visible: { id: shelf-mode-spines }, timeout: 20000 }
+- assertVisible: { id: shelf-cover-cell }
+- tapOn: { id: shelf-mode-spines }
+- extendedWaitUntil: { visible: { id: shelf-spine }, timeout: 10000 }
+- repeat:
+    times: 8
+    commands:
+      - swipe: { direction: UP, duration: 200 }
+- assertVisible: { id: shelf-spine }
+- takeScreenshot: screenshots/spines-large-scrolled

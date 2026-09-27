@@ -6,7 +6,8 @@
 # The app's data is cleared first and the deep link cold-starts it, so the
 # only screen with a content marker is the fixture's destination (the loader
 # itself is `page-loading`): no screen from before the load can satisfy the
-# wait. Clearing also resets runtime permissions.
+# wait. Clearing also resets runtime permissions. The `large` fixture (2,000
+# books) can take a minute to load on a first launch after installing.
 appId: dev.asorichetti.myshelf
 ---
 - stopApp
@@ -15,4 +16,4 @@ appId: dev.asorichetti.myshelf
 - extendedWaitUntil:
     visible:
       id: page-content
-    timeout: 60000
+    timeout: 120000
