@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <!--
+    Splash image for a phone in dark mode: splash.svg by lamplight, as the
+    night library draws Booky (darkColors in src/theme/tokens.ts) with the
+    wordmark in parchment ink. The app shows it at 200dp wide on the night
+    paper colour (#1C1424, the expo-splash-screen "dark" entry in app.json). Android
+    12+ crops splash icons to a circle of 192dp, so everything here sits
+    inside a circle of radius 450px around the centre. The wordmark uses Lora
+    700 (the app's heading font); scripts/render-icons.mjs loads it from
+    node_modules/@expo-google-fonts/lora.
+  -->
+  <defs>
+    <g id="booky">
+      <!-- Tassel cord and bead (accent: berry300) -->
+      <path d="M60 18 C 60 8, 70 3, 76 9" stroke="#F29BC4" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <circle cx="77" cy="11" r="4.5" fill="#F29BC4"/>
+      <!-- Ribbon body with notched tail (bookyBody: plum400) -->
+      <path d="M24 26 Q24 17 33 17 H87 Q96 17 96 26 V160 L60 134 L24 160 Z" fill="#9B74CF"/>
+      <!-- Right-hand fold shading (bookyShade: plum300) -->
+      <path d="M84 17 H87 Q96 17 96 26 V160 L84 151 Z" fill="#BFA3E3" opacity="0.45"/>
+      <!-- Ribbon stitching (bookyStitch: lavender100) -->
+      <path d="M31 26 V148 M89 26 V148" stroke="#EADFFA" stroke-width="1.6" stroke-dasharray="4 4" stroke-linecap="round" opacity="0.8" fill="none"/>
+      <!-- Eyes (bookyEye, bookyPupil) -->
+      <ellipse cx="46" cy="60" rx="11" ry="12.5" fill="#FFFFFF"/>
+      <circle cx="46" cy="61" r="6.5" fill="#2A1846"/>
+      <circle cx="48.5" cy="58" r="2.4" fill="#FFFFFF"/>
+      <ellipse cx="74" cy="60" rx="11" ry="12.5" fill="#FFFFFF"/>
+      <circle cx="74" cy="61" r="6.5" fill="#2A1846"/>
+      <circle cx="76.5" cy="58" r="2.4" fill="#FFFFFF"/>
+      <!-- Rosy cheeks (bookyCheek: cheekNight) -->
+      <g opacity="0.85">
+        <ellipse cx="37" cy="79" rx="6.5" ry="3.8" fill="#E48DB2"/>
+        <ellipse cx="83" cy="79" rx="6.5" ry="3.8" fill="#E48DB2"/>
+      </g>
+      <!-- Smile -->
+      <path d="M51 79 Q60 88 69 79" stroke="#2A1846" stroke-width="3" stroke-linecap="round" fill="none"/>
+    </g>
+  </defs>
+  <use href="#booky" transform="translate(320 110) scale(3.2)"/>
+  <text x="512" y="790" text-anchor="middle" font-family="Lora" font-weight="700" font-size="150" fill="#F1E8DC">MyShelf</text>
+</svg>
