@@ -302,6 +302,81 @@ register({
   },
 });
 
+/** The review's rows for one book: each change's accessible name and whether it is ticked. */
+async function fetchedRows(c: Context, title: string): Promise<{ label: string; checked: boolean }[]> {
+  const book = c.page.locator(tid(Testids.fetchDetails.book)).filter({ has: c.page.getByRole('heading', { name: title, exact: true }) });
+  return book.locator(tid(Testids.refresh.fieldToggle)).evaluateAll((els) =>
+    els.map((el) => ({ label: el.getAttribute('aria-label') ?? '', checked: el.getAttribute('aria-checked') === 'true' })),
+  );
+}
+
+register({
+  name: 'csv-import-fetch-details',
+  suite: 'p08',
+  desc: 'Fixture "empty": import the Goodreads export, then "Fetch missing details" looks the 20 books up (through the mocked Open Library; Google Books off), reports what it found and lists each book\'s missing details ticked, never the file\'s own publisher or pages; unticking one and adding the rest fills in the summary while the rating, notes and publisher from the file stay',
+  async run(c) {
+    await openFixture(c, 'empty', '/settings', TODAY);
+    await c.page.locator(tid(S.googleBooksToggle)).click();
+    await openSetting(c, S.importCsv, '/settings/import-csv');
+    await upload(c, tid(Testids.csvImport.pick), GOODREADS_CSV, '/settings/import-csv');
+    await waitVisible(c, tid(Testids.csvImport.preview), '/settings/import-csv (file chosen)');
+    await c.page.locator(tid(Testids.csvImport.confirm)).click();
+    await waitForText(c, tid(Testids.csvImport.report), /Imported 20 books/, '/settings/import-csv (import)');
+
+    await c.page.locator(tid(Testids.csvImport.fetchDetails)).click();
+    const where = '/settings/fetch-details';
+    await waitForPath(c, where, '/settings/import-csv -> Fetch missing details');
+    const F = Testids.fetchDetails;
+    await waitVisible(c, tid(F.progress), `${where} (checking)`);
+    const progress = await text(c, tid(F.progress));
+    expect(/Looking up \d+ of 20 books/.test(progress), `${where}: expected the progress, found ${q(progress)}`);
+    await c.checkGates(`${where} (checking)`);
+    try {
+      await c.page.locator(tid(F.summary)).waitFor({ state: 'visible', timeout: 120_000 });
+    } catch {
+      expect(false, `${where}: the lookups never finished; last progress ${q(await text(c, tid(F.progress)).catch(() => ''))}`);
+    }
+    const summary = await text(c, tid(F.summary));
+    expect(summary === '20 books have something to add.', `${where}: expected every book to have something to add, found ${q(summary)}`);
+    expect((await c.page.locator(tid(F.book)).count()) === 20, `${where}: expected 20 books listed`);
+    await c.checkGates(`${where} (review)`);
+    await c.snap('fetch-details-review');
+
+    // Good Omens: the file gave its publisher (HarperTorch), pages (432) and rating (5); only the rest is offered.
+    const omens = 'Good Omens: The Nice and Accurate Prophecies of Agnes Nutter, Witch';
+    const rows = await fetchedRows(c, omens);
+    const labels = rows.map((r) => r.label);
+    expect(labels.some((l) => l.startsWith('Summary: add Armageddon only happens once')), `${where}: expected Good Omens' summary offered, found ${q(labels)}`);
+    expect(labels.some((l) => l === 'Genres: add Fantasy, Fiction'), `${where}: expected Good Omens' genres offered, found ${q(labels)}`);
+    expect(!labels.some((l) => /^(Publisher|Pages|Year|Title|Authors)/.test(l)), `${where}: expected nothing the file held to be offered, found ${q(labels)}`);
+    expect(rows.every((r) => r.checked), `${where}: expected every offered detail ticked, found ${q(rows)}`);
+
+    // Untick Good Omens' genres, add the rest.
+    const book = c.page.locator(tid(F.book)).filter({ has: c.page.getByRole('heading', { name: omens, exact: true }) });
+    await book.getByRole('checkbox', { name: 'Genres: add Fantasy, Fiction' }).click();
+    const apply = await text(c, tid(F.apply));
+    expect(/^Add \d+ details$/.test(apply), `${where}: expected "Add N details", found ${q(apply)}`);
+    await c.page.locator(tid(F.apply)).click();
+    await waitForText(c, tid(F.saved), /Added details to 20 books\./, `${where} (saved)`);
+    await c.checkGates(`${where} (saved)`);
+
+    await c.page.locator(tid(F.done)).click();
+    await waitForPath(c, '/', `${where} -> shelf`);
+    await c.page.locator(`${row}[aria-label^="Good Omens"]`).click();
+    const bookPath = await waitForPath(c, /^\/book\/\d+$/, '/ -> Good Omens');
+    await waitVisible(c, tid(Testids.bookDetail.summary), `${bookPath} (summary)`);
+    const bookSummary = await text(c, tid(Testids.bookDetail.summary));
+    expect(bookSummary.includes('Armageddon only happens once'), `${bookPath}: expected the fetched summary, found ${q(bookSummary.slice(0, 120))}`);
+    const facts = await text(c, tid(Testids.bookDetail.facts));
+    expect(facts.includes('HarperTorch') && facts.includes('432'), `${bookPath}: expected the file's publisher and pages kept, found ${q(facts)}`);
+    const rating = await c.page.locator(`${tid(Testids.bookDetail.rating)} [aria-valuenow]`).first().getAttribute('aria-valuetext');
+    expect(rating === '5 out of 5 stars', `${bookPath}: expected the rating of 5 kept, found ${q(rating)}`);
+    const page = await text(c, tid(Testids.bookDetail.root));
+    expect(!page.includes('Fantasy'), `${bookPath}: expected the unticked genres left out`);
+    await c.snap('fetch-details-book');
+  },
+});
+
 register({
   name: 'csv-import-goodreads',
   suite: 'p08',

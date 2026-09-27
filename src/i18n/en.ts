@@ -1989,6 +1989,9 @@ export const en = {
       skippedLine: 'Line {line}: {reason}',
       skippedLineWithTitle: 'Line {line} ({title}): {reason}',
       seeShelf: 'See your shelf',
+      /** Looks the imported books up for what the file lacked (summary, genres, series…). */
+      fetchDetails: 'Fetch missing details',
+      fetchDetailsHint: 'I can look these books up and offer what the file didn’t have, like summaries, genres and series. You choose what to add.',
     },
     /** Why a row is not imported. */
     reasons: {
@@ -2594,6 +2597,29 @@ export const en = {
     changesLabel: 'Changes to apply',
     update: { one: 'Update {count} detail', other: 'Update {count} details' },
     nothingTicked: 'Nothing ticked',
+  },
+  /** "Fetch missing details" for books imported from a spreadsheet (P08-05). */
+  fetchDetails: {
+    title: 'Fetch missing details',
+    intro: 'Details the catalogues have that your file didn’t. Nothing you imported is replaced, and your ratings and notes stay as they are.',
+    checking: { one: 'Looking up {done} of {total} book…', other: 'Looking up {done} of {total} books…' },
+    stop: 'Stop and review',
+    offline: 'I went offline before I could look up every book. Here’s what I found; try again later for the rest.',
+    /** Parts of the summary, joined into one sentence list. */
+    found: { one: '{count} book has something to add.', other: '{count} books have something to add.' },
+    upToDate: { one: '{count} has nothing new.', other: '{count} have nothing new.' },
+    notFound: { one: '{count} isn’t in the catalogues.', other: '{count} aren’t in the catalogues.' },
+    failed: { one: '{count} couldn’t be looked up.', other: '{count} couldn’t be looked up.' },
+    nothingTitle: 'Nothing to add',
+    nothingMessage: 'The catalogues had nothing your books were missing.',
+    /** A book's section: its title, and the changes as a group named after it. */
+    bookChanges: 'Details for “{title}”',
+    apply: { one: 'Add {count} detail', other: 'Add {count} details' },
+    nothingTicked: 'Nothing ticked',
+    notNow: 'Not now',
+    saved: { one: 'Added details to {count} book.', other: 'Added details to {count} books.' },
+    saveFailed: 'Sorry, I couldn’t save those details. Please try again.',
+    seeShelf: 'See your shelf',
   },
   /** The end-to-end test harness screens (only in test builds). */
   e2e: {
