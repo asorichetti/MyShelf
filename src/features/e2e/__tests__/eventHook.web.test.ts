@@ -1,7 +1,7 @@
 /**
  * @jest-environment jsdom
  */
-import { E2E_HOOK, installE2eEventHook, type E2eWindowHook } from '@/features/e2e/eventHook.web';
+import { E2E_HOOK, installE2eEventHook, noteForE2e, type E2eWindowHook } from '@/features/e2e/eventHook.web';
 import { emit, subscribe } from '@/features/events';
 
 // The web build's rule (e2eFlag.web.ts): on unless a build opts out.
@@ -34,9 +34,17 @@ describe('installE2eEventHook', () => {
     expect(hook()!.counts).toEqual({ 'groups-changed': 2, 'settings-changed': 1 });
   });
 
+  it('keeps the values the app notes for journeys, per key', () => {
+    installE2eEventHook();
+    noteForE2e('backup-check', true);
+    noteForE2e('backup-check', false);
+    expect(hook()!.notes).toEqual({ 'backup-check': [true, false] });
+  });
+
   it('is not there when the build has the E2E loader off', () => {
     mockE2e = false;
     installE2eEventHook();
     expect(hook()).toBeUndefined();
+    expect(() => noteForE2e('backup-check', true)).not.toThrow();
   });
 });

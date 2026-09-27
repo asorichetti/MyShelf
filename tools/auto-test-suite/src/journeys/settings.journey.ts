@@ -7,7 +7,7 @@ import { readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import { Testids, tid } from '../selectors.ts';
-import { coverState, GOODREADS_CSV, openFixture, PHONE_COVERS_BACKUP, rowNames, SCHEMA1_BACKUP, upload, waitForCount, waitForGridCovers, waitForPath, waitVisible } from './helpers.ts';
+import { coverState, eventCount, GOODREADS_CSV, openFixture, PHONE_COVERS_BACKUP, rowNames, SCHEMA1_BACKUP, upload, waitForCount, waitForEvent, waitForGridCovers, waitForPath, waitVisible } from './helpers.ts';
 import { expect, q, register, type Context } from './registry.ts';
 
 const S = Testids.settings;
@@ -374,6 +374,74 @@ register({
     const page = await text(c, tid(Testids.bookDetail.root));
     expect(!page.includes('Fantasy'), `${bookPath}: expected the unticked genres left out`);
     await c.snap('fetch-details-book');
+  },
+});
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+/**
+ * Moves the browser's clock to `days` after `start`, reloads `path` and waits
+ * for the app's start-up backup check (the web E2E build notes each answer on
+ * `window.__myshelfE2e.notes['backup-check']`); returns whether it found a
+ * backup due.
+ */
+async function backupCheckOn(c: Context, start: number, days: number, path: string): Promise<boolean> {
+  await c.page.clock.setSystemTime(new Date(start + days * DAY_MS));
+  await c.goto(path);
+  const checks = () => c.page.evaluate(() => ((window as unknown as { __myshelfE2e?: { notes?: Record<string, unknown[]> } }).__myshelfE2e?.notes?.['backup-check'] ?? []) as boolean[]);
+  try {
+    await c.page.waitForFunction(() => ((window as unknown as { __myshelfE2e?: { notes?: Record<string, unknown[]> } }).__myshelfE2e?.notes?.['backup-check']?.length ?? 0) > 0, undefined, { timeout: 15_000 });
+  } catch {
+    expect(false, `${path} +${days} days: the backup check never ran`);
+  }
+  return (await checks()).at(-1) === true;
+}
+
+register({
+  name: 'backup-reminder',
+  suite: 'p08',
+  desc: 'Fixture "demo" (12 books, never backed up) with the browser clock moved on: 40 days later Booky suggests a backup with Back up and Later; the same day and a week later it keeps quiet or asks again as the weekly rule says; Later snoozes it for 30 days; Back up opens the backup screen, and after a backup it is quiet until 30 days have passed',
+  async run(c) {
+    const start = Date.now();
+    await openFixture(c, 'demo', '/loans');
+    // The Loans tab lists every overdue loan itself, so the overdue nudge does not float over it.
+    const at = (days: number) => `/loans +${days} days`;
+    const bubbleSel = tid(Testids.booky.bubble);
+
+    expect(await backupCheckOn(c, start, 40, '/loans'), `${at(40)}: expected a backup to be due`);
+    await waitVisible(c, bubbleSel, `${at(40)} (reminder)`);
+    const words = await text(c, tid(Testids.booky.bubbleText));
+    expect(words.includes('It’s been a while since your last backup — save one now?'), `${at(40)}: expected the reminder, found ${q(words)}`);
+    const bubble = c.page.locator(bubbleSel);
+    expect((await bubble.getByRole('button', { name: 'Back up' }).count()) === 1 && (await bubble.getByRole('button', { name: 'Later' }).count()) === 1, `${at(40)}: expected Back up and Later`);
+    await c.checkGates(`${at(40)} (reminder)`);
+    await c.snap('backup-reminder');
+    // It is recorded as shown once it shows.
+    await waitForEvent(c, 'settings-changed', 0, `${at(40)} (shown recorded)`);
+
+    // At most once a week.
+    expect(!(await backupCheckOn(c, start, 41, '/loans')), `${at(41)}: expected no reminder a day after the last`);
+    expect((await c.page.locator(bubbleSel).count()) === 0, `${at(41)}: expected no bubble`);
+
+    // A week on it asks again; Later snoozes it for 30 days.
+    expect(await backupCheckOn(c, start, 48, '/loans'), `${at(48)}: expected the reminder a week later`);
+    await waitVisible(c, bubbleSel, `${at(48)} (reminder)`);
+    await waitForEvent(c, 'settings-changed', 0, `${at(48)} (shown recorded)`);
+    await c.page.locator(bubbleSel).getByRole('button', { name: 'Later' }).click();
+    await waitForEvent(c, 'settings-changed', 1, `${at(48)} (snoozed)`);
+    expect(!(await backupCheckOn(c, start, 70, '/loans')), `${at(70)}: expected the snooze to hold`);
+    expect((await c.page.locator(bubbleSel).count()) === 0, `${at(70)}: expected no bubble while snoozed`);
+
+    // After the snooze: Back up opens the backup screen; a backup quiets it for 30 days.
+    expect(await backupCheckOn(c, start, 80, '/loans'), `${at(80)}: expected the reminder after the snooze`);
+    await waitVisible(c, bubbleSel, `${at(80)} (reminder)`);
+    await c.page.locator(bubbleSel).getByRole('button', { name: 'Back up' }).click();
+    await waitForPath(c, '/settings/backup', `${at(80)} -> Back up`);
+    const saves = await eventCount(c, 'settings-changed');
+    await download(c, tid(Testids.backup.export), '/settings/backup');
+    await waitForEvent(c, 'settings-changed', saves, '/settings/backup (backup recorded)');
+    expect(!(await backupCheckOn(c, start, 100, '/loans')), `${at(100)}: expected no reminder 20 days after a backup`);
+    expect(await backupCheckOn(c, start, 111, '/loans'), `${at(111)}: expected the reminder 31 days after the backup`);
+    await waitVisible(c, bubbleSel, `${at(111)} (reminder)`);
   },
 });
 

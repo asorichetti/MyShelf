@@ -12,6 +12,11 @@ export interface E2eWindowHook {
    * count to go up knows the save has landed (before a reload, say).
    */
   counts: Partial<Record<LibraryEvent, number>>;
+  /**
+   * Values the app notes for journeys, oldest first, per key (`noteForE2e`):
+   * `backup-check` gets whether each start-up backup check found one due.
+   */
+  notes: Record<string, unknown[]>;
 }
 
 /** The name of the hook on `window`. */
@@ -36,11 +41,18 @@ const EVERY_EVENT: Record<LibraryEvent, true> = {
  */
 export function installE2eEventHook(): void {
   if (!isE2eEnabled() || typeof window === 'undefined') return;
-  const hook: E2eWindowHook = { emit, counts: {} };
+  const hook: E2eWindowHook = { emit, counts: {}, notes: {} };
   for (const event of Object.keys(EVERY_EVENT) as LibraryEvent[]) {
     subscribe(event, () => {
       hook.counts[event] = (hook.counts[event] ?? 0) + 1;
     });
   }
   (window as unknown as Record<string, E2eWindowHook>)[E2E_HOOK] = hook;
+}
+
+/** Notes a value for journeys (see `E2eWindowHook.notes`); nothing unless the hook is installed. */
+export function noteForE2e(key: string, value: unknown): void {
+  if (typeof window === 'undefined') return;
+  const hook = (window as unknown as Record<string, E2eWindowHook | undefined>)[E2E_HOOK];
+  if (hook) (hook.notes[key] ??= []).push(value);
 }
