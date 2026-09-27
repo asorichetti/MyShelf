@@ -18,6 +18,8 @@ export interface OcrLine {
   frame: OcrFrame;
   /** 0–1, when the recogniser reports one. */
   confidence?: number;
+  /** The language the recogniser read the line as (BCP-47, "und" when unsure), when it reports one. */
+  language?: string;
 }
 
 export interface OcrBlock {
