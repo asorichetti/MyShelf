@@ -125,6 +125,19 @@ const unique = (list: string[]) => {
   });
 };
 
+/** An HTML tag ("<br/>", "</p>", "<a href=…>") or entity ("&amp;", "&#39;"): Goodreads writes reviews as HTML. */
+const HTML = /<\/?[a-z][a-z0-9]*(?:\s[^<>]*)?\/?>|&(?:#\d+|#x[0-9a-f]+|amp|lt|gt|quot|apos|nbsp);/i;
+
+/**
+ * A notes cell: HTML (a Goodreads review) becomes plain text; anything else,
+ * such as MyShelf's own export, is kept as it is ("a < b", "<3", blank
+ * lines and indents included), with line breaks as \n.
+ */
+function notesText(value: string | null): string | null {
+  if (!value) return null;
+  return HTML.test(value) ? stripHtml(value) : value.replace(/\r\n?/g, '\n');
+}
+
 /** Goodreads bindings and other spellings → MyShelf formats. */
 export function parseFormat(value: string | null): BookFormat | null {
   if (!value) return null;
@@ -275,8 +288,8 @@ export function planImport(rows: readonly string[][], mapping: readonly ImportFi
     const rating = parseImportRating(ratingText);
     if (rating === undefined) warnings.push(t('importCsv.warnings.badRating', { value: ratingText ?? '' }));
 
-    const review = stripHtml(raw(row, 'notes'));
-    const privateNotes = stripHtml(raw(row, 'privateNotes'));
+    const review = notesText(raw(row, 'notes'));
+    const privateNotes = notesText(raw(row, 'privateNotes'));
     const notes = [review, privateNotes].filter(Boolean).join('\n\n') || null;
 
     const groups = shelvesAsGroups

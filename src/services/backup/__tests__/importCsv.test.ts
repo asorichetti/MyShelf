@@ -206,6 +206,14 @@ describe('round trip through MyShelf’s own CSV', () => {
     await other.close();
   });
 
+  it('keeps plain notes exactly as written: angle brackets, ampersands, blank lines and indents', async () => {
+    const notes = 'I <3 it: a < b > c, R&D; x & y.\n\n\n    Indented line\nLast';
+    await booksRepo.createBook(db, { title: 'Notes', notes });
+    const table = readCsvTable((await exportCsv(db)).text);
+    const [planned] = planImport(table.rows, mappingFor(table.headers, table.preset)).books;
+    expect(planned.book.notes).toBe(notes);
+  });
+
   it('reads back cells the export guarded against formulas exactly as they were', async () => {
     const book = await booksRepo.createBook(db, { title: '=1+1', subtitle: "'=quoted", notes: '- first point\n- second point', publisher: '@home' });
     const { text } = await exportCsv(db);
