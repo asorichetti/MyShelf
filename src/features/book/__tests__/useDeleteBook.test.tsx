@@ -102,4 +102,17 @@ describe('Deleting a book', () => {
     expect(deleteCover).not.toHaveBeenCalled();
     expect((await booksRepo.getBook(db, mort.id))!.coverUri).toBe('file:///covers/mort.jpg');
   });
+
+  it('leaves the cover of a new book that took the deleted book’s id', async () => {
+    const newest = (await booksRepo.listBooks(db)).reduce((a, b) => (b.id > a.id ? b : a));
+    await booksRepo.updateBook(db, newest.id, { coverUri: `file:///covers/${newest.id}.jpg` });
+    await askToDelete(newest.title);
+    await press(Testids.dialog.confirm);
+    // A book added while Undo is on offer is given the free id, and its cover the same file name.
+    const added = await booksRepo.createBook(db, { title: 'Added meanwhile', coverUri: `file:///covers/${newest.id}.jpg` });
+    expect(added.id).toBe(newest.id);
+    await advance(UNDO_WINDOW_MS);
+    await advance(0);
+    expect(deleteCover).not.toHaveBeenCalled();
+  });
 });

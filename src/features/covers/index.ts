@@ -1,6 +1,6 @@
-import { settingsRepo, type Db } from '@/db';
+import { booksRepo, settingsRepo, type Db } from '@/db';
 import { getLookupServices } from '@/features/lookup/metadataService';
-import { COVER_BATCH_SIZE, coverSourceFromCandidate, findCoverIdsByIsbn, GOOGLE_COVERS_REACHABLE } from '@/services/covers';
+import { COVER_BATCH_SIZE, coverSourceFromCandidate, deleteCover, findCoverIdsByIsbn, GOOGLE_COVERS_REACHABLE, isLocalCover } from '@/services/covers';
 import { isOnMobileData } from '@/services/covers/mobileData';
 import type { BookCandidate } from '@/services/metadata';
 
@@ -31,6 +31,23 @@ export async function attachCoverFromCandidate(
   const { http } = getLookupServices(db);
   const includeGoogle = await includeGoogleCovers(db);
   return attachBestCover(db, bookId, coverSourceFromCandidate(candidate), { http, signal, includeGoogle, replace });
+}
+
+/**
+ * Deletes the stored cover file of a book that was deleted (once Undo is no
+ * longer offered). Covers are stored by book id and SQLite gives a new book
+ * the highest free id, so a book added meanwhile may own that file now: it
+ * is kept then. Never throws.
+ */
+export async function deleteCoverOfDeletedBook(db: Db, bookId: number): Promise<boolean> {
+  try {
+    const current = await booksRepo.getBook(db, bookId);
+    if (current && isLocalCover(current.coverUri)) return false;
+    return deleteCover(bookId);
+  } catch (error) {
+    console.warn('Could not delete the cover file', error);
+    return false;
+  }
 }
 
 const NOTHING: BackfillSummary = { checked: 0, attached: 0, none: 0, failed: 0, offline: false };
