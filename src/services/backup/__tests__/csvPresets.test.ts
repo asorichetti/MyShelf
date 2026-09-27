@@ -64,4 +64,11 @@ describe('mappingFor', () => {
     expect(guessField('EAN')).toBe('isbn13');
     expect(guessField('Tags')).toBe('groups');
   });
+
+  it('ignores columns named after built-in object properties', () => {
+    const headers = ['Title', 'constructor', 'toString', '__proto__', 'hasOwnProperty'];
+    for (const preset of ['custom', 'goodreads', 'myshelf'] as const) {
+      expect(mappingFor(headers, preset)).toEqual(['title', 'ignore', 'ignore', 'ignore', 'ignore']);
+    }
+  });
 });

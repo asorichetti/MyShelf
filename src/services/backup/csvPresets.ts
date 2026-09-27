@@ -206,7 +206,8 @@ export function mappingFor(headers: readonly string[], preset: PresetId): Import
   const taken = new Set<ImportField>();
   return headers.map((h) => {
     const clean = h.replace(/^﻿/, '').trim();
-    const field = clean in table ? table[clean] : preset === 'custom' ? guessField(clean) : 'ignore';
+    // Own keys only: a column called "constructor" or "__proto__" is not one of the preset's.
+    const field = Object.prototype.hasOwnProperty.call(table, clean) ? table[clean] : preset === 'custom' ? guessField(clean) : 'ignore';
     if (field === 'ignore' || taken.has(field)) return 'ignore';
     taken.add(field);
     return field;
