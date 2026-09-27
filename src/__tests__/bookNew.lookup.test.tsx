@@ -3,6 +3,7 @@ import { act, fireEvent, screen, within } from 'expo-router/testing-library';
 import { booksRepo, type Db } from '@/db';
 import { BookDetailScreen } from '@/features/book/BookDetailScreen';
 import { AddBookScreen, EditBookScreen } from '@/features/book/BookFormScreen';
+import { pickCover } from '@/features/book/pickCover';
 import { attachBestCover } from '@/features/covers';
 import { resolveCover } from '@/services/covers';
 import { OL_BOOKS } from '@/services/metadata/__fixtures__/openLibraryRoutes';
@@ -19,9 +20,12 @@ jest.mock('@/features/lookup/metadataService', () => ({
   useMetadataService: () => mockMetadata.service,
   getLookupServices: () => ({ http: mockMetadata.http, metadata: mockMetadata.service }),
 }));
+jest.mock('@/features/book/pickCover', () => ({ pickCover: jest.fn() }));
 jest.mock('@/services/covers', () => ({
   ...jest.requireActual('@/services/covers'),
   resolveCover: jest.fn(async () => ({ cover: null, tried: [] })),
+  // A picked photo is copied next to the book's other files; here it only names the copy.
+  storeCoverFile: jest.fn((bookId: number) => `file:///docs/covers/${bookId}.jpg`),
 }));
 jest.mock('@/features/covers', () => ({
   ...jest.requireActual('@/features/covers'),
@@ -195,6 +199,55 @@ describe('Find a cover online', () => {
     const [book] = await booksRepo.listBooks(db);
     expect(book.coverUri).toBe('https://covers.openlibrary.org/b/id/14647238-L.jpg');
     expect(attachBestCover).toHaveBeenCalledWith(db, book.id, expect.objectContaining({ olEditionCoverIds: [14647238] }), expect.objectContaining({ replace: true }));
+  });
+
+  const FOUND = {
+    cover: { url: 'https://covers.openlibrary.org/b/id/14647238-L.jpg', origin: 'openlibrary-edition', width: 400, height: 600, shape: 'portrait', format: 'jpeg', contentType: 'image/jpeg', bytes: new Uint8Array() },
+    tried: [],
+  } as const;
+
+  /** A cover search that waits until `finish` is called, and the signal it was given. */
+  function slowSearch() {
+    let finish: () => void = () => undefined;
+    const seen: { signal?: AbortSignal } = {};
+    jest.mocked(resolveCover).mockImplementationOnce((_source, options) => {
+      seen.signal = options?.signal;
+      return new Promise((resolve, reject) => {
+        finish = () => resolve(FOUND as never);
+        options?.signal?.addEventListener('abort', () => reject(Object.assign(new Error('The operation was aborted'), { name: 'AbortError' })));
+      });
+    });
+    return { seen, finish: () => finish() };
+  }
+
+  it('is cancelled when the form is left while it runs', async () => {
+    const search = slowSearch();
+    const r = await openAddForm();
+    fireEvent.changeText(screen.getByTestId(f.isbn), OL_BOOKS.colourOfMagic);
+    await press(l.findCover);
+    await advance(0);
+    expect(search.seen.signal).toBeDefined();
+    expect(search.seen.signal!.aborted).toBe(false);
+    r.unmount();
+    expect(search.seen.signal!.aborted).toBe(true);
+  });
+
+  it('never replaces a photo the user picked while it ran', async () => {
+    const search = slowSearch();
+    jest.mocked(pickCover).mockResolvedValueOnce({ status: 'picked', uri: 'file:///cache/picker/photo.jpg' });
+    await openAddForm();
+    fireEvent.changeText(screen.getByTestId(f.title), 'The Colour of Magic');
+    fireEvent.changeText(screen.getByTestId(f.isbn), OL_BOOKS.colourOfMagic);
+    await press(l.findCover);
+    await advance(0);
+    await press(f.coverPick);
+    await act(async () => search.finish());
+    await advance(0);
+    expect(screen.queryByText('Found the cover and put it on the card.')).toBeNull();
+    await press(f.save);
+    const [book] = await booksRepo.listBooks(db);
+    expect(book.coverUri).toBe(`file:///docs/covers/${book.id}.jpg`);
+    expect(attachBestCover).not.toHaveBeenCalled();
   });
 
   it('asks for an ISBN or title and author first', async () => {

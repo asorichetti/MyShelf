@@ -139,7 +139,7 @@ export function useAddBookLookup(
   useEffect(() => () => coverSearch.current?.abort(), []);
 
   const findCoverOnline = useCallback(async () => {
-    const { draft, setField } = formRef.current;
+    const { draft } = formRef.current;
     const author = draft.authors[0]?.name;
     const isbn = toIsbn13(draft.isbn);
     if (!isbn && !(draft.title.trim() && author)) {
@@ -150,6 +150,9 @@ export function useAddBookLookup(
     const abort = new AbortController();
     coverSearch.current = abort;
     const { signal } = abort;
+    // The cover on the card when the search started: a photo picked (or a cover removed) meanwhile is newer and stays.
+    const before = draft.coverUri;
+    const stale = () => signal.aborted || formRef.current.draft.coverUri !== before;
     try {
       let source: CoverSource = origin.current ? coverSourceFromCandidate(origin.current) : { isbn13: isbn };
       if (isbn) {
@@ -160,18 +163,19 @@ export function useAddBookLookup(
         const match = candidates.find((c) => c.authors[0] && bookMatchKey(c.title, c.authors[0]) === bookMatchKey(draft.title, author));
         if (match) source = combineCoverSources(source, coverSourceFromCandidate(match));
       }
+      if (stale()) return;
       const { http } = getLookupServices(db);
       const { cover } = await resolveCover(source, { http, signal, includeGoogle: await includeGoogleCovers(db) });
-      if (signal.aborted) return;
+      if (stale()) return;
       if (!cover) {
         show({ message: t('lookup.cover.notFound') });
         return;
       }
-      setField('coverUri', cover.url);
+      formRef.current.setField('coverUri', cover.url);
       onlineCover.current = { url: cover.url, source };
       show({ message: t('lookup.cover.found') });
     } catch (error) {
-      if (signal.aborted || isAbortError(error)) return;
+      if (isAbortError(error) || stale()) return;
       show({
         message: error instanceof OfflineError ? t('lookup.cover.offline') : t('lookup.cover.failed'),
       });
