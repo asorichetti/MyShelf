@@ -7,6 +7,7 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
     "backgroundColor": "#FBF6EC",
+    "primaryColor": "#6B3FA8",
     "ios": {
       "supportsTablet": true
     },
@@ -108,6 +109,13 @@
       "@react-native-community/datetimepicker",
       "expo-notifications",
       "expo-sharing",
+      [
+        "./plugins/withAndroidAccent",
+        {
+          "light": "#6B3FA8",
+          "dark": "#C4A8EE"
+        }
+      ],
       "./plugins/withReleaseSigning"
     ],
     "scheme": "myshelf",
