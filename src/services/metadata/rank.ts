@@ -118,7 +118,12 @@ export const EDITION_WEIGHTS = {
   format: 0.25,
   /** Taken off an ebook or audiobook: a cover or barcode was scanned from a book in the hand. */
   notInHand: 1.5,
+  /** Taken off a volume of something ("Volume Two") when the title wanted names no volume. */
+  otherVolume: 3,
 } as const;
+
+/** "Volume Two", "Vol. 2", "Book 3", "Part II", "Tome 1", "Band 2": one volume of a longer work. */
+const VOLUME = /\b(?:vol(?:ume)?\.?|book|part|tome|tomo|band|livre)\s*(?:\d+|[ivxl]+\b|one|two|three|four|five|six|seven|eight|nine|ten)\b/i;
 
 /**
  * How alike an edition's title is to the one wanted, forgiving a subtitle
@@ -154,7 +159,8 @@ export function scoreEdition(edition: BookCandidate, { language, title }: RankEd
     (edition.publicationYear != null ? w.year : 0) +
     (edition.pageCount ? w.pages : 0) +
     (edition.format ? w.format : 0) -
-    (edition.format === 'ebook' || edition.format === 'audiobook' ? w.notInHand : 0)
+    (edition.format === 'ebook' || edition.format === 'audiobook' ? w.notInHand : 0) -
+    (title && VOLUME.test(edition.title) && !VOLUME.test(title) ? w.otherVolume : 0)
   );
 }
 
@@ -166,8 +172,10 @@ export function scoreEdition(edition: BookCandidate, { language, title }: RankEd
  * for an English cover. Within that, by score: the title closest to the one
  * wanted, a subtitle aside (a study guide "Lektürehilfen Der Vorleser" sinks
  * below the novel), the preferred language (unknown counts half), a cover of
- * its own, a fuller record, and not an ebook or audiobook (a book in the hand
- * was scanned); then the newest. Ties keep the provider's order.
+ * its own, a fuller record, not an ebook or audiobook (a book in the hand
+ * was scanned), and not one volume of something when the title wanted names
+ * none ("Sapiens: A Graphic History, Volume Two" for "Sapiens"); then the
+ * newest. Ties keep the provider's order.
  */
 export function rankEditions(editions: readonly BookCandidate[], options: RankEditionsOptions = {}): BookCandidate[] {
   const { language } = options;

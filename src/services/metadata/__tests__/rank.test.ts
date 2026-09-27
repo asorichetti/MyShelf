@@ -199,4 +199,14 @@ describe('rankEditions', () => {
     const hardback = base('Educated', { language: 'en', publisher: 'Random House', publicationYear: 2018, format: 'hardcover', isbn13: '9780399590504', coverRefs: covers(10) });
     expect(rankEditions([audio, hardback], { language: { code: 'en', detected: true }, title: 'Educated' })[0]).toBe(hardback);
   });
+
+  it('does not offer one volume of something for a title that names no volume', () => {
+    // Open Library files the graphic adaptation under the same work as "Sapiens".
+    const graphic = base('Sapiens : A Graphic History, Volume Two', { language: 'en', publisher: 'Harper', publicationYear: 2021, pageCount: 256, format: 'hardcover', isbn13: '9780063219380', coverRefs: covers(11) });
+    const original = base('Sapiens: A Brief History of Humankind', { language: 'en', publisher: 'Harper', publicationYear: 2015, isbn13: '9780062316097', coverRefs: covers(12) });
+    expect(rankEditions([graphic, original], { language: { code: 'en', detected: false }, title: 'Sapiens' })[0]).toBe(original);
+    // Unless the cover says which volume.
+    expect(rankEditions([original, graphic], { language: { code: 'en', detected: false }, title: 'Sapiens: A Graphic History, Volume Two' })[0]).toBe(graphic);
+  });
 });
+
