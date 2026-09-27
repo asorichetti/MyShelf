@@ -22,7 +22,7 @@ Use `npx`, not `bunx` (this project uses npm; there is no `bun.lock`).
 | `npm install` | install dependencies | available |
 | `npx expo install <package>` | **always** use this to add a dependency — it resolves the SDK-compatible version | available |
 | `npm start` / `npx expo start` | Metro dev server | available |
-| `npm run android` | open on a connected device/emulator | available |
+| `npm run android` | `expo run:android`: build a development build, install it on a connected device or emulator and start Metro. Expo Go cannot run the app (it has its own native module); needs JDK 17 and the Android SDK | available |
 | `npm run web` | run the web build (http://localhost:8081); for the auto test suite use `CI=1 npx expo start --web --port 8081` (no file watcher; restart after adding a route) | available |
 | `npm run export:web` | static web build into `dist/`; test it with any auto test suite command plus `--serve dist` (no dev server needed) | available |
 | `npm run typecheck` | `tsc --noEmit`; route strings (`href`, `router.navigate`) are checked strictly only while `.expo/types/router.d.ts` exists, which only the dev server generates, so CI starts it briefly in the auto test suite job and runs the typecheck again | available |
@@ -40,8 +40,9 @@ Use `npx`, not `bunx` (this project uses npm; there is no `bun.lock`).
 | `npm run -s autotest:journeys` | every journey (`journey --all`); add flags after `--`, e.g. `-- --ux-gates fail` | available |
 | `npm run autotest:check` | typecheck and unit tests for the auto test suite | available |
 | `npm run autotest:selftest` | gate self-tests: every UX gate rule fires on a broken fixture page, in Chromium (no app server needed) | available |
-| `maestro test .maestro/` | on-device flows | to be added in P00-18 |
-| `npx expo run:android` | local development build (needed from Phase 03 for ML Kit) | works now; dev client added in P03-01 |
+| `scripts/build-android-apk.sh e2e\|production` | release APK into `build/`: `e2e` has the fixture loader for Maestro, `production` is what users install ([`docs/device-testing.md`](docs/device-testing.md)) | available |
+| `scripts/maestro-suite.sh --e2e-apk build/myshelf-e2e.apk [--production-apk …]` | the whole Maestro suite on an emulator or phone, with the device set up for each flow; one flow: `maestro test .maestro/<flow>.yaml` | available |
+| `npx expo run:android` | the same as `npm run android` | available |
 | `npx expo-doctor` | diagnose dependency/config issues | available |
 | `npx expo install --fix` | fix incompatible package versions | available |
 
@@ -96,7 +97,7 @@ Every card lists the tests it adds. Three levels (details in `PLAN.md` §10):
 
 - **Jest** for every module. Repository tests use `@jest-environment node` and a real in-memory SQLite database. Network is always mocked with recorded fixtures.
 - **Auto test suite** (`tools/auto-test-suite`, TypeScript + Playwright; reference in [its README](tools/auto-test-suite/README.md)) drives the web build: `navigate`, `journey`, `smoke`, `screenshot`, `interact`. Each command prints one JSON document and writes an evidence bundle (`screenshot.png`, `page.html`, `console.json`, `network.json`, `uxgates.json`) under `screenshots/` (git-ignored). UX gates (`pagestate`, `render`, `console`, `network`, `a11y`) run alongside assertions; exemptions need a written reason (`gates.config.json`, the console allowlist, or a per-journey waiver). Journeys self-register in `tools/auto-test-suite/src/journeys/` with a name, suite and description, and run in a fresh browser each; from P01-01 they start from a fixture via `/e2e?fixture=<name>&next=<route>`.
-- **Maestro** flows in `.maestro/` for camera, OCR and other native-only behaviour, run on an emulator or device (the folder is added in P00-18).
+- **Maestro** flows in `.maestro/` for camera, OCR and other native-only behaviour, run on an emulator or device with `scripts/maestro-suite.sh` ([`docs/device-testing.md`](docs/device-testing.md)); CI runs them weekly and on demand (`.github/workflows/android-e2e.yml`).
 
 Before a card is done, both must be green:
 

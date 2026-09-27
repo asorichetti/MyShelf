@@ -51,7 +51,7 @@ Design decisions are recorded as ADRs in [`docs/adr/`](docs/adr/).
 
 ## Getting started
 
-Prerequisites: Node.js 22.13 or newer (Jest uses its built-in `node:sqlite`) and npm. For the Android app: Android Studio with an emulator, or an Android phone with USB debugging.
+Prerequisites: Node.js 22.13 or newer (Jest uses its built-in `node:sqlite`) and npm. For the Android app: JDK 17 and the Android SDK (Android Studio installs both), and an emulator or an Android phone with USB debugging.
 
 ```bash
 git clone https://github.com/asorichetti/MyShelf.git
@@ -60,19 +60,20 @@ npm install
 git config core.hooksPath .githooks   # enable the commit-message hook
 
 npm run web        # run in the browser (the web build is used for automated UI tests)
-npm run android    # run on an emulator or device
+npm run android    # build and install a development build on an emulator or phone, then start Metro
 ```
 
 Optional: to use Google Books as a second lookup source, copy `.env.example` to `.env.local` and set `EXPO_PUBLIC_GOOGLE_BOOKS_API_KEY` to a free API key (Google Cloud → enable the Books API → create an API key and restrict it to that API). `.env.local` is git-ignored; never commit a key. Without it, lookups use Open Library alone.
 
-From Phase 03 onward the app uses a native text-recognition module, so it needs a development build (`npx expo run:android`) rather than Expo Go.
+The app has its own native module (on-device text recognition, `modules/text-recognition`), so **Expo Go cannot run it**: `npm run android` (`expo run:android`) generates the native project, builds a development build with Gradle, installs it and starts Metro; later JavaScript changes reload without a rebuild. The first build takes several minutes. For a release APK, the kind users install, see [`docs/release.md`](docs/release.md); for the E2E build the Maestro flows use, [`docs/device-testing.md`](docs/device-testing.md).
 
 ## Scripts
 
 | Script | Purpose |
 |---|---|
 | `npm start` | start the Expo dev server |
-| `npm run android` / `npm run web` | open the app on Android or in a browser |
+| `npm run android` | build a development build, install it on an emulator or phone and start Metro (`expo run:android`; not Expo Go) |
+| `npm run web` | open the app in a browser |
 | `npm run export:web` | static web build into `dist/` |
 | `npm run typecheck` | TypeScript check (route links are only checked strictly while the dev server has generated `.expo/types`; CI does that in the auto test suite job) |
 | `npm test` | Jest unit and component tests (offline; never touches the network) |
@@ -93,7 +94,7 @@ MyShelf is tested at three levels:
 
 1. **Jest** — every module, from pure domain helpers to screens. Database repositories run against a real in-memory SQLite database (Node's built-in `node:sqlite`); network calls, once they exist (Phase 02), use recorded API fixtures.
 2. **Auto test suite** — a TypeScript + Playwright command-line tool ([`tools/auto-test-suite`](tools/auto-test-suite/README.md)) that drives the web build through scripted journeys. Every run prints JSON and saves an evidence bundle (screenshot, rendered DOM, console and network logs, gate results), and applies UX gates for page state, rendering, console errors, network failures and accessibility.
-3. **Maestro** — YAML flows on an Android emulator or device for the camera, text recognition and other native features (set up in P00-18; no flows yet).
+3. **Maestro** — YAML flows on an Android emulator or device for the camera, text recognition, notifications, files and other native features, run by `scripts/maestro-suite.sh` locally and weekly in CI ([`docs/device-testing.md`](docs/device-testing.md)).
 
 Test ids come from a single [`src/testing/selectors.json`](src/testing/selectors.json), generated into one TypeScript module used by the app, Jest and the auto test suite, so all three levels agree. No change is done until `npm run check` and the UI smoke run with gates enforced are green. The full strategy is in [`PLAN.md`](PLAN.md#10-testing-strategy).
 

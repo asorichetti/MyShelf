@@ -27,9 +27,6 @@ cd "$root"
 # .env file decides whether the fixture loader is in the build.
 export EXPO_PUBLIC_E2E=$e2e
 
-# expo prebuild rewrites the android/ios scripts in package.json; keep ours.
-cp package.json "${TMPDIR:-/tmp}/myshelf-package.json.$$"
-trap 'cp "${TMPDIR:-/tmp}/myshelf-package.json.$$" package.json; rm -f "${TMPDIR:-/tmp}/myshelf-package.json.$$"' EXIT
 EXPO_NO_GIT_STATUS=1 npx expo prebuild --platform android --clean --no-install
 
 gradle_args=(assembleRelease)
