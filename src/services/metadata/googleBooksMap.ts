@@ -67,7 +67,8 @@ export function isbnsFromIdentifiers(ids: GbVolumeInfo['industryIdentifiers']): 
 
 /** `seriesInfo.bookDisplayNumber` → a position-only hint (Google Books gives no series name). */
 export function seriesHintFromInfo(info: GbVolumeInfo['seriesInfo']): SeriesHint[] {
-  const position = parsePosition(info?.bookDisplayNumber) ?? info?.volumeSeries?.find((s) => s.orderNumber)?.orderNumber ?? null;
+  const order = info?.volumeSeries?.find((s) => s.orderNumber)?.orderNumber;
+  const position = parsePosition(info?.bookDisplayNumber) ?? (typeof order === 'number' ? parsePosition(String(order)) : null);
   return position ? [{ name: null, position, source: 'googlebooks', raw: info?.bookDisplayNumber ?? String(position) }] : [];
 }
 
