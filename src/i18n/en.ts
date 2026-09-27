@@ -2351,6 +2351,10 @@ export const en = {
       /** After a scan in "Scan several" mode; {title} is the book's title. */
       addedToTray: 'Added “{title}” to the tray.',
       needsChoice: '“{title}” needs a choice of edition — pick it when you review.',
+      /** The same ISBN scanned again in "Scan several": nothing is added unless the user asks for another copy. */
+      alreadyInTray: '“{title}” is already in the tray. Scanned a second copy?',
+      addCopy: '+1 copy',
+      addCopyLabel: 'Add another copy of {title} to the tray',
     },
     /** Booky's messages while scanning. */
     messages: {
@@ -2473,6 +2477,19 @@ export const en = {
     },
     save: { one: 'Save {count} book', other: 'Save {count} books' },
     nothingReady: 'Nothing ready to save',
+    /** A rubber stamp on a tray row for a book the shelf already has. */
+    onShelf: 'Already on your shelf',
+    onShelfCount: { one: 'You have {count} copy of this book already.', other: 'You have {count} copies of this book already.' },
+    keep: 'Add it anyway',
+    keepLabel: 'Add another copy of {title} anyway',
+    keeping: 'Another copy will be added.',
+    onShelfWaiting: {
+      one: '{count} book is already on your shelf: add it anyway, or drop it.',
+      other: '{count} books are already on your shelf: add them anyway, or drop them.',
+    },
+    copies: { one: '{count} copy', other: '{count} copies' },
+    removeCopy: 'Remove a copy',
+    removeCopyLabel: 'Remove a copy of {title}',
   },
   /** `/scan/pick`: the edition picker. */
   editions: {

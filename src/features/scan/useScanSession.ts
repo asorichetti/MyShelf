@@ -48,8 +48,10 @@ export type ScanPhase =
 
 /** A short message shown while scanning continues (queued offline, added to the tray). */
 export interface ScanNotice {
-  expression: 'sleepy' | 'excited' | 'happy';
+  expression: 'sleepy' | 'excited' | 'happy' | 'thinking';
   message: string;
+  /** A button under the message ("+1 copy"). */
+  action?: { label: string; accessibilityLabel?: string; onPress: () => void; testID?: string };
 }
 
 export interface UseScanSessionOptions {

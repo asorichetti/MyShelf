@@ -56,6 +56,7 @@
     "batchToggle": "scan-batch-toggle",
     "trayCount": "scan-tray-count",
     "reviewOpen": "scan-review-open",
+    "addCopy": "scan-add-copy",
     "lastScanned": "scan-last-scanned",
     "helpSheet": "scan-help-sheet",
     "helpClose": "scan-help-close"
@@ -477,6 +478,10 @@
     "item": "scan-review-item",
     "choose": "scan-review-choose",
     "drop": "scan-review-drop",
+    "onShelf": "scan-review-on-shelf",
+    "keep": "scan-review-keep",
+    "copies": "scan-review-copies",
+    "removeCopy": "scan-review-remove-copy",
     "saveAll": "scan-review-save-all",
     "empty": "scan-review-empty"
   },
