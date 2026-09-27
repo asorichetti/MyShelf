@@ -25,6 +25,7 @@ import { useGroups } from '@/features/groups/useGroups';
 import { ShelfPendingBanner } from '@/features/lookup/PendingLookupsProvider';
 import { goBackOr } from '@/features/navigation/goBack';
 import { parseId } from '@/features/navigation/parseId';
+import { useMounted } from '@/hooks/useMounted';
 import { t } from '@/i18n';
 import { Testids } from '@/testing/testids.gen';
 import { useTheme } from '@/theme';
@@ -85,6 +86,7 @@ export function ShelfScreen() {
   const { spacing, sizes, colors } = theme;
   const { emit, memoryVersion, mode: bookyMode } = useBooky();
   const { snack, show } = useSnackbar();
+  const mounted = useMounted();
   const shelf = useShelf();
   const { sections, items, total, activeQuery, groupBy, viewMode, filters } = shelf;
   // `/?addTo=<group id>`: opened from a group's "Add books", so start picking books for it.
@@ -343,7 +345,7 @@ export function ShelfScreen() {
           addLabel={addToName ? t('shelf.selection.addTo', { name: addToName }) : t('shelf.selection.addToGroup')}
           onAddToGroup={async () => {
             await addSelectedTo(addTo, addToName ?? undefined);
-            goBackOr({ pathname: '/group/[id]', params: { id: String(addTo) } });
+            if (mounted.current) goBackOr({ pathname: '/group/[id]', params: { id: String(addTo) } });
           }}
           style={[styles.bar, { left: spacing.md, right: spacing.md, bottom: spacing.md + (snack ? sizes.touchTarget + spacing.xl : 0) }]}
         />

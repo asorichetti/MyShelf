@@ -12,6 +12,7 @@ import { BookGroupsSection } from '@/features/groups/BookGroupsSection';
 import { BookLoanSection } from '@/features/loans/BookLoanSection';
 import { CoverPhotoOfferHost } from '@/features/scan/CoverPhotoOfferHost';
 import { BookSeries } from '@/features/series/BookSeries';
+import { useMounted } from '@/hooks/useMounted';
 import { t } from '@/i18n';
 import { Testids } from '@/testing/testids.gen';
 import { useTheme } from '@/theme';
@@ -45,11 +46,13 @@ function BookDetailContent({ book }: { book: BookDetail }) {
   const [deleting, setDeleting] = useState(false);
   const deleteBook = useDeleteBook();
   const { show } = useSnackbar();
+  const mounted = useMounted();
 
   const confirmDelete = async () => {
     setDeleting(true);
     try {
       await deleteBook({ id: book.id, title: book.title });
+      if (!mounted.current) return;
       setConfirming(false);
       goBackOrShelf();
     } catch (e) {

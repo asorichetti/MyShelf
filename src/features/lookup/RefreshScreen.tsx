@@ -7,6 +7,7 @@ import { Booky, BookyBubble } from '@/components/booky';
 import { Button, EmptyState, Heading, Screen, Text, TopBar, useSnackbar } from '@/components/ui';
 import { BookMissing, goBackOrShelf } from '@/features/book/BookDetailScreen';
 import { parseId } from '@/features/navigation/parseId';
+import { useMounted } from '@/hooks/useMounted';
 import { t } from '@/i18n';
 import { Testids } from '@/testing/testids.gen';
 import { useTheme } from '@/theme';
@@ -34,6 +35,7 @@ export function RefreshScreen() {
   const { state, ticked } = refresh;
   const { spacing } = useTheme();
   const { show } = useSnackbar();
+  const mounted = useMounted();
 
   if (state.status === 'missing') return <BookMissing />;
   if (state.status === 'loading') {
@@ -48,7 +50,8 @@ export function RefreshScreen() {
     try {
       const n = await refresh.apply();
       if (n === null) return; // a second tap while the first is saving
-      goBackOrShelf();
+      // Saved either way; only a screen still showing goes back (else it would pop the book too).
+      if (mounted.current) goBackOrShelf();
       show({ message: t('refresh.updated', { count: n }) });
     } catch (e) {
       console.error('Could not refresh the book', e);

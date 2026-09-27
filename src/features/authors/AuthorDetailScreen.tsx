@@ -12,6 +12,7 @@ import { goBackOr } from '@/features/navigation/goBack';
 import { LoadingPage } from '@/features/navigation/LoadingPage';
 import { MissingScreen } from '@/features/navigation/MissingScreen';
 import { parseId } from '@/features/navigation/parseId';
+import { useMounted } from '@/hooks/useMounted';
 import { t } from '@/i18n';
 import { Testids } from '@/testing/testids.gen';
 import { useTheme } from '@/theme';
@@ -110,6 +111,7 @@ export function AuthorDetailScreen() {
   const authors = useAuthors();
   const { spacing } = useTheme();
   const { show } = useSnackbar();
+  const mounted = useMounted();
   const [editing, setEditing] = useState(false);
   const [merging, setMerging] = useState(false);
   const [target, setTarget] = useState<AuthorWithCount | null>(null);
@@ -127,6 +129,10 @@ export function AuthorDetailScreen() {
     setBusy(true);
     try {
       const kept = await mergeInto(target.id);
+      if (!mounted.current) {
+        if (kept) show({ message: t('authors.detail.merged', { name: kept.name }) });
+        return;
+      }
       setTarget(null);
       setBusy(false);
       if (kept) {

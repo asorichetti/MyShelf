@@ -13,6 +13,7 @@ import { useBottomObstacle } from '@/components/ui/layers';
 import { genresRepo, useDatabase } from '@/db';
 import { languageName, type BookDetail } from '@/domain';
 import { goBackOr } from '@/features/navigation/goBack';
+import { useMounted } from '@/hooks/useMounted';
 import { t } from '@/i18n';
 import type { BookCandidate } from '@/services/metadata';
 import { Testids } from '@/testing/testids.gen';
@@ -40,6 +41,7 @@ export function EditionPickerScreen() {
   const theme = useTheme();
   const { colors, spacing, sizes, radii } = theme;
   const { show } = useSnackbar();
+  const mounted = useMounted();
   const { check } = useDuplicateCheck();
   const { save } = useSaveCandidate();
   const [review, setReview] = useState(false);
@@ -88,7 +90,7 @@ export function EditionPickerScreen() {
       endSession(session.id, { keepPhoto: session.photoUri != null });
       offerPhotoIfNoCover(saved, session.photoUri, session.photoFocus);
       setDuplicates(null);
-      router.replace({ pathname: '/book/[id]', params: { id: String(saved.id) } });
+      if (mounted.current) router.replace({ pathname: '/book/[id]', params: { id: String(saved.id) } });
     } catch (e) {
       console.error('Could not save the book', e);
       show({ message: t('common.saveFailed') });
@@ -104,6 +106,7 @@ export function EditionPickerScreen() {
     busy.current = true;
     try {
       const genres = (await genresRepo.listGenres(db)).map((g) => g.name);
+      if (!mounted.current) return;
       const id = putPrefill(prefillFromCandidate(candidate, genres));
       setDuplicates(null);
       endSession(session.id);
@@ -130,6 +133,8 @@ export function EditionPickerScreen() {
     } finally {
       busy.current = false;
     }
+    // Left during the duplicate check: nothing was confirmed, so nothing is saved.
+    if (!mounted.current) return;
     if (existing.length) {
       setDuplicates({ existing, candidate });
       return;

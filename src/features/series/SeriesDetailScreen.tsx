@@ -9,6 +9,7 @@ import { SeriesShelf, seriesSlots } from '@/components/series/SeriesShelf';
 import { booksText, progressSentence } from '@/components/series/seriesText';
 import { Button, ConfirmDialog, EmptyState, Heading, IconButton, Menu, Screen, Text, TextField, useSnackbar } from '@/components/ui';
 import type { Book, Series, SeriesProgress } from '@/domain';
+import { useMounted } from '@/hooks/useMounted';
 import { t } from '@/i18n';
 import { Testids } from '@/testing/testids.gen';
 import { useTheme } from '@/theme';
@@ -205,6 +206,7 @@ function SeriesContent({ series, books, progress, actions }: { series: Series; b
   const theme = useTheme();
   const { spacing } = theme;
   const { show } = useSnackbar();
+  const mounted = useMounted();
   const [menuOpen, setMenuOpen] = useState(false);
   const [dialog, setDialog] = useState<'rename' | 'merge' | 'delete' | null>(null);
   const [deleting, setDeleting] = useState(false);
@@ -293,6 +295,7 @@ function SeriesContent({ series, books, progress, actions }: { series: Series; b
         onCancel={() => setDialog(null)}
         onMerge={async (targetId) => {
           const target = await actions.mergeInto(targetId);
+          if (!mounted.current) return;
           setDialog(null);
           if (target) {
             router.replace({ pathname: '/series/[id]', params: { id: String(target.id) } });
@@ -314,9 +317,10 @@ function SeriesContent({ series, books, progress, actions }: { series: Series; b
           setDeleting(true);
           try {
             await actions.remove();
+            show({ message: t('series.detail.deleted', { name: series.name }) });
+            if (!mounted.current) return;
             setDialog(null);
             router.replace('/series');
-            show({ message: t('series.detail.deleted', { name: series.name }) });
           } catch (e) {
             console.error('Could not delete the series', e);
             setDeleting(false);

@@ -10,6 +10,7 @@ import { Button, CatalogueCard, EmptyState, Heading, Screen, Stamp, Text, TopBar
 import { useDatabase } from '@/db';
 import { joinNames } from '@/domain';
 import { goBackOr } from '@/features/navigation/goBack';
+import { useMounted } from '@/hooks/useMounted';
 import { t } from '@/i18n';
 import { Testids } from '@/testing/testids.gen';
 import { useTheme } from '@/theme';
@@ -73,6 +74,7 @@ export function ScanReviewScreen() {
   const { spacing, colors, sizes } = useTheme();
   const { emit } = useBooky();
   const { show } = useSnackbar();
+  const mounted = useMounted();
   const [saving, setSaving] = useState(false);
   // A second tap while saving must not save the tray again.
   const busy = useRef(false);
@@ -103,6 +105,7 @@ export function ScanReviewScreen() {
     }
     if (saved.length) {
       void emit({ type: 'book-added', variant: 'batch', vars: { saved: bookCount(saved.length), books: bookCount(count) } });
+      if (!mounted.current) return;
       // Back to the tab shell underneath (not a second one on top of it), then to the Shelf.
       if (router.canDismiss()) router.dismissAll();
       router.navigate('/');
