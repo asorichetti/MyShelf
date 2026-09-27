@@ -11,6 +11,10 @@
 //
 //   ./gradlew assembleRelease -PmyshelfApkAbis=arm64-v8a,armeabi-v7a
 //     -> app-arm64-v8a-release.apk, app-armeabi-v7a-release.apk
+//
+// Build the App Bundle in a separate Gradle run: with resource shrinking on
+// (withReleaseShrinking.js) the Android Gradle plugin refuses per-ABI APKs
+// and a bundle together (https://issuetracker.google.com/402800800).
 const { withAppBuildGradle } = require('expo/config-plugins');
 
 const MARKER = '// MyShelf per-ABI APKs (plugins/withApkAbiSplits.js)';

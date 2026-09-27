@@ -185,9 +185,16 @@ jobs:
           EXPO_NO_GIT_STATUS: '1'
         run: npx expo prebuild --platform android --clean --no-install
 
-      - name: Build release APKs and AAB
+      # Two Gradle runs: with resource shrinking on (plugins/withReleaseShrinking.js),
+      # the Android Gradle plugin refuses per-ABI APKs and a bundle in one
+      # (https://issuetracker.google.com/402800800). The second reuses the
+      # first's native builds.
+      - name: Build release AAB
         working-directory: android
-        run: ./gradlew assembleRelease bundleRelease -PmyshelfApkAbis=arm64-v8a,armeabi-v7a --no-daemon -Dorg.gradle.jvmargs="-Xmx4g -XX:MaxMetaspaceSize=1g"
+        run: ./gradlew bundleRelease --no-daemon -Dorg.gradle.jvmargs="-Xmx4g -XX:MaxMetaspaceSize=1g"
+      - name: Build release APKs, one per ABI
+        working-directory: android
+        run: ./gradlew assembleRelease -PmyshelfApkAbis=arm64-v8a,armeabi-v7a --no-daemon -Dorg.gradle.jvmargs="-Xmx4g -XX:MaxMetaspaceSize=1g"
 
       - name: Collect the builds
         id: collect
