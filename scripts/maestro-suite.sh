@@ -155,9 +155,11 @@ centre_of() {
     awk 'NF == 4 { print int(($1 + $3) / 2), int(($2 + $4) / 2) }'
 }
 
+# Waits until the device can reach Open Library over HTTPS. A TCP connect to
+# port 443 is what the app needs; ping is often blocked on CI runners.
 wait_online() {
   for _ in $(seq 1 30); do
-    a shell ping -c 1 -W 2 openlibrary.org > /dev/null 2>&1 && return 0
+    a shell nc -z -w 3 openlibrary.org 443 > /dev/null 2>&1 && return 0
     sleep 2
   done
   return 1
