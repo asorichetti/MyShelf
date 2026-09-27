@@ -307,7 +307,9 @@ export function ShelfScreen() {
   );
 
   return (
-    <Screen testID={Testids.home.root} scroll={false} contentStyle={[styles.fill, { paddingBottom: 0 }]}>
+    // Loading until the first answer: until then the toolbar and the books are not there to reach, so the
+    // page must not say it is ready (a keyboard user, or a test, would tab past where the toolbar will be).
+    <Screen testID={Testids.home.root} pageState={total == null ? 'loading' : 'content'} scroll={false} contentStyle={[styles.fill, { paddingBottom: 0 }]}>
       {/* Measured for the room Booky's tip needs (a list cannot measure itself in the window). */}
       <View ref={attachRoom} onLayout={layoutRoom} style={styles.fill}>
         <SectionList

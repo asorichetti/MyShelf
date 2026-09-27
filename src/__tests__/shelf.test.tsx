@@ -73,4 +73,36 @@ describe('Shelf screen', () => {
     // Sorted by title, the new book is the first row (FlatList renders the rest in batches).
     expect(screen.getAllByTestId(Testids.home.row)[0].props.accessibilityLabel).toBe('Aardvark Adventures');
   });
+
+  it('says it is loading until the first answer, so nothing tabs past a toolbar that is not there yet', async () => {
+    await loadFixture(db, 'demo');
+    renderApp(db, '/', routes);
+    // Rendered, but the books and the toolbar are still on their way.
+    expect(screen.getByTestId(Testids.home.root)).toBeOnTheScreen();
+    expect(screen.queryByTestId(Testids.home.sortButton)).toBeNull();
+    expect(screen.getByTestId(Testids.pageState.loading)).toContainElement(screen.getByTestId(Testids.home.root));
+    expect(screen.queryByTestId(Testids.pageState.content)).toBeNull();
+    await waitFor(() => expect(screen.getByTestId(Testids.pageState.content)).toContainElement(screen.getByTestId(Testids.shelfView.filterButton)));
+    expect(screen.queryByTestId(Testids.pageState.loading)).toBeNull();
+  });
+
+  it('keeps the same toolbar controls through a background reload, so keyboard focus on them survives', async () => {
+    await loadFixture(db, 'demo');
+    renderApp(db, '/', routes);
+    await waitFor(() => expect(screen.getAllByTestId(Testids.home.row)).toHaveLength(12));
+    const ids = [Testids.home.search, Testids.home.sortButton, Testids.shelfView.groupByButton, Testids.shelfView.filterButton, Testids.shelfView.selectButton, Testids.shelfView.modeList];
+    const before = ids.map((id) => screen.getByTestId(id));
+    // A cover arriving or a lookup finishing in the background, several times over.
+    for (let i = 0; i < 3; i++) {
+      await act(async () => {
+        await booksRepo.createBook(db, { title: `Aardvark ${i}` });
+        emit('library-changed');
+      });
+      await advance(0);
+    }
+    await waitFor(() => expect(screen.getByTestId(Testids.home.bookCount)).toHaveTextContent('15 books catalogued'));
+    // The very same elements: none was unmounted and remounted (which would drop focus on the page body).
+    ids.forEach((id, i) => expect(screen.getByTestId(id)).toBe(before[i]));
+    expect(screen.getByTestId(Testids.pageState.content)).toBeOnTheScreen();
+  });
 });
