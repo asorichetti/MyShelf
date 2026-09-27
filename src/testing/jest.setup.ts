@@ -1,3 +1,11 @@
+// Gesture handler's native module is replaced by its own Jest mocks; gestures are driven with `fireGestureHandler`.
+import 'react-native-gesture-handler/jestSetup';
+
+// Reanimated and its worklets runtime have no native side in Jest: use their own mocks,
+// under which shared values update at once and gesture callbacks run on the JS thread.
+jest.mock('react-native-worklets', () => jest.requireActual('react-native-worklets/src/mock'));
+jest.mock('react-native-reanimated', () => jest.requireActual('react-native-reanimated/mock'));
+
 // Vector icons load their font asynchronously and re-render when it arrives,
 // which produces act() warnings in tests. Render a plain placeholder instead.
 jest.mock('@expo/vector-icons/MaterialCommunityIcons', () => {

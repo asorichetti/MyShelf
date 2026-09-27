@@ -3,6 +3,7 @@ import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { BookyOverlay, BookyTouchArea } from '@/components/booky';
 import { SnackbarProvider } from '@/components/ui';
@@ -80,19 +81,22 @@ export default function RootLayout() {
   }, [ready]);
 
   return (
-    <ThemeProvider fontScale={fontScaleOverride}>
-      <DatabaseProvider
-        open={openDatabase}
-        onStatusChange={setDbState}
-        fallback={fontsReady ? <LoadingScreen /> : null}
-        renderError={(error, retry) => (fontsReady ? <DatabaseErrorScreen error={error} onRetry={retry} /> : null)}
-      >
-        {fontsReady ? (
-          <AppErrorBoundary>
-            <RootStack />
-          </AppErrorBoundary>
-        ) : null}
-      </DatabaseProvider>
-    </ThemeProvider>
+    // Swipes and drags (loan rows, a group's order) need the gesture root above every screen.
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <ThemeProvider fontScale={fontScaleOverride}>
+        <DatabaseProvider
+          open={openDatabase}
+          onStatusChange={setDbState}
+          fallback={fontsReady ? <LoadingScreen /> : null}
+          renderError={(error, retry) => (fontsReady ? <DatabaseErrorScreen error={error} onRetry={retry} /> : null)}
+        >
+          {fontsReady ? (
+            <AppErrorBoundary>
+              <RootStack />
+            </AppErrorBoundary>
+          ) : null}
+        </DatabaseProvider>
+      </ThemeProvider>
+    </GestureHandlerRootView>
   );
 }
