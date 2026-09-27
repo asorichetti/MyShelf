@@ -1,18 +1,20 @@
 import { act, renderHook } from '@testing-library/react-native';
 
 import { StaticDatabaseProvider, type Db } from '@/db';
+import type { OcrResult } from '@/domain';
 import { OfflineError } from '@/services/http';
 import { OL_BOOKS } from '@/services/metadata/__fixtures__/openLibraryRoutes';
 import { createTestDb } from '@/testing/createTestDb';
 import { createFixtureMetadata, type FixtureMetadata } from '@/testing/fixtureMetadata';
 
 import { clearSessions, getSession, type ScanSession } from '../sessionStore';
-import { scanMessages, useScanSession } from '../useScanSession';
+import { ocrWords, scanMessages, typedFromQuery, useScanSession } from '../useScanSession';
 
 import type { ReactNode } from 'react';
 
 jest.mock('expo-router', () => ({ router: { navigate: jest.fn() } }));
 jest.mock('../haptics', () => ({ tick: jest.fn() }));
+jest.mock('../tempPhoto', () => ({ discardPhoto: jest.fn() }));
 
 let db: Db;
 let metadata: FixtureMetadata;
@@ -130,7 +132,13 @@ describe('useScanSession: typed input (P03-07)', () => {
       { title: 'mort' },
       { text: 'mort terry pratchett' },
     ]);
-    expect(result.current.state).toEqual({ phase: 'not-found', kind: 'cover', isbn13: null, guess: { title: 'mort', author: 'terry pratchett' } });
+    expect(result.current.state).toEqual({
+      phase: 'not-found',
+      kind: 'cover',
+      isbn13: null,
+      guess: { title: 'mort', author: 'terry pratchett' },
+      typed: 'Mort\nTerry Pratchett',
+    });
   });
 });
 
@@ -173,5 +181,62 @@ describe('useScanSession: results (P03-04)', () => {
     act(() => result.current.submitIsbn(OL_BOOKS.theMartian));
     await settle();
     expect(router.navigate).toHaveBeenCalledWith({ pathname: '/scan/pick', params: { session: expect.any(String) } });
+  });
+});
+
+describe('useScanSession: cover photos (P03-05)', () => {
+  const photo = 'file:///cache/ImagePicker/cover.jpg';
+  const line = (text: string, y: number, height: number) => {
+    const frame = { x: 100, y, width: 800, height };
+    return { text, frame, lines: [{ text, frame }] };
+  };
+  const discard = () => jest.requireMock<{ discardPhoto: jest.Mock }>('../tempPhoto').discardPhoto;
+  beforeEach(() => discard().mockClear());
+
+  it('searches what was read and keeps the photo with the session', async () => {
+    const { result, onFound } = render();
+    // A real capture of Practical Magic, against the recorded Open Library search.
+    const ocr = (jest.requireActual('@/domain/__fixtures__/ocr/real-practical-magic.json') as { result: OcrResult }).result;
+    act(() => result.current.submitOcr(ocr, photo));
+    await settle();
+    const session = onFound.mock.calls[0][0];
+    expect(session).toMatchObject({ source: 'cover', photoUri: photo, guess: { title: 'practical magic', author: 'alice hoffman' } });
+    expect(session.candidates[0]).toMatchObject({ title: 'Practical Magic', authors: ['Alice Hoffman'] });
+    expect(discard()).not.toHaveBeenCalled();
+  });
+
+  it('no words at all: asks to fill the frame, and deletes the photo', () => {
+    const { result } = render();
+    act(() => result.current.submitOcr({ blocks: [] }, photo));
+    expect(result.current.state).toEqual({ phase: 'error', reason: 'invalid', message: scanMessages.noCoverWords, typed: '' });
+    expect(discard()).toHaveBeenCalledWith(photo);
+  });
+
+  it('words but no title: offers them to correct, largest first', () => {
+    const { result } = render();
+    act(() => result.current.submitOcr({ blocks: [line('£8.99', 1500, 30), line('WINNER OF THE BOOKER PRIZE', 100, 40)] }, photo));
+    expect(result.current.state).toEqual({ phase: 'error', reason: 'invalid', message: scanMessages.noCoverRead, typed: 'WINNER OF THE BOOKER PRIZE' });
+  });
+
+  it('nothing found: offers the words read, as title and author lines, and deletes the photo', async () => {
+    const { result } = render();
+    jest.spyOn(metadata.service, 'search').mockResolvedValue({ candidates: [], warnings: [] });
+    act(() => result.current.submitOcr({ blocks: [line('TERRY PRATCHETT', 80, 60), line('MORT', 400, 200)] }, photo));
+    await settle();
+    expect(result.current.state).toMatchObject({ phase: 'not-found', kind: 'cover', typed: 'Mort\nTerry Pratchett' });
+    expect(discard()).toHaveBeenCalledWith(photo);
+  });
+});
+
+describe('typed words from a cover', () => {
+  it('turns a query into title and author lines', () => {
+    expect(typedFromQuery({ title: 'the colour of magic', author: 'terry pratchett' })).toBe('The Colour Of Magic\nTerry Pratchett');
+    expect(typedFromQuery({ text: 'dune frank herbert' })).toBe('Dune Frank Herbert');
+    expect(typedFromQuery({ author: 'ali hazelwood' })).toBe('Ali Hazelwood');
+  });
+
+  it('keeps at most four lines with words, largest first', () => {
+    const l = (text: string, height: number) => ({ text, frame: { x: 0, y: 0, width: 10, height }, lines: [] });
+    expect(ocrWords({ blocks: [l('a', 90), l('SMALL', 10), l('BIG ONE', 80), l('~ 7', 70), l('MID', 50), l('LOW', 40), l('TINY', 20)] })).toBe('BIG ONE\nMID\nLOW\nTINY');
   });
 });

@@ -2318,6 +2318,8 @@ export const en = {
       noMatchIsbn: 'No match for that ISBN',
       noMatchCover: 'No match for that cover',
       addByHand: 'Add it by hand',
+      /** After a cover search found nothing, or a photo gave no title: edit the words read and search again. */
+      typeWords: 'Change the words',
       readCoverInstead: 'Read the cover instead',
       keepScanning: 'Keep scanning',
       /** After a scan in "Scan several" mode; {title} is the book's title. */
@@ -2329,7 +2331,8 @@ export const en = {
       notBook: 'That’s a product barcode, not a book’s — look for the one starting 978 or 979.',
       invalidIsbn: 'That doesn’t look like an ISBN. It’s the 10 or 13 digits above the barcode, usually starting 978.',
       noCoverText: 'Type the words on the cover first — the title and the author.',
-      noCoverRead: 'I couldn’t make out a title on that cover. Try again with the cover filling the frame, or add it by hand.',
+      noCoverRead: 'I couldn’t make out a title on that cover. Try again with the cover filling the frame, or type the words yourself.',
+      noCoverWords: 'I couldn’t find any words in that photo. Fill the frame with the front cover, flat and well lit, and try again.',
       offlineCover: 'I can’t reach the library catalogues right now, so I can’t search for that cover. Try again when you’re online.',
       queued: 'Saved — I’ll look this up when you’re back online.',
       /** While a lookup runs; {isbn} is the hyphenated ISBN. */
@@ -2354,7 +2357,7 @@ export const en = {
       readCover: 'Read the cover',
     },
     cover: {
-      unavailable: 'This version of the app can’t read covers by itself yet. Type what the cover says and I’ll search for it.',
+      unavailable: 'This version of the app can’t read covers by itself. Type what the cover says and I’ll search for it.',
       readFailed: 'I couldn’t read that photo. Try again with the cover flat and well lit.',
       cameraLabel: 'Camera: fill the frame with the front cover',
       hint: 'Fill the frame with the front cover',
@@ -2362,6 +2365,10 @@ export const en = {
       photoAlt: 'Your photo of the cover',
       retake: 'Retake',
       usePhoto: 'Use this photo',
+      /** Opens the phone's photo picker to read a photo of a cover taken earlier. */
+      choosePhoto: 'Choose from your photos',
+      chooseAnother: 'Choose another',
+      reading: 'Reading the cover…',
     },
     permission: {
       askTitle: 'May I use the camera?',
@@ -2376,6 +2383,8 @@ export const en = {
     host: {
       cameraLoading: 'Getting the camera ready…',
       useCamera: 'Use the camera instead',
+      /** Leaves the typed cover words for the cover camera and photos again. */
+      backToCover: 'Read a photo instead',
       typeIsbn: 'Type the ISBN instead',
       /** The web build is a test harness, not shipped to users. */
       webIsbnNote: 'Web test harness: type the ISBN a barcode would give. On a phone this is the camera.',

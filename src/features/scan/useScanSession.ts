@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import {
   buildQueriesFromOcr,
+  cleanOcrLine,
   formatIsbn13,
   isRepeatRead,
   parseScannedCode,
@@ -18,19 +19,28 @@ import { toIsbn13, type MetadataService } from '@/services/metadata';
 
 import { searchCover as runCoverSearch } from './coverSearch';
 import { tick } from './haptics';
+import { titleCase } from './prefill';
 import { createSession, type ScanSession } from './sessionStore';
+import { discardPhoto } from './tempPhoto';
 
 export type ScanPhase =
   /** Waiting for a barcode or typed input. */
   | { phase: 'ready' }
   /** A lookup is running (the Booky sheet with Cancel). */
   | { phase: 'looking-up'; kind: 'isbn' | 'cover'; label: string }
-  /** Nothing found: offer the cover, or adding it by hand with what is known. */
-  | { phase: 'not-found'; kind: 'isbn' | 'cover'; isbn13: string | null; guess: OcrQuery | null }
+  /**
+   * Nothing found: offer the cover, or adding it by hand with what is known.
+   * `typed`: for a cover, the words read, to search again with changes.
+   */
+  | { phase: 'not-found'; kind: 'isbn' | 'cover'; isbn13: string | null; guess: OcrQuery | null; typed?: string }
   /** A product barcode, not a book's. */
   | { phase: 'not-book'; data: string }
-  /** Something went wrong; `offline` when the catalogues could not be reached. */
-  | { phase: 'error'; reason: 'offline' | 'invalid' | 'failed'; message: string };
+  /**
+   * Something went wrong; `offline` when the catalogues could not be reached.
+   * `typed`: a cover photo read without a title, with whatever words it had,
+   * to type the rest.
+   */
+  | { phase: 'error'; reason: 'offline' | 'invalid' | 'failed'; message: string; typed?: string };
 
 /** A short message shown while scanning continues (queued offline, added to the tray). */
 export interface ScanNotice {
@@ -82,6 +92,9 @@ export const scanMessages = {
   get noCoverRead() {
     return t('scan.messages.noCoverRead');
   },
+  get noCoverWords() {
+    return t('scan.messages.noCoverWords');
+  },
   get offlineCover() {
     return t('scan.messages.offlineCover');
   },
@@ -94,6 +107,27 @@ export const scanMessages = {
 };
 
 const REPEAT_WINDOW_MS = 3000;
+
+/** A cover search's words as the typed field takes them: the title, then the author, on their own lines. */
+export function typedFromQuery(query: OcrQuery): string {
+  const title = query.title ?? (query.author ? '' : (query.text ?? ''));
+  return [title, query.author ?? ''].map((s) => titleCase(s)).filter(Boolean).join('\n');
+}
+
+/**
+ * The words on a photo that gave no title, largest first (at most four
+ * lines), for the user to correct and search with; empty when there were none.
+ */
+export function ocrWords(result: OcrResult): string {
+  const lines = result.blocks.flatMap((b) => (b.lines.length ? b.lines : [{ text: b.text, frame: b.frame }]));
+  return lines
+    .map((l) => ({ text: cleanOcrLine(l.text), height: l.frame.height }))
+    .filter((l) => /\p{L}{2}/u.test(l.text))
+    .sort((a, b) => b.height - a.height)
+    .slice(0, 4)
+    .map((l) => l.text)
+    .join('\n');
+}
 
 /**
  * The last book found, kept for the app session: the Scan tab unmounts while
@@ -180,15 +214,24 @@ export function useScanSession({ service: injected, onFound }: UseScanSessionOpt
   );
 
   const searchCover = useCallback(
-    async (queries: OcrQuery[], photoUri: string | null) => {
-      if (!queries.length) return setState({ phase: 'error', reason: 'invalid', message: photoUri ? scanMessages.noCoverRead : scanMessages.noCoverText });
+    async (queries: OcrQuery[], photoUri: string | null, ocr: OcrResult | null = null) => {
+      if (!queries.length) {
+        discardPhoto(photoUri);
+        if (!ocr) return setState({ phase: 'error', reason: 'invalid', message: scanMessages.noCoverText });
+        const words = ocrWords(ocr);
+        return setState({ phase: 'error', reason: 'invalid', message: words ? scanMessages.noCoverRead : scanMessages.noCoverWords, typed: words });
+      }
       const abort = begin('cover', t('scan.messages.searching', { text: queries[0].title ?? queries[0].text ?? '' }));
       try {
         const { candidates, used } = await runCoverSearch((q, signal) => service.search(q, { signal }), queries, { signal: abort.signal });
         if (abort.signal.aborted) return;
-        if (!candidates.length) return setState({ phase: 'not-found', kind: 'cover', isbn13: null, guess: queries[0] });
+        if (!candidates.length) {
+          discardPhoto(photoUri);
+          return setState({ phase: 'not-found', kind: 'cover', isbn13: null, guess: queries[0], typed: typedFromQuery(queries[0]) });
+        }
         found(createSession({ source: 'cover', candidates, guess: used ?? queries[0], photoUri }));
       } catch (error) {
+        discardPhoto(photoUri);
         if (abort.signal.aborted || isAbortError(error)) return;
         setState({
           phase: 'error',
@@ -233,7 +276,10 @@ export function useScanSession({ service: injected, onFound }: UseScanSessionOpt
   );
 
   const submitCoverText = useCallback((text: string) => void searchCover(queriesFromTypedText(text), null), [searchCover]);
-  const submitOcr = useCallback((result: OcrResult, photoUri: string | null = null) => void searchCover(buildQueriesFromOcr(result), photoUri), [searchCover]);
+  const submitOcr = useCallback(
+    (result: OcrResult, photoUri: string | null = null) => void searchCover(buildQueriesFromOcr(result), photoUri, result),
+    [searchCover],
+  );
 
   const cancel = useCallback(() => {
     controller.current?.abort();

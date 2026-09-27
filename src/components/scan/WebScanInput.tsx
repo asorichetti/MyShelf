@@ -43,12 +43,14 @@ export function TypedIsbnField({ onSubmit, disabled, label }: TypedIsbnFieldProp
 export interface TypedCoverTextFieldProps {
   onSubmit: (text: string) => void;
   disabled?: boolean;
+  /** Words to start from: what the phone read off a cover it could not match. */
+  initialText?: string;
 }
 
 /** "Type the cover text": the typed stand-in for reading a cover; each line is read like a line on the cover. */
-export function TypedCoverTextField({ onSubmit, disabled }: TypedCoverTextFieldProps) {
+export function TypedCoverTextField({ onSubmit, disabled, initialText = '' }: TypedCoverTextFieldProps) {
   const { spacing } = useTheme();
-  const [text, setText] = useState('');
+  const [text, setText] = useState(initialText);
   const submit = () => text.trim() && onSubmit(text);
   return (
     <View style={{ gap: spacing.sm }}>

@@ -44,6 +44,8 @@ export const Testids = {
     capture: 'scan-capture',
     usePhoto: 'scan-use-photo',
     retake: 'scan-retake',
+    choosePhoto: 'scan-choose-photo',
+    typeWords: 'scan-type-words',
     webIsbn: 'scan-web-isbn',
     webIsbnSubmit: 'scan-web-isbn-submit',
     webText: 'scan-web-text',
@@ -304,6 +306,11 @@ export const Testids = {
     image: 'cover-image',
     placeholder: 'cover-placeholder',
     fallback: 'cover-fallback',
+  },
+  coverPhoto: {
+    offer: 'cover-photo-offer',
+    use: 'cover-photo-use',
+    decline: 'cover-photo-decline',
   },
   dialog: {
     root: 'dialog-root',

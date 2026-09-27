@@ -9,12 +9,15 @@ import { ScanModeSwitch, type ScanMode } from '@/components/scan/ScanModeSwitch'
 import { ScannerHost } from '@/components/scan/ScannerHost';
 import { ScanTray } from '@/components/scan/ScanTray';
 import { CatalogueCard, Chip, Heading, Screen, Text } from '@/components/ui';
-import { joinNames, type OcrQuery } from '@/domain';
+import { joinNames, type OcrQuery, type OcrResult } from '@/domain';
+import { isE2eEnabled } from '@/features/e2e/e2eFlag';
 import { t } from '@/i18n';
 import { ocrAvailable, recognizeText } from '@/services/recognition';
 import { Testids } from '@/testing/testids.gen';
 import { useTheme } from '@/theme';
 
+import { choosePhoto } from './choosePhoto';
+import { logOcrResult } from './ocrLog';
 import { prefillFromScan, putPrefill } from './prefill';
 import { onInjectedScan, takeInjectedScan } from './scanInjector';
 import { addToTray, useTray } from './useBatchScan';
@@ -40,6 +43,8 @@ export function ScanScreen() {
   const [batch, setBatchState] = useState(remembered.batch);
   const [help, setHelp] = useState(false);
   const [trayNotice, setTrayNotice] = useState<ScanNotice | null>(null);
+  // Cover words to correct and search with, after a cover photo found nothing (null: the camera).
+  const [typedCover, setTypedCover] = useState<string | null>(null);
   const tray = useTray();
   const permission = usePermission();
   const booky = useOptionalBooky();
@@ -68,7 +73,21 @@ export function ScanScreen() {
     });
   }, []);
   const scan = useScanSession({ onFound: batch ? onFound : undefined });
-  const { state, submitIsbn, submitCoverText, resume } = scan;
+  const { state, submitIsbn, submitCoverText, submitOcr, resume } = scan;
+
+  const onOcr = useCallback(
+    (result: OcrResult, photoUri: string) => {
+      // E2E builds log what the text reader saw, for recording OCR fixtures (scripts/record-mlkit-fixture.mjs).
+      if (isE2eEnabled()) logOcrResult(result);
+      submitOcr(result, photoUri);
+    },
+    [submitOcr],
+  );
+  const typeWords = (text: string) => {
+    setMode('cover');
+    setTypedCover(text);
+    resume();
+  };
 
   // E2E: a scan injected through /e2e/scan (P03-07) arrives here, exactly where the camera's would.
   useEffect(() => {
@@ -110,8 +129,11 @@ export function ScanScreen() {
         onBarcode={scan.onBarcode}
         onIsbnText={submitIsbn}
         onCoverText={submitCoverText}
-        onOcr={scan.submitOcr}
+        onOcr={onOcr}
         onModeChange={setMode}
+        choosePhoto={choosePhoto}
+        typedCover={typedCover}
+        onTypedCoverDone={() => setTypedCover(null)}
       />
 
       {state.phase === 'looking-up' ? (
@@ -130,6 +152,9 @@ export function ScanScreen() {
             message={tipById('lookup-none-scan').text}
             actions={[
               { label: t('scan.screen.addByHand'), onPress: () => addManually(state.isbn13, state.guess), testID: Testids.scan.addManually },
+              ...(state.kind === 'cover' && state.typed != null
+                ? [{ label: t('scan.screen.typeWords'), onPress: () => typeWords(state.typed ?? ''), testID: Testids.scan.typeWords }]
+                : []),
               state.kind === 'isbn'
                 ? {
                     label: t('scan.screen.readCoverInstead'),
@@ -151,7 +176,14 @@ export function ScanScreen() {
       ) : null}
       {state.phase === 'error' ? (
         <View role="alert" testID={Testids.scan.error}>
-          <BookyBubble expression="concerned" message={state.message} actions={[{ label: t('common.tryAgain'), onPress: resume, testID: Testids.scan.resume }]} />
+          <BookyBubble
+            expression="concerned"
+            message={state.message}
+            actions={[
+              ...(state.typed != null ? [{ label: t('scan.screen.typeWords'), onPress: () => typeWords(state.typed ?? ''), testID: Testids.scan.typeWords }] : []),
+              { label: t('common.tryAgain'), onPress: resume, testID: Testids.scan.resume },
+            ]}
+          />
         </View>
       ) : null}
       {notice && state.phase === 'ready' ? (

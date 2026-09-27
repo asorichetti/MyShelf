@@ -38,6 +38,8 @@
     "capture": "scan-capture",
     "usePhoto": "scan-use-photo",
     "retake": "scan-retake",
+    "choosePhoto": "scan-choose-photo",
+    "typeWords": "scan-type-words",
     "webIsbn": "scan-web-isbn",
     "webIsbnSubmit": "scan-web-isbn-submit",
     "webText": "scan-web-text",
@@ -265,6 +267,7 @@
   "bookMissing": { "root": "book-missing-root", "title": "book-missing-title", "back": "book-missing-back" },
   "menu": { "root": "menu-root" },
   "cover": { "image": "cover-image", "placeholder": "cover-placeholder", "fallback": "cover-fallback" },
+  "coverPhoto": { "offer": "cover-photo-offer", "use": "cover-photo-use", "decline": "cover-photo-decline" },
   "dialog": { "root": "dialog-root", "confirm": "dialog-confirm", "cancel": "dialog-cancel" },
   "snackbar": { "root": "snackbar-root", "action": "snackbar-action" },
   "seriesInput": {
