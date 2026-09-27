@@ -81,6 +81,43 @@ describe('useEditionPicker (P03-08)', () => {
     expect(chosen.seriesHints.some((h) => h.name?.startsWith('Discworld'))).toBe(true);
   });
 
+  it('lists editions in the language read on the cover first, and that language first among the filters', async () => {
+    const { candidates } = await metadata.service.search({ text: 'the colour of magic terry pratchett' });
+    const french = createSession({ source: 'cover', candidates, language: { code: 'fr', detected: true } });
+    const { result } = render(french);
+    const key = result.current.groups[0].key;
+    act(() => result.current.toggle(key));
+    await waitFor(() => expect(result.current.loads[key].status).toBe('ready'));
+    const editions = result.current.editionsOf(key);
+    const firstOther = editions.findIndex((e) => e.language !== 'fr');
+    expect(editions[0].language).toBe('fr');
+    expect(editions.slice(firstOther).some((e) => e.language === 'fr')).toBe(false);
+    expect(result.current.available.languages[0]).toBe('fr');
+  });
+
+  it("without a language read, prefers the app's (English) and editions with a cover", async () => {
+    const { result } = render(await coverSession());
+    const key = result.current.groups[0].key;
+    act(() => result.current.toggle(key));
+    await waitFor(() => expect(result.current.loads[key].status).toBe('ready'));
+    const [first] = result.current.editionsOf(key);
+    expect(first.language).toBe('en');
+    expect(first.coverRefs.olEditionCoverIds.length).toBeGreaterThan(0);
+  });
+
+  it('the chosen edition carries the work cover and the other editions\' covers for the cover chain', async () => {
+    const { result } = render(await coverSession());
+    const key = result.current.groups[0].key;
+    act(() => result.current.toggle(key));
+    await waitFor(() => expect(result.current.loads[key].status).toBe('ready'));
+    const bare = result.current.editionsOf(key).find((e) => !e.coverRefs.olEditionCoverIds.length)!;
+    act(() => result.current.select(bare));
+    const refs = result.current.chosen()!.coverRefs;
+    expect(refs.olWorkCoverIds).toEqual(result.current.groups[0].work.coverRefs.olWorkCoverIds);
+    expect(refs.olWorkCoverIds.length).toBeGreaterThan(0);
+    expect(refs.olOtherEditionCoverIds?.length).toBeGreaterThan(0);
+  });
+
   it('a work whose editions fail to load can be chosen itself', async () => {
     jest.spyOn(metadata.service, 'editions').mockRejectedValue(new Error('down'));
     const { result } = render(await coverSession());

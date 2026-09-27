@@ -1,20 +1,15 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import { bookMatchKey, type BookFormat } from '@/domain';
+import { bookLanguagePreference, type BookFormat } from '@/domain';
 import { useMetadataService } from '@/features/lookup/metadataService';
 import { isAbortError } from '@/services/http';
 import type { BookCandidate, MetadataService } from '@/services/metadata';
 
+import { enrichEdition, groupByWork, orderEditions, type WorkGroup } from './editionChoice';
+
 import type { ScanSession } from './sessionStore';
 
-/** One work in the picker: the search result (or first volume) and the editions known for it. */
-export interface WorkGroup {
-  key: string;
-  /** What the group header shows: the work (a search result) or its first volume. */
-  work: BookCandidate;
-  /** Editions that came with the results (Google Books volumes, ISBN hits). */
-  members: BookCandidate[];
-}
+export { enrichEdition, groupByWork, type WorkGroup } from './editionChoice';
 
 export type EditionsLoad = { status: 'idle' } | { status: 'loading' } | { status: 'ready'; editions: BookCandidate[] } | { status: 'error' };
 
@@ -30,69 +25,20 @@ export interface EditionPicker {
   expanded: ReadonlySet<string>;
   toggle: (key: string) => void;
   loads: Readonly<Record<string, EditionsLoad>>;
-  /** A group's editions after the filters, members first, de-duplicated by ISBN. */
+  /**
+   * A group's editions after the filters, de-duplicated by ISBN, likeliest
+   * first: in the language read on the cover (else the app's), closest to
+   * the title read, with a cover, fullest record (`orderEditions`).
+   */
   editionsOf: (key: string) => BookCandidate[];
   filters: EditionFilters;
   setFilters: (f: Partial<EditionFilters>) => void;
-  /** Formats and languages present among the editions loaded so far. */
+  /** Formats and languages present among the editions loaded so far; the preferred language first. */
   available: { formats: BookFormat[]; languages: string[] };
   selected: BookCandidate | null;
   select: (candidate: BookCandidate) => void;
-  /** The selected edition, with what its work knows filled in (subjects, series hints, summary). */
+  /** The selected edition, with what its work knows filled in (subjects, series hints, summary, fallback covers). */
   chosen: () => BookCandidate | null;
-}
-
-const groupKey = (c: BookCandidate) => c.workKey ?? `t:${bookMatchKey(c.title, c.authors[0])}`;
-const titleKey = (c: BookCandidate) => bookMatchKey(c.title, c.authors[0]);
-
-/**
- * Groups search results by work: Open Library works by their key, and any
- * other result (a Google Books volume) with the work of the same title and
- * first author, else on its own. Order follows the ranking.
- */
-export function groupByWork(candidates: readonly BookCandidate[]): WorkGroup[] {
-  const groups: WorkGroup[] = [];
-  for (const c of candidates) {
-    const sameWork = (g: WorkGroup) => !g.work.workKey || !c.workKey || g.work.workKey === c.workKey;
-    const existing = groups.find((g) => g.key === groupKey(c)) ?? groups.find((g) => titleKey(g.work) === titleKey(c) && sameWork(g));
-    if (existing) {
-      if (c.kind === 'edition') existing.members.push(c);
-      else if (existing.work.kind === 'edition') {
-        // A work outranks its volume as the header, and its key lists the editions.
-        existing.work = c;
-        existing.key = groupKey(c);
-      }
-      continue;
-    }
-    groups.push({ key: groupKey(c), work: c, members: c.kind === 'edition' ? [c] : [] });
-  }
-  return groups;
-}
-
-/** An edition picked from a work, with the work's subjects, series hints, summary and key where it has none. */
-export function enrichEdition(edition: BookCandidate, group: WorkGroup | null): BookCandidate {
-  if (!group) return edition;
-  const others = [group.work, ...group.members].filter((c) => c !== edition);
-  const subjects = edition.subjects.length ? edition.subjects : [...new Set(others.flatMap((c) => c.subjects))];
-  const hints = [...edition.seriesHints, ...others.flatMap((c) => c.seriesHints)];
-  return {
-    ...edition,
-    subjects,
-    seriesHints: hints.filter((h, i) => hints.findIndex((x) => x.name === h.name && x.position === h.position) === i),
-    summary: edition.summary ?? others.find((c) => c.summary)?.summary ?? null,
-    workKey: edition.workKey ?? group.work.workKey,
-    authors: edition.authors.length ? edition.authors : group.work.authors,
-  };
-}
-
-function dedupe(list: BookCandidate[]): BookCandidate[] {
-  const seen = new Set<string>();
-  return list.filter((c) => {
-    const key = c.isbn13 ?? c.isbn10 ?? `${c.source}:${c.sourceId}`;
-    if (seen.has(key)) return false;
-    seen.add(key);
-    return true;
-  });
 }
 
 /**
@@ -105,6 +51,9 @@ export function useEditionPicker(session: ScanSession | null, { service: injecte
   const appService = useMetadataService();
   const service = injected ?? appService;
   const candidates = useMemo(() => session?.candidates ?? [], [session]);
+  // The cover's language, else the app's: editions in it come first.
+  const language = useMemo(() => session?.language ?? bookLanguagePreference(null), [session]);
+  const wantedTitle = session?.guess?.title ?? null;
   const single = session && session.source !== 'cover' && candidates.length === 1 ? candidates[0] : null;
   const groups = useMemo(() => (single ? [] : groupByWork(candidates)), [candidates, single]);
   // One work: open it straight away.
@@ -162,11 +111,11 @@ export function useEditionPicker(session: ScanSession | null, { service: injecte
       if (!group) return [];
       const load = loads[key];
       const loaded = load?.status === 'ready' ? load.editions : [];
-      const list = dedupe([...group.members, ...loaded]);
+      const list = orderEditions(group, loaded, { language, title: wantedTitle });
       // A work with no editions to show can be chosen itself.
       return list.length || load?.status === 'loading' || load?.status === 'idle' ? list : [group.work];
     },
-    [groups, loads],
+    [groups, loads, language, wantedTitle],
   );
 
   const editionsOf = useCallback(
@@ -179,17 +128,19 @@ export function useEditionPicker(session: ScanSession | null, { service: injecte
 
   const available = useMemo(() => {
     const all = groups.flatMap((g) => (expanded.has(g.key) ? allEditionsOf(g.key) : []));
+    const preferred = language.code;
+    const languages = [...new Set(all.map((c) => c.language).filter((l): l is string => Boolean(l)))];
     return {
       formats: [...new Set(all.map((c) => c.format).filter((f): f is BookFormat => Boolean(f)))],
-      languages: [...new Set(all.map((c) => c.language).filter((l): l is string => Boolean(l)))],
+      languages: preferred && languages.includes(preferred) ? [preferred, ...languages.filter((l) => l !== preferred)] : languages,
     };
-  }, [groups, expanded, allEditionsOf]);
+  }, [groups, expanded, allEditionsOf, language]);
 
   const chosen = useCallback(() => {
     if (!selected) return null;
     if (single) return selected;
     const group = groups.find((g) => g.work === selected || allEditionsOf(g.key).includes(selected)) ?? null;
-    return enrichEdition(selected, group);
+    return enrichEdition(selected, group, group ? allEditionsOf(group.key) : []);
   }, [selected, single, groups, allEditionsOf]);
 
   return {

@@ -63,9 +63,12 @@ function authorScore(candidate: BookCandidate, query: SearchQuery): number {
 /**
  * Whether a candidate is in a language: 1 when it is (for a work, when any
  * of its editions is), 0 when it is known to be in others, ½ when unknown.
+ * An edition is judged by its own language, even when it was merged with
+ * its work's search result (which lists every edition's).
  */
-export function languageMatch(candidate: Pick<BookCandidate, 'language' | 'languages'>, code: string): 1 | 0.5 | 0 {
-  const languages = candidate.languages?.length ? candidate.languages : candidate.language ? [candidate.language] : [];
+export function languageMatch(candidate: Pick<BookCandidate, 'kind' | 'language' | 'languages'>, code: string): 1 | 0.5 | 0 {
+  const own = candidate.language ? [candidate.language] : [];
+  const languages = candidate.kind === 'work' && candidate.languages?.length ? candidate.languages : own;
   if (!languages.length) return 0.5;
   return languages.includes(code) ? 1 : 0;
 }

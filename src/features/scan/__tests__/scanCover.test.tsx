@@ -76,6 +76,6 @@ describe('Cover mode with a photo from the gallery (P03-05)', () => {
     expect(screen.getByTestId(Testids.scan.webText).props.value).toBe('Practical Magic\nAlice Hoffman');
     expect(screen.queryByTestId(Testids.scan.camera)).toBeNull();
     await press(Testids.scan.webTextSubmit);
-    expect(mockMetadata.service.search).toHaveBeenLastCalledWith({ text: 'practical magic alice hoffman' }, expect.anything());
+    expect(mockMetadata.service.search).toHaveBeenLastCalledWith(expect.objectContaining({ text: 'practical magic alice hoffman' }), expect.anything());
   });
 });

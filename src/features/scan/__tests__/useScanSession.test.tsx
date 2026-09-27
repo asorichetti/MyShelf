@@ -114,10 +114,13 @@ describe('useScanSession: typed input (P03-07)', () => {
     const search = jest.spyOn(metadata.service, 'search');
     act(() => result.current.submitCoverText('THE COLOUR OF MAGIC TERRY PRATCHETT'));
     await settle();
-    expect(search).toHaveBeenCalledWith({ text: 'the colour of magic terry pratchett' }, expect.anything());
+    // "the" and "of": the typed words are English, which the search and the picker prefer.
+    const english = { code: 'en', detected: true };
+    expect(search).toHaveBeenCalledWith({ text: 'the colour of magic terry pratchett', language: english }, expect.anything());
     const session = onFound.mock.calls[0][0];
     expect(session.source).toBe('cover');
     expect(session.guess).toEqual({ text: 'the colour of magic terry pratchett' });
+    expect(session.language).toEqual(english);
     expect(session.candidates.length).toBeGreaterThan(1);
   });
 
@@ -126,11 +129,13 @@ describe('useScanSession: typed input (P03-07)', () => {
     const search = jest.spyOn(metadata.service, 'search').mockResolvedValue({ candidates: [], warnings: [] });
     act(() => result.current.submitCoverText('Mort\nTerry Pratchett'));
     await settle();
+    // Nothing in "Mort, Terry Pratchett" says which language: the app's is preferred, as a weaker hint.
+    const language = { code: 'en', detected: false };
     expect(search.mock.calls.map((c) => c[0])).toEqual([
-      { title: 'mort', author: 'terry pratchett' },
-      { author: 'terry pratchett' },
-      { title: 'mort' },
-      { text: 'mort terry pratchett' },
+      { title: 'mort', author: 'terry pratchett', language },
+      { author: 'terry pratchett', language },
+      { title: 'mort', language },
+      { text: 'mort terry pratchett', language },
     ]);
     expect(result.current.state).toEqual({
       phase: 'not-found',

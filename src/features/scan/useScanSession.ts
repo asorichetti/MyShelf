@@ -2,8 +2,11 @@ import { router } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import {
+  bookLanguagePreference,
   buildQueriesFromOcr,
   cleanOcrLine,
+  detectOcrLanguage,
+  detectTextLanguage,
   formatIsbn13,
   isRepeatRead,
   parseScannedCode,
@@ -215,7 +218,7 @@ export function useScanSession({ service: injected, onFound }: UseScanSessionOpt
   );
 
   const searchCover = useCallback(
-    async (queries: OcrQuery[], photoUri: string | null, ocr: OcrResult | null = null) => {
+    async (queries: OcrQuery[], photoUri: string | null, ocr: OcrResult | null = null, typed: string | null = null) => {
       if (!queries.length) {
         discardPhoto(photoUri);
         if (!ocr) return setState({ phase: 'error', reason: 'invalid', message: scanMessages.noCoverText });
@@ -223,14 +226,19 @@ export function useScanSession({ service: injected, onFound }: UseScanSessionOpt
         return setState({ phase: 'error', reason: 'invalid', message: words ? scanMessages.noCoverRead : scanMessages.noCoverWords, typed: words });
       }
       const abort = begin('cover', t('scan.messages.searching', { text: queries[0].title ?? queries[0].text ?? '' }));
+      // The cover's own language (read by the recogniser, or in the words typed), else the app's:
+      // editions and results in it come first (an English cover never opens on a Dutch edition).
+      const language = bookLanguagePreference(ocr ? detectOcrLanguage(ocr) : detectTextLanguage(typed ?? ''));
       try {
-        const { candidates, used } = await runCoverSearch((q, signal) => service.search(q, { signal }), queries, { signal: abort.signal });
+        const { candidates, used } = await runCoverSearch((q, signal) => service.search({ ...q, language }, { signal }), queries, { signal: abort.signal });
         if (abort.signal.aborted) return;
         if (!candidates.length) {
           discardPhoto(photoUri);
           return setState({ phase: 'not-found', kind: 'cover', isbn13: null, guess: queries[0], typed: typedFromQuery(queries[0]) });
         }
-        found(createSession({ source: 'cover', candidates, guess: used ?? queries[0], photoUri, photoFocus: ocr && photoUri ? textBounds(ocr) : null }));
+        found(
+          createSession({ source: 'cover', candidates, guess: used ?? queries[0], photoUri, photoFocus: ocr && photoUri ? textBounds(ocr) : null, language }),
+        );
       } catch (error) {
         discardPhoto(photoUri);
         if (abort.signal.aborted || isAbortError(error)) return;
@@ -276,7 +284,7 @@ export function useScanSession({ service: injected, onFound }: UseScanSessionOpt
     [lookUp],
   );
 
-  const submitCoverText = useCallback((text: string) => void searchCover(queriesFromTypedText(text), null), [searchCover]);
+  const submitCoverText = useCallback((text: string) => void searchCover(queriesFromTypedText(text), null, null, text), [searchCover]);
   const submitOcr = useCallback(
     (result: OcrResult, photoUri: string | null = null) => void searchCover(buildQueriesFromOcr(result), photoUri, result),
     [searchCover],

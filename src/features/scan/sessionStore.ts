@@ -1,4 +1,4 @@
-import type { OcrFrame, OcrQuery } from '@/domain';
+import type { LanguagePreference, OcrFrame, OcrQuery } from '@/domain';
 import type { BookCandidate } from '@/services/metadata';
 
 import { discardPhoto } from './tempPhoto';
@@ -24,14 +24,30 @@ export interface ScanSession {
   photoFocus: OcrFrame | null;
   /** When the scan belongs to a batch tray item waiting for its edition (P03-12). */
   trayItemId: string | null;
+  /**
+   * The language to prefer among editions: read on the cover (or in the
+   * typed text), else the app's. Null: not worked out (the app's is used).
+   */
+  language: LanguagePreference | null;
 }
 
 const sessions = new Map<string, ScanSession>();
 let counter = 0;
 
-export function createSession(input: Omit<ScanSession, 'id' | 'photoUri' | 'photoFocus' | 'trayItemId' | 'guess' | 'isbn13'> & Partial<ScanSession>): ScanSession {
+export function createSession(
+  input: Omit<ScanSession, 'id' | 'photoUri' | 'photoFocus' | 'trayItemId' | 'guess' | 'isbn13' | 'language'> & Partial<ScanSession>,
+): ScanSession {
   counter += 1;
-  const session: ScanSession = { isbn13: null, guess: null, photoUri: null, photoFocus: null, trayItemId: null, ...input, id: `s${Date.now().toString(36)}${counter}` };
+  const session: ScanSession = {
+    isbn13: null,
+    guess: null,
+    photoUri: null,
+    photoFocus: null,
+    trayItemId: null,
+    language: null,
+    ...input,
+    id: `s${Date.now().toString(36)}${counter}`,
+  };
   sessions.set(session.id, session);
   return session;
 }

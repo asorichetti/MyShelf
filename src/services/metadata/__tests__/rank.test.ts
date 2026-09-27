@@ -92,6 +92,8 @@ describe('language preference in search results', () => {
     expect(languageMatch(base('W', { kind: 'work', languages: ['es'] }), 'en')).toBe(0);
     expect(languageMatch(base('E', { language: 'nl' }), 'nl')).toBe(1);
     expect(languageMatch(base('E'), 'en')).toBe(0.5);
+    // A work merged with one of its editions (a Google Books volume) is that edition.
+    expect(languageMatch(base('E', { kind: 'edition', language: 'en', languages: ['en', 'fr'] }), 'fr')).toBe(0);
   });
 
   it('settles otherwise equal works: "Nobody\'s Girl" in English before the Spanish translation', () => {
