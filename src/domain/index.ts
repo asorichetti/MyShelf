@@ -1,6 +1,7 @@
 export * from './author';
 export * from './backup';
 export * from './book';
+export * from './bookLanguage';
 export * from './bookDraft';
 export * from './callNumber';
 export * from './candidateToDraft';
