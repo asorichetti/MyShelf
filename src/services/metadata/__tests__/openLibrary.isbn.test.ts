@@ -1,7 +1,7 @@
 /**
  * @jest-environment node
  */
-import { createHttpClient, createRateLimiter, OfflineError } from '@/services/http';
+import { createHttpClient, createRateLimiter, OfflineError, type HttpClient, type HttpRequestOptions } from '@/services/http';
 import { createFixtureFetch, type FixtureFetch } from '@/testing/fixtureFetch';
 
 import { OL_BOOKS, openLibraryRoutes } from '../__fixtures__/openLibraryRoutes';
@@ -116,5 +116,30 @@ describe('openLibrary.lookupIsbn', () => {
     fixtures = s.fixtures;
     await expect(s.ol.lookupIsbn(OL_BOOKS.colourOfMagic, AbortSignal.abort())).rejects.toMatchObject({ name: 'AbortError' });
     expect(fixtures.calls).toEqual([]);
+  });
+
+  it("finishes a lookup whose author request another, cancelled lookup started", async () => {
+    const s = setup();
+    fixtures = s.fixtures;
+    const client = createHttpClient({ fetch: fixtures.fetch, limiter: createRateLimiter({ minIntervalMs: 0 }), retryDelaysMs: [] });
+    // Author requests wait for the gate, as on a slow network.
+    let open: () => void = () => {};
+    const gate = new Promise<void>((resolve) => (open = resolve));
+    const http: HttpClient = {
+      getBinary: client.getBinary,
+      getJson: async <T,>(url: string, options?: HttpRequestOptions) => {
+        if (url.includes('/authors/')) await gate;
+        return client.getJson<T>(url, options);
+      },
+    };
+    const ol = createOpenLibrary({ http });
+    const cancelled = new AbortController();
+    const first = ol.lookupIsbn(OL_BOOKS.colourOfMagic, cancelled.signal).catch((e: Error) => e);
+    const second = ol.lookupIsbn(OL_BOOKS.colourOfMagic);
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    cancelled.abort();
+    open();
+    expect(await first).toMatchObject({ name: 'AbortError' });
+    await expect(second).resolves.toMatchObject([{ authors: ['Terry Pratchett'] }]);
   });
 });

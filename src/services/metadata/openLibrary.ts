@@ -54,6 +54,19 @@ async function orNull<T>(promise: Promise<T>): Promise<T | null> {
   }
 }
 
+const abortError = () => Object.assign(new Error('The operation was aborted'), { name: 'AbortError' });
+
+/** `promise`, or an AbortError as soon as `signal` aborts (the work behind `promise` carries on). */
+function untilAborted<T>(promise: Promise<T>, signal?: AbortSignal): Promise<T> {
+  if (!signal) return promise;
+  if (signal.aborted) return Promise.reject(abortError());
+  return new Promise<T>((resolve, reject) => {
+    const onAbort = () => reject(abortError());
+    signal.addEventListener('abort', onAbort, { once: true });
+    promise.then(resolve, reject).finally(() => signal.removeEventListener('abort', onAbort));
+  });
+}
+
 /**
  * Open Library (PLAN §6): an ISBN lookup reads the edition, then its work
  * (description, subjects) and authors; search returns works; `editions`
@@ -69,12 +82,17 @@ export function createOpenLibrary({
   function authorRecord(key: string, signal?: AbortSignal): Promise<OlAuthor | null> {
     let record = authorRecords.get(key);
     if (!record) {
-      record = orNull(http.getJson<OlAuthor>(`${baseUrl}/authors/${key}.json`, { signal, cacheTtl }));
+      // Shared by every lookup that needs this author, so it is made without any one lookup's
+      // signal: cancelling one lookup must not fail another waiting for the same author.
+      const request = orNull(http.getJson<OlAuthor>(`${baseUrl}/authors/${key}.json`, { cacheTtl }));
+      record = request;
       // Only successes stay memoised, so a failed lookup is retried next time.
-      record.catch(() => authorRecords.delete(key));
-      authorRecords.set(key, record);
+      request.catch(() => {
+        if (authorRecords.get(key) === request) authorRecords.delete(key);
+      });
+      authorRecords.set(key, request);
     }
-    return record;
+    return untilAborted(record, signal);
   }
 
   /** Display names for author keys, in Latin letters for an edition in a Latin-script language. */
