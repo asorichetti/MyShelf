@@ -22,6 +22,14 @@ describe('Spine', () => {
     expect(screen.getByText('missing', hidden)).toBeTruthy();
   });
 
+  // The spine is 44 dp wide: written across it, Android broke "missing" mid-word.
+  it('runs "missing" up the gap on one line, like a title', () => {
+    renderWithTheme(<Spine variant="missing" position={3} />);
+    const word = screen.getByText('missing', hidden);
+    expect(word.props.numberOfLines).toBe(1);
+    expect(word.parent?.parent).toHaveStyle({ transform: [{ rotate: '-90deg' }] });
+  });
+
   it('shows fractional numbers as typed', () => {
     renderWithTheme(<Spine title="Novella" position={2.5} />);
     expect(screen.getByText('#2.5', hidden)).toBeTruthy();

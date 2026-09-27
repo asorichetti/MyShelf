@@ -61,15 +61,23 @@ export function Spine({ title = '', position = null, variant = 'owned', size = '
             borderWidth: size === 'mini' ? 1 : 1.5,
             borderStyle: 'dashed',
             backgroundColor: colors.surfaceTint,
-            justifyContent: 'center',
           },
         ]}
       >
         {size === 'shelf' && label ? (
-          <View style={[styles.center, { gap: spacing.xxs }]}>
-            <RNText allowFontScaling={false} style={[artworkTypography.label, { color: colors.inkMuted }]}>{label}</RNText>
-            <RNText allowFontScaling={false} style={[artworkTypography.tabLabel, styles.vertical, { color: colors.inkMuted }]}>{t('bookList.missing')}</RNText>
-          </View>
+          <>
+            <View style={[styles.label, { bottom: spacing.sm }]}>
+              <RNText allowFontScaling={false} numberOfLines={1} style={[artworkTypography.label, { color: colors.inkMuted }]}>
+                {label}
+              </RNText>
+            </View>
+            {/* "missing" runs up the gap like a title: across a 44 dp spine it does not fit, and Android split it mid-word. */}
+            <View style={[styles.titleBox, { width: height - 64, left: (width - (height - 64)) / 2, top: height / 2 - 12 - spacing.sm }]}>
+              <RNText allowFontScaling={false} numberOfLines={1} style={[artworkTypography.tabLabel, styles.title, { color: colors.inkMuted }]}>
+                {t('bookList.missing')}
+              </RNText>
+            </View>
+          </>
         ) : null}
       </View>
     );
@@ -103,8 +111,6 @@ export function Spine({ title = '', position = null, variant = 'owned', size = '
 
 const styles = StyleSheet.create({
   spine: { overflow: 'hidden', alignItems: 'center' },
-  center: { alignItems: 'center' },
-  vertical: { textAlign: 'center' },
   band: { position: 'absolute', left: 0, right: 0, height: 2 },
   titleBox: { position: 'absolute', height: 24, justifyContent: 'center', transform: [{ rotate: '-90deg' }] },
   title: { textAlign: 'center' },
