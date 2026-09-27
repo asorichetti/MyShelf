@@ -10,6 +10,7 @@ import { DatabaseProvider, type DatabaseStatus } from '@/db';
 import { openAppDatabase } from '@/db/expo';
 import { BookyRoot } from '@/features/booky/BookyRoot';
 import { withE2eDatabaseFault } from '@/features/e2e/databaseFault';
+import { installE2eEventHook } from '@/features/e2e/eventHook';
 import { e2eFontScale } from '@/features/e2e/fontScale';
 import { LoanWatchers } from '@/features/loans/LoanWatchers';
 import { AppSnackbarHost } from '@/features/navigation/AppSnackbarHost';
@@ -31,6 +32,9 @@ const openDatabase = withE2eDatabaseFault(openAppDatabase);
 
 // Only the web E2E build can override the text size (a large-text check); a phone uses its own setting.
 const fontScaleOverride = e2eFontScale();
+
+// The web E2E build lets a journey emit library events, as a background write would.
+installE2eEventHook();
 
 function RootStack() {
   const theme = useTheme();
