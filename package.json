@@ -90,6 +90,9 @@
     "setupFiles": [
       "<rootDir>/src/testing/jest.setup.ts"
     ],
+    "setupFilesAfterEnv": [
+      "<rootDir>/src/testing/jest.consoleGuard.ts"
+    ],
     "testTimeout": 15000
   }
 }
