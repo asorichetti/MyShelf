@@ -1,0 +1,18 @@
+# Starts the app afresh on a fixture through the E2E build's deep link and
+# waits for the screen it opens. Needs an E2E build (EXPO_PUBLIC_E2E=1,
+# ADR 0015).
+#   env: FIXTURE (empty, first-run, demo, large, huge, series), NEXT (a route)
+#
+# The app's data is cleared first and the deep link cold-starts it, so the
+# only screen with a content marker is the fixture's destination (the loader
+# itself is `page-loading`): no screen from before the load can satisfy the
+# wait. Clearing also resets runtime permissions.
+appId: dev.asorichetti.myshelf
+---
+- stopApp
+- clearState
+- openLink: myshelf://e2e?fixture=${FIXTURE}&next=${NEXT}
+- extendedWaitUntil:
+    visible:
+      id: page-content
+    timeout: 60000

@@ -1,0 +1,24 @@
+# P07: a first run shows the onboarding; paging works; after it is finished
+# a relaunch goes straight to the Shelf.
+appId: dev.asorichetti.myshelf
+name: Onboarding
+tags: [core]
+---
+- stopApp
+- clearState
+- openLink: myshelf://e2e?fixture=first-run&next=/
+- extendedWaitUntil: { visible: Welcome to MyShelf, timeout: 60000 }
+- takeScreenshot: screenshots/onboarding-1
+- tapOn: { id: onboarding-next }
+- extendedWaitUntil: { visible: Scan to add a book, timeout: 5000 }
+- tapOn: { id: onboarding-next }
+- extendedWaitUntil: { visible: Lend without worry, timeout: 5000 }
+- tapOn: { id: onboarding-next }
+- extendedWaitUntil: { visible: 'Yours, and only yours', timeout: 5000 }
+- takeScreenshot: screenshots/onboarding-4
+- tapOn: { id: onboarding-explore }
+- extendedWaitUntil: { visible: { id: home-title }, timeout: 10000 }
+- stopApp
+- launchApp
+- extendedWaitUntil: { visible: { id: home-title }, timeout: 20000 }
+- assertNotVisible: Welcome to MyShelf

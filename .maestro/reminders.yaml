@@ -1,0 +1,26 @@
+# P05-08: turning on loan reminders asks for Android's notification
+# permission, and the switch stays on after a restart. The demo fixture's
+# Dune is due in 11 days, so a reminder is scheduled for 10:00 that day:
+# scripts/maestro-suite.sh checks the alarm is set, then moves the clock to
+# the due date, checks the notification is posted, and taps it
+# (hooks/reminder-open.yaml).
+appId: dev.asorichetti.myshelf
+name: Loan reminders - permission and switch
+tags: [core, notifications, hooked]
+---
+- runFlow:
+    file: common/open-fixture.yaml
+    env: { FIXTURE: demo, NEXT: /settings }
+- scrollUntilVisible: { element: { id: reminders-toggle }, direction: DOWN, centerElement: true }
+- assertVisible: { id: reminders-toggle, checked: false }
+- tapOn: { id: reminders-toggle }
+- extendedWaitUntil: { visible: 'Allow MyShelf to send you notifications\?', timeout: 10000 }
+- takeScreenshot: screenshots/reminders-permission
+- tapOn: Allow
+- extendedWaitUntil: { visible: { id: reminders-toggle, checked: true }, timeout: 10000 }
+- takeScreenshot: screenshots/reminders-on
+- stopApp
+- launchApp
+- tapOn: { id: tab-settings }
+- scrollUntilVisible: { element: { id: reminders-toggle }, direction: DOWN, centerElement: true }
+- assertVisible: { id: reminders-toggle, checked: true }

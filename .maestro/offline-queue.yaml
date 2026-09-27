@@ -1,0 +1,24 @@
+# P02-10: offline (scripts/maestro-suite.sh turns on airplane mode first),
+# the add form says it cannot reach the catalogues, and a scanned ISBN is
+# queued with the Shelf's pending banner. hooks/offline-resume.yaml then
+# checks the lookup runs once the phone is back online.
+appId: dev.asorichetti.myshelf
+name: Offline lookups queue
+tags: [core, offline, hooked]
+---
+- runFlow:
+    file: common/open-fixture.yaml
+    env: { FIXTURE: empty, NEXT: /book/new }
+- tapOn: { id: lookup-isbn-input }
+- inputText: '9780552166591'
+- tapOn: { id: lookup-isbn-submit }
+- extendedWaitUntil: { visible: 'I can’t reach the library catalogues right now. You can still type the book in by hand.', timeout: 30000 }
+- takeScreenshot: screenshots/offline-lookup
+# A barcode read while offline (injected: no book in front of the camera) is
+# queued for later.
+- openLink: myshelf://e2e/scan?isbn=9780552166591
+- extendedWaitUntil: { visible: { id: scan-root }, timeout: 10000 }
+- tapOn: { id: tab-shelf }
+- extendedWaitUntil: { visible: { id: pending-banner }, timeout: 10000 }
+- assertVisible: '1 book waiting for details. I’ll look it up when you’re back online.'
+- takeScreenshot: screenshots/offline-pending-banner

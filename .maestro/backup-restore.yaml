@@ -1,0 +1,47 @@
+# P08: a backup goes out through the Android share sheet, and a backup file
+# comes back in through the system document picker and replaces the library.
+# Needs /sdcard/Download/myshelf-backup-test.json (a copy of
+# src/services/backup/__fixtures__/backup-phone-covers.json: 20 books whose
+# covers were files on the old phone); scripts/maestro-suite.sh pushes it.
+appId: dev.asorichetti.myshelf
+name: Backup share sheet and restore from a file
+tags: [core, files]
+---
+- runFlow:
+    file: common/open-fixture.yaml
+    env: { FIXTURE: demo, NEXT: /settings }
+- scrollUntilVisible: { element: { id: settings-export-backup }, direction: DOWN, centerElement: true }
+- tapOn: { id: settings-export-backup }
+- extendedWaitUntil: { visible: { id: backup-contents, text: '.*12 books.*' }, timeout: 10000 }
+- tapOn: { id: backup-export }
+- extendedWaitUntil: { visible: 'myshelf-backup-\d{4}-\d{2}-\d{2}\.json', timeout: 10000 }
+- assertVisible: Sharing 1 file
+- takeScreenshot: screenshots/backup-share-sheet
+- back
+- extendedWaitUntil: { visible: { id: backup-root }, timeout: 10000 }
+- back
+- extendedWaitUntil: { visible: { id: settings-root }, timeout: 10000 }
+# Restore from the file in Downloads, replacing the 12 demo books.
+- scrollUntilVisible: { element: { id: settings-import-backup }, direction: DOWN, centerElement: true }
+- tapOn: { id: settings-import-backup }
+- extendedWaitUntil: { visible: { id: restore-pick }, timeout: 10000 }
+- tapOn: { id: restore-pick }
+- runFlow:
+    file: common/pick-download.yaml
+    env: { FILE: myshelf-backup-test.json }
+- extendedWaitUntil: { visible: { id: restore-file }, timeout: 10000 }
+- assertVisible: 'It holds 20 books, 9 series, 9 groups.'
+- takeScreenshot: screenshots/restore-file
+- scrollUntilVisible: { element: { id: restore-confirm-input }, direction: DOWN, centerElement: true }
+- tapOn: { id: restore-confirm-input }
+- inputText: REPLACE
+- hideKeyboard
+- scrollUntilVisible: { element: { id: restore-confirm }, direction: DOWN, centerElement: true }
+- tapOn: { id: restore-confirm }
+- extendedWaitUntil: { visible: Library restored, timeout: 30000 }
+- assertVisible: 'Your library now has 20 books, 9 series, 9 groups.'
+- assertVisible: { id: restore-undo }
+- takeScreenshot: screenshots/restore-done
+- tapOn: See your shelf
+- extendedWaitUntil: { visible: { text: 20 BOOKS CATALOGUED }, timeout: 10000 }
+- takeScreenshot: screenshots/restore-shelf

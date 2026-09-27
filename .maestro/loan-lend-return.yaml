@@ -1,0 +1,50 @@
+# P05: lend a book with the native Android date picker, see it on the Loans
+# tab, mark it returned and find it in History.
+appId: dev.asorichetti.myshelf
+name: Lend with the date picker and return
+tags: [core]
+---
+- runFlow:
+    file: common/open-fixture.yaml
+    env: { FIXTURE: demo, NEXT: / }
+- scrollUntilVisible: { element: { id: home-row, text: 'The Left Hand of Darkness,.*' }, direction: DOWN }
+- tapOn: { id: home-row, text: 'The Left Hand of Darkness,.*' }
+- extendedWaitUntil: { visible: { id: book-detail-title }, timeout: 10000 }
+- scrollUntilVisible: { element: { id: lend-open }, direction: DOWN }
+- tapOn: { id: lend-open }
+- extendedWaitUntil: { visible: { id: lend-sheet }, timeout: 5000 }
+- tapOn: { id: lend-borrower-search }
+- inputText: Alex
+- tapOn: { id: lend-borrower-create }
+- hideKeyboard
+# The due date from Android's own calendar: the 15th of the month after the default.
+- scrollUntilVisible: { element: { text: Choose due back from a calendar }, direction: DOWN }
+- tapOn: Choose due back from a calendar
+- extendedWaitUntil: { visible: { id: 'android:id/next' }, timeout: 5000 }
+- tapOn: { id: 'android:id/next' }
+- tapOn: { text: '15', index: 0 }
+- takeScreenshot: screenshots/lend-date-picker
+- tapOn: { id: 'android:id/button1' }
+- assertVisible: { text: '15 .*' }
+- takeScreenshot: screenshots/lend-sheet
+- scrollUntilVisible: { element: { id: lend-save }, direction: DOWN }
+- tapOn: { id: lend-save }
+- extendedWaitUntil: { visible: { id: book-loan-stamp }, timeout: 10000 }
+- assertVisible: { id: book-loan-stamp, text: 'On loan · Alex. Due back on 15 .*' }
+- scrollUntilVisible: { element: { id: return-open }, direction: DOWN }
+- takeScreenshot: screenshots/lend-detail
+- back
+- tapOn: { id: tab-loans }
+- extendedWaitUntil: { visible: { id: loans-root }, timeout: 10000 }
+- assertVisible: { id: loans-tab-out, text: '.*3.*' }
+- scrollUntilVisible: { element: { text: Mark The Left Hand of Darkness returned }, direction: DOWN }
+- assertVisible: { id: loans-stamp, text: Due back on 15 .* }
+- takeScreenshot: screenshots/loans-out
+- tapOn: Mark The Left Hand of Darkness returned
+- extendedWaitUntil: { visible: { id: return-sheet }, timeout: 5000 }
+- tapOn: { id: return-confirm }
+- extendedWaitUntil: { visible: { text: 'Welcome home, “The Left Hand of Darkness”!.*' }, timeout: 10000 }
+- tapOn: { id: loans-tab-history }
+- extendedWaitUntil: { visible: { id: loans-row-book, text: Open The Left Hand of Darkness }, timeout: 10000 }
+- assertVisible: { id: loans-stamp, text: 'Returned on .*' }
+- takeScreenshot: screenshots/loans-history

@@ -1,0 +1,39 @@
+# P01: add a book by hand with the Android keyboard, rate it, save, and see
+# it on the Shelf.
+appId: dev.asorichetti.myshelf
+name: Add a book by hand
+tags: [core]
+---
+- runFlow:
+    file: common/open-fixture.yaml
+    env: { FIXTURE: empty, NEXT: / }
+- tapOn: { id: home-add-button }
+- extendedWaitUntil: { visible: { id: book-form-title }, timeout: 10000 }
+- tapOn: { id: book-form-title }
+- inputText: The Hobbit
+- scrollUntilVisible: { element: { id: book-form-author-input }, direction: DOWN }
+- tapOn: { id: book-form-author-input }
+- inputText: J. R. R. Tolkien
+- pressKey: Enter
+- extendedWaitUntil: { visible: { id: book-form-author-chip }, timeout: 5000 }
+- scrollUntilVisible: { element: { id: book-form-genre-input }, direction: DOWN }
+- tapOn: { id: book-form-genre-input }
+- inputText: Fantasy
+- pressKey: Enter
+- extendedWaitUntil: { visible: { id: book-form-genre-chip }, timeout: 5000 }
+- scrollUntilVisible: { element: { id: book-form-year }, direction: DOWN }
+- tapOn: { id: book-form-year }
+- inputText: '1937'
+- hideKeyboard
+- scrollUntilVisible: { element: { id: book-form-rating }, direction: DOWN }
+- tapOn: { id: rating-star, index: 3 }
+- takeScreenshot: screenshots/book-add-form
+- tapOn: { id: book-form-save }
+- extendedWaitUntil: { visible: { id: book-detail-title }, timeout: 10000 }
+- assertVisible: { id: book-detail-title, text: The Hobbit }
+- assertVisible: { text: FIC TOL 1937 }
+- takeScreenshot: screenshots/book-add-detail
+- tapOn: { id: book-detail-back }
+- extendedWaitUntil: { visible: { id: home-row }, timeout: 10000 }
+- assertVisible: { id: home-row, text: 'The Hobbit, by J. R. R. Tolkien, 1937, rated 4 out of 5' }
+- takeScreenshot: screenshots/book-add-shelf

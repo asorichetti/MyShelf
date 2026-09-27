@@ -1,0 +1,30 @@
+# P11/P06: the Sort sheet's "Library order" preset, then the "On loan" filter.
+appId: dev.asorichetti.myshelf
+name: Sort preset and filter
+tags: [core]
+---
+- runFlow:
+    file: common/open-fixture.yaml
+    env: { FIXTURE: demo, NEXT: / }
+- tapOn: { id: home-sort-button }
+- extendedWaitUntil: { visible: { id: sort-sheet-root }, timeout: 5000 }
+- tapOn: { id: sort-sheet-preset, text: Library order }
+- extendedWaitUntil: { visible: { id: sort-sheet-status, text: Sorted by Library order }, timeout: 5000 }
+- assertVisible: { id: sort-sheet-level, text: 'Level 1: Sort by Genre, A to Z' }
+- takeScreenshot: screenshots/sort-sheet
+- scrollUntilVisible: { element: { id: sort-sheet-done }, direction: DOWN }
+- tapOn: { id: sort-sheet-done }
+- extendedWaitUntil: { visible: { id: home-sort-summary, text: 'Sorted by Genre, then Author, then Series, then Number in series' }, timeout: 5000 }
+- takeScreenshot: screenshots/sorted-library-order
+- tapOn: { id: shelf-filter-button }
+- extendedWaitUntil: { visible: { id: shelf-filter-sheet }, timeout: 5000 }
+- scrollUntilVisible: { element: { id: shelf-filter-loan-on-loan }, direction: DOWN }
+- tapOn: { id: shelf-filter-loan-on-loan }
+- takeScreenshot: screenshots/filter-sheet
+- scrollUntilVisible: { element: { id: shelf-filter-done }, direction: DOWN }
+- tapOn: { id: shelf-filter-done }
+- extendedWaitUntil: { visible: { id: shelf-filter-chip }, timeout: 5000 }
+- assertVisible: { id: home-row, text: 'Dune,.*' }
+- assertVisible: { id: home-row, text: 'The Murder of Roger Ackroyd,.*' }
+- assertNotVisible: { id: home-row, text: 'Mort,.*' }
+- takeScreenshot: screenshots/filtered-on-loan

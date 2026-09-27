@@ -1,0 +1,26 @@
+# P09-04: a screen that crashes shows Booky's error page instead of a blank
+# or closed app; "Copy error details" opens the Android share sheet (no
+# clipboard module is bundled), the tab bar still works and "Try again"
+# renders the screen. The crash is armed by the E2E link's `crash=` hook.
+appId: dev.asorichetti.myshelf
+name: Error boundary on a phone
+tags: [core]
+---
+- stopApp
+- clearState
+- openLink: myshelf://e2e?fixture=demo&crash=loans&next=/loans
+- extendedWaitUntil: { visible: { id: error-boundary-root }, timeout: 60000 }
+- assertVisible: { id: error-boundary-title, text: Something went wrong here }
+- takeScreenshot: screenshots/error-boundary
+- tapOn: { id: error-boundary-copy }
+- extendedWaitUntil: { visible: 'Sharing.*', timeout: 10000 }
+- back
+- extendedWaitUntil: { visible: { id: error-boundary-root }, timeout: 10000 }
+- tapOn: { id: tab-shelf }
+- extendedWaitUntil: { visible: { id: home-title }, timeout: 10000 }
+- tapOn: { id: tab-loans }
+- runFlow:
+    when: { visible: { id: error-boundary-retry } }
+    commands:
+      - tapOn: { id: error-boundary-retry }
+- extendedWaitUntil: { visible: { id: loans-root }, timeout: 10000 }

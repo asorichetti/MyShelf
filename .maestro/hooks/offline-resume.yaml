@@ -1,0 +1,10 @@
+# Run by scripts/maestro-suite.sh after offline-queue.yaml, with the network
+# back on: coming back to the app looks the queued ISBN up and the banner goes.
+appId: dev.asorichetti.myshelf
+name: Offline lookups resume
+---
+- pressKey: Home
+- launchApp
+- extendedWaitUntil: { visible: 'Good news — I found details for 1 book you added offline.', timeout: 60000 }
+- assertNotVisible: { id: pending-banner }
+- takeScreenshot: screenshots/online-again

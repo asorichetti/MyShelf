@@ -1,0 +1,31 @@
+# P08: import a Goodreads library export picked in the system document
+# picker. Needs /sdcard/Download/goodreads_library_export.csv (a copy of
+# src/services/backup/__fixtures__/goodreads_library_export.csv, 20 books);
+# scripts/maestro-suite.sh pushes it.
+appId: dev.asorichetti.myshelf
+name: Goodreads CSV import
+tags: [core, files]
+---
+- runFlow:
+    file: common/open-fixture.yaml
+    env: { FIXTURE: empty, NEXT: /settings }
+- scrollUntilVisible: { element: { id: settings-import-csv }, direction: DOWN, centerElement: true }
+- tapOn: { id: settings-import-csv }
+- extendedWaitUntil: { visible: { id: csv-import-pick }, timeout: 10000 }
+- tapOn: { id: csv-import-pick }
+- runFlow:
+    file: common/pick-download.yaml
+    env: { FILE: goodreads_library_export.csv }
+- extendedWaitUntil: { visible: { id: csv-import-preset }, timeout: 10000 }
+- takeScreenshot: screenshots/csv-mapping
+- scrollUntilVisible: { element: { id: csv-import-confirm }, direction: DOWN, centerElement: true, timeout: 60000 }
+- takeScreenshot: screenshots/csv-preview
+- tapOn: { id: csv-import-confirm }
+- extendedWaitUntil: { visible: { id: csv-import-report }, timeout: 30000 }
+- takeScreenshot: screenshots/csv-report
+- assertVisible: Imported 20 books
+- tapOn: { id: csv-import-done }
+- extendedWaitUntil: { visible: { text: 20 BOOKS CATALOGUED }, timeout: 10000 }
+# Covers arrive from Open Library in the background; the grid shows them.
+- tapOn: { id: shelf-mode-covers }
+- takeScreenshot: screenshots/csv-shelf-covers

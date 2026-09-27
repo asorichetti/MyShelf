@@ -1,0 +1,40 @@
+# P01/P10: on a book's page, rate it, edit it, then delete it and undo.
+appId: dev.asorichetti.myshelf
+name: Book detail - rate, edit, delete and undo
+tags: [core]
+---
+- runFlow:
+    file: common/open-fixture.yaml
+    env: { FIXTURE: demo, NEXT: / }
+- tapOn: { id: home-row, text: 'The Colour of Magic,.*' }
+- extendedWaitUntil: { visible: { id: book-detail-title }, timeout: 10000 }
+# Rate: five stars, read back on the control.
+- scrollUntilVisible: { element: { id: rating-control }, direction: DOWN }
+- tapOn: { id: rating-star, index: 4 }
+- extendedWaitUntil: { visible: { id: rating-control, text: '.*5 out of 5.*' }, timeout: 5000 }
+- takeScreenshot: screenshots/detail-rated
+# Edit the year.
+- tapOn: { id: book-detail-edit }
+- extendedWaitUntil: { visible: { id: book-form-root }, timeout: 10000 }
+- scrollUntilVisible: { element: { id: book-form-year }, direction: DOWN }
+- tapOn: { id: book-form-year }
+- eraseText: 6
+- inputText: '1984'
+- hideKeyboard
+- tapOn: { id: book-form-save }
+- extendedWaitUntil: { visible: { text: FIC PRA 1984 }, timeout: 10000 }
+- assertVisible: { text: Saved your changes }
+- takeScreenshot: screenshots/detail-edited
+# Delete, then Undo from the Shelf.
+- tapOn: { id: book-detail-more }
+- tapOn: { id: book-detail-delete }
+- extendedWaitUntil: { visible: { id: dialog-root }, timeout: 5000 }
+- takeScreenshot: screenshots/detail-delete-dialog
+- tapOn: { id: dialog-confirm }
+- extendedWaitUntil: { visible: { id: home-root }, timeout: 10000 }
+- assertVisible: { text: 11 BOOKS CATALOGUED }
+- assertVisible: { id: snackbar-action }
+- takeScreenshot: screenshots/detail-deleted
+- tapOn: { id: snackbar-action }
+- extendedWaitUntil: { visible: { text: 12 BOOKS CATALOGUED }, timeout: 10000 }
+- assertVisible: { id: home-row, text: 'The Colour of Magic, by Terry Pratchett, 1984, rated 5 out of 5' }

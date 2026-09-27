@@ -1,0 +1,23 @@
+# P03: the scan result path on a phone, with the barcode read injected by
+# the E2E build's deep link (a camera cannot be pointed at a book here):
+# the ISBN is looked up online, the edition picker opens, and confirming
+# saves the book.
+appId: dev.asorichetti.myshelf
+name: Scan result from an injected ISBN
+tags: [core, network]
+---
+- runFlow:
+    file: common/open-fixture.yaml
+    env: { FIXTURE: empty, NEXT: / }
+- openLink: myshelf://e2e/scan?isbn=9780552166591
+- extendedWaitUntil: { visible: { id: picker-root }, timeout: 45000 }
+- extendedWaitUntil: { visible: { id: picker-confirm }, timeout: 30000 }
+- takeScreenshot: screenshots/scan-picker
+- tapOn: { id: picker-confirm }
+- runFlow:
+    when: { visible: { id: series-confirm-root } }
+    commands:
+      - tapOn: { id: series-confirm-save }
+- extendedWaitUntil: { visible: { id: book-detail-title }, timeout: 30000 }
+- assertVisible: { id: book-detail-title, text: The Colour of Magic }
+- takeScreenshot: screenshots/scan-saved

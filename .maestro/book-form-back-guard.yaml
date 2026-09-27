@@ -1,0 +1,38 @@
+# P01: Android's back button on a form with unsaved changes asks first:
+# Keep editing stays, Discard leaves without saving. A clean form just goes.
+appId: dev.asorichetti.myshelf
+name: Form back-button guard
+tags: [core]
+---
+- runFlow:
+    file: common/open-fixture.yaml
+    env: { FIXTURE: empty, NEXT: / }
+# A clean form closes on back with no question.
+- tapOn: { id: home-add-button }
+- extendedWaitUntil: { visible: { id: book-form-title }, timeout: 10000 }
+- back
+- extendedWaitUntil: { visible: { id: home-title }, timeout: 10000 }
+# A dirty one asks.
+- tapOn: { id: home-add-button }
+- extendedWaitUntil: { visible: { id: book-form-title }, timeout: 10000 }
+- tapOn: { id: book-form-title }
+- inputText: Half typed
+- hideKeyboard
+- back
+- extendedWaitUntil: { visible: { id: dialog-root }, timeout: 5000 }
+- assertVisible: 'Discard your changes\?'
+- takeScreenshot: screenshots/back-guard-dialog
+- tapOn: { id: dialog-cancel }
+- extendedWaitUntil: { notVisible: { id: dialog-root }, timeout: 5000 }
+- assertVisible: { id: book-form-title, text: Half typed }
+# Back while the dialog is open closes the dialog, not the form.
+- back
+- extendedWaitUntil: { visible: { id: dialog-root }, timeout: 5000 }
+- back
+- extendedWaitUntil: { notVisible: { id: dialog-root }, timeout: 5000 }
+- assertVisible: { id: book-form-title, text: Half typed }
+- back
+- extendedWaitUntil: { visible: { id: dialog-root }, timeout: 5000 }
+- tapOn: { id: dialog-confirm }
+- extendedWaitUntil: { visible: { id: home-title }, timeout: 10000 }
+- assertVisible: 0 BOOKS CATALOGUED

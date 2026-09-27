@@ -1,0 +1,9 @@
+# Maestro workspace for MyShelf (P00-18). Run the whole suite with
+# scripts/maestro-suite.sh (it prepares the device for the flows tagged
+# `adb`); see .maestro/README.md and docs/device-testing.md.
+flows:
+  - '*'
+executionOrder:
+  continueOnFailure: true
+excludeTags:
+  - manual

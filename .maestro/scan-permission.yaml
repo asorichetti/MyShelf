@@ -1,0 +1,49 @@
+# P03: the camera permission. Refused twice, the Scan tab explains and links
+# to the phone's settings; allowed, the barcode camera opens (the emulator's
+# virtual camera) without crashing. Real barcode reading needs a phone and a
+# book (see docs/device-testing.md).
+appId: dev.asorichetti.myshelf
+name: Camera permission, deny and allow
+tags: [core]
+---
+- runFlow:
+    file: common/open-fixture.yaml
+    env: { FIXTURE: empty, NEXT: /scan }
+- extendedWaitUntil: { visible: { id: scan-permission-allow }, timeout: 10000 }
+- takeScreenshot: screenshots/scan-permission-ask
+# Refuse: Android asks once more, then stops asking.
+- tapOn: { id: scan-permission-allow }
+- extendedWaitUntil: { visible: 'Don.t allow', timeout: 10000 }
+- takeScreenshot: screenshots/scan-permission-system
+- tapOn: 'Don.t allow'
+- extendedWaitUntil: { visible: { id: scan-permission-allow }, timeout: 10000 }
+- tapOn: { id: scan-permission-allow }
+- extendedWaitUntil: { visible: 'Don.t allow', timeout: 10000 }
+- tapOn: 'Don.t allow'
+- extendedWaitUntil: { visible: { id: scan-permission-denied }, timeout: 10000 }
+- assertVisible: { id: scan-open-settings }
+- takeScreenshot: screenshots/scan-permission-denied
+# "Open settings" opens MyShelf's own page in the phone's settings.
+- tapOn: { id: scan-open-settings }
+- extendedWaitUntil: { visible: 'Permissions', timeout: 10000 }
+- assertVisible: MyShelf
+- back
+- extendedWaitUntil: { visible: { id: scan-permission-denied }, timeout: 10000 }
+# Start again and allow: the camera view opens.
+- runFlow:
+    file: common/open-fixture.yaml
+    env: { FIXTURE: empty, NEXT: /scan }
+- tapOn: { id: scan-permission-allow }
+- extendedWaitUntil: { visible: While using the app, timeout: 10000 }
+- tapOn: While using the app
+- extendedWaitUntil: { visible: { id: scan-camera }, timeout: 15000 }
+- assertVisible: { id: scan-torch }
+- takeScreenshot: screenshots/scan-camera
+# Switching to cover mode and back releases and reopens the camera cleanly.
+# (Cover mode is the typed fallback until on-device text recognition lands,
+# P03-05; then it shows its own camera.)
+- tapOn: { id: scan-mode-cover }
+- extendedWaitUntil: { notVisible: { id: scan-torch }, timeout: 10000 }
+- takeScreenshot: screenshots/scan-cover-mode
+- tapOn: { id: scan-mode-barcode }
+- extendedWaitUntil: { visible: { id: scan-torch }, timeout: 15000 }

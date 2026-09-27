@@ -1,0 +1,48 @@
+# P06: create a group, then long-press to select on the Shelf (Android back
+# leaves selection), select three books and add them to the group.
+appId: dev.asorichetti.myshelf
+name: Group and multi-select
+tags: [core]
+---
+- runFlow:
+    file: common/open-fixture.yaml
+    env: { FIXTURE: demo, NEXT: /groups }
+- tapOn: { id: groups-new, index: 0 }
+- extendedWaitUntil: { visible: { id: groups-editor-sheet }, timeout: 5000 }
+- tapOn: { id: groups-editor-name }
+- inputText: Favourites
+- hideKeyboard
+- tapOn: Heart icon
+- tapOn: Lavender
+- takeScreenshot: screenshots/group-editor
+- tapOn: { id: groups-editor-save }
+- extendedWaitUntil: { visible: { id: groups-card, text: 'Favourites, 0 books' }, timeout: 10000 }
+- tapOn: { id: tab-shelf }
+# Long-press enters selection; Android back leaves it without leaving the Shelf.
+- longPressOn: { id: home-row, text: 'Dune,.*' }
+- extendedWaitUntil: { visible: { id: selection-bar }, timeout: 5000 }
+- back
+- extendedWaitUntil: { notVisible: { id: selection-bar }, timeout: 5000 }
+- assertVisible: { id: home-title }
+- tapOn: { id: shelf-select-button }
+- extendedWaitUntil: { visible: { id: selection-bar }, timeout: 5000 }
+# Each row is brought to the middle first, clear of the selection bar.
+- scrollUntilVisible: { element: { id: home-row, text: 'Dune,.*' }, direction: DOWN, centerElement: true }
+- tapOn: { id: home-row, text: 'Dune,.*' }
+- assertVisible: { id: selection-count, text: 1 book selected }
+- scrollUntilVisible: { element: { id: home-row, text: 'Mort,.*' }, direction: DOWN, centerElement: true }
+- tapOn: { id: home-row, text: 'Mort,.*' }
+- scrollUntilVisible: { element: { id: home-row, text: 'Pride and Prejudice,.*' }, direction: DOWN, centerElement: true }
+- tapOn: { id: home-row, text: 'Pride and Prejudice,.*' }
+- assertVisible: { id: selection-count, text: 3 books selected }
+- takeScreenshot: screenshots/selecting
+- tapOn: { id: selection-add-to-group }
+- extendedWaitUntil: { visible: { id: groups-picker-sheet }, timeout: 5000 }
+- tapOn: { id: groups-picker-option, text: 'Favourites,.*' }
+- extendedWaitUntil: { visible: { text: Added 3 books to Favourites.* }, timeout: 10000 }
+- tapOn: { id: tab-groups }
+- extendedWaitUntil: { visible: { id: groups-card, text: 'Favourites, 3 books' }, timeout: 10000 }
+- tapOn: { id: groups-card, text: 'Favourites, 3 books' }
+- extendedWaitUntil: { visible: { id: group-detail-title }, timeout: 10000 }
+- assertVisible: { id: home-row, text: 'Dune,.*' }
+- takeScreenshot: screenshots/group-detail

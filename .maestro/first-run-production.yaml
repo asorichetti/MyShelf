@@ -1,0 +1,28 @@
+# P09-10: the real first run, on a production build (no E2E loader): a fresh
+# install shows the onboarding, Skip lands on the empty Shelf, a relaunch
+# does not show it again, and the E2E deep link does nothing (ADR 0015).
+# Run against the production APK only (scripts/maestro-suite.sh installs it).
+appId: dev.asorichetti.myshelf
+name: First run on the production build
+tags: [production]
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil: { visible: Welcome to MyShelf, timeout: 30000 }
+- takeScreenshot: screenshots/production-onboarding
+- tapOn: { id: onboarding-skip }
+- extendedWaitUntil: { visible: { id: home-title }, timeout: 10000 }
+- assertVisible: 0 BOOKS CATALOGUED
+- takeScreenshot: screenshots/production-empty-shelf
+- stopApp
+- launchApp
+- extendedWaitUntil: { visible: { id: home-title }, timeout: 20000 }
+- assertNotVisible: Welcome to MyShelf
+# The fixture loader is not in this build: the link is a not-found page and
+# the library is untouched.
+- openLink: myshelf://e2e?fixture=demo&next=/
+- extendedWaitUntil: { visible: { id: not-found-root }, timeout: 10000 }
+- takeScreenshot: screenshots/production-e2e-inert
+- tapOn: { id: not-found-home-link }
+- extendedWaitUntil: { visible: { id: home-title }, timeout: 10000 }
+- assertVisible: 0 BOOKS CATALOGUED

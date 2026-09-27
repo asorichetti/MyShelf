@@ -1,0 +1,37 @@
+# P09-02: with the phone in dark mode (scripts/maestro-suite.sh runs
+# `cmd uimode night yes` first) the app follows it: key screens, a sheet and
+# Android's own date picker, for review in the screenshots.
+appId: dev.asorichetti.myshelf
+name: Dark mode follows the phone
+tags: [core, dark, hooked]
+---
+- runFlow:
+    file: common/open-fixture.yaml
+    env: { FIXTURE: demo, NEXT: / }
+- takeScreenshot: screenshots/dark-shelf
+- tapOn: { id: home-row, text: 'Dune,.*' }
+- extendedWaitUntil: { visible: { id: book-detail-title }, timeout: 10000 }
+- takeScreenshot: screenshots/dark-book
+- back
+- scrollUntilVisible: { element: { id: home-row, text: 'The Left Hand of Darkness,.*' }, direction: DOWN, centerElement: true }
+- tapOn: { id: home-row, text: 'The Left Hand of Darkness,.*' }
+- scrollUntilVisible: { element: { id: lend-open }, direction: DOWN }
+- tapOn: { id: lend-open }
+- extendedWaitUntil: { visible: { id: lend-sheet }, timeout: 5000 }
+- takeScreenshot: screenshots/dark-lend-sheet
+- scrollUntilVisible: { element: { text: Choose due back from a calendar }, direction: DOWN }
+- tapOn: Choose due back from a calendar
+- extendedWaitUntil: { visible: { id: 'android:id/button1' }, timeout: 5000 }
+- takeScreenshot: screenshots/dark-date-picker
+- tapOn: { id: 'android:id/button2' }
+- tapOn: { id: lend-cancel }
+- back
+- tapOn: { id: tab-loans }
+- extendedWaitUntil: { visible: { id: loans-root }, timeout: 10000 }
+- takeScreenshot: screenshots/dark-loans
+- tapOn: { id: tab-settings }
+- extendedWaitUntil: { visible: { id: settings-root }, timeout: 10000 }
+- takeScreenshot: screenshots/dark-settings
+- tapOn: { id: tab-shelf }
+- tapOn: { id: shelf-mode-spines }
+- takeScreenshot: screenshots/dark-spines

@@ -1,0 +1,26 @@
+# The app is portrait-only (app.json), and survives Android killing it in
+# the background: turning the phone leaves the layout as it is, and after
+# process death the app starts again on the Shelf with the library intact.
+appId: dev.asorichetti.myshelf
+name: Rotation and process death
+tags: [core]
+---
+- runFlow:
+    file: common/open-fixture.yaml
+    env: { FIXTURE: demo, NEXT: / }
+- tapOn: { id: home-row, text: 'Dune,.*' }
+- extendedWaitUntil: { visible: { id: book-detail-title }, timeout: 10000 }
+- setOrientation: LANDSCAPE_LEFT
+- assertVisible: { id: book-detail-title, text: Dune }
+- takeScreenshot: screenshots/rotated
+- setOrientation: PORTRAIT
+- pressKey: Home
+- killApp
+- launchApp
+- extendedWaitUntil: { visible: { id: page-content }, timeout: 30000 }
+- takeScreenshot: screenshots/after-process-death
+- runFlow:
+    when: { visible: { id: book-detail-back } }
+    commands:
+      - back
+- extendedWaitUntil: { visible: { text: 12 BOOKS CATALOGUED }, timeout: 10000 }

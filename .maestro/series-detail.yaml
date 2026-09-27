@@ -1,0 +1,20 @@
+# P04: a series with a gap: the spine shelf in order with a dashed gap, and
+# "Add #3" opens the form with the series filled in.
+appId: dev.asorichetti.myshelf
+name: Series detail with gaps
+tags: [core]
+---
+- runFlow:
+    file: common/open-fixture.yaml
+    env: { FIXTURE: demo, NEXT: /series }
+- tapOn: { id: series-list-row, text: 'Discworld.*' }
+- extendedWaitUntil: { visible: { id: series-detail-title }, timeout: 10000 }
+- assertVisible: '3 of 4 owned, 1 missing'
+- assertVisible: { id: series-detail-gap }
+- takeScreenshot: screenshots/series-detail
+- scrollUntilVisible: { element: { id: series-detail-add-gap }, direction: DOWN }
+- tapOn: { id: series-detail-add-gap }
+- extendedWaitUntil: { visible: { id: book-form-root }, timeout: 10000 }
+- scrollUntilVisible: { element: { id: series-input-position }, direction: DOWN }
+- assertVisible: { id: series-input-search, text: Discworld }
+- assertVisible: { id: series-input-position, text: '3' }

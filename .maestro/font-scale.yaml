@@ -1,0 +1,48 @@
+# P06-08 / P09-01: at Android's largest font size (scripts/maestro-suite.sh
+# runs `settings put system font_scale 2.0` first) the key screens still lay
+# out: the controls a user needs are on screen, and the screenshots are
+# reviewed for clipped or overlapping text.
+appId: dev.asorichetti.myshelf
+name: Large font scale
+tags: [core, font-scale, hooked]
+---
+- runFlow:
+    file: common/open-fixture.yaml
+    env: { FIXTURE: demo, NEXT: / }
+- assertVisible: { id: home-title }
+- takeScreenshot: screenshots/font2-shelf-list
+- scrollUntilVisible: { element: { id: shelf-mode-covers }, direction: DOWN, centerElement: true }
+- tapOn: { id: shelf-mode-covers }
+- scrollUntilVisible: { element: { id: shelf-cover-cell }, direction: DOWN }
+- takeScreenshot: screenshots/font2-shelf-covers
+- scrollUntilVisible: { element: { id: shelf-mode-spines }, direction: UP, centerElement: true }
+- tapOn: { id: shelf-mode-spines }
+- scrollUntilVisible: { element: { id: shelf-spine }, direction: DOWN }
+- takeScreenshot: screenshots/font2-shelf-spines
+- scrollUntilVisible: { element: { id: shelf-mode-list }, direction: UP, centerElement: true }
+- tapOn: { id: shelf-mode-list }
+- scrollUntilVisible: { element: { id: home-row, text: 'Dune,.*' }, direction: DOWN, centerElement: true }
+- tapOn: { id: home-row, text: 'Dune,.*' }
+- extendedWaitUntil: { visible: { id: book-detail-title }, timeout: 10000 }
+- takeScreenshot: screenshots/font2-book
+- tapOn: { id: book-detail-edit }
+- extendedWaitUntil: { visible: { id: book-form-save }, timeout: 10000 }
+- takeScreenshot: screenshots/font2-form
+- back
+- runFlow:
+    when: { visible: { id: dialog-root } }
+    commands:
+      - tapOn: { id: dialog-confirm }
+- back
+- tapOn: { id: tab-loans }
+- extendedWaitUntil: { visible: { id: loans-root }, timeout: 10000 }
+- takeScreenshot: screenshots/font2-loans
+- tapOn: { id: tab-groups }
+- extendedWaitUntil: { visible: { id: groups-root }, timeout: 10000 }
+- takeScreenshot: screenshots/font2-groups
+- tapOn: { id: tab-settings }
+- extendedWaitUntil: { visible: { id: settings-root }, timeout: 10000 }
+- takeScreenshot: screenshots/font2-settings
+- tapOn: { id: tab-scan }
+- extendedWaitUntil: { visible: { id: scan-root }, timeout: 10000 }
+- takeScreenshot: screenshots/font2-scan

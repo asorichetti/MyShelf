@@ -1,0 +1,33 @@
+# P02: look up an ISBN against the real Open Library and Google Books, choose
+# the result and save it with its real cover. Needs the internet: this checks
+# the native network stack, the User-Agent the APIs accept, and the cover
+# download into the app's own storage (a file:// path).
+appId: dev.asorichetti.myshelf
+name: Look up an ISBN online
+tags: [core, network, hooked]
+---
+- runFlow:
+    file: common/open-fixture.yaml
+    env: { FIXTURE: empty, NEXT: /book/new }
+- tapOn: { id: lookup-isbn-input }
+- inputText: '9780552166591'
+- tapOn: { id: lookup-isbn-submit }
+- extendedWaitUntil: { visible: { id: lookup-candidate }, timeout: 30000 }
+- assertVisible: { id: lookup-candidate, text: 'The Colour of Magic, by Terry Pratchett.*' }
+- takeScreenshot: screenshots/lookup-candidate-early
+- takeScreenshot: screenshots/lookup-candidate
+- tapOn: { id: lookup-candidate }
+- extendedWaitUntil: { visible: { id: lookup-chosen }, timeout: 10000 }
+- assertVisible: { id: book-form-title, text: The Colour of Magic }
+- takeScreenshot: screenshots/lookup-form
+- tapOn: { id: book-form-save }
+# Saving may ask to confirm the series it found.
+- runFlow:
+    when: { visible: { id: series-confirm-root } }
+    commands:
+      - tapOn: { id: series-confirm-save }
+- extendedWaitUntil: { visible: { id: book-detail-title }, timeout: 30000 }
+- assertVisible: { id: book-detail-title, text: The Colour of Magic }
+# The cover is checked in the screenshot, and scripts/maestro-suite.sh
+# checks the database holds a file:// cover for it.
+- takeScreenshot: screenshots/lookup-saved

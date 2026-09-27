@@ -1,0 +1,14 @@
+# Picks a file from Downloads in Android's document picker (DocumentsUI).
+#   env: FILE (the file name)
+appId: dev.asorichetti.myshelf
+---
+- extendedWaitUntil: { visible: Show roots, timeout: 10000 }
+- runFlow:
+    when: { notVisible: '${FILE}' }
+    commands:
+      - tapOn: Show roots
+      - extendedWaitUntil: { visible: { text: Downloads, index: 0 }, timeout: 5000 }
+      - tapOn: { text: Downloads, index: 0 }
+      - extendedWaitUntil: { visible: Files in Downloads, timeout: 5000 }
+- extendedWaitUntil: { visible: '${FILE}', timeout: 10000 }
+- tapOn: '${FILE}'

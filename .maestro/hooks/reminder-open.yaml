@@ -1,0 +1,11 @@
+# Run by scripts/maestro-suite.sh after reminders.yaml, once the clock is on
+# Dune's due date and the reminder has been posted: tapping it in the
+# notification shade opens the book, with the app not running.
+appId: dev.asorichetti.myshelf
+name: Tap a loan reminder
+---
+- extendedWaitUntil: { visible: '“Dune” is due back today', timeout: 10000 }
+- takeScreenshot: screenshots/reminder-notification
+- tapOn: '“Dune” is due back today'
+- extendedWaitUntil: { visible: { id: book-detail-title, text: Dune }, timeout: 30000 }
+- takeScreenshot: screenshots/reminder-opened-book

@@ -1,0 +1,30 @@
+# P00-18: the app launches, each tab is reachable by tap, and Android back
+# from the Shelf leaves the app.
+appId: dev.asorichetti.myshelf
+name: Launch and tabs
+tags: [smoke]
+---
+# A cold start with no deep link, as a user opens it: back from the Shelf
+# must leave the app, not walk back through anything.
+- launchApp:
+    clearState: true
+- runFlow:
+    when: { visible: { id: onboarding-skip } }
+    commands:
+      - tapOn: { id: onboarding-skip }
+- extendedWaitUntil: { visible: { id: home-title }, timeout: 20000 }
+- assertVisible: { id: home-title }
+- tapOn: { id: tab-scan }
+- extendedWaitUntil: { visible: { id: scan-root }, timeout: 10000 }
+- tapOn: { id: tab-loans }
+- extendedWaitUntil: { visible: { id: loans-root }, timeout: 10000 }
+- tapOn: { id: tab-groups }
+- extendedWaitUntil: { visible: { id: groups-root }, timeout: 10000 }
+- tapOn: { id: tab-settings }
+- extendedWaitUntil: { visible: { id: settings-root }, timeout: 10000 }
+- takeScreenshot: screenshots/launch-settings
+- tapOn: { id: tab-shelf }
+- extendedWaitUntil: { visible: { id: home-root }, timeout: 10000 }
+- takeScreenshot: screenshots/launch-shelf
+- back
+- assertNotVisible: { id: home-root }
