@@ -1,4 +1,6 @@
 import { act, fireEvent, screen } from '@testing-library/react-native';
+import { State } from 'react-native-gesture-handler';
+import { fireGestureHandler, getByGestureTestId } from 'react-native-gesture-handler/jest-utils';
 
 import { LoanRow } from '@/components/loans/LoanRow';
 import type { LoanWithDetails } from '@/domain';
@@ -78,5 +80,61 @@ describe('LoanRow', () => {
       const style = screen.getByTestId(id).props.style;
       expect(Array.isArray(style) ? Object.assign({}, ...style.flat()) : style).toMatchObject({ minHeight: 48, minWidth: 48 });
     }
+  });
+
+  describe('swipe to return', () => {
+    // The card's width is only known after layout; give it a phone's.
+    const layOut = () =>
+      fireEvent(screen.getByTestId(Testids.loans.rowSwipePanel, { includeHiddenElements: true }).parent!.parent!, 'layout', { nativeEvent: { layout: { x: 0, y: 0, width: 360, height: 200 } } });
+    const swipe = (translationX: number, velocityX = 0) =>
+      act(() =>
+        fireGestureHandler(getByGestureTestId(Testids.loans.rowSwipe), [
+          { state: State.BEGAN, translationX: 0, velocityX: 0 },
+          { state: State.ACTIVE, translationX: translationX / 2, velocityX },
+          { translationX, velocityX },
+          { state: State.END, translationX, velocityX },
+        ]),
+      );
+
+    it('marks the book returned when swiped far enough to the left', async () => {
+      const h = await renderRow(base);
+      layOut();
+      await swipe(-200);
+      expect(h.onReturn).toHaveBeenCalledTimes(1);
+      expect(h.onReturn).toHaveBeenCalledWith(base);
+    });
+
+    it('does nothing for a short swipe or a swipe to the right', async () => {
+      const h = await renderRow(base);
+      layOut();
+      await swipe(-60);
+      await swipe(240);
+      expect(h.onReturn).not.toHaveBeenCalled();
+    });
+
+    it('takes a quick flick as a swipe', async () => {
+      const h = await renderRow(base);
+      layOut();
+      await swipe(-60, -1200);
+      expect(h.onReturn).toHaveBeenCalledTimes(1);
+    });
+
+    it('hides the swipe panel from screen readers and offers the action on the title instead', async () => {
+      const h = await renderRow(base);
+      const panel = screen.getByTestId(Testids.loans.rowSwipePanel, { includeHiddenElements: true });
+      expect(panel.props.importantForAccessibility).toBe('no-hide-descendants');
+      expect(panel.props.accessibilityElementsHidden).toBe(true);
+      const title = screen.getByRole('button', { name: 'Open The Murder of Roger Ackroyd' });
+      expect(title.props.accessibilityActions).toEqual([{ name: 'markReturned', label: 'Mark returned' }]);
+      fireEvent(title, 'accessibilityAction', { nativeEvent: { actionName: 'markReturned' } });
+      expect(h.onReturn).toHaveBeenCalledWith(base);
+      expect(h.onOpenBook).not.toHaveBeenCalled();
+    });
+
+    it('offers no swipe or action once the book is back, or without a return handler', async () => {
+      await renderRow({ ...base, returnedOn: '2026-06-12' });
+      expect(screen.queryByTestId(Testids.loans.rowSwipePanel, { includeHiddenElements: true })).toBeNull();
+      expect(screen.getByRole('button', { name: 'Open The Murder of Roger Ackroyd' }).props.accessibilityActions).toBeUndefined();
+    });
   });
 });

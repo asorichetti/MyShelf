@@ -77,6 +77,8 @@ export const Testids = {
     rowBorrower: 'loans-row-borrower',
     stamp: 'loans-stamp',
     rowReturn: 'loans-row-return',
+    rowSwipe: 'loans-row-swipe',
+    rowSwipePanel: 'loans-row-swipe-panel',
     filterBorrower: 'loans-filter-borrower',
     empty: 'loans-empty',
   },
