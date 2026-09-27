@@ -2,6 +2,7 @@ import { toIso6391 } from '@/domain/languages';
 
 import { olFixtures } from '../__fixtures__/openLibraryRoutes';
 import {
+  authorDisplayName,
   authorKeys,
   cleanText,
   coverUrlFromId,
@@ -14,6 +15,7 @@ import {
   olid,
   parsePublishYear,
   uniqueStrings,
+  wantsLatinNames,
 } from '../openLibraryMap';
 
 describe('parsePublishYear', () => {
@@ -307,5 +309,34 @@ describe('mapSearchDoc', () => {
   it('keeps every language of the work for ranking, as ISO 639-1 codes', () => {
     expect(mapSearchDoc({ key: '/works/OL1W', title: 'x', language: ['eng', 'dut', 'eng'] })?.languages).toEqual(['en', 'nl']);
     expect(mapSearchDoc({ key: '/works/OL1W', title: 'x' })?.languages).toEqual([]);
+  });
+});
+
+describe('authorDisplayName', () => {
+  // OL382524A, September 2026: the name is stored in Japanese.
+  const murakami = {
+    name: '村上春樹',
+    personal_name: 'Murakami, Haruki',
+    alternate_names: ['春樹 村上', 'HARUKI MURAKAMI', 'Haruki MURAKAMI', 'MURAKAMI HARUKI', 'Murakami Haruki', 'Haruki Murakami', 'Харуки Мураками'],
+  };
+
+  it('credits a non-Latin name in Latin letters for a Latin-script edition', () => {
+    expect(authorDisplayName(murakami)).toBe('Haruki Murakami');
+    expect(authorDisplayName({ name: '村上春樹', alternate_names: ['HARUKI MURAKAMI', 'Haruki MURAKAMI', 'Haruki Murakami'] })).toBe('Haruki Murakami');
+    expect(authorDisplayName({ name: '村上春樹', alternate_names: ['MURAKAMI HARUKI'] })).toBe('MURAKAMI HARUKI');
+  });
+
+  it('keeps the name as stored for an edition in its own script, or when it is already in Latin letters', () => {
+    expect(authorDisplayName(murakami, { latinScript: false })).toBe('村上春樹');
+    expect(authorDisplayName({ name: 'Gabriel García Márquez', alternate_names: ['Габриэль Гарсиа Маркес'] })).toBe('Gabriel García Márquez');
+    expect(authorDisplayName({ name: 'Лев Толстой' })).toBe('Лев Толстой');
+    expect(authorDisplayName(null)).toBeNull();
+  });
+
+  it('knows which languages are written in other scripts', () => {
+    expect(wantsLatinNames('en')).toBe(true);
+    expect(wantsLatinNames(null)).toBe(true);
+    expect(wantsLatinNames('ja')).toBe(false);
+    expect(wantsLatinNames('ru')).toBe(false);
   });
 });

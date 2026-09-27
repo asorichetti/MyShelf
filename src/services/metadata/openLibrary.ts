@@ -1,7 +1,9 @@
+import { toIso6391 } from '@/domain/languages';
 import { DEFAULT_CACHE_TTL_MS, NotFoundError, type HttpClient } from '@/services/http';
 import { withQuery } from '@/services/http/url';
 
 import {
+  authorDisplayName,
   authorKeys,
   cleanText,
   mapEdition,
@@ -12,6 +14,7 @@ import {
   type OlEditionsResponse,
   type OlSearchResponse,
   type OlWork,
+  wantsLatinNames,
 } from './openLibraryMap';
 
 import type { BookCandidate, MetadataProvider, SearchQuery } from './types';
@@ -60,25 +63,24 @@ export function createOpenLibrary({
   baseUrl = OPEN_LIBRARY_BASE,
   cacheTtlMs: cacheTtl = DEFAULT_CACHE_TTL_MS,
 }: OpenLibraryOptions): OpenLibraryProvider {
-  const authorNames = new Map<string, Promise<string | null>>();
+  const authorRecords = new Map<string, Promise<OlAuthor | null>>();
 
-  function authorName(key: string, signal?: AbortSignal): Promise<string | null> {
-    let name = authorNames.get(key);
-    if (!name) {
-      name = orNull(http.getJson<OlAuthor>(`${baseUrl}/authors/${key}.json`, { signal, cacheTtl })).then(
-        (a) => cleanText(a?.name) ?? cleanText(a?.personal_name),
-      );
+  function authorRecord(key: string, signal?: AbortSignal): Promise<OlAuthor | null> {
+    let record = authorRecords.get(key);
+    if (!record) {
+      record = orNull(http.getJson<OlAuthor>(`${baseUrl}/authors/${key}.json`, { signal, cacheTtl }));
       // Only successes stay memoised, so a failed lookup is retried next time.
-      name.catch(() => authorNames.delete(key));
-      authorNames.set(key, name);
+      record.catch(() => authorRecords.delete(key));
+      authorRecords.set(key, record);
     }
-    return name;
+    return record;
   }
 
-  async function authorsFor(keys: string[], signal?: AbortSignal): Promise<string[]> {
+  /** Display names for author keys, in Latin letters for an edition in a Latin-script language. */
+  async function authorsFor(keys: string[], language: string | null, signal?: AbortSignal): Promise<string[]> {
     const names: string[] = [];
     for (const key of keys) {
-      const name = await authorName(key, signal);
+      const name = authorDisplayName(await authorRecord(key, signal), { latinScript: wantsLatinNames(language) });
       if (name) names.push(name);
     }
     return names;
@@ -93,7 +95,7 @@ export function createOpenLibrary({
       if (!edition) return [];
       const workId = olid(edition.works?.[0]?.key);
       const work = workId ? await orNull(http.getJson<OlWork>(`${baseUrl}/works/${workId}.json`, { signal, cacheTtl })) : null;
-      const authors = await authorsFor(authorKeys(edition, work), signal);
+      const authors = await authorsFor(authorKeys(edition, work), toIso6391(edition.languages?.[0]?.key), signal);
       return [mapEdition(edition, { work, authors, requestedIsbn13: isbn13, confidence: 0.95 })];
     },
 

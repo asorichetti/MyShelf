@@ -46,6 +46,42 @@ export interface OlAuthor {
   key?: string;
   name?: string;
   personal_name?: string;
+  alternate_names?: string[];
+}
+
+/** Languages not written in the Latin alphabet: their editions may credit an author in their own script. */
+const NON_LATIN_SCRIPT = new Set([
+  'ar', 'be', 'bg', 'bn', 'bo', 'el', 'fa', 'gu', 'he', 'hi', 'hy', 'ja', 'ka', 'kk', 'ko', 'mk', 'ml', 'mn', 'mr', 'ne', 'pa', 'ru',
+  'sa', 'sr', 'ta', 'te', 'th', 'uk', 'ur', 'yi', 'zh',
+]);
+
+/** Whether an edition in this language (ISO 639-1; null when unknown) should credit authors in Latin letters. */
+export function wantsLatinNames(language: string | null | undefined): boolean {
+  return !language || !NON_LATIN_SCRIPT.has(language);
+}
+
+const latin = (s: string) => /\p{Script=Latin}/u.test(s) && !/[^\p{Script=Latin}\p{Script=Common}\p{Script=Inherited}]/u.test(s);
+
+/**
+ * An author's display name for an edition. Open Library sometimes stores
+ * the name in the author's own script ("村上春樹"), which an English edition
+ * should credit as "Haruki Murakami": for a Latin-script edition, a
+ * non-Latin `name` gives way to `personal_name` in Latin letters
+ * ("Murakami, Haruki", turned round), else to a Latin alternate name (not
+ * in capitals first).
+ */
+export function authorDisplayName(author: OlAuthor | null | undefined, { latinScript = true }: { latinScript?: boolean } = {}): string | null {
+  const name = cleanText(author?.name) ?? cleanText(author?.personal_name);
+  if (!name || !latinScript || latin(name)) return name;
+  const personal = cleanText(author?.personal_name);
+  if (personal && latin(personal)) {
+    const [family, given] = personal.split(',').map((p) => p.trim());
+    return given ? `${given} ${family}` : personal;
+  }
+  // "Haruki Murakami", not "HARUKI MURAKAMI", "Haruki MURAKAMI" or "Murakami, Haruki".
+  const alternates = (author?.alternate_names ?? []).map((a) => cleanText(a)).filter((a): a is string => !!a && latin(a));
+  const shouting = (a: string) => a.split(/\s+/).some((w) => w.length > 1 && w === w.toUpperCase() && /\p{L}{2}/u.test(w));
+  return alternates.find((a) => !shouting(a) && !a.includes(',')) ?? alternates[0] ?? name;
 }
 
 /** A document from `/search.json` with the fields we request. */
