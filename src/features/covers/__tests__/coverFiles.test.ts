@@ -5,6 +5,7 @@
  */
 import { booksRepo, settingsRepo, type Db } from '@/db';
 import { openNodeDatabase } from '@/db/node';
+import * as books from '@/db/repositories/books';
 import { exportBackup, restoreBackup, undoRestore } from '@/services/backup';
 import { images } from '@/services/covers/__fixtures__/images';
 import { coverBatchUrl } from '@/services/covers/batchCoverIds';
@@ -186,7 +187,8 @@ describe('replacing a cover', () => {
     const fixtures = mockCoverApi([GOOD_OMENS]);
     const http = createHttpClient({ fetch: fixtures.fetch, limiter: createRateLimiter({ minIntervalMs: 0 }) });
     const real = booksRepo.updateBook;
-    jest.spyOn(booksRepo, 'updateBook').mockImplementation(async (d, id, patch) => {
+    // booksRepo re-exports the books module, so the spy goes on that module.
+    jest.spyOn(books, 'updateBook').mockImplementation(async (d, id, patch) => {
       if (patch.coverUri) throw new Error('database is locked');
       return real(d, id, patch);
     });

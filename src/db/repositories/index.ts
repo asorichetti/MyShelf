@@ -2,7 +2,7 @@ export * as apiCacheRepo from './apiCache';
 export * as authorsRepo from './authors';
 export * as backupRepo from './backup';
 export * as bookExportRepo from './bookExport';
-export * as booksRepo from './books';
+export * as booksRepo from './booksRepo';
 export * as coverAttemptsRepo from './coverAttempts';
 export * as genresRepo from './genres';
 export * as groupsRepo from './groups';
