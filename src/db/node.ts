@@ -1,6 +1,11 @@
 /**
  * node:sqlite adapter for Jest and Node scripts. Not bundled into the app:
  * only tests import it. Uses Node's built-in SQLite (no native build).
+ *
+ * It stands in for the web build's SQLite, which has no FTS5, so search
+ * takes the plain index here (`createFtsTestDb()` covers FTS5, as on
+ * Android). Node's own SQLite has FTS5 compiled in since Node 24, so the
+ * adapter refuses FTS5 tables the way a build without the module does.
  */
 import { createDb } from './createDb';
 
@@ -29,6 +34,13 @@ function loadNodeSqlite(): NodeSqlite {
   return mod;
 }
 
+const FTS5_TABLE = /\bUSING\s+fts5\b/i;
+/** Fails like an SQLite built without FTS5, so migration 0006 finds none. */
+function withoutFts5(sql: string): string {
+  if (FTS5_TABLE.test(sql)) throw new Error('no such module: fts5');
+  return sql;
+}
+
 // Plain objects: node:sqlite returns null-prototype rows, which trip up deep equality in tests.
 const plain = <T>(row: unknown): T => ({ ...(row as object) }) as T;
 
@@ -38,9 +50,9 @@ export async function openNodeDatabase(path = ':memory:'): Promise<Db> {
   const sqlite = new DatabaseSync(path);
   sqlite.exec('PRAGMA foreign_keys = ON;');
   return createDb({
-    exec: async (sql) => sqlite.exec(sql),
+    exec: async (sql) => sqlite.exec(withoutFts5(sql)),
     run: async (sql, params: SqlParams) => {
-      const r = sqlite.prepare(sql).run(...params);
+      const r = sqlite.prepare(withoutFts5(sql)).run(...params);
       return { lastInsertRowId: Number(r.lastInsertRowid), changes: Number(r.changes) };
     },
     get: async <T>(sql: string, params: SqlParams) => {

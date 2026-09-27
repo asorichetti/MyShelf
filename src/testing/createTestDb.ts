@@ -2,7 +2,7 @@ import { migrate, type Db } from '@/db';
 import { openBetterSqliteDatabase } from '@/db/betterSqlite';
 import { openNodeDatabase } from '@/db/node';
 
-/** A fresh, fully migrated in-memory database for tests (Node's SQLite: no FTS5, so search uses the plain index). */
+/** A fresh, fully migrated in-memory database for tests (the Node adapter models web's SQLite without FTS5, so search uses the plain index). */
 export async function createTestDb(): Promise<Db> {
   const db = await openNodeDatabase();
   await migrate(db);
