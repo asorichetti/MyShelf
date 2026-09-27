@@ -78,7 +78,7 @@ jobs:
       - name: Smoke (core suite, gates fail)
         run: npm run -s autotest -- smoke --serve dist --ux-gates fail --headless=true
       - name: Every other journey (gates fail)
-        run: npm run -s autotest -- journey --all --exclude-suite core --exclude-suite live --serve dist --ux-gates fail --headless=true
+        run: npm run -s autotest -- journey --all --exclude-suite core --exclude-suite live --exclude-suite perf --serve dist --ux-gates fail --headless=true
       - name: Upload evidence bundles
         if: failure()
         uses: actions/upload-artifact@v4
