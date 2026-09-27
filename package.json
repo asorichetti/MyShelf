@@ -72,7 +72,8 @@
     "autotest:journeys": "tsx tools/auto-test-suite/src/cli.ts journey --all",
     "lint": "eslint .",
     "test:live": "node --import tsx --test --test-concurrency=1 \"src/**/__live__/*.live.ts\"",
-    "icons:render": "node scripts/render-icons.mjs"
+    "icons:render": "node scripts/render-icons.mjs",
+    "media:hero": "node scripts/render-readme-hero.mjs"
   },
   "private": true,
   "jest": {
