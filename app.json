@@ -126,6 +126,12 @@
           "dark": "#C4A8EE"
         }
       ],
+      [
+        "./plugins/withAndroidNightBackground",
+        {
+          "dark": "#1C1424"
+        }
+      ],
       "./plugins/withAndroidTextBounds",
       "./plugins/withApkAbiSplits",
       "./plugins/withReleaseShrinking",
