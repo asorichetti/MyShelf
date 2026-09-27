@@ -38,24 +38,24 @@ jobs:
       ABIS: x86_64
       MAESTRO_VERSION: 2.10.0
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Free disk space
         run: |
           sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/.ghcup /usr/share/swift /usr/local/share/boost
           df -h /
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 23
           cache: npm
       - run: npm ci
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: '17'
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@v5
 
       # Same SDK packages as the release build, read from React Native's catalog.
       - name: Install Android SDK packages
@@ -101,7 +101,7 @@ jobs:
 
       - name: Upload screenshots and reports
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: maestro-results
           path: maestro-results/
