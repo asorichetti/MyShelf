@@ -123,6 +123,7 @@
         }
       ],
       "./plugins/withApkAbiSplits",
+      "./plugins/withReleaseShrinking",
       "./plugins/withReleaseSigning"
     ],
     "scheme": "myshelf",
