@@ -30,9 +30,7 @@ export const ungroupedTitleKeys: Record<Exclude<ShelfGroupBy, 'none'>, MessageKe
   rating: 'shelfView.ungrouped.rating',
 };
 
-/** The labels and titles themselves, translated each time they are read. */
-export const groupByLabels = translatedLabels(groupByLabelKeys);
-export const viewModeLabels = translatedLabels(viewModeLabelKeys);
+/** The titles themselves, translated each time they are read. */
 export const ungroupedTitles = translatedLabels(ungroupedTitleKeys);
 
 export function parseShelfGroupBy(value: unknown): ShelfGroupBy | null {

@@ -427,5 +427,3 @@ export const darkElevation: Record<keyof typeof elevation, string> = {
   card: '0px 2px 6px rgba(0, 0, 0, 0.35), 0px 1px 1px rgba(0, 0, 0, 0.25)',
   raised: '0px 6px 16px rgba(0, 0, 0, 0.5)',
 };
-
-export type ElevationLevel = keyof typeof elevation;

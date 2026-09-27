@@ -503,10 +503,6 @@ export const sortKeyRegistry: Readonly<Record<SortKeyId, SortKeyDef>> = Object.f
 
 export const sortKeyList: readonly SortKeyDef[] = sortKeyIds.map((id) => sortKeyRegistry[id]);
 
-export function sortKeyDef(id: SortKeyId): SortKeyDef {
-  return sortKeyRegistry[id];
-}
-
 // ---- ORDER BY ----
 
 /**

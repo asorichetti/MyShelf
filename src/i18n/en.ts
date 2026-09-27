@@ -37,7 +37,6 @@ export const en = {
     /** "Discworld #5": a series and a book's place in it. */
     seriesLabel: '{name} #{position}',
     books: { one: '{count} book', other: '{count} books' },
-    days: { one: '{count} day', other: '{count} days' },
     /** Joining names: "Terry Pratchett and Neil Gaiman", "A, B and C". */
     list: {
       pair: '{first} and {last}',
@@ -1775,10 +1774,6 @@ export const en = {
       /** Separator between the counts. */
       separator: ', ',
       none: 'no books',
-    },
-    /** Booky’s gentle nudge when no backup has been saved for a while. */
-    reminder: {
-      message: 'It’s been a while since your last backup — save one now?',
     },
     /** Joins whole sentences shown one after another in the same paragraph. */
     sentenceSeparator: ' ',

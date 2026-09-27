@@ -62,9 +62,6 @@ export function useLayers(): LayersSnapshot {
   return useSyncExternalStore(subscribe, getLayers, getLayers);
 }
 
-/** Calls `listener` whenever layers change; returns the unsubscribe function. */
-export const subscribeLayers = subscribe;
-
 /** Registers a dialog, sheet or menu as open while `open` is true. */
 export function useBlockingLayer(open: boolean): void {
   useEffect(() => {
@@ -133,15 +130,4 @@ export function resetLayers(): void {
   obstacles.clear();
   floating = null;
   changed();
-}
-
-/** Tests: add an obstacle by hand; returns its remover. */
-export function addObstacleForTest(rect: ObstacleRect): () => void {
-  const id = nextId++;
-  obstacles.set(id, rect);
-  changed();
-  return () => {
-    obstacles.delete(id);
-    changed();
-  };
 }

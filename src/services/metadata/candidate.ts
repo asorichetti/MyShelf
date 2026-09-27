@@ -1,6 +1,6 @@
 import { AUTHOR_NAME_MAX, clampText, TITLE_MAX } from '@/domain';
 
-import type { BookCandidate, CandidateSource, CoverRefs } from './types';
+import type { BookCandidate, CoverRefs } from './types';
 
 /** Cover refs with nothing known. */
 export function emptyCoverRefs(): CoverRefs {
@@ -42,4 +42,4 @@ export function makeCandidate(
   return candidate;
 }
 
-export type { BookCandidate, CandidateSource, CoverRefs };
+export type { BookCandidate, CoverRefs };

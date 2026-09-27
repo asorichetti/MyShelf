@@ -26,7 +26,7 @@ import { BOOK_COLUMNS, NOW_SQL, sqlValue, toBook, type BookRow } from './shared'
 import type { SearchIndexKind } from '../migrations/0006_book_search';
 import type { Db, SqlValue } from '../types';
 
-export { createBookFromCandidate, refreshBook, type CandidateOverrides } from './bookLookups';
+export { createBookFromCandidate, refreshBook } from './bookLookups';
 
 /** Domain field -> column. Order defines INSERT column order. */
 const FIELDS = {
