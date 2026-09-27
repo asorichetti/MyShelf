@@ -42,6 +42,10 @@ yarn-error.*
 /ios
 /android
 
+# APKs built by scripts/build-android-apk.sh, and Maestro run output
+/build/
+/maestro-results/
+
 # auto-test-suite evidence bundles: per-run, large, regenerated every invocation
 /screenshots/
 /tools/auto-test-suite/screenshots/
