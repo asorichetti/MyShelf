@@ -16,14 +16,18 @@ tags: [core]
 - inputText: J. R. R. Tolkien
 - pressKey: Enter
 - extendedWaitUntil: { visible: { id: book-form-author-chip }, timeout: 5000 }
+# Fields in the form's order, always scrolling down: the year (Edition) comes
+# before the genres, and once scrolled past it a downward search never finds
+# it (CI run 36366339475 scrolled past it on the way to the genres).
+- scrollUntilVisible: { element: { id: book-form-year }, direction: DOWN }
+- tapOn: { id: book-form-year }
+- inputText: '1937'
+- hideKeyboard
 - scrollUntilVisible: { element: { id: book-form-genre-input }, direction: DOWN }
 - tapOn: { id: book-form-genre-input }
 - inputText: Fantasy
 - pressKey: Enter
 - extendedWaitUntil: { visible: { id: book-form-genre-chip }, timeout: 5000 }
-- scrollUntilVisible: { element: { id: book-form-year }, direction: DOWN }
-- tapOn: { id: book-form-year }
-- inputText: '1937'
 - hideKeyboard
 - scrollUntilVisible: { element: { id: book-form-rating }, direction: DOWN }
 - tapOn: { id: rating-star, index: 3 }
