@@ -269,6 +269,18 @@ Also by hand: installing the new E2E APK over the build from `main` before
 this work, with the demo library and its loans, kept all 12 books and the
 open loans; the app launched without the onboarding.
 
+### With recorded API responses
+
+On the `hermetic` branch (from `main` at `1f8f688`), arm64-v8a APKs on the
+emulator `myshelf-ocr` (Android 16, Google APIs arm64):
+
+| Run | Result |
+|---|---|
+| discovery run, before the missing fixtures were recorded | every step passed except `cover-scan-synthetic`; `mock-api-unmocked` listed the three searches it and the Goodreads import made, which were then recorded |
+| full suite, twice, on the final APKs | every step passed, `mock-api-unmocked` included; the live lookup passed on its first attempt both times |
+| `--offline` (airplane mode, live steps skipped) | every step passed; the demo covers showed their drawn stand-ins, as nothing could load them |
+| Android E2E workflow, run 36359434237 | every step passed |
+
 ### Bugs found on the device and fixed
 
 | # | Symptom on the phone | Cause | Fix |
