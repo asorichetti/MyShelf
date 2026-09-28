@@ -99,7 +99,7 @@ jobs:
           disk-size: 6000M
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
           disable-animations: true
-          script: scripts/maestro-suite.sh --e2e-apk build/myshelf-e2e.apk --production-apk build/myshelf-production.apk --out maestro-results
+          script: scripts/maestro-suite.sh --e2e-apk build/myshelf-e2e.apk --production-apk build/myshelf-production.apk --out maestro-results --require-root
 
       - name: Upload screenshots and reports
         if: always()

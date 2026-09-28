@@ -5,7 +5,7 @@
 #
 #   scripts/maestro-suite.sh --e2e-apk build/myshelf-e2e.apk \
 #     [--production-apk build/myshelf-production.apk] [--device emulator-5554] \
-#     [--out maestro-results] [--offline]
+#     [--out maestro-results] [--offline] [--require-root]
 #
 # Every flow answers Open Library, Google Books and cover requests from the
 # recorded responses built into the E2E APK (src/features/e2e/mockApi.ts),
@@ -43,7 +43,10 @@
 #
 # Screenshots, logs and JUnit reports go to --out, one folder per step, with
 # the app's JavaScript log in app-js.log. The device's settings are put back
-# however the run ends. Exits 1 if any step failed.
+# however the run ends. Exits 1 if any step failed. Without `adb root` the
+# checks that need it are skipped and listed as such in the summary;
+# --require-root (CI, whose emulator images allow root) stops with exit 3
+# instead, so a run can never pass with them left out.
 set -uo pipefail
 
 root=$(cd "$(dirname "$0")/.." && pwd)
@@ -52,6 +55,7 @@ production_apk=''
 device=${ANDROID_SERIAL:-}
 out="$root/maestro-results"
 offline=false
+require_root=false
 while [ $# -gt 0 ]; do
   case "$1" in
     --e2e-apk) e2e_apk=$2; shift 2 ;;
@@ -59,7 +63,8 @@ while [ $# -gt 0 ]; do
     --device) device=$2; shift 2 ;;
     --out) out=$2; shift 2 ;;
     --offline) offline=true; shift ;;
-    *) echo "usage: $0 --e2e-apk <apk> [--production-apk <apk>] [--device <serial>] [--out <dir>] [--offline]" >&2; exit 2 ;;
+    --require-root) require_root=true; shift ;;
+    *) echo "usage: $0 --e2e-apk <apk> [--production-apk <apk>] [--device <serial>] [--out <dir>] [--offline] [--require-root]" >&2; exit 2 ;;
   esac
 done
 [ -n "$e2e_apk" ] || { echo "maestro-suite: --e2e-apk is required" >&2; exit 2; }
@@ -74,6 +79,7 @@ flows="$root/.maestro"
 mkdir -p "$out"
 failed=()
 passed=()
+skipped=()
 
 a() { adb -s "$device" "$@"; }
 say() { printf '\n== %s\n' "$*"; }
@@ -98,10 +104,24 @@ wait_ready() {
   return 1
 }
 
+# `adb root` restarts adbd, and on a busy CI emulator the restart can be lost
+# (Android E2E run 36441849875 ran as shell), so it is tried a few times.
 has_root=false
-if a root > /dev/null 2>&1; then
+for _ in 1 2 3; do
+  a root > /dev/null 2>&1
   wait_ready || exit 3
-  [ "$(a shell id -u | tr -d '\r')" = 0 ] && has_root=true
+  if [ "$(a shell id -u | tr -d '\r')" = 0 ]; then
+    has_root=true
+    break
+  fi
+  sleep 5
+done
+if ! $has_root; then
+  if $require_root; then
+    echo "maestro-suite: --require-root, but adb root did not take on $device" >&2
+    exit 3
+  fi
+  skipped+=(lookup-cover-stored reminder-delivered reminder-open db-export)
 fi
 
 # Installs an APK and proves it is there: retries through a device that has
@@ -347,5 +367,6 @@ fi
 say "Summary"
 echo "passed: ${passed[*]:-none}"
 echo "failed: ${failed[*]:-none}"
+[ ${#skipped[@]} -eq 0 ] || echo "skipped (no adb root): ${skipped[*]}"
 echo "results: $out"
 [ ${#failed[@]} -eq 0 ]

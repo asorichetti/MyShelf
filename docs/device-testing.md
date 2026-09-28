@@ -86,7 +86,10 @@ airplane mode, to prove the rest never needs the network.
 Once: install [Maestro](https://maestro.mobile.dev) 2.10 or later
 (`curl -fsSL https://get.maestro.mobile.dev | bash`) and create an emulator,
 for example a Pixel 7 on Android 16 with a **Google APIs** image (not
-"Google Play": `adb root` must work for the reminder and cover checks):
+"Google Play": `adb root` must work for the reminder, cover and database
+export checks. Without it the suite skips those and lists them under
+"skipped" in its summary; CI passes `--require-root`, which stops the run
+instead):
 
 ```bash
 sdkmanager "system-images;android-36;google_apis;arm64-v8a"      # x86_64 on an Intel Mac or Linux
