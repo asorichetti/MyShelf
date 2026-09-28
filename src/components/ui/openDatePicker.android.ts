@@ -1,4 +1,5 @@
 import { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
+import { Keyboard } from 'react-native';
 
 import { parseIsoDate, toIsoDate, type IsoDate } from '@/domain';
 
@@ -11,6 +12,9 @@ export const hasDatePicker = true;
 
 /** Resolves with the chosen local calendar date, or null when dismissed. */
 export function openDatePicker({ value, min, max }: DatePickerRequest): Promise<IsoDate | null> {
+  // Put the keyboard away first: Android gives focus back to the focused field
+  // when the dialog closes, which would bring the keyboard up over the sheet.
+  Keyboard.dismiss();
   return new Promise((resolve) => {
     DateTimePickerAndroid.open({
       mode: 'date',

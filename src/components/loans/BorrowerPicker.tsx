@@ -1,6 +1,6 @@
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useEffect, useState } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Keyboard, Pressable, StyleSheet, View } from 'react-native';
 
 import { Button, Text, TextField } from '@/components/ui';
 import type { BorrowerWithStats } from '@/db';
@@ -64,10 +64,17 @@ export function BorrowerPicker({ value, onChange, search, findByName, errorText,
 
   const name = query.trim();
 
+  // Choosing someone replaces the search field, so its keyboard goes too:
+  // otherwise Android hands focus to the next field and keeps the keyboard up.
+  const choose = (choice: BorrowerChoice) => {
+    Keyboard.dismiss();
+    onChange(choice);
+  };
+
   const create = async () => {
     const existing = await findByName(name).catch(() => null);
     if (existing) setDuplicate(existing);
-    else onChange({ kind: 'new', name, contact: '' });
+    else choose({ kind: 'new', name, contact: '' });
   };
 
   if (value) {
@@ -147,14 +154,14 @@ export function BorrowerPicker({ value, onChange, search, findByName, errorText,
           <View style={[styles.wrap, { gap: spacing.sm }]}>
             <Button
               label={t('lend.picker.useExisting', { name: duplicate.name })}
-              onPress={() => onChange({ kind: 'existing', borrower: duplicate })}
+              onPress={() => choose({ kind: 'existing', borrower: duplicate })}
               testID={Testids.lend.borrowerUseExisting}
             />
             <Button
               label={t('lend.picker.addNew')}
               variant="secondary"
               accessibilityLabel={t('lend.picker.addNewLabel', { name })}
-              onPress={() => onChange({ kind: 'new', name, contact: '' })}
+              onPress={() => choose({ kind: 'new', name, contact: '' })}
               testID={Testids.lend.borrowerAddAnyway}
             />
           </View>
@@ -167,7 +174,7 @@ export function BorrowerPicker({ value, onChange, search, findByName, errorText,
               key={b.id}
               role="button"
               accessibilityLabel={borrowerOptionLabel(b)}
-              onPress={() => onChange({ kind: 'existing', borrower: { id: b.id, name: b.name, contact: b.contact } })}
+              onPress={() => choose({ kind: 'existing', borrower: { id: b.id, name: b.name, contact: b.contact } })}
               testID={Testids.lend.borrowerOption}
               style={({ pressed }) => [
                 styles.option,

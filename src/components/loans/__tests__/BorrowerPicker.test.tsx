@@ -1,5 +1,6 @@
 import { act, fireEvent, screen } from '@testing-library/react-native';
 import { useState } from 'react';
+import { Keyboard } from 'react-native';
 
 import { BorrowerPicker, type BorrowerChoice } from '@/components/loans/BorrowerPicker';
 import { booksRepo, loansRepo, type Db } from '@/db';
@@ -94,6 +95,19 @@ describe('BorrowerPicker', () => {
     expect(latest).toEqual({ kind: 'new', name: 'Alex', contact: '07700 900123' });
     // Nothing is written until the loan is saved.
     expect((await loansRepo.listBorrowers(db)).map((b) => b.name)).not.toContain('Alex');
+  });
+
+  it('puts the keyboard away once someone is chosen, as the search field goes', async () => {
+    const dismiss = jest.spyOn(Keyboard, 'dismiss');
+    renderWithTheme(<Harness />);
+    await type('sa');
+    await act(async () => fireEvent.press(screen.getByTestId(Testids.lend.borrowerOption)));
+    expect(dismiss).toHaveBeenCalledTimes(1);
+    fireEvent.press(screen.getByTestId(Testids.lend.borrowerChange));
+    await type('Alex');
+    await act(async () => fireEvent.press(screen.getByTestId(Testids.lend.borrowerCreate)));
+    expect(dismiss).toHaveBeenCalledTimes(2);
+    dismiss.mockRestore();
   });
 
   it('asks "Sam already exists — use them?" instead of adding a duplicate', async () => {
