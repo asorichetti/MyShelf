@@ -16,7 +16,7 @@ import { Booky, HelpButton, useBooky } from '@/components/booky';
 import { GroupEditorSheet, type GroupDraft } from '@/components/groups/GroupEditorSheet';
 import { GroupPickerSheet } from '@/components/groups/GroupPickerSheet';
 import { ShelfLoanStamp } from '@/components/loans/ShelfLoanStamp';
-import { Button, Chip, ConfirmDialog, EmptyState, Heading, Screen, Text, useFloatClearance, useSnackbar } from '@/components/ui';
+import { Button, Chip, ConfirmDialog, EmptyState, Heading, keyboardDismissMode, Screen, Text, useFloatClearance, useSnackbar } from '@/components/ui';
 import { useBottomObstacle } from '@/components/ui/layers';
 import type { ShelfSection } from '@/db';
 import { sortKeyList, sortKeyRegistry } from '@/db/sortKeys';
@@ -327,7 +327,7 @@ export function ShelfScreen() {
           onLayout={onListLayout}
           contentContainerStyle={{ paddingBottom: sizes.touchTarget * (selecting ? 4 : 1) + spacing.xxl * 2 + clearance, paddingHorizontal: spacing.xxs }}
           keyboardShouldPersistTaps="handled"
-          keyboardDismissMode="on-drag"
+          keyboardDismissMode={keyboardDismissMode}
           // Section headers and footers take slots too, so a first screenful needs a few more.
           initialNumToRender={16}
           maxToRenderPerBatch={16}

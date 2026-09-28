@@ -6,6 +6,7 @@ export { ConfirmDialog, type ConfirmDialogProps } from './ConfirmDialog';
 export { DateField, type DateFieldProps } from './DateField';
 export { EmptyState, type EmptyStateAction, type EmptyStateProps } from './EmptyState';
 export { useFloatClearance } from './floatClearance';
+export { keyboardDismissMode } from './keyboardDismiss';
 export { ErrorBoundary, type ErrorBoundaryProps, type ErrorFallbackProps } from './ErrorBoundary';
 export { Heading, type HeadingLevel, type HeadingProps } from './Heading';
 export { LetterIndex, type LetterIndexProps } from './LetterIndex';

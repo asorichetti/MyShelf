@@ -2,7 +2,7 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useImperativeHandle, useRef, type Ref } from 'react';
 import { ScrollView, StyleSheet, View, type TextInput } from 'react-native';
 
-import { Button, Chip, Heading, SelectField, StarRating, Text, TextField } from '@/components/ui';
+import { Button, Chip, Heading, keyboardDismissMode, SelectField, StarRating, Text, TextField } from '@/components/ui';
 import { bookFormats, joinNames, languages, TITLE_MAX, type BookDraft, type BookDraftErrors, type BookDraftField, type BookFormat } from '@/domain';
 import { t, translate, type MessageKey } from '@/i18n';
 import { Testids } from '@/testing/testids.gen';
@@ -187,8 +187,8 @@ export function BookForm({
         style={styles.fill}
         contentContainerStyle={{ padding: spacing.lg, gap: spacing.xl, paddingBottom: spacing.xxl }}
         keyboardShouldPersistTaps="handled"
-        // Scrolling a long form puts the keyboard away, as the Shelf's list does.
-        keyboardDismissMode="on-drag"
+        // Scrolling a long form puts the keyboard away on a phone, as the Shelf's list does.
+        keyboardDismissMode={keyboardDismissMode}
       >
         <View style={{ gap: spacing.xs }}>
           <Heading level={1} testID={Testids.bookForm.heading}>

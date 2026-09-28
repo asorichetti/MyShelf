@@ -5,6 +5,7 @@ import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { useTheme } from '@/theme';
 
 import { Heading } from './Heading';
+import { keyboardDismissMode } from './keyboardDismiss';
 import { useBlockingLayer } from './layers';
 import { modalProps, useReturnFocus } from './modalA11y';
 import { SHEET_ANIMATION } from './modalAnimation';
@@ -68,7 +69,7 @@ export function Sheet({ visible, title, subtitle, onClose, children, footer, bus
             <Heading level={2}>{title}</Heading>
             {subtitle ? <Text color="inkMuted">{subtitle}</Text> : null}
           </View>
-          <ScrollView style={styles.body} contentContainerStyle={{ paddingHorizontal: spacing.lg, paddingBottom: spacing.sm, gap: spacing.md }} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
+          <ScrollView style={styles.body} contentContainerStyle={{ paddingHorizontal: spacing.lg, paddingBottom: spacing.sm, gap: spacing.md }} keyboardShouldPersistTaps="handled" keyboardDismissMode={keyboardDismissMode}>
             {children}
           </ScrollView>
           {footer ? (
