@@ -1,5 +1,5 @@
 import { router, usePathname, useSegments, type Href } from 'expo-router';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { StyleSheet, Text, useWindowDimensions, View, type LayoutChangeEvent } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -132,6 +132,16 @@ function PlacedTip({ tip, onTabs }: { tip: ShownTip; onTabs: boolean }) {
   const [bubbleHeight, setBubbleHeight] = useState(0);
   const [box, setBox] = useState<TipBox | null>(null);
   const host = useRef<View | null>(null);
+  // Where the tip is on screen: for keeping focus clear of it, and for the room
+  // scrolling screens leave below their content (`useFloatClearance`).
+  const measureHost = useCallback(() => {
+    host.current?.measureInWindow?.((x, y, width, height) => {
+      const measured = { x, y, width, height };
+      setTipBox(measured);
+      setFloatingBox(measured);
+      setBox((prev) => (prev && prev.x === x && prev.y === y && prev.width === width && prev.height === height ? prev : measured));
+    });
+  }, []);
 
   const compact = isCompact(fontScale, win.height);
   const blocked = layers.blocking > 0;
@@ -159,6 +169,11 @@ function PlacedTip({ tip, onTabs }: { tip: ShownTip; onTabs: boolean }) {
       setFloatingBox(null);
     };
   }, [shown]);
+  // A tip lifted above the snackbar or the selection bar moves without changing
+  // size, and on the web onLayout only reports size changes: measure it again.
+  useEffect(() => {
+    if (shown) measureHost();
+  }, [shown, place.bottom, place.left, place.width, measureHost]);
   useKeepFocusClear(shown ? box : null, host, spacing.md);
   if (!shown) return null;
 
@@ -179,13 +194,7 @@ function PlacedTip({ tip, onTabs }: { tip: ShownTip; onTabs: boolean }) {
   const maxHeight = compact ? Math.round(win.height * COMPACT_MAX_SHARE) : undefined;
   const onLayout = (e: LayoutChangeEvent) => {
     setBubbleHeight(Math.round(e.nativeEvent.layout.height));
-    host.current?.measureInWindow?.((x, y, width, height) => {
-      const measured = { x, y, width, height };
-      setTipBox(measured);
-      // Scrolling screens make room for it below their content.
-      setFloatingBox(measured);
-      setBox((prev) => (prev && prev.x === x && prev.y === y && prev.width === width && prev.height === height ? prev : measured));
-    });
+    measureHost();
   };
 
   if (tip.tip.celebration) {
