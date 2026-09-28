@@ -136,16 +136,34 @@ export function tipCover(page: Page, hosts: readonly string[] = TIP_HOSTS): Prom
   );
 }
 
+/** How long a screen gets to make room for a tip that has just appeared or moved. */
+const ROOM_WAIT_MS = 3_000;
+
+/**
+ * The tip check once the screen has made room for the tip: the tip measures
+ * itself, then the scroller measures itself and grows its bottom padding, a
+ * few frames that a slow machine can stretch past two settles (CI run
+ * 36463024556). Checks again until nothing is stuck or `ROOM_WAIT_MS` has
+ * passed, and while `still()` holds.
+ */
+export async function settledTipCover(c: Context, still: () => Promise<boolean> = async () => true): Promise<TipCover> {
+  const deadline = Date.now() + ROOM_WAIT_MS;
+  for (;;) {
+    await c.settle();
+    await c.settle();
+    const report = await tipCover(c.page);
+    if (!report.stuck.length || Date.now() >= deadline || !(await still())) return report;
+    await c.page.waitForTimeout(100);
+  }
+}
+
 /**
  * Fails when Booky's floating tip covers a control that scrolling cannot
  * bring clear of it. Expects a tip on screen unless `allowNone`. Returns the
  * report (e.g. to check something was revealed).
  */
 export async function expectTipCoversNothing(c: Context, where: string, { allowNone = false } = {}): Promise<TipCover> {
-  // Let the tip measure itself and the screen make room for it.
-  await c.settle();
-  await c.settle();
-  const report = await tipCover(c.page);
+  const report = await settledTipCover(c);
   expect(allowNone || report.tip != null, `${where}: expected Booky's tip on screen to check`);
   expect(report.stuck.length === 0, `${where}: Booky's tip ${q(report.tip)} covers ${report.stuck.length} control(s) that scrolling cannot bring clear: ${report.stuck.join('; ')}`);
   c.logf(`${where}: tip ${report.tip ? `${Math.round(report.tip.y)}+${Math.round(report.tip.height)}` : 'none'}, ${report.checked.length} controls checked, ${report.revealed.length} revealed by scrolling`);
