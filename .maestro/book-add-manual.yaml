@@ -29,7 +29,15 @@ tags: [core]
 - pressKey: Enter
 - extendedWaitUntil: { visible: { id: book-form-genre-chip }, timeout: 5000 }
 - hideKeyboard
-- scrollUntilVisible: { element: { id: book-form-rating }, direction: DOWN }
+# Aim at the star itself, centred: the rating block (stars and caption) can sit
+# partly under the Save bar or the keyboard, and scrollUntilVisible otherwise
+# waits for 100% of it (CI run 36376501790 timed out on the block).
+- scrollUntilVisible:
+    element: { id: rating-star, index: 3 }
+    direction: DOWN
+    timeout: 30000
+    visibilityPercentage: 60
+    centerElement: true
 - tapOn: { id: rating-star, index: 3 }
 - takeScreenshot: screenshots/book-add-form
 - tapOn: { id: book-form-save }
