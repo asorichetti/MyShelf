@@ -187,6 +187,8 @@ export function BookForm({
         style={styles.fill}
         contentContainerStyle={{ padding: spacing.lg, gap: spacing.xl, paddingBottom: spacing.xxl }}
         keyboardShouldPersistTaps="handled"
+        // Scrolling a long form puts the keyboard away, as the Shelf's list does.
+        keyboardDismissMode="on-drag"
       >
         <View style={{ gap: spacing.xs }}>
           <Heading level={1} testID={Testids.bookForm.heading}>

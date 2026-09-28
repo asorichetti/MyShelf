@@ -28,7 +28,9 @@ tags: [core]
 - inputText: Fantasy
 - pressKey: Enter
 - extendedWaitUntil: { visible: { id: book-form-genre-chip }, timeout: 5000 }
-- hideKeyboard
+# No hideKeyboard here: Enter may already have closed the keyboard, and then
+# Android's hideKeyboard presses Back, which opens "Discard your changes?"
+# (CI run 36429002773). Scrolling the form dismisses the keyboard instead.
 # Aim at the star itself, centred: the rating block (stars and caption) can sit
 # partly under the Save bar or the keyboard, and scrollUntilVisible otherwise
 # waits for 100% of it (CI run 36376501790 timed out on the block).

@@ -12,6 +12,10 @@ tags: [core]
 # A vertical scroll over the cards scrolls; it is not taken for a swipe.
 - swipe: { from: { id: loans-row-book, text: Open The Murder of Roger Ackroyd }, direction: UP }
 - assertNotVisible: { id: return-sheet }
+# Let the fling from that swipe stop first: a touch on a list that is still
+# moving only stops it, so the swipe below would never reach the card
+# (CI run 36429002773 on a slow emulator).
+- waitForAnimationToEnd: { timeout: 5000 }
 - scrollUntilVisible: { element: { id: loans-row-book, text: Open Dune }, direction: DOWN, centerElement: true }
 - swipe:
     from: { id: loans-row, containsDescendants: [{ id: loans-row-book, text: Open Dune }] }

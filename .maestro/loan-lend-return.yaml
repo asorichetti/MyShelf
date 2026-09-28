@@ -16,7 +16,8 @@ tags: [core]
 - tapOn: { id: lend-borrower-search }
 - inputText: Alex
 - tapOn: { id: lend-borrower-create }
-- hideKeyboard
+# No hideKeyboard: the tap may already have closed the keyboard, and then Back
+# would close the sheet. Scrolling the sheet dismisses the keyboard instead.
 # The due date from Android's own calendar: the 15th of the month after the default.
 - scrollUntilVisible: { element: { text: Choose due back from a calendar }, direction: DOWN }
 - tapOn: Choose due back from a calendar

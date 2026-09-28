@@ -68,7 +68,7 @@ export function Sheet({ visible, title, subtitle, onClose, children, footer, bus
             <Heading level={2}>{title}</Heading>
             {subtitle ? <Text color="inkMuted">{subtitle}</Text> : null}
           </View>
-          <ScrollView style={styles.body} contentContainerStyle={{ paddingHorizontal: spacing.lg, paddingBottom: spacing.sm, gap: spacing.md }} keyboardShouldPersistTaps="handled">
+          <ScrollView style={styles.body} contentContainerStyle={{ paddingHorizontal: spacing.lg, paddingBottom: spacing.sm, gap: spacing.md }} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
             {children}
           </ScrollView>
           {footer ? (
