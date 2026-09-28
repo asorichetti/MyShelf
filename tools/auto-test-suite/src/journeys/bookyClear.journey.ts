@@ -10,7 +10,7 @@ import { Testids, tid } from '../selectors.ts';
 import { openBigFixture, openFixture, waitForBookyDecision, waitForCount, waitForPath, waitVisible } from './helpers.ts';
 import { openFirstRun } from './onboarding.journey.ts';
 import { expect, q, register, type Context } from './registry.ts';
-import { expectTipCoversNothing } from './tipCover.ts';
+import { expectTipCoversNothing, tipCover } from './tipCover.ts';
 
 /** The demo fixture's overdue book, The Murder of Roger Ackroyd (lent to Priya). */
 const OVERDUE_BOOK = '/book/10';
@@ -179,7 +179,18 @@ register({
       const path = await waitForPath(c, /^\/book\/\d+$/, `/book/new ${at} -> save`);
       await waitVisible(c, tid(Testids.seriesTip.root), `${path} ${at} (gap tip)`);
       // With the "Saved" snackbar up the tip is lifted above it; the snackbar hides what is under itself.
-      await expectTipCoversNothing(c, `${path} ${at} (gap tip, snackbar up)`);
+      // It lasts 4 s, so on a slow machine it can go mid-check, leaving the tip lifted over
+      // controls the snackbar no longer hides (CI run 36452526433): the result only counts
+      // while the snackbar is still up, and the docked check below covers the rest.
+      await c.settle();
+      await c.settle();
+      const lifted = await tipCover(c.page);
+      if (await c.page.locator(tid(Testids.snackbar.root)).count()) {
+        expect(lifted.stuck.length === 0, `${path} ${at} (gap tip, snackbar up): Booky's tip ${q(lifted.tip)} covers ${lifted.stuck.length} control(s) that scrolling cannot bring clear: ${lifted.stuck.join('; ')}`);
+        c.logf(`${path} ${at} (gap tip, snackbar up): ${lifted.checked.length} controls checked, ${lifted.revealed.length} revealed by scrolling`);
+      } else {
+        c.logf(`${path} ${at} (gap tip, snackbar up): the snackbar went during the check; left to the docked check`);
+      }
       // Once the snackbar has gone, the tip docks again and the whole page is reachable.
       try {
         await c.page.locator(tid(Testids.snackbar.root)).waitFor({ state: 'detached', timeout: 15_000 });
