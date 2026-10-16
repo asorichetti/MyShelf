@@ -32,9 +32,44 @@ describe.each([
   let db: Db;
   beforeEach(async () => {
     db = await open();
-    await migrate(db, upTo(7));
+    // Fixture loading uses repository functions that query the full schema,
+    // so we must load into a latest-version database, then downgrade to v7.
+    await migrate(db);
     await loadFixture(db, 'demo');
     await db.run("INSERT INTO cover_attempts (book_id, last_attempt_at, retry_after, last_result) VALUES (1, 'a', 'b', 'none')");
+    // Downgrade to v7: remove all migrations from schema_migrations and
+    // drop columns/indexes/triggers added after v7.
+    await db.run('DELETE FROM schema_migrations WHERE version > 7');
+    await db.run('PRAGMA user_version = 7');
+    // Drop the v8 trigger (added in 0008)
+    await db.run("DROP TRIGGER IF EXISTS trg_book_no_id_reuse");
+    // Drop v10 index (added in 0010)
+    await db.run("DROP INDEX IF EXISTS idx_books_call_number");
+    // Drop v11 column (added in 0011)
+    await db.run("ALTER TABLE books DROP COLUMN value");
+    // Drop triggers added in v9 (search_fold) that fire on book updates
+    for (const t of [
+      'book_search_books_ai','book_search_books_au','book_search_books_ad',
+      'book_search_book_authors_ai','book_search_book_authors_au','book_search_book_authors_ad',
+      'book_search_authors_au',
+      'book_search_book_genres_ai','book_search_book_genres_au','book_search_book_genres_ad',
+      'book_search_genres_au','book_search_series_au',
+    ]) await db.run(`DROP TRIGGER IF EXISTS ${t}`);
+    // Drop v6/v9 search tables, index and view
+    await db.run("DROP INDEX IF EXISTS books_search_body_idx");
+    await db.run("DROP TABLE IF EXISTS books_search");
+    await db.run("DROP TABLE IF EXISTS books_fts");
+    await db.run("DROP VIEW IF EXISTS book_search_source");
+    // Drop triggers added in v10 (book_sort_keys) that reference v10-only tables
+    for (const t of [
+      'book_sort_books_ai','book_sort_books_au','book_sort_books_ad',
+      'book_sort_book_authors_ai','book_sort_book_authors_au','book_sort_book_authors_ad',
+      'book_sort_authors_au',
+      'book_sort_book_genres_ai','book_sort_book_genres_au','book_sort_book_genres_ad',
+      'book_sort_genres_au','book_sort_series_au',
+    ]) await db.run(`DROP TRIGGER IF EXISTS ${t}`);
+    // Drop v10 table and index
+    await db.run("DROP TABLE IF EXISTS book_sort_keys");
   });
   afterEach(() => db.close());
 

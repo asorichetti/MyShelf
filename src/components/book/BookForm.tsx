@@ -50,6 +50,7 @@ const fieldLabels: Record<BookDraftField, MessageKey> = {
   notes: 'bookForm.fields.notes',
   coverUri: 'bookFields.cover',
   rating: 'bookForm.fields.rating',
+  value: 'bookForm.fields.value',
 };
 
 const NO_SERIES: readonly SeriesOption[] = [];
@@ -151,6 +152,7 @@ export function BookForm({
   const seriesPositionRef = useRef<TextInput>(null);
   const summaryRef = useRef<TextInput>(null);
   const notesRef = useRef<TextInput>(null);
+  const valueRef = useRef<TextInput>(null);
   const languageRef = useRef<View>(null);
 
   useImperativeHandle(ref, () => ({
@@ -169,6 +171,7 @@ export function BookForm({
         seriesPosition: seriesPositionRef.current,
         summary: summaryRef.current,
         notes: notesRef.current,
+        value: valueRef.current,
         language: languageRef.current as { focus?: () => void } | null,
       };
       const el = targets[field];
@@ -345,6 +348,20 @@ export function BookForm({
               {t('bookForm.ratingHelp')}
             </Text>
           </View>
+        </Section>
+
+        <Section title={t('bookFields.value')}>
+          <TextField
+            label={t('bookForm.fields.value')}
+            ref={valueRef}
+            value={draft.value}
+            onChangeText={(v) => onChange('value', v)}
+            errorText={errors.value}
+            testID={Testids.bookForm.value}
+            keyboardType="decimal-pad"
+            inputMode="decimal"
+            helperText={t('draft.errors.value')}
+          />
         </Section>
 
         <Section title={t('bookForm.sections.summaryAndNotes')}>

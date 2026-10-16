@@ -12,6 +12,7 @@ import { BookySettingsSection } from '@/features/booky/BookySettingsSection';
 import { useLibraryEvent } from '@/features/events';
 import { useReminderSetting } from '@/features/loans/useReminderSync';
 import { LoadingPage } from '@/features/navigation/LoadingPage';
+import { useCollectionStats } from '@/features/settings/useCollectionStats';
 import { t } from '@/i18n';
 import { Testids } from '@/testing/testids.gen';
 import { useTheme } from '@/theme';
@@ -62,6 +63,23 @@ function LendingRows() {
     <View style={{ paddingHorizontal: spacing.xs }}>
       <ReminderSwitch value={reminders.enabled === true} onChange={(on) => void reminders.setEnabled(on)} disabled={!reminders.supported || reminders.busy} note={note} />
     </View>
+  );
+}
+
+/** Collection value summary (P09-xx). */
+function CollectionValue() {
+  const { valuedCount, totalValue } = useCollectionStats();
+  return (
+    <SettingsSection title={t('settings.collection.title')} intro={t('settings.collection.intro')} testID={T.section}>
+      <SettingsLinkRow
+        icon="currency-usd"
+        label={t('settings.collection.totalValue')}
+        description={t('settings.collection.intro')}
+        value={valuedCount > 0 ? `$${totalValue.toFixed(2)}` : t('settings.collection.noValueSet')}
+        onPress={() => {}}
+        testID={T.totalValue}
+      />
+    </SettingsSection>
   );
 }
 
@@ -148,6 +166,8 @@ export function SettingsScreen() {
           testID={T.borrowers}
         />
       </SettingsSection>
+
+      <CollectionValue />
 
       <SettingsSection title={t('settings.data.title')} intro={t('settings.data.intro')} testID={T.section}>
         <SettingsLinkRow

@@ -130,7 +130,7 @@ register({
   async run(c) {
     await openFixture(c, 'demo', '/settings', TODAY);
     const sections = await c.page.locator(`${tid(Testids.settings.root)} [role="heading"][aria-level="2"]`).allInnerTexts();
-    const want = ['Library', 'Booky', 'Lookups', 'Lending', 'Backup & data', 'About'];
+    const want = ['Library', 'Booky', 'Lookups', 'Lending', 'Collection', 'Backup & data', 'About'];
     expect(JSON.stringify(sections) === JSON.stringify(want), `/settings: expected sections ${q(want)}, found ${q(sections)}`);
 
     const links = [S.preferences, S.pending, S.borrowers, S.exportBackup, S.importBackup, S.exportCsv, S.importCsv, S.erase, S.about];

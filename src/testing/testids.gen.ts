@@ -196,6 +196,7 @@ export const Testids = {
     loanLengthCustom: 'settings-loan-length-custom',
     dateFormat: 'settings-date-format',
     dateExample: 'settings-date-example',
+    totalValue: 'settings-total-value',
   },
   notFound: {
     root: 'not-found-root',
@@ -290,6 +291,7 @@ export const Testids = {
     coverPick: 'book-form-cover-pick',
     coverCamera: 'book-form-cover-camera',
     rating: 'book-form-rating',
+    value: 'book-form-value',
     coverRemove: 'book-form-cover-remove',
     summary: 'book-form-summary',
     notes: 'book-form-notes',

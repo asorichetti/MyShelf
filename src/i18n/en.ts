@@ -59,6 +59,7 @@ export const en = {
     genres: 'Genres',
     series: 'Series',
     summary: 'Summary',
+    value: 'Value',
   },
   /** Calendar words; the order of day, month and year comes from Intl (see `formatDay`). */
   dates: {
@@ -754,6 +755,8 @@ export const en = {
       isbn: 'ISBN',
       seriesPosition: 'Number in series',
       notes: 'Notes',
+      /** The book's value field. */
+      value: 'Value',
     },
     isbnHelp: '10 or 13 digits, usually on the back cover above the barcode.',
     editionPlaceholder: 'e.g. First edition',
@@ -1029,6 +1032,8 @@ export const en = {
       seriesPosition: 'Use a number like 3, or 2.5 for a novella between books.',
       seriesNameMissing: 'Add the series name to go with its number.',
       authorTooLong: 'One of those names is very long — check it.',
+      /** Value field: a positive number. */
+      value: 'Enter a number, like 12.50.',
     },
     /** A proposed change in "Refresh details". */
     change: {
@@ -1573,6 +1578,12 @@ export const en = {
       importCsvDescription: 'A CSV file, including a Goodreads export',
       eraseLabel: 'Erase library',
       eraseDescription: 'Remove every book from this phone',
+    },
+    collection: {
+      title: 'Collection',
+      intro: 'Your collection’s total value.',
+      totalValue: 'Total value',
+      noValueSet: 'No values entered yet',
     },
     about: {
       title: 'About',
