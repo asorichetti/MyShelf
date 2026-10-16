@@ -35,6 +35,8 @@ export interface BookDraft {
   coverUri: string | null;
   /** The reader's rating, 1-5, or null for not rated. */
   rating: number | null;
+  /** The book's purchase or estimated value, as a number string (e.g. "12.50"), or '' for none. */
+  value: string;
 }
 
 export type BookDraftField = keyof BookDraft;
@@ -66,6 +68,8 @@ export interface ValidBookDraft {
    * can never change it.
    */
   rating?: number | null;
+  /** The book's purchase or estimated value; null when blank. */
+  value: number | null;
 }
 
 export type DraftValidation = { ok: true; value: ValidBookDraft; errors: Record<string, never> } | { ok: false; errors: BookDraftErrors };
@@ -87,6 +91,7 @@ export const draftFieldOrder: readonly BookDraftField[] = [
   'seriesPosition',
   'summary',
   'notes',
+  'value',
 ];
 
 /**
@@ -119,6 +124,7 @@ export function emptyDraft(): BookDraft {
     notes: '',
     coverUri: null,
     rating: null,
+    value: '',
   };
 }
 
@@ -142,6 +148,7 @@ export function draftFromDetail(book: BookDetail): BookDraft {
     notes: book.notes ?? '',
     coverUri: book.coverUri,
     rating: book.rating,
+    value: book.value != null ? String(book.value) : '',
   };
 }
 
@@ -231,6 +238,17 @@ export function validateBookDraft(draft: BookDraft, { currentYear = new Date().g
     (g) => g,
   );
 
+  let value: number | null = null;
+  const valueText = draft.value.trim();
+  if (valueText) {
+    const parsed = Number(valueText);
+    if (!/^[\d.]+$/.test(valueText) || parsed < 0) {
+      errors.value = t('draft.errors.value');
+    } else {
+      value = parsed;
+    }
+  }
+
   if (Object.keys(errors).length) return { ok: false, errors };
   const codes = isbn as { isbn13: string | null; isbn10: string | null };
   return {
@@ -254,6 +272,7 @@ export function validateBookDraft(draft: BookDraft, { currentYear = new Date().g
       genres,
       series: seriesName ? { name: seriesName, position: seriesPosition } : null,
       rating: parseRating(draft.rating),
+      value,
     },
   };
 }

@@ -34,6 +34,8 @@ export interface Book {
   notes: string | null;
   /** The reader's own rating, 1-5 whole stars; null when not rated. Lookups never set it. */
   rating: number | null;
+  /** The book's purchase or estimated value; null when unknown. */
+  value: number | null;
   createdAt: string;
   updatedAt: string;
 }

@@ -29,8 +29,10 @@ describe('migration 0007_book_rating', () => {
     await db.run("INSERT INTO books (id, title, notes, created_at, updated_at) VALUES (1, 'Mort', 'Signed', '2020-01-01T00:00:00.000Z', '2020-01-01T00:00:00.000Z')");
     const result = await migrate(db, migrations.filter((m) => m.version <= 7));
     expect(result).toEqual({ from: 6, to: 7, applied: [7] });
+    // Migrate to latest so repository queries work (value column exists).
+    await migrate(db, migrations.filter((m) => m.version <= 11));
     const book = await booksRepo.getBook(db, 1);
-    expect(book).toMatchObject({ title: 'Mort', notes: 'Signed', rating: null, updatedAt: '2020-01-01T00:00:00.000Z' });
+    expect(book).toMatchObject({ title: 'Mort', notes: 'Signed', rating: null, updatedAt: '2020-01-01T00:00:00.000Z', value: null });
     // The search index built by 0006 still finds it (the Shelf's list itself needs migration 0010's sort keys).
     const search = (await booksRepo.searchClause(db, 'signed'))!;
     expect(await db.all(`SELECT b.title FROM books b WHERE ${search.sql}`, search.params)).toEqual([{ title: 'Mort' }]);
@@ -109,7 +111,7 @@ describe('form saves and refreshes', () => {
       ...draftFromDetail({
         id: 0, title: 'Dune', subtitle: null, isbn13: null, isbn10: null, edition: null, publisher: null, publicationYear: null, pageCount: null,
         summary: null, coverUri: null, language: null, format: null, seriesId: null, seriesPosition: null, source: null, sourceId: null, notes: null,
-        rating: null, createdAt: '', updatedAt: '', authors: [], genres: [], series: null, openLoan: null, callNumber: 'GEN DUN',
+        rating: null, value: null, createdAt: '', updatedAt: '', authors: [], genres: [], series: null, openLoan: null, callNumber: 'GEN DUN',
       }),
     });
     if (!v.ok) throw new Error('invalid');

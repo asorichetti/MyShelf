@@ -202,6 +202,7 @@ describe('cleaning and helpers', () => {
       sourceId: null,
       notes: null,
       rating: 4,
+      value: null,
       createdAt: '',
       updatedAt: '',
       authors: [{ id: 1, name: 'Terry Pratchett', sortName: 'Pratchett, Terry', role: 'author', position: 0 }],

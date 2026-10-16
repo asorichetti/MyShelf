@@ -179,7 +179,8 @@
     "loanLength": "settings-loan-length",
     "loanLengthCustom": "settings-loan-length-custom",
     "dateFormat": "settings-date-format",
-    "dateExample": "settings-date-example"
+    "dateExample": "settings-date-example",
+    "totalValue": "settings-total-value"
   },
   "notFound": { "root": "not-found-root", "title": "not-found-title", "homeLink": "not-found-home-link" },
   "loading": { "root": "loading-root", "title": "loading-title" },
@@ -258,6 +259,7 @@
     "coverPick": "book-form-cover-pick",
     "coverCamera": "book-form-cover-camera",
     "rating": "book-form-rating",
+    "value": "book-form-value",
     "coverRemove": "book-form-cover-remove",
     "summary": "book-form-summary",
     "notes": "book-form-notes",

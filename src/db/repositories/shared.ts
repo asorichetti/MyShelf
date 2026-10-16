@@ -24,6 +24,7 @@ export interface BookRow {
   source_id: string | null;
   notes: string | null;
   rating: number | null;
+  value: number | null;
   created_at: string;
   updated_at: string;
 }
@@ -32,7 +33,7 @@ export interface BookRow {
 export const BOOK_COLUMNS = [
   'id', 'title', 'subtitle', 'isbn13', 'isbn10', 'edition', 'publisher', 'publication_year', 'page_count',
   'summary', 'cover_uri', 'language', 'format', 'series_id', 'series_position', 'source', 'source_id', 'notes',
-  'rating', 'created_at', 'updated_at',
+  'rating', 'value', 'created_at', 'updated_at',
 ].map((c) => `b.${c}`).join(', ');
 
 export function toBook(r: BookRow): Book {
@@ -56,6 +57,7 @@ export function toBook(r: BookRow): Book {
     sourceId: r.source_id,
     notes: r.notes,
     rating: r.rating ?? null,
+    value: r.value ?? null,
     createdAt: r.created_at,
     updatedAt: r.updated_at,
   };

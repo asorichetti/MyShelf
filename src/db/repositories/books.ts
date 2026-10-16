@@ -48,6 +48,7 @@ const FIELDS = {
   sourceId: 'source_id',
   notes: 'notes',
   rating: 'rating',
+  value: 'value',
 } as const satisfies Record<keyof NewBook, string>;
 
 type Field = keyof typeof FIELDS;
@@ -605,6 +606,7 @@ export async function saveBookDraft(db: Db, draft: ValidBookDraft, id?: number):
       seriesPosition: series ? (draft.series?.position ?? null) : null,
       // Undefined (a refresh) leaves the stored rating as it is.
       rating: draft.rating,
+      value: draft.value,
     };
     let bookId: number;
     if (id == null) {
@@ -778,4 +780,15 @@ export async function restoreBook(db: Db, snapshot: BookSnapshot): Promise<numbe
     }
     return bookId;
   });
+}
+
+/** How many books have a value set, and their sum (for the collection value summary). */
+export async function collectionStats(db: Db): Promise<{ valuedCount: number; totalValue: number }> {
+  const row = await db.get<{ n: number; total: number }>(
+    'SELECT COUNT(value) AS n, SUM(value) AS total FROM books WHERE value IS NOT NULL',
+  );
+  return {
+    valuedCount: row?.n ?? 0,
+    totalValue: row?.total ?? 0,
+  };
 }
